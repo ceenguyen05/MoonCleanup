@@ -26,15 +26,15 @@ A green, deployable monorepo that every later wave can build on: tooling and CI 
 | E9 | **Terrain bake spike**: LDEM_16 → `height-cube-1024.bin` + `height-cube-256.bin` + manifest; slope acceptance (world-and-dust §3.3) passes; bake time/RAM and LDEM_64 extrapolation recorded | bake report |
 | E10 | VT-M0-01…16 (incl. 04b grazing sun, 15 horizon-map spike, 16 fill): every V1 item passes; ≤ 3 V2 open with tickets. VT-M0-06 is calibrated **with AgX on** (noon key: albedo 0.10 / 0.33 / 0.80 → 126 / 181 / 213 ± 8; grime 0.085 vs clean 0.34 → ratio ≥ 1.45, ≥ 50 codes) | `/visual-check` M0 matrix (visual-target §6.5) |
 | E11 | M0 technical checks complete; unresolved external evidence explicitly recorded; continue M1 | Compact STATUS/evidence, or integration report if useful |
-| E12 | **Asset-pipeline proof**: one rock and one outpost module go from script to a budget-checked, content-hashed glTF (art-direction §13.5, ADR-0027); Blender decision (OPEN_QUESTIONS Q23) recorded | M0-W0-T06 report |
-| E13 | **Tier B device named** (OPEN_QUESTIONS Q21, hardware input) and the render capture run on it, or the verdict is marked provisional; **r187 verification matrix** (rendering-pipeline §21) filled PASS/FAIL on `webgpu` and `webgl2` | Hardware confirmation; M0-W2-T07 report; `tools/perf/results/M0/` |
+| E12 | **Asset-pipeline proof**: one rock and one outpost module go from script to a budget-checked, content-hashed glTF (art-direction §13.5, ADR-0027); headless Blender 4.5.10 LTS path used (Q23 resolved) | M0-W0-T06 report |
+| E13 | **Hardware (OPEN_QUESTIONS Q21, resolved):** the only device is an Intel UHD 620 laptop (below Tier B class); the render capture runs on it as a provisional below-Tier-B worst case and the Tier A/B verdicts are recorded BLOCKED until a reference device is available; **r187 verification matrix** (rendering-pipeline §21) filled PASS/FAIL on `webgpu` and `webgl2` | Hardware confirmation; M0-W2-T07 report; `tools/perf/results/M0/` |
 
 ## 3. Stage plan (dependency checkpoints; continuous execution)
 
 | Stage | Wave | Task dependency order (MODEL_POLICY limits concurrency) | Notes |
 | --- | --- | --- | --- |
 | **M0-S1** | W0 | T02 → T01 (T01 launches when T02 reports), T04 in parallel | **T02 performs the FIRST install** (the one named exception to the no-install rule); contracts typecheck against it. Reuse the existing recovery note; do not repeat the install |
-| **M0-S2** | W0 | T03, then T06 (asset-pipeline proof; needs T03's scripts and Cee's Blender answer, Q23), then T05 (integrator) | Verify the baseline, then continue W1; no commit wait |
+| **M0-S2** | W0 | T03, then T06 (asset-pipeline proof; needs T03's scripts; Blender installed, Q23 resolved), then T05 (integrator) | Verify the baseline, then continue W1; no commit wait |
 | **M0-S3** | W1 | T01, T02, T03 | |
 | **M0-S4** | W1 | T04, T05, then T06 (integrator) | Local client/server boot; cloud setup only when available |
 | **M0-S5** | W2 | T01, T02, T03 | Spike code |
@@ -48,7 +48,7 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 ## 4. External inputs (not development stop gates)
 
 Setup already passed. No commit, tag, milestone approval or cloud-deploy prerequisite for independent local work.
-Ask for Blender path, hardware or credentials when the affected check actually needs them; keep building other ready work.
+Ask for hardware or credentials when the affected check actually needs them; keep building other ready work.
 Before a hosted spike, ask for an isolated/test-only window and NET_SPIKE=1; restore NET_SPIKE=0 afterward.
 Until authorized cloud access exists, run locally and mark cloud measurements BLOCKED. Never claim local evidence as hosted proof.
 Name Tier B hardware before claiming that measurement; use an explicitly accepted provisional fallback when necessary.
@@ -63,7 +63,7 @@ Cee commits/publishes only when satisfied. Final acceptance must disclose any un
 | M0-W0-T03 | M0-S2 | devops-engineer | Real package scripts, Vite/esbuild configs, CI lanes, NET_SPIKE + DB_SCHEMA keys, minimal bootstrap stubs (`boot.ts`, server `index.ts`) | M0-W0-T01, M0-W0-T02 | 2 | todo |
 | M0-W0-T04 | M0-S1 | devops-engineer | Git-blocking hook + vendored three r187 docs snapshot | — | 3 | changes-requested |
 | M0-W0-T05 | M0-S2 | integrator | M0-W0 integration: verify green, contracts consumer list (extends T03's stubs only if needed) | M0-W0-T01, M0-W0-T03, M0-W0-T04, M0-W0-T06 | 9 | todo |
-| M0-W0-T06 | M0-S2 | technical-artist | Asset-pipeline proof: one rock + one outpost module, script to budget-checked hashed glTF (art-direction §13.5, ADR-0027; Q23) | M0-W0-T03, Cee Q23 answer | 5 | todo |
+| M0-W0-T06 | M0-S2 | technical-artist | Asset-pipeline proof: one rock + one outpost module, script to budget-checked hashed glTF (art-direction §13.5, ADR-0027; Q23) | M0-W0-T03 (Blender installed, Q23 resolved) | 5 | todo |
 | M0-W1-T01 | M0-S3 | rendering-engineer | Renderer bootstrap: backend/tier detection, frame loop, RenderPipeline skeleton | M0-W0-T05 | 1 | todo |
 | M0-W1-T02 | M0-S3 | devops-engineer | Server ops: env schema, pino logger, room-stats + bandwidth counters | M0-W0-T05 | 2 | todo |
 | M0-W1-T03 | M0-S3 | backend-data-engineer | /healthz + /readyz handlers, db package skeleton + first migration | M0-W0-T05 | 3 | todo |
@@ -189,9 +189,9 @@ flowchart LR
 - **Depends on:** M0-W0-T01, M0-W0-T02.
 - **Acceptance criteria:**
   - [ ] Placeholder `echo` scripts replaced; `pnpm verify` green with the contracts sources present; `pnpm --filter @moon-cleanup/client build` → `apps/client/dist`; server build (entry `apps/server/src/app/index.ts`) → `apps/server/dist/index.js` (esbuild, Node 26 target, uWS native binding external). The two stubs are no-op: `boot.ts` exports `boot(): void {}` and the server `index.ts` is an empty-safe entry that logs a one-line placeholder and exits 0; no logic, no imports beyond `@moon-cleanup/shared` types if needed.
-  - [ ] Vite config: `VITE_*` env only, source maps on, dev port `5173+N` via `--port`, no COOP/COEP.
+  - [ ] Vite config: `VITE_*` env only, source maps on, dev port `5173+N` via `--port`, no COOP/COEP. `apps/client/index.html` has `<title>Clean The Moon!</title>` (exact owner title, non-negotiable).
   - [ ] Local client dev reads `apps/client/.env.local`; server dev explicitly loads `apps/server/.env` before env validation. Migration/seed scripts use a documented env-loading path locally and injected env on Render. Do not assume Node/Turbo automatically loads env files or log secret values. Keep root `pnpm dev` and separate filtered commands usable as real app boot lands in W1.
-  - [ ] CI: gated jobs run lint/typecheck/test/build; new job `smoke-webgl2` (Playwright, software WebGL2) runs `tests/e2e` smoke with `--pass-with-no-tests` (the smoke spec arrives in M0-W1-T05; the job must not fail on an empty suite in W0); first-load size check fails if the first-load group > 20 MB; the stale ci.yml comment about "the owner generates the first lockfile" is updated (T02 creates it).
+  - [ ] CI: gated jobs run lint/typecheck/test/build; new job `smoke-webgl2` (Playwright, software WebGL2) runs `tests/e2e` smoke with `--pass-with-no-tests` (the smoke spec arrives in M0-W1-T05; the job must not fail on an empty suite in W0); first-load size check fails if the first-load group > 20 MB; the ci.yml lockfile comment is already updated (pre-kickoff cleanup); keep it accurate.
   - [ ] Inspect/reuse the existing single-service `render.yaml`: branch main, `NET_SPIKE="0"`, `DB_SCHEMA=prod`, `NODE_OPTIONS=--max-old-space-size=384`, `MAX_ROOMS=3`, `TICK_BUDGET_MS=3.5` and `CLIENT_IP_HEADER=true-client-ip` (proxy handling verified in M0-W3-T01). The server env template already includes `NET_SPIKE` and local memory defaults. No second staging service. Required values/defaults match HOSTING_GUIDE and the canonical env list.
   - [ ] No installs performed (T02 did the first one; any extra dependency need is listed in the report for the designated installer when needed).
 - **Visual acceptance:** n/a.
@@ -216,13 +216,13 @@ flowchart LR
 
 #### M0-W0-T06 — Asset-pipeline proof: one rock, one outpost module
 - **Stage** M0-S2 (after T03 reports) · **Role** `technical-artist` · **Port** 5 · **Status** `todo`
-- **Goal:** retire the biggest art-production unknown in M0: prove that original 3D assets go from a script (or headless Blender, if Cee installed it) to a budget-checked, content-hashed glTF the client can load (art-direction §13, decision D5 / OPEN_QUESTIONS Q23, ADR-0027 3D art path).
+- **Goal:** retire the biggest art-production unknown in M0: prove that original 3D assets go from a script (headless Blender 4.5.10 LTS, installed) to a budget-checked, content-hashed glTF the client can load (art-direction §13, decision D5 / OPEN_QUESTIONS Q23, ADR-0027 3D art path).
 - **Owned files:** `tools/asset-pipeline/src/**`, `assets/models/**` (source scripts + the two proof assets; blockout dirs), `docs/ASSET_LICENSES.md` rows (append only). `scripts` fields stay with M0-W0-T03; if `assets:build` / `assets:check` must change, the task reports it for the integrator.
 - **Read first:** art-direction §11–§13 (esp. §13.1 sources, §13.3 quality bar, §13.5 order of work); ADR-0027 (3D art path), ADR-0028 (dependency policy), ADR-0013, ADR-0017; tools/asset-pipeline/README; asset-and-data-licensing §1; performance-budgets §4 (asset budgets).
-- **Input contracts:** none. **Cee input:** the Q23 answer (default: Cee installs Blender LTS when this task starts; record its path in the report; if declined, use the Node-only path).
-- **Depends on:** M0-W0-T03 (package scripts), the Q23 answer at setup (already complete).
+- **Input contracts:** none. **Cee input:** Q23 resolved — Blender 4.5.10 LTS installed; path in OPEN_QUESTIONS Q23 and M0-W0 §8.2.
+- **Depends on:** M0-W0-T03 (package scripts), Blender installed (Q23 resolved).
 - **Acceptance criteria:**
-  - [ ] One rock (rock-kit class) and one outpost module (hard-surface class) produced from source scripts (Blender headless if installed, else Node procedural modelling: bevelled primitives, baked AO), exported as glTF 2.0, processed with glTF-Transform (meshopt; KTX2 only if the `ktx` CLI is installed, otherwise the report states the missing tool and which step was skipped).
+  - [ ] One rock (rock-kit class) and one outpost module (hard-surface class) produced from source scripts (headless Blender; Node procedural modelling only as a documented fallback if Blender fails), exported as glTF 2.0, processed with glTF-Transform (meshopt; KTX2 only if the `ktx` CLI is installed, otherwise the report states the missing tool and which step was skipped).
   - [ ] Output file names are content-hashed with a `manifest.json` (asset-validation.yml contract); `assets:check` budget checker passes on both assets and fails on a deliberately oversize fixture.
   - [ ] Both assets meet the art-direction §13.3 measurable bar or the report lists exactly which numbers miss and why; one 1080p turntable each (noon + night-near) via the harness.
   - [ ] Throughput report: wall time per asset, source-to-hashed-output steps, what a human must do by hand; verdict feeds the ADR-0027 follow-up and M1 task estimates (M1-W3-T07, M1-W4-T07).
@@ -290,7 +290,7 @@ flowchart LR
 - **Depends on:** M0-W0-T05.
 - **Acceptance criteria:**
   - [ ] Handlers exported as `HttpRouteDef[]` (no Colyseus/uWS import): `GET /healthz` (always 200 if the process is up, < 5 ms, no DB call), `GET /readyz` (DB reachable / powered-off / not-configured, cached ≤ 10 s).
-  - [ ] `packages/db`: Drizzle config, lazy connection factory with TLS using `DATABASE_CA_CERT`, retry/backoff 1 → 30 s on power-off, `migrate` script that succeeds with zero pending migrations. **`DB_SCHEMA` (`prod` | `staging`)** selects a Postgres schema via Drizzle `pgSchema` / `search_path`, so production and staging can share one Aiven database (OPEN_QUESTIONS Q19 default); the migration creates the schema if missing and runs inside it.
+  - [ ] `packages/db`: Drizzle config, lazy connection factory with TLS using `DATABASE_CA_CERT`, retry/backoff 1 → 30 s on power-off, `migrate` script that succeeds with zero pending migrations. **`DB_SCHEMA` (`prod` | `staging`)** selects a Postgres schema via Drizzle `pgSchema` / `search_path`; production uses `prod` (ADR-0029) and `staging` stays a valid but unused value; the migration creates the schema if missing and runs inside it.
   - [ ] First migration: `ops_usage_daily` per data-model §3.12 (generated SQL committed), created in the schema named by `DB_SCHEMA`; `/readyz` reports the active schema name.
   - [ ] Tests: handler tests; migration applies to a local Postgres schema `_a3` when `DATABASE_URL` is set, skipped (not failed) otherwise.
 - **Visual acceptance:** n/a.
@@ -412,7 +412,7 @@ flowchart LR
 - **Acceptance criteria:**
   - [ ] Bot runner (Node, `@colyseus/sdk`): N bots join one room, send synthetic inputs at 20 Hz, record bytes received per message type, RTT, disconnects.
   - [ ] In-process conditioner: latency 120 ms ± 30, 1 % loss modelled as TCP stall delay; profiles good/typical/bad/outage per netcode §17.
-  - [ ] `spike-16` scenario: 10 min, target URL param (local or staging), reads server room-stats lines (local stdout or a pasted Render log export) and writes JSON + Markdown to `tools/bots/results/<milestone>/`.
+  - [ ] `spike-16` scenario: 10 min, target URL param (local by default; hosted only for an approved test window), reads server room-stats lines (local stdout or a pasted Render log export) and writes JSON + Markdown to `tools/bots/results/<milestone>/`.
   - [ ] `pnpm bots -- spike-16 --url http://localhost:2571` works against a local server.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
@@ -476,7 +476,7 @@ flowchart LR
 - **Depends on:** M0-W2-T06, isolated hosted-test access.
 - **Acceptance criteria:**
   - [ ] Cold-start timing: sleeping service → `/healthz` 200 (3 samples).
-  - [ ] `spike-16` ≤ 5 min at 20/10 Hz and ≤ 5 min at 30/20 Hz on staging (netcode §17 / environments §5 cap; a 10 min run of each is repeated locally for comparison); per run: CPU % of 0.1 quota (EWMA 60 s), tick p50/p95/max, event-loop p99, bytes/client/s by type, `/healthz` p95 latency under load, disconnects.
+  - [ ] `spike-16` ≤ 5 min at 20/10 Hz and ≤ 5 min at 30/20 Hz on the one Render Free service during an isolated, Cee-authorized test window (netcode §17 / environments §5 cap; a 10 min run of each is repeated locally for comparison); per run: CPU % of 0.1 quota (EWMA 60 s), tick p50/p95/max, event-loop p99, bytes/client/s by type, `/healthz` p95 latency under load, disconnects.
   - [ ] Verdict inputs: one 16-bot room > 50 % CPU at 20 Hz → revisit trigger fires (M0-W4-T02); egress per room-hour vs performance-budgets §6.2.
   - [ ] Total egress used by the test recorded (expected ≈ 0.3 GB of the 5 GB month).
   - [ ] M0 server verifications recorded: Render **health-check traffic** (instance-seconds consumed by `healthCheckPath`; drop it from `render.yaml` if it keeps the instance awake, environments §4.1); the **client-IP header** Render actually sends (confirm `CLIENT_IP_HEADER` default `true-client-ip`) with a **forged `X-Forwarded-For` test** (security §5, §11); **GC/heap flags** evaluated under the 16-bot load (max GC stall traced ≤ 50 ms; `NODE_OPTIONS` changed only on evidence); precomputed grid binaries build step noted for M1 (netcode §15).
@@ -492,7 +492,7 @@ flowchart LR
 - **Input contracts:** bench scene URL params (M0-W2-T02) plus `?terrain=real` (M0-W3-T07).
 - **Depends on:** M0-W3-T03, M0-W3-T04, M0-W3-T07 (look-dev v0, regolith material, real height cube all landed).
 - **Acceptance criteria:**
-  - [ ] Matrix: Tier A High WebGPU; Tier B Medium and Low WebGPU (**the Tier B device named at hardware input, OPEN_QUESTIONS Q21**; fallback: the Tier A laptop's iGPU forced through Windows *Graphics settings → Power saving*, named in the report, verdict marked provisional); `webgl2` Low (Tier C) **including a capture of the real terrain shader** (frame time per pass + one screenshot, to size the `webgl2` TSL cost, performance-budgets §10); draws 200/350/600/900; paths P1 and P3; run with `?terrain=real` (the stand-in run from W2-T06 is kept only as a comparison column).
+  - [ ] Matrix: Tier A High WebGPU; Tier B Medium and Low WebGPU (**OPEN_QUESTIONS Q21:** no Tier A or Tier B reference device exists; run the matrix on Cee's Intel UHD 620 laptop, label it a provisional below-Tier-B worst case, and record Tier A/B verdicts BLOCKED); `webgl2` Low (Tier C) **including a capture of the real terrain shader** (frame time per pass + one screenshot, to size the `webgl2` TSL cost, performance-budgets §10); draws 200/350/600/900; paths P1 and P3; run with `?terrain=real` (the stand-in run from W2-T06 is kept only as a comparison column).
   - [ ] Per cell: frame p50/p95/p99, CPU render submit ms, total render-related CPU ms, GPU ms per pass, pipelines after warm-up, GPU memory ledger.
   - [ ] Explicit trigger check: WebGPU-path render CPU > 6 ms on Tier B at the Tier B budget (350 draws) → M0-W4-T01 fires. The terrain pass GPU line (budget 7.0 ms of 28 ms on B) is reported separately.
   - [ ] Pre-declared Tier B fallback ladder, applied in this order if the terrain line fails and re-measured after each step: 2 detail layers → screen-derivative normals → render-scale floor 0.5; the verdict records which rung was needed.
@@ -601,7 +601,7 @@ flowchart LR
 - **Read first:** tech-stack §3; netcode.md §15; M0-W3-T01 results; ADR-0014.
 - **Input contracts:** `LoadTestRoom` workload definition (M0-W2-T03).
 - **Depends on:** M0-W3-T01 (trigger fired).
-- **Acceptance criteria:** same workload and metrics; `spike-16` run on staging (Cee deploys the prototype on a `proto/netcode-edge` branch to staging temporarily); `prototypes/netcode-edge/BENCHMARK.md` by `performance-reviewer`.
+- **Acceptance criteria:** same workload and metrics; `spike-16` run locally in the CPU-limited container; a hosted run only if Cee chooses to deploy the prototype to the one service during an isolated test window (ADR-0029, no staging service); `prototypes/netcode-edge/BENCHMARK.md` by `performance-reviewer`.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `performance-reviewer`, `netcode-security-reviewer`, `code-reviewer`.
 - **Definition of done:** Standard DoD + lead ADR (keep Colyseus edge or replace in M1-W4).
@@ -622,6 +622,6 @@ flowchart LR
 
 1. *(resolved)* `docs/STATUS.md` and `docs/handoff/FABLE_KICKOFF.md` exist.
 2. *(cross-file, module-boundaries §3 — owned by another agent)* The app build files (`apps/*/package.json` scripts, `apps/client/vite.config.ts`, `apps/client/index.html`, `apps/client/src/main.ts`, `apps/server/build.config.*`), the two T03 bootstrap stubs (`apps/client/src/app/boot.ts`, `apps/server/src/app/index.ts`, devops-engineer until M0-W1-T06, then integrator), `pnpm-lock.yaml`, `eslint.config.*`, Prettier files, `.prettierignore`, `.editorconfig`, `.gitignore`, `.gitattributes`, root `tsconfig.json`/`vitest.config.*` all need explicit rows with owner devops-engineer. `.claude/hooks/**` and `docs/vendor/**` are already there. Also delete "tsconfig bases" from `packages/config` in §3 (the root `tsconfig.base.json` is the single base).
-3. Tier B hardware: OPEN_QUESTIONS Q21 is an **external input**, answered when measurement needs it (see §4). If no real iGPU laptop is available, the spike runs on the Tier A laptop's integrated GPU (Windows power-saving GPU preference / Chrome low-power adapter) and the verdict marks Tier B as **provisional** until a real Iris Xe / Arc 140V / 780M run (performance-budgets §10 item 3).
+3. Hardware: OPEN_QUESTIONS Q21 is resolved — the only machine is an Intel UHD 620 laptop (no dGPU). The spike runs there as a provisional below-Tier-B worst case; Tier A and true Tier B (Iris Xe / Arc 140V / 780M) verdicts stay BLOCKED until a reference device is available (performance-budgets §10 item 3). Targets are not lowered.
 4. *(resolved)* Earth apparent size is 2.4° (visual-target VT-M0-14 and rendering-pipeline §20 item 11 agree).
 5. *(resolved)* `MAX_ROOMS` is 3 (hard ceiling) in render.yaml, performance-budgets §6 and environments (after the cross-file fix).

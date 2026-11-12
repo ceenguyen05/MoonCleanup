@@ -2,12 +2,14 @@
 
 Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
-Status: **Draft v1 for build (planning, 2026-11-12).** Owner: ui-ux-motion-designer (builds `apps/client/src/ui/**`, `assets/ui/**`). Approver: lead. Cee (owner) may override anything.
-Builds on: [GDD](GDD.md) §7, §8, §9, §10, §12–§16 · [art-direction](art-direction.md) §8 (tokens, type, motion presets, UI accessibility) · [visual-target](visual-target.md) §2.3, §6, VT-M0-10, VT-M1-24/25, VT-M3-06/07/11 · [naming-bible](naming-bible.md) (every label; UI additions in §A10) · [progression-and-economy](progression-and-economy.md) (what each shop and tree shows) · [scope-tiers](scope-tiers.md) (MVP vs v1.0) · [netcode](../architecture/netcode.md) §4, §9, §10, §12, §13, §16 · [system-overview](../architecture/system-overview.md) §2, §3, §4 · [module-boundaries](../architecture/module-boundaries.md) §2, §4 · [rendering-pipeline](../architecture/rendering-pipeline.md) §14, §15 · [audio-direction](audio-direction.md) §2.6, §5, §9 · [security](../architecture/security.md) §3, §8.
+Status: **Draft v1 for build (planning, 2026-11-12), reconciled to the reference-first baseline (ADR-0030, 2026-11-12).** Owner: ui-ux-motion-designer (builds `apps/client/src/ui/**`, `assets/ui/**`). Approver: lead. Cee (owner) may override anything.
+Builds on: [REFERENCE_TARGET](REFERENCE_TARGET.md) · [GDD](GDD.md) §7, §8, §9, §10, §12–§16 · [art-direction](art-direction.md) §8 (tokens, type, motion presets, UI accessibility) · [visual-target](visual-target.md) §2.3, §6, VT-M0-10, VT-M1-24/25, VT-M3-06/07/11 · [naming-bible](naming-bible.md) (every label; UI additions in §A10) · [progression-and-economy](progression-and-economy.md) (what each shop and tree shows) · [scope-tiers](scope-tiers.md) (MVP vs v1.0) · [netcode](../architecture/netcode.md) §4, §9, §10, §12, §13, §16 · [system-overview](../architecture/system-overview.md) §2, §3, §4 · [module-boundaries](../architecture/module-boundaries.md) §2, §4 · [rendering-pipeline](../architecture/rendering-pipeline.md) §14, §15 · [audio-direction](audio-direction.md) §2.6, §5, §9 · [security](../architecture/security.md) §3, §8.
 
-**Title.** **Clean The Moon!** is owner-selected. Use this exact name on the title/loading screens, browser title, metadata and accessibility labels. One display-name source; item labels remain editable.
+**Title.** **Clean The Moon!** is owner-selected. Use this exact name on the title/loading screens, browser title, metadata and accessibility labels. One display-name source; item labels remain editable and stable IDs never change with a label.
 
 **What this file is.** The single build spec for every DOM screen, overlay and HUD widget: layout, data, intents, states, motion, navigation, accessibility and testable acceptance. It does not restate tokens or presets (art-direction §8 is canonical) or numbers (progression-and-economy is canonical); it names them.
+
+**Reference-mode baseline.** Per [REFERENCE_TARGET](REFERENCE_TARGET.md) ("Remove redesign gates from the default baseline"), every screen in §3 describes the default path. Core purchases (tools, vehicles, robots, machines, permits, Refits, Flight Plan, Work Front, Grades) cost Lumens and at most require an ordinary owned item or upgrade. Lock reasons are always **"Costs N LM"** or **"Requires <item>"**; no screen, tooltip or flow gates anything on cleaned percentage, a Performance Review, a Brief or a Pilot Review. Robot UI shows base-rate work, states and visible technical caps (no Effort, On-Shift, Unattended or Bulk Rate UI). The UI may carry the same information and functions as the reference; layouts, art and text are authored by us. Custom ★ screens that used to gate or decorate progression are parked in §11 and no baseline flow depends on them.
 
 ---
 
@@ -15,7 +17,7 @@ Builds on: [GDD](GDD.md) §7, §8, §9, §10, §12–§16 · [art-direction](art
 
 | Item | Convention |
 | --- | --- |
-| Tiers | **MVP** = `v0.2.0` (scope-tiers §1). **v1.0** = `v1.0.0`. **Polish** = between v1.0 and wide release. A widget marked MVP ships in M1; v1.0 items may be stubbed but never shown half-built to players |
+| Tiers | **MVP** = `v0.2.0` (scope-tiers §1). **v1.0** = `v1.0.0`. **Polish** = between v1.0 and wide release. A widget marked MVP ships in M1; v1.0 items may be stubbed but never shown half-built to players. **★** = optional custom progression parked in §11, not built unless pulled in deliberately |
 | IDs | Screens `SCR-nn`, HUD widgets `HUD-nn`, components `C-nn`, flows `FL-n`, screenshot captures `UIS-nn`. Use them in task briefs, tests and reports |
 | Store fields | Written `slice.field` (e.g. `wallet.lm`). §1.3 is the **proposed** shape of `packages/shared/src/ui/store.ts`; contracts-architect owns the file (M1-W0-T03) and may rename fields, in which case this doc follows |
 | Intents | Written `intent.name {payload}`. The UI calls a store action; gameplay/net turn it into the wire message named in §1.4. The UI never sends network messages itself and never touches sim state (ADR-0012) |
@@ -23,7 +25,7 @@ Builds on: [GDD](GDD.md) §7, §8, §9, §10, §12–§16 · [art-direction](art
 | Motion | Spring presets `spring-snap`, `spring-ui`, `spring-soft`, `spring-pop`, `spring-heavy` and the tweens (hover, press, fade, toast, tooltip delay) of art-direction §8.7. **Reduced motion** variants follow art-direction §8.7 (120 ms opacity fades, no shake, no overshoot, no floaters, tick-ups jump with a 1-frame highlight) and are not repeated per screen unless they differ |
 | Tokens | Color, type, spacing, radius, elevation tokens of art-direction §8.2–§8.4 (`ui-glass-bg`, `type-value`, `sp-4`, `r-xl`, `e-1` …) |
 | Device glyphs | `[E]` = the key bound to that action; `(X)` = the gamepad face button by position (A bottom, B right, X left, Y top, Xbox labels; PlayStation glyphs swap in automatically, §1.2) |
-| Wireframes | ASCII, not to scale; proportions indicative at 1920×1080 CSS, HUD scale 100% |
+| Wireframes | ASCII, not to scale; proportions indicative at 1920×1080 CSS, HUD scale 100%; item names, prices and numbers shown are illustrative (game-data is canonical) |
 | Strings | All strings live in one strings module keyed by ID (localization-ready). Names use the editable catalog; familiar generic labels are allowed. DOT lines are dry, polite, literal (GDD §3) |
 
 ---
@@ -38,7 +40,7 @@ Builds on: [GDD](GDD.md) §7, §8, §9, §10, §12–§16 · [art-direction](art
 | L1 | World-label layer | Name tags, Flare Beacon labels, outpost labels, ping markers, Equipment chips, Plot Card outline label | None | Direct per-frame transform writer (rendering-pipeline §15), not React |
 | L2 | HUD | §3.7 widgets | None except interactive notices while the cursor is free | Store (≤ 15 Hz) + local tick-ups + per-frame compass writer |
 | L3 | Panels | Desk, Console, Motor Pool, Parts Catalog, Equipment Card, Plot Card, Roster, Time Card | Yes | Store |
-| L4 | Overlays | Survey Globe chrome, Shift Briefing, Review, Shift Report, Locker, Settings, Handbook, Credits, front-end screens | Yes | Store |
+| L4 | Overlays | Survey Globe chrome, Shift Briefing, Shift Report, Locker, Settings, Handbook, Credits, front-end screens | Yes | Store |
 | L5 | Modals | Confirms, code entry, recovery code, kick/ban | Yes (focus trapped) | Store |
 | L6 | System | Connection and error overlays (§3.22), "Applying settings" | Yes (focus trapped) | Store `session.*` |
 | L7 | Notices | DOT Notices (toasts), callouts, subtitles | Notices only | Store queue |
@@ -82,36 +84,36 @@ The store is a typed external store read with `useSyncExternalStore` selectors (
 | Slice | Fields (type) | Writer | Tier |
 | --- | --- | --- | --- |
 | `session` | `wakeState` (`idle`·`probing`·`awake`·`waking`·`slow_wake`·`records_offline`·`update_required`·`at_capacity`), `wakeElapsedS` (int), `conn` (`offline`·`reserving`·`connecting`·`streaming`·`ready`·`reconnecting`·`restarting`·`closed`), `joinProgress` (0–1), `joinStage` (`seat`·`socket`·`snapshot`·`ledgers`), `closeCode` (int\|null), `closeInfo` (`{by?, reasonCode?, until?}`), `reconnectAttempt` (int), `seatHoldRemainingS` (int), `rttMs` (int), `serverBuild`, `clientBuild`, `protocolCompat` (`ok`·`client_old`·`client_new`), `capacityNotice` (bool) | net | MVP |
-| `profile` | `playerId`, `displayName`, `isGuest` (bool), `pendingRecoveryCode` (string\|null, memory only), `tenureLevel`, `tenureXp`, `tenureXpNext`, `rank`, `commendations`, `certifications` (`{owned[], active[], slots}`), `benefits` (ids[]), `liveryId`, `cosmetics` (`{owned[], equipped{}}`) | net (REST) | MVP: name, guest, recovery, Tenure stub; rest v1.0 |
+| `profile` | `playerId`, `displayName`, `isGuest` (bool), `pendingRecoveryCode` (string\|null, memory only), `tenureLevel`, `tenureXp`, `tenureXpNext`, `rank`, `liveryId`, `cosmetics` (`{owned[], equipped{}}`) | net (REST) | MVP: name, guest, recovery, Tenure stub; rest v1.0 |
 | `contracts` | `items[]` (`{id, name, shiftType, shinePct, lastPlayedAt, members, online, myRole, inviteCode?}`), `ownedCount`, `maxOwned` (1 MVP, 3 v1.0), `status` (`idle`·`loading`·`error`), `error` | net (REST) | MVP |
 | `shiftBoard` | `items[]` (`{contractId, name, holderName, players, maxPlayers, freeSeats, shinePct, languageTag, tempsWelcome}`), `status` | net (lobby room) | v1.0 |
-| `shift` | `contractId`, `contractName`, `shiftType`, `myRole` (`holder`·`supervisor`·`staff`·`temp`), `permissions` (`{tempCanBuild, tempCanSpendShared, tempCanDriveShared}`), `inviteCode`, `briefing` (`{shineDelta, sinceLabel, changes[], nextReview, docket, people[]}`\|null), `report` (`{lm, plots, shineDelta, bestHangTimeS, docket, effortAvg, tenureXp}`\|null) | net | MVP: ids, type, role, invite; briefing/report v1.0 |
+| `shift` | `contractId`, `contractName`, `shiftType`, `myRole` (`holder`·`supervisor`·`staff`·`temp`), `permissions` (`{tempCanBuild, tempCanSpendShared, tempCanDriveShared}`), `inviteCode`, `briefing` (`{shineDelta, sinceLabel, changes[], trackedItem, people[]}`\|null), `report` (`{lm, plots, shineDelta, bestHangTimeS, tenureXp}`\|null) | net | MVP: ids, type, role, invite; briefing/report v1.0 |
 | `wallet` | `lm` (int), `lastDeltas[]` (`{amount, source, at}`, ring of 8), `pendingSpend` (int) | net | MVP |
-| `onShift` | `multiplier` (float, 2 dp), `effortPct` (int), `unattended` (bool), `onBreak` (bool) | net | MVP |
-| `shine` | `polished` (int), `total` (int, 163,842), `pct` (derived, 4 dp), `albedo` (float), `dustRemovedKg` (int), `nextReview` (`{label, index, thresholdPct, remainingPct, briefDone, briefTotal, briefItems[]}`), `pilot` (`{polished, target}` MVP only) | net | MVP |
+| `shine` | `polished` (int), `total` (int, 163,842), `pct` (derived, 4 dp), `albedo` (float), `dustRemovedKg` (int) | net | MVP |
 | `compass` | `outposts[]` (`{id, visited, accent}`), `beacons[]` (`{index, colorId, plotId, label, workFront}`), `pings[]` (`{id, slot, kind, expiresAt}`), `fenceBearing` (MVP) ; † bearings and distances | net + † camera writer | MVP (no beacons) |
 | `holster` | `slots[]` (`{toolId, owned, loaner, cellKg, cellCapKg, cellLevel}`), `active` (index), `slotCount`, `laneLock` (bool), `trait` (`{id, ready}`) | gameplay | MVP |
 | `suit` | `lampLevel` (0–4), `lampMode` (`lamp`·`visor`·`off`), `visorOwned`, `hop` (`{bursts, max, rechargePct}`), `ballast` (`{owned, on}`), `day` (`{isDay, minutesToTerminator}`) | gameplay | MVP: lamp + day ring |
 | `vehicle` | `seated` (bool), `vehicleId`, `payloadKg`, `payloadCapKg`, `boostPct`, `throttleLock`, `wideMouth` (0–3), `puckSlots` (`{used, max}`), `runningLamps` (0–2) | gameplay | MVP (Trundle subset) |
-| `checklist` | `mode` (`induction`·`probation`·`docket`·`none`), `items[]` (`{id, label, progress, target, done}`), `stepIndex`, `nextDocketInS` | net/gameplay | MVP: induction |
+| `checklist` | `mode` (`induction`·`none`), `items[]` (`{id, label, progress, target, done}`), `stepIndex` | net/gameplay | MVP: induction |
 | `nextReq` | `itemId`, `price`, `fundedPct`, `lastPingStep` (25/50/75) | ui + net | v1.0 |
 | `interaction` | `prompt` (`{actionId, label, hold, holdMs, progress, blockedReason?}`\|null) | gameplay | MVP |
-| `roster` | `players[]` (`{playerId, slot, name, colorId, role, onBreak, signalLost, effortPct, isSelf, muted, distanceM}`), `voteKick` (`{targetId, yes, needed, endsAt}`\|null) | net | MVP |
+| `roster` | `players[]` (`{playerId, slot, name, colorId, role, onBreak, signalLost, isSelf, muted, distanceM}`), `voteKick` (`{targetId, yes, needed, endsAt}`\|null) | net | MVP |
 | `notices` | `queue[]` (`{id, kind, priority, textId, params, action?, count, createdAt, ttlMs}`), `visible[]` (ids, ≤ 3) | ui (from events) | MVP |
 | `dot` | `line` (`{textId, params, durationMs}`\|null), `history[]` (last 50), `handbookUnread` (int) | gameplay | MVP |
 | `menus` | `open` (surface id\|null), `stack[]`, `focusReturnId`, `modal` (`{id, props}`\|null) | ui | MVP |
-| `desk` | `items[]` (`{itemId, category, tier, levelOwned, levelMax, listPrice, price, discounts[], standardIssue, gateReview (int or null), roleBlocked, ownedBy?}`), `pending` (requestIds) | net + game-data | MVP |
-| `board` | `nodes[]` (`{nodeId, dept, kind, level, max, nextCost, prereqMet, gateReview, effects[]}`), `flightPlan[]`, `reviews[]` (`{index, thresholdPct, brief[], freeIssue, unlocks[], permits, state}`), `permits` (`{roost, flock, plant}` each `{used, cap}`), `monument` | net + game-data | MVP: 10 board nodes |
-| `motorPool` | `vehicles[]` (`{vehicleId, owned, mine, out, price, repeatPrice, lines{}, refit, gate}`), `poolId` | net | MVP (Trundle) |
+| `desk` | `items[]` (`{itemId, category, tier, levelOwned, levelMax, listPrice, price, discounts[], standardIssue, requires[] (missing prerequisite itemIds), roleBlocked, ownedBy?}`), `pending` (requestIds) | net + game-data | MVP |
+| `board` | `nodes[]` (`{nodeId, dept, kind, level, max, nextCost, prereqMet, requires[], effects[]}`), `caps` (`{roost, albatross, machines}` each `{used, cap}`, from `caps.json`), `flightPlan[]` (★ optional only), `monument` | net + game-data | MVP: 10 board nodes |
+| `motorPool` | `vehicles[]` (`{vehicleId, owned, mine, out, price, repeatPrice, lines{}, refit, requires[]}`), `poolId` | net | MVP (Trundle) |
 | `build` | `active`, `mode` (`place`·`reposition`·`reclaim`), `tab`, `pieceId`, `finishId`, `snap`, `rotDeg`, `validity` (`ok`\|reason), `costLm`, `settle` (`{seconds, progress}`), `railRun` (`{metres, cost}`\|null) | gameplay | v1.0 |
 | `equipment` | `target` (`{entityId, kind, name, state, statusLine, stats[], actions[]}`\|null) | gameplay | MVP (Roost) |
 | `globe` | `open`, `mode` (`browse`·`relay`·`beacon`), `layers` (`{states, heat, robots, beacons, finds, players}`), `hover` (plot summary), `selected`, `punchList[]`, `relay` (`{atPad, destinations[]}`) | ui + net | v1.0 |
 | `assay` | `active`, `slot` (1–4\|null), `queuePos`, `kgPoured`, `kgRemaining`, `rate` (LM/kg after multiplier), `lmRunning`, `railshot` (`{kg, nextAtKg}`) | gameplay + net | MVP |
 | `plotCard` | `open`, `plotId`, `label`, `state`, `remainingPct`, `terrain`, `creditedTo`, `escorted` | gameplay | MVP |
-| `review` | `overlay` (`{kind: review·pilot·fulfilled, index, unlocks[], freeIssue, commendations, permits}`\|null) | net | MVP (Pilot Review) |
 | `achievements` | `items[]` (`{id, unlockedAt?, progress?}`) | net | MVP (3) |
 | `settings` | §3.21 values | ui (local + `PATCH /v1/me` for profile fields) | MVP subset |
 | `input` | `lastDevice`, `bindings` | gameplay | MVP |
+
+**Retired from the baseline store (reference mode):** `onShift` (Flock/Effort/Unattended multiplier state), `shine.nextReview` / `shine.pilot`, `review.overlay`, `board.reviews[]`, `*.gateReview` and the `commendations` / `certifications` / `benefits` profile fields. Core shop and board entries carry `requires[]` (missing ordinary prerequisites) and `price` only. The ★ shapes are kept in §11 for a deliberate later pull-in.
 
 ### 1.4 Intents (UI → action → wire)
 
@@ -139,7 +141,7 @@ The store is a typed external store read with `useSyncExternalStore` selectors (
 | `intent.permissionsSet {…}` | control `set_permissions` (Holder) | Schema patch |
 | `intent.clockOut` | Consented leave (close 4000), then report | `shift.report` |
 | `intent.resite {roostId, target: nearest·here·plotId}`, `intent.ground {entityId, on}`, `intent.workFrontTag {beaconIndex}`, `intent.formationSet {mode}`, `intent.cleanupOrder {plotId}`, `intent.incidentRevert {playerId}`, `intent.convoyRecord …` | *(proposed control messages; not yet in netcode §4.1, see §9)* | *(proposed)* results |
-| `intent.lockerEquip {slot, cosmeticId}`, `intent.lockerBuy {cosmeticId}`, `intent.certificationSet {slot, id}`, `intent.benefitBuy {id}`, `intent.displayNameSet {name}` | `PATCH /v1/me` (+ *(proposed)* `POST /v1/me/purchases`) | profile refresh |
+| `intent.lockerEquip {slot, cosmeticId}`, `intent.lockerBuy {cosmeticId}`, `intent.displayNameSet {name}` (★ `intent.certificationSet`, `intent.benefitBuy`: §11) | `PATCH /v1/me` (+ *(proposed)* `POST /v1/me/purchases`) | profile refresh |
 | `intent.recoveryRotate` | *(proposed)* `POST /v1/me/recovery-code/rotate` | new code shown once |
 | `intent.settingsSet {key, value}` | Local storage + quality service; profile-scoped keys via `PATCH /v1/me` | applied |
 
@@ -155,7 +157,7 @@ Every intent that hits the server carries a `requestId` (uuid) when the wire mes
 | Albedo / dust removed | Albedo 3 decimals; dust removed in kg (< 10 t) or t (1 decimal) | `albedo 0.112 · 4.8 t removed` |
 | Mass | kg with 1 decimal below 100 kg, integer above; t above 10,000 kg | `7.4 kg`, `118 kg`, `2.6 t` |
 | Durations | `m:ss` below 1 h, `h:mm` above | `0:42`, `1:05` |
-| Multipliers | `×` + 2 decimals | `Flock ×2.04` |
+| Multipliers | `×` + 2 decimals | `Rate ×1.05` |
 | Plot ID | JetBrains Mono, `Plot 41-207` | — |
 | Numerals | Always `font-variant-numeric: tabular-nums`; digit columns have a fixed width so values never shift layout | — |
 
@@ -175,21 +177,23 @@ Every intent that hits the server carries a `requestId` (uuid) when the wire mes
 | SCR-08 | **Time Card** (pause menu) | MVP | L4 | Esc / Menu in Play | Resume, Handbook, Settings, Roster, Clock Out (the world keeps running) |
 | SCR-09 | **Shift Roster** + moderation (roles, kick, ban, vote-kick, Incident Report, shift type, invite) | MVP (Holder kick/ban, invite) · v1.0 (roles, votes, Revert, Open) | L3 | Tab / hold View | Who is here; keep the shift safe |
 | SCR-10 | **Requisitions Desk** | MVP | L3 | [E] at the desk | Buy tools, suit gear, Remote Assay |
-| SCR-11 | **Ops Console** → **Promotions Board**, **Flight Plan**, **Reviews**, **Permits**, **Brightside Monument** | MVP (board subset, Reviews) · v1.0 | L3 | [E] at the console | Shared upgrades and contract milestones |
+| SCR-11 | **Ops Console** → **Promotions Board**, **Flight Plan**, **Permits**, **Brightside Monument** | MVP (board subset) · v1.0 | L3 | [E] at the console | Shared upgrades, robot upgrades and entity caps |
 | SCR-12 | **Motor Pool** | MVP (Trundle) · v1.0 | L3 | [E] at a Motor Pool | Buy, recall, upgrade vehicles; Refits |
 | SCR-13 | **Parts Catalog** (Assembly Gun build menu) + build-mode HUD | v1.0 | L3 + L2 | [X] draw Assembly Gun, then [Tab] | Place / Reposition / Reclaim 98 pieces in 5 tabs |
 | SCR-14 | **Equipment Card** (Roost, Nest, machines, Gates, power, Motor Pool status) | MVP (Roost) · v1.0 | L3 | [E] on equipment; Survey Globe robot layer | State, "Why isn't this working?" status line, actions (Re-site, Ground) |
 | SCR-15 | **Survey Globe** (plot states, heat, robots, beacons, finds, Punch List, Relay mode) | v1.0 | L0 + L4 | [M] / View; [E] at a Relay Pad (Relay mode) | Navigate the whole Moon; the last-1% toolkit |
 | SCR-16 | Assay Counter pour UI (**Assay Slip**) | MVP | L2 | Hold [E] at a free pour slot | Satisfying weigh-and-pay feedback |
 | SCR-17 | **Plot Card** | MVP | L2 + L1 | [C] / D-pad Up tap | Plot ID, state, % remaining, credit |
-| SCR-18 | Moments: Inspector's Stamp callout, **Performance Review** / Pilot Review overlay, **Contract Fulfilled**, **Shift Report** | MVP (Stamp, Pilot Review) · v1.0 | L4/L7 | Events | Celebrate progress; close the session loop |
-| SCR-19 | **Locker** (**Personnel File**, suit cosmetics, liveries, Tenure, Commendations, Certifications, Benefits Package, account) | MVP stub · v1.0 | L4 | Title → Locker; Time Card → Locker | Profile and cosmetics; nothing paid |
+| SCR-18 | Moments: Inspector's Stamp callout, **Contract Fulfilled**, **Shift Report** | MVP (Stamp) · v1.0 | L4/L7 | Events | Celebrate progress; close the session loop |
+| SCR-19 | **Locker** (**Personnel File**, suit cosmetics, liveries, Tenure, account) | MVP stub · v1.0 | L4 | Title → Locker; Time Card → Locker | Profile and cosmetics; nothing paid |
 | SCR-20 | Achievements | MVP (3) · v1.0 (33) | L4 | Locker tab | Progress and unlocks |
 | SCR-21 | **Settings** (Graphics, Controls, Audio, Accessibility, Interface) | MVP subset · v1.0 | L4 | Title / Time Card | Presets, rebinding, volumes, accessibility |
 | SCR-22 | Connection and error overlays (**Signal Lost**, server restart, kicked, banned, shift full / at capacity, version mismatch, idle timeout, duplicate session, contract unavailable, rate limited, unsupported browser, generic) | MVP | L6 | `session.*` | Clear, calm, recoverable failures |
 | SCR-23 | Credits (incl. NASA, LOLA, HYG attributions) | MVP | L4 | Title → Credits | Accurate credits and disclosure |
 | SCR-24 | **DOT Handbook** | MVP | L4 | [H] / Time Card | Illustrated manual + DOT message log |
 | SCR-25 | Chat (Private Shifts) | v1.0 | L3 | [Enter] | Rate-limited text chat with mute/report/Read Aloud; never in Open Shifts at MVP rules |
+
+Parked in §11 (★, not in the reference-mode baseline): Performance Review / Pilot Review banner, Reviews tab, Next Review chip, Shift Docket and Probation, Commendations, Certifications and Benefits Package screens, Final Walkthrough, and the On-Shift chip. No SCR/HUD entry above depends on them.
 
 ---
 
@@ -392,18 +396,13 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 |  Since your last shift (2 days)           |
 |   Shine  1.1820% -> 1.2041%   (+0.0221)   |  <- tick-up
 |   New: Bulldust (Ana), Densifier II       |
-|  Next: Performance Review 2 at 5%         |
-|   3.80% to go  ·  Brief 1/2               |
-|   [x] Hand-Stamp 5 Steep plots            |
-|   [ ] Run a Kiln through a full night     |
-|  Shift Docket (3)                         |
-|   Stamp 12 plots near Beacon Amber  4/12  |
+|  Tracked: Lane Broom  71% funded          |
 |  On shift: Ana, Rosa (+2)                 |
 |                     [ Continue (A) ] 7 s  |
 +------------------------------------------+
 ```
 
-| Components | C-07 meters (join steps, Review distance), C-08 counters, C-10 compact list, C-01 button with auto-continue ring |
+| Components | C-07 meters (join steps, tracked-item funding), C-08 counters, C-10 compact list, C-01 button with auto-continue ring |
 | --- | --- |
 | Data | `session.joinStage`, `session.joinProgress`, `shift.briefing` |
 | Actions | Continue / any gameplay input → dismiss. No intents |
@@ -415,16 +414,16 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 ### 3.7 SCR-07 In-game HUD (MVP subset, v1.0 full)
 
 **Purpose.** Everything a Custodian needs at a glance, nothing more (art-direction P5: premium, quiet). Diegetic first: the Dust Cell window on the hip and vehicle payload windows carry the same information as HUD-05/HUD-15.
-**Layout decision.** This spec follows the **GDD §10 zone map** (wallet top-left, Shine top-right, Holster bottom-right, suit bottom-left), which is newer and more complete than art-direction §8.6 (Shine top-left, LM top-right, Cell + Holster bottom-left, suit bottom-right). technical-artist aligns art-direction §8.6 to this table (§9, open issue U1). Toasts sit top-center **under** the compass. Originality: no reference HUD layout is documented (visual-analysis: no HUD in store shots), and nothing here copies a reference widget: no single "dust gauge" bar (our Cell gauges live per Holster slot), no orange/blue/green map colours, no waypoint counter.
+**Layout decision.** This spec follows the **GDD §10 zone map** (wallet top-left, Shine top-right, Holster bottom-right, suit bottom-left), which is newer and more complete than art-direction §8.6 (Shine top-left, LM top-right, Cell + Holster bottom-left, suit bottom-right). technical-artist aligns art-direction §8.6 to this table (§9, open issue U1). Toasts sit top-center **under** the compass. Reference parity: the HUD may carry the same information and functions as the reference (wallet, carried-dust gauge, tool/holster, map and waypoint travel, notices); layout, art and text are our own authored design (REFERENCE_TARGET), and nothing is traced from reference UI artwork.
 
 ```
 1920 x 1080 CSS, HUD scale 100%, safe area 32 px (48 px bottom with subtitles)
 +--------------------------------------------------------------------------------------------+
 | [*] 48 210 LM        <=====  N  ..Boreal.. | ..o Amber..  E  ..^nearest 420 m..  =====>      |
 |   +1 250 LM  (floater)               HUD-03 compass strip (640 px)        SHINE  0.0372%   |
-| ( Flock x2.04 · Effort 100% )                                        albedo 0.112 · 4.8 t  |
-|   HUD-01 wallet / HUD-02 chip      +-----------------------------+   ( Review 2 at 5% ·    |
-|                                    | o Requisition approved      |     3.80% to go · 1/2 ) |
+|                                                                      albedo 0.112 · 4.8 t  |
+|   HUD-01 wallet                    +-----------------------------+                         |
+|                                    | o Requisition approved      |                         |
 |                                    |   Lane Broom   -750 LM      |   HUD-04                |
 |                                    +-----------------------------+                         |
 |                                    | o Roost idle: patch Polished|   ON SHIFT  4  ((o))    |
@@ -436,7 +435,7 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 |     -> Outpost Boreal  38 m                        PLOT STAMPED                            |
 | NEXT REQUISITION (v1.0)                          +50 LM  Plot 41-207        HUD-09 callout  |
 | Lane Broom  ====|====|===--  71%                                                            |
-| HUD-07 checklist / Docket                                                                  |
+| HUD-07 checklist                                                                           |
 |                                                                                            |
 |                                     ( Lane Lock )  HUD-12                                  |
 |                                   [E] Hold to pour   ====---   HUD-11 prompt                |
@@ -454,12 +453,12 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 | ID | Widget | Tier | Zone (anchor) | Content | Data | Update |
 | --- | --- | --- | --- | --- | --- | --- |
 | HUD-01 | **LM wallet** | MVP | Top-left | Sunburst glyph + `type-wallet` value + "LM"; income floaters; spend tick-down | `wallet.lm`, `wallet.lastDeltas` | Tick-up (local, rAF) |
-| HUD-02 | **On-Shift chip** ("Flock ×2.04 · Effort 100%") | MVP | Under HUD-01 | Flock multiplier + own Effort; amber "Unattended ×0.5"; "On Break" grey | `onShift.*` | ≤ 2 Hz |
+| HUD-02 | *(Retired from the reference-mode baseline; ID kept so HUD numbering stays stable. Optional ★ On-Shift chip: §11.)* | ★ | — | — | — | — |
 | HUD-03 | **Compass strip** | MVP (outposts, nearest arrow, pings, fence) · v1.0 (12 Flare Beacons, Work Fronts, vehicle, Relay) | Top-center, 640 px | Heading ticks every 15°, N/E/S/W; markers with distance on the 3 nearest; nearest-outpost arrow | `compass.*` + † bearings | † per frame |
-| HUD-04 | **Shine Index** + albedo + **Next Review chip** | MVP (Pilot Review chip) | Top-right | `type-value` 4-decimal %; secondary line albedo + dust removed; chip "Review 2 at 5% · 3.80% to go · Brief 1/2" (MVP: "Pilot Review · 12/25 plots · Brief 3/6") | `shine.*` | Tick-up on change; text ≤ 10 Hz |
+| HUD-04 | **Shine Index** + albedo | MVP | Top-right | `type-value` 4-decimal %; secondary line albedo + dust removed | `shine.*` | Tick-up on change; text ≤ 10 Hz |
 | HUD-05 | **Holster** with per-slot **Cell** gauges | MVP (1–2 slots) · v1.0 (≤ 6) | Bottom-right | Slot cards 64×80 (active 96×112): tool glyph, slot number glyph, vertical Cell fill + `kg / cap`, trait-ready dot, Loaner tag | `holster.*` | ≤ 15 Hz, fill interpolated |
 | HUD-06 | **Suit strip** + day/night ring | MVP (Lamp, ring) · v1.0 (Visor, Hop, Soles) | Bottom-left | Lamp level / Visor / off icon; Hop bursts as pips with recharge arc; Soles on/off; ring showing day/night fraction + "12 min to dusk" | `suit.*` | ≤ 4 Hz |
-| HUD-07 | **Checklist / Shift Docket** + **Next Requisition** | MVP (Induction) · v1.0 (Probation, Docket, Next Requisition) | Left edge, vertically centered | Title + 1–3 items with progress; directions line for the active step; tracker bar with 25/50/75 ticks | `checklist.*`, `nextReq.*` | On change |
+| HUD-07 | **Checklist** + **Next Requisition** | MVP (Induction) · v1.0 (Next Requisition) | Left edge, vertically centered | Title + 1–3 items with progress; directions line for the active step; tracker bar with 25/50/75 ticks | `checklist.*`, `nextReq.*` | On change |
 | HUD-08 | **DOT Notices** (toasts) | MVP | Top-center under HUD-03, 400 px | ≤ 3 stacked; amber DOT light; optional action key | `notices.*` | Queue (§5.2) |
 | HUD-09 | **Callouts & banners** | MVP (Stamp) · v1.0 (tricks, Review, Fulfilled) | Center, upper third | "PLOT STAMPED +50 LM", "Moonshot! +100 LM", Review banner | events | Event-driven |
 | HUD-10 | **Subtitles / captions** | MVP | Bottom-center | DOT speaker tag (mono, `dot-amber`) + ≤ 2 lines × 42 chars; captions in brackets | `dot.line` | Per line |
@@ -478,15 +477,15 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 
 **HUD-01 LM wallet.** Tick-up per art-direction §8.7: duration = clamp(350 + 220·log10(|Δ|), 350, 1200) ms, ease-out-expo; digits roll in fixed-width tabular columns inside a `overflow: clip` mask; ≥ 3 increments within 500 ms merge into one tick-up (the target updates, the animation re-times from the current displayed value). Income: value flashes `lumen-gold` and fades over 600 ms; a "+1 250 LM" floater (`type-value-s`, `lumen-gold`) rises 24 px over 900 ms and fades from 70 % of its path; floaters of the same source within 500 ms merge (max 2 floaters alive). Spend: tick-down 300 ms, no gold flash, no floater; a teammate's spend shows the floater "−750 LM" in `ui-text-2` so wallet drops are never mysterious. Width reserves 10 digit columns (no resize as values grow). Tooltip (cursor mode): exact value and last 8 deltas with sources. `aria-label`: "Shift wallet, 48,210 Lumens"; changes are **not** announced (too frequent) except purchases (via notices).
 
-**HUD-02 On-Shift chip.** States: active (glass chip, `ui-text-1`, Flock multiplier in `brand-teal-hi`); **Unattended** (amber `warn` outline + text "Unattended ×0.5" — shown when nobody's Effort > 0; you will rarely see it yourself, but returning players do); **On Break** (own; grey, "On Break · Effort 0%"). Multiplier changes cross-fade (no tick-up; it's a rate, not a balance). First time Unattended is seen: DOT tip (GDD §14).
+**HUD-02 (retired from the baseline).** The On-Shift chip (Flock multiplier, Effort, Unattended ×0.5) is not part of reference mode: active room robots work at their calibrated base rate independent of manual cleaning or player count, so there is nothing to show. The slot ID is kept so HUD-03…HUD-20 and test references stay stable; the preserved spec is §11 ★-01.
 
 **HUD-03 Compass strip.** A 640 px strip showing ±90° around the camera heading; markers are SVG glyphs positioned by a per-frame writer (`transform: translate3d(round(x·dpr)/dpr px, 0, 0)`), never via React re-render. Marker set: 4 outposts in their accent colours (Boreal ice-blue, Austral sand, Dawnside warm gold, Duskside violet, art-direction §7.1) with a visited/unvisited outline; the **nearest-outpost arrow** (always visible; clamps to the strip edge with a chevron when behind); 12 Flare Beacons as coloured diamonds with their index numeral (all at once, GDD §6); Work Fronts (teal ring); pings (player colour, 8 s life, pulse once); own vehicle (v1.0); the Pilot Fence bearing as a hatched band when within 100 m of the fence (MVP). Distances for the 3 nearest markers in `type-caption` ("420 m"). Overlapping markers stack vertically (max 2 rows) instead of overlapping.
 
-**HUD-04 Shine Index.** Label "SHINE" (`type-caption`, uppercase +0.06em), value `type-value` with 4 decimals; secondary line albedo + dust removed (moves from the very first stroke, GDD §6). On every own-credited Inspector's Stamp the value pulses ivory (`brand-ivory` glow 400 ms) and ticks up (2 decimals during the roll, lands on 4). Flock and teammate stamps tick without the pulse; ≥ 3 stamps within 2 s merge. The Next Review chip shows the next Review and Brief progress; tapping (cursor mode) opens Ops Console → Reviews read-only (v1.0).
+**HUD-04 Shine Index.** Label "SHINE" (`type-caption`, uppercase +0.06em), value `type-value` with 4 decimals; secondary line albedo + dust removed (moves from the very first stroke, GDD §6). On every own-credited Inspector's Stamp the value pulses ivory (`brand-ivory` glow 400 ms) and ticks up (2 decimals during the roll, lands on 4). Flock and teammate stamps tick without the pulse; ≥ 3 stamps within 2 s merge.
 
 **HUD-05 Holster.** One card per Holster slot (Holster Rig level: 1 slot in hand without a rig, 2–6 with it). Each card: tool glyph (custom SVG, 32 px), slot glyph (`1`–`6` / LB·RB hint on the active neighbours), **Cell gauge** as a vertical fill in the card's right gutter (colour: teal 0–79 %, `warn` 80–99 %, `danger`-outlined and "FULL" at 100 % with the DOT tip once), `kg` value under the active card only (`type-value-s`, "7.4 / 14 kg"). Active card is enlarged by layout (96×112 vs 64×80), **not** by `transform: scale` (crispness rule). Slot change: the active card swaps with `spring-snap` (layout animation) and the tool glyph does a 4 px rise. Loaner tools (Temps) carry a "Loaner" chip. A Standard Issue tool shows a small "SI" corner tag in the Desk only, not here.
 
-**HUD-07 Checklist / Docket.** One block, three modes: **Induction** (8 steps, GDD §14; shows `n/8`, the current step large, the next step greyed, the previous ✓ step fading out), **Probation** (v1.0), **Shift Docket** (v1.0, 3 shared goals with progress `4/12`; "New Docket in 12:40" when complete). Completed items: check draws (240 ms), row collapses with `spring-ui` after 1.5 s, Tenure XP floater "+25 XP" in `brand-ivory`. Directions line for location steps ("→ Assay Counter · 38 m") ties into HUD-03 (the target gets a temporary compass marker). The block auto-collapses to its header after 20 s without progress and re-expands on progress or on hover / [H]-hold (keeps the left edge clean). **Next Requisition** (v1.0): item glyph + name + bar with 25/50/75 % ticks; reaching a tick plays a soft ping and a P3 notice "Lane Broom 50% funded".
+**HUD-07 Checklist.** One block: **Induction** (8 non-blocking guide steps, GDD §14; nothing is locked behind it, it can be hidden, and DOT may suggest a purchase but never gates one; shows `n/8`, the current step large, the next step greyed, the previous ✓ step fading out). ★ Probation and Shift Docket modes are optional custom progression, not part of the baseline (§11 ★-03). Completed items: check draws (240 ms), row collapses with `spring-ui` after 1.5 s, Tenure XP floater "+25 XP" in `brand-ivory`. Directions line for location steps ("→ Assay Counter · 38 m") ties into HUD-03 (the target gets a temporary compass marker). The block auto-collapses to its header after 20 s without progress and re-expands on progress or on hover / [H]-hold (keeps the left edge clean). **Next Requisition** (v1.0): item glyph + name + bar with 25/50/75 % ticks; reaching a tick plays a soft ping and a P3 notice "Lane Broom 50% funded".
 
 **HUD-09 Callouts.** "PLOT STAMPED" (`type-callout`) + "+50 LM · Plot 41-207" (`type-value-s`) for **own-credited** stamps only; enters with `spring-pop` (scale 0.92 → 1, 12 % overshoot), holds 1.2 s, exits fade 160 ms + 8 px rise. Streaks within 60 s add "×2", "×3" (matching the audio pitch climb, GDD §11). Trick callouts (v1.0) use the same component with the trick name (Hang Time, Moonshot!, Lunar Loop, Corkscrew, Faceplant) and the capped payout. Review and Fulfilled use banners (§3.18). At most one callout visible; a newer one replaces the older with a 120 ms cross-fade.
 
@@ -496,7 +495,7 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 
 **HUD-15 Vehicle cluster.** Replaces the Holster with the same footprint: Payload gauge (horizontal, `kg / cap`, matches the payload window), boost meter (Afterburner), puck slot pips, Throttle Lock pill, Wide Mouth level pips, Running Lamps icon. Entering a vehicle: Holster slides down 12 px + fades while the cluster rises (`spring-ui`). "Full" state as the Cell gauge.
 
-**HUD-16 Mini roster.** Up to 4 names nearest to you (players in a vehicle with you first), each with a player-colour pip **and numeral glyph** (colour-blind identity, art-direction §4.4), On Break hollow pip, Signal lost flicker glyph. Connection glyph (3 bars) shows `rttMs` bands < 120 / 120–250 / > 250 ms; amber when a frame gap > 250 ms occurred in the last 5 s.
+**HUD-16 Mini roster.** Up to 4 names nearest to you (players in a vehicle with you first), each with a player-colour pip **and numeral glyph** (colour-blind identity, art-direction §4.4), On Break hollow pip (an informational idle flag; it changes no rates or payouts), Signal lost flicker glyph. Connection glyph (3 bars) shows `rttMs` bands < 120 / 120–250 / > 250 ms; amber when a frame gap > 250 ms occurred in the last 5 s.
 
 **HUD visibility rules.** Hide-all toggle ([F7] by default; no gamepad default, bindable in Settings; photo mode hides everything). In first person the layout is unchanged. When a panel (L3) is open the HUD keeps HUD-01, HUD-04 and HUD-08 visible (wallet and notices matter while shopping) and fades the rest to 0 (fade 160 ms). In the Survey Globe only HUD-01, HUD-08 and the globe chrome are visible.
 
@@ -513,7 +512,6 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 |  On shift      0:42           |
 |  Earned        +3 410 LM      |
 |  Stamped       2 plots        |
-|  Effort        86%            |
 |  ---------------------------  |
 |  > Resume               (B)   |
 |    DOT Handbook          H    |
@@ -527,8 +525,8 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 
 | Components | C-02 panel (left-anchored, 360 px), C-11 stat rows with C-08 counters, C-01 list buttons |
 | --- | --- |
-| Data | Session stats (local accumulation from events: `cargo.sold`, `plot.polished`), `onShift.effortPct`, `shift.contractName`, `shift.myRole` |
-| Actions | Clock Out → confirm modal ("Clock Out? Robots keep working at the Unattended rate while anyone is on shift.") → `intent.clockOut`. Copy invite link → clipboard + notice |
+| Data | Session stats (local accumulation from events: `cargo.sold`, `plot.polished`), `shift.contractName`, `shift.myRole` |
+| Actions | Clock Out → confirm modal ("Clock Out? Robots keep working while anyone is on shift.") → `intent.clockOut`. Copy invite link → clipboard + notice |
 | States | While Signal Lost: Clock Out still works (local leave). MVP: no Shift Report; Clock Out lands on SCR-04 with a P2 notice "Clocked out. +3 410 LM this shift." |
 | Motion | Panel `spring-ui` from x −16 px; the world behind gets `ui-scrim` at 0.35 (not blurred) fading 200 ms |
 | Navigation | Initial focus: Resume. Order top-down. Esc/(B)/Menu closes |
@@ -543,11 +541,11 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 +------------------------------------------------------------------------------------+
 |  SHIFT ROSTER    Luna Pilot · Private Shift · 5/16          [Invite: MC-7Q4K-2 ][Copy]|
 |------------------------------------------------------------------------------------|
-|  #   NAME            ROLE         STATUS            EFFORT   NEAR                   |
-|  1  * You (Casey)    Holder       Sweeping           100%    Boreal                |
-|  7  * Ana            Supervisor   Driving Bulldust    92%    Boreal  1.2 km        |
-|  4  * Rosa           Staff        On Break             0%    Boreal                |
-|  11 * Kit            Temp         Signal lost (0:41)   --    --                    |
+|  #   NAME            ROLE         STATUS             NEAR                           |
+|  1  * You (Casey)    Holder       Sweeping           Boreal                        |
+|  7  * Ana            Supervisor   Driving Bulldust   Boreal  1.2 km                |
+|  4  * Rosa           Staff        On Break           Boreal                        |
+|  11 * Kit            Temp         Signal lost (0:41) --                            |
 |------------------------------------------------------------------------------------|
 |  Row actions (X):  Mute · Report · Appoint · Kick · Ban · Incident Report          |
 |  Holder:  Shift type [Solo|Private|Open]   Temp permissions (v1.0)   Bans (2)      |
@@ -595,36 +593,38 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 
 | Components | C-03 tabs, C-14 item cards (grid), C-02 detail pane, C-18 stat comparison rows (current → new, better in `ok`), C-19 price tag, C-01 primary (+ hold variant), C-04 tooltip |
 | --- | --- |
-| Data | `desk.items[]` (ids, tier, levels, list price, effective price after Rebate / Repeat Requisition, Standard Issue, Review gate, role block, owned), `wallet.lm`, `holster.*` (for comparisons), `shift.myRole` |
-| Tabs and what they show | **Hand tools** (6 + Assembly Gun): owned / Standard Issue / price; detail compares against the best owned tool (width, Depth, reach, stroke time, Cell base, area rate Highland and Moon mix, trait text). Repeat Requisition shows "40% of list: another Custodian already owns one". **Suit gear** (shared, 5 lines, 14 levels): one card per line with level pips (Holster Rig 5, Hop Pack 3, Ballast Soles 1, Crown Lamp 4 with level names, Lowlight Visor 1); detail shows next level effect and cost; "Shared: buys it for the whole shift". **Add-ons**: Remote Assay (Review 2 gate, or Review 1 with Courier Pass); gate chip "Unlocks at Performance Review 2" |
+| Data | `desk.items[]` (ids, tier, levels, list price, effective price after Rebate / Repeat Requisition, Standard Issue, missing prerequisites, role block, owned), `wallet.lm`, `holster.*` (for comparisons), `shift.myRole` |
+| Tabs and what they show | **Hand tools** (6 + Assembly Gun): owned / Standard Issue / price; detail compares against the best owned tool (width, Depth, reach, stroke time, Cell base, area rate Highland and Moon mix, trait text). Repeat Requisition shows "40% of list: another Custodian already owns one". **Suit gear** (shared, 5 lines, 14 levels): one card per line with level pips (Holster Rig 5, Hop Pack 3, Ballast Soles 1, Crown Lamp 4 with level names, Lowlight Visor 1); detail shows next level effect and cost; "Shared: buys it for the whole shift". **Add-ons**: Remote Assay (costs LM and requires its listed equipment prerequisite from game-data); lock chip "Requires <item>" |
 | Actions | Requisition → `intent.purchase {itemId}` (purchase flow FL-5). Hold-to-approve (0.6 s) when price ≥ 50 % of the wallet or ≥ 1M LM (shared-wallet courtesy). (Y) Track → sets Next Requisition (v1.0). Equip happens automatically into the next free Holster slot (or swaps the in-hand tool when no rig) |
-| States | Card states (C-14): owned, Standard Issue, affordable, unaffordable (price in `ui-text-2`, shows "need 1 240 LM more"), gated ("Review 2"), role-blocked (Temp: "Temps use the Loaner Kit"), maxed, pending (spinner after 150 ms), sold-out-by-permit (n/a here). **Loading**: catalogue comes from game-data (local), only owned/levels from the store, so no skeleton beyond the first frame. **Error**: `purchase_result` codes → §3.10.1 |
+| States | Card states (C-14): owned, Standard Issue, affordable, unaffordable (price in `ui-text-2`, shows "need 1 240 LM more"), locked ("Requires <item>"), role-blocked (Temp: "Temps use the Loaner Kit"), maxed, pending (spinner after 150 ms), sold-out-by-permit (n/a here). **Loading**: catalogue comes from game-data (local), only owned/levels from the store, so no skeleton beyond the first frame. **Error**: `purchase_result` codes → §3.10.1 |
 | Motion | Panel enters `spring-soft` (scale 0.98 → 1 + fade; transform cleared at rest). Card hover 100 ms lift 2 px; selection outline `spring-snap`. Purchase timeline = art-direction §8.7 (press 0.97 → LM tick-down → teal glow + check draw → "Requisition approved" notice → item slides into the Holster). Insufficient: 6 px × 3 shake over 300 ms + `danger` outline |
 | Navigation | Initial focus: first unowned affordable item in the current tab (else the first card). Grid: D-pad/arrows spatial; LB/RB (Q/E) tabs; (A) on a card focuses the detail's primary button; second (A) buys; (Y) track; (B) back to grid, then closes |
 | Accessibility | Cards `role="option"` in a listbox per tab with state in the label ("Lane Broom, tier 4, 750 Lumens, affordable"); the purchase result is announced (`aria-live="polite"`); hold-to-approve has a non-hold alternative in Settings ("Confirm with a second press") |
 
 #### 3.10.1 Purchase failures (shared by every shop surface)
 
+Lock reasons on every shop surface use exactly two forms: **Costs N LM** (cannot afford yet) and **Requires <item>** (an ordinary owned item or upgrade). Nothing is gated on cleaned percentage, a Review, a Brief or a Pilot Review.
+
 | `purchase_result.code` | UI copy (DOT voice) | Behaviour |
 | --- | --- | --- |
 | `INSUFFICIENT_FUNDS` | "Not quite. 1 240 LM short." | Shake + `danger` outline; wallet glows `danger` 300 ms |
 | `ALREADY_OWNED` / race | "Already approved — Ana just requisitioned it." | Card flips to owned state with `spring-pop`; no charge |
-| `GATED` | "That unlocks at Performance Review 2." | Gate chip pulses |
-| `PERMIT_CAP` | "All 16 Roost Permits are in use. Reviews grant more." | Permit meter pulses |
+| `GATED` (wire code unchanged; meaning: prerequisite missing) | "Requires {item}." | Lock chip pulses |
+| `PERMIT_CAP` | "All 16 Roost Permits are in use." | Permit meter pulses; the Permits tab (Ops Console) shows the limit |
 | `FORBIDDEN` (role) | "Temps use the Loaner Kit. Ask a Staff member to requisition it." | Inline |
 | `RATE_LIMITED` | "One requisition at a time, please." | Button re-enables after 1 s |
 | Timeout (no reply in 5 s) | "The Desk is thinking. Check your connection." | Button returns to idle; the wallet is never changed locally |
 
-### 3.11 SCR-11 Ops Console → Promotions Board, Flight Plan, Reviews, Permits, Brightside Monument (MVP: board subset of 10 nodes + Reviews (Pilot); v1.0 all)
+### 3.11 SCR-11 Ops Console → Promotions Board, Flight Plan, Permits, Brightside Monument (MVP: board subset of 10 nodes; v1.0 all)
 
-**Purpose.** The shared upgrade tree (hub + 5 departments, 23 nodes, economy §6), robot upgrades (Flight Plan, economy §9.4), contract milestones (Reviews and Briefs, economy §13), permits (economy §9.2) and the cosmetic money sink.
-**Entry / exit.** [E] at an Ops Console; HUD-04 chip (Reviews tab, read-only away from a console). Esc closes.
+**Purpose.** The shared upgrade tree (hub + 5 departments, 23 nodes, economy §6), robot upgrades (Flight Plan, economy §9.4), entity caps (Permits, economy §9.2) and the cosmetic money sink. Every purchase here costs LM and at most requires an ordinary owned upgrade; there is no cleaned-percentage or Review gate.
+**Entry / exit.** [E] at an Ops Console. Esc closes.
 
-**Layout: an org chart, not a skill web.** Brightside's Promotions Board is drawn as a corporate **organisation chart**: the Employee Badge hub at the top, five department columns hanging from it, each column reading Root → Secondaries → Capstone downward. This is deliberately unlike a radial or hex "upgrade matrix".
+**Layout: an org chart.** Brightside's Promotions Board is drawn as a corporate **organisation chart**: the Employee Badge hub at the top, five department columns hanging from it, each column reading Root → Secondaries → Capstone downward. This is our authored arrangement; the information and function may match the reference.
 
 ```
 +--------------------------------------------------------------------------------------------+
-|  OPS CONSOLE   [ Promotions Board ] [ Flight Plan ] [ Reviews ] [ Permits ] [ Monument ]   |
+|  OPS CONSOLE   [ Promotions Board ] [ Flight Plan ] [ Permits ] [ Monument ]               |
 |                                                           [*] 48 210 LM                    |
 |--------------------------------------------------------------------------------------------|
 |                               +-----------------+                         | BROAD STROKES  |
@@ -637,17 +637,17 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 |   [Densifier]   [Scour] [Pole] [Loft]       [Magnet][Arm] [Rebate][Stamp] |  Scour, Pole   |
 |      o o         o o    o o     o o          o o    o o    o o    o o     |----------------|
 |   [Overflow    [Master       [Second       [Smooth       [Golden          | [Promote (A)]  |
-|    Former]      Stroke]       Wind]         Handoff]      Handshake R2]   | (Y) Track      |
+|    Former]      Stroke]       Wind]         Handoff]      Handshake]      | (Y) Track      |
 |                                                                           |                |
 +--------------------------------------------------------------------------------------------+
 ```
 
 | Components | C-03 tabs, C-20 tree nodes with level pips, SVG connector lines (1 device px hairlines, §5.5), C-02 detail pane, C-19 price, C-07 meters, C-01 |
 | --- | --- |
-| Data | `board.nodes[]` (level, max, nextCost, prereqMet, gateReview, effects), `board.flightPlan[]`, `board.reviews[]`, `board.permits`, `board.monument`, `wallet.lm`, `shift.myRole` |
-| Tabs and what they show | **Promotions Board**: 23 nodes; Storage's root is the 6 per-tool Dust Cell lines (stacked mini-nodes, each I/II/III with capacity "7 → 11 kg"); each node's detail: level, effect per level, next cost, prerequisites ("Needs Broad Strokes 1"), capstone rule ("Needs root 3 and all secondaries 2"), Review gate (Golden Handshake: Review 2), "Shared: the whole shift gets it". **Flight Plan** (v1.0): 5 lines as horizontal tracks (Keen Beak 5, Deep Crop 3, Tailwind 3, Wide Wing 2, Homing 2) + the one-time Auto-Relocate card; per-level Review gates as chips on the track; robot-impact preview ("Albatross 11 → 14.3 m²/s"). **Reviews**: timeline of Pilot Review (MVP) / Reviews 1–6 + Fulfilled: threshold, Brief items with live progress, free issue, Commendations, unlocks, permits; the current Review expanded. **Permits** (v1.0): Roost / Flock / Plant meters `used / cap` with the next Review's increase. **Monument** (v1.0): Brightside Monument stages and cost |
-| Actions | Promote / Upgrade → `intent.purchase {itemId}` (FL-5). (Y) Track → Next Requisition. Reviews tab: no purchase; "Show on compass" for location-based Brief items (v1.0) |
-| States | Node states (C-20): locked (prereq missing, outline only, `ui-text-3` on strong glass), available-unaffordable, available-affordable (teal edge), partially owned (filled pips), maxed (solid ivory with check), Review-gated (lock glyph + "R2"). MVP hides the 13 nodes not in scope (scope-tiers §1), not greyed: the chart reflows to the MVP subset with a footer "More departments open as the contract grows". Errors as §3.10.1 |
+| Data | `board.nodes[]` (level, max, nextCost, prereqMet, requires, effects), `board.flightPlan[]`, `board.permits`, `board.monument`, `wallet.lm`, `shift.myRole` |
+| Tabs and what they show | **Promotions Board**: 23 nodes; Storage's root is the 6 per-tool Dust Cell lines (stacked mini-nodes, each I/II/III with capacity "7 → 11 kg"); each node's detail: level, effect per level, next cost, prerequisites ("Needs Broad Strokes 1"), capstone rule ("Needs root 3 and all secondaries 2"), ordinary prerequisites shown as "Requires <item>" (e.g. Golden Handshake: "Requires Rate Review, level 2", illustrative), "Shared: the whole shift gets it". **Flight Plan** (v1.0): 5 lines as horizontal tracks (Keen Beak 5, Deep Crop 3, Tailwind 3, Wide Wing 2, Homing 2) + the one-time Auto-Relocate card; per-level prerequisite chips on the track ("Requires Keen Beak 2"); robot-impact preview ("Albatross 11 → 14.3 m²/s"). **Permits** (v1.0): Roost / Flock / Plant meters `used / cap` showing the visible technical limit and, where game-data defines one, the purchase that raises it. **Monument** (v1.0): Brightside Monument stages and cost |
+| Actions | Promote / Upgrade → `intent.purchase {itemId}` (FL-5). (Y) Track → Next Requisition. |
+| States | Node states (C-20): locked (prereq missing, outline only, `ui-text-3` on strong glass), available-unaffordable, available-affordable (teal edge), partially owned (filled pips), maxed (solid ivory with check), prerequisite missing (lock glyph + "Requires <item>"; the unaffordable state reads "Costs N LM"). MVP hides the 13 nodes not in scope (scope-tiers §1), not greyed: the chart reflows to the MVP subset with a footer "More departments open as the contract grows". Errors as §3.10.1 |
 | Motion | Board enters `spring-soft`. Selecting a node moves a 2 px focus outline with `spring-snap`; connectors from the selected node to its prerequisites brighten (opacity tween 140 ms). Purchase: node pip fills (`spring-ui` at 400 ms in the timeline), newly available children fade from locked to available with 60 ms stagger, connector "draws" (stroke-dashoffset 300 ms). Maxed capstone: one `spring-pop` + ivory glow |
 | Navigation | Initial focus: the last-viewed node, else the cheapest affordable node. D-pad spatial across the chart (down/up within a column, left/right across columns at the same row); LB/RB jump department; (A) focuses Promote, (A) again buys; (Y) track; LT/RT switch tabs (Q/E on keyboard switch tabs too) |
 | Accessibility | The chart is exposed as a **tree** (`role="tree"`, departments as `treeitem` groups, levels in the label: "Broad Strokes, Technique root, level 1 of 3, next level 1,500 Lumens, affordable"). Connectors are decorative. Gate and prereq reasons are text, never colour alone |
@@ -666,12 +666,12 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 |    Skiff        12 000        |  Width 1.6 m · Cruise 3.0 m/s · Payload 200 kg · Depth 7   |
 |    Carryall     20 000        |  Area rate 2.65 m2/s                                       |
 |    Bulldust     28 000        |------------------------------------------------------------|
-|    Behemoth     Review 1      |  UPGRADES (v1.0)                 level     next            |
+|    Behemoth     45 000        |  UPGRADES (v1.0)                 level     next            |
 |                               |  Gear Ratio      +8% speed       o o o     360 LM          |
 |                               |  Cargo Expander  +40% payload    o o o     270 LM          |
 |                               |  ... Afterburner, Throttle Lock, Wide Mouth, Fast Tip,     |
 |                               |      Running Lamps                                         |
-|                               |  REFIT I (Review 3)  +25% width and payload   locked       |
+|                               |  REFIT I  +25% width and payload  needs Gear Ratio III     |
 |                               |------------------------------------------------------------|
 |                               |  [ Bring out (A) ]   (X) Store   (Y) Track                 |
 +--------------------------------------------------------------------------------------------+
@@ -679,9 +679,9 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 
 | Components | C-10 list, C-02 detail, C-18 stats, C-21 upgrade line rows with pips, C-01 |
 | --- | --- |
-| Data | `motorPool.vehicles[]` (owned, mine, out, price, repeatPrice, lines, refit, gate), `wallet.lm`, `shift.myRole` |
+| Data | `motorPool.vehicles[]` (owned, mine, out, price, repeatPrice, lines, refit, requires), `wallet.lm`, `shift.myRole` |
 | Actions | Requisition (unowned) → `intent.purchase {vehicle.id}` (Repeat Requisition price when anyone already owns that vehicle: "40% of list"). Bring out / Store / Recall to this Motor Pool → *(proposed)* `intent.vehicleDispatch` (not yet in netcode §4.1; §9). Upgrade line level → `intent.purchase {line.vehicle.level}` (owner only; others see read-only levels) |
-| States | Bring out disabled when another vehicle is out from this Motor Pool ("Ana's Skiff is out. One vehicle per Motor Pool."). Temps: Loaner vehicle row "Loaner Trundle — returned when you leave" with Bring out only. Gated (Behemoth: Review 1). Errors §3.10.1 |
+| States | Bring out disabled when another vehicle is out from this Motor Pool ("Ana's Skiff is out. One vehicle per Motor Pool."). Temps: Loaner vehicle row "Loaner Trundle — returned when you leave" with Bring out only. Locked (Behemoth: "Requires <item>" or "Costs N LM"). Errors §3.10.1 |
 | Motion | As Desk; bringing a vehicle out closes the panel (fade 160 ms) so the player sees the roll-up door |
 | Navigation | Initial focus: your owned vehicle, else the first affordable one. Left list ↔ right detail with Left/Right; upgrade rows are a vertical list; (A) buys the focused line's next level |
 | Accessibility | As Desk; owner-only lines announce "Only the owner can upgrade this vehicle" |
@@ -702,7 +702,7 @@ Parts Catalog (bottom sheet, 40% height, world visible above):
 |  |Former| | 4 m  | | 1 m  | | 45   | |      | |      | |      |     | 8 LM                 |
 |  | 300  | |  8   | |  2   | | 10   | | 12   | | 40   | | 25   |     | Tip: hold LMB and    |
 |  +------+ +------+ +------+ +------+ +------+ +------+ +------+     | drag for Rail Run    |
-|  Finish: [Brushed] [Regolith Cast] [Anodised] [Enamel] [Patina R3] [Chrome R3]            |
+|  Finish: [Brushed] [Regolith Cast] [Anodised] [Enamel] [Patina] [Chrome]                  |
 +--------------------------------------------------------------------------------------------+
 
 Build HUD (HUD-19), replaces Holster bottom-right:
@@ -710,7 +710,7 @@ Build HUD (HUD-19), replaces Holster bottom-right:
   | PLACE  ·  Reposition  ·  Reclaim     [Q]   |
   | Glide Rail 4 m        8 LM    Snap: grid   |
   | Rotate [R] 30°  ·  Cancel [RMB]            |
-  | Settle 3.2 s on dust  ·  Bulk Rate paid    |
+  | Settle 3.2 s on dust                       |
   | ! Too close to the Assay Counter (15 m)    |   <- validity line (warn)
   +--------------------------------------------+
 ```
@@ -719,14 +719,14 @@ Build HUD (HUD-19), replaces Holster bottom-right:
 | --- | --- |
 | Data | `build.*` (mode, tab, pieceId, finishId, snap, rotDeg, validity, costLm, settle, railRun), `wallet.lm`, `board.permits` (machines), `shift.myRole`, `shift.permissions` |
 | Actions | Place (hold to Settle on dust) → `intent.buildPlace`; Reposition → `intent.buildReposition`; Reclaim → `intent.buildReclaim` (refund = price paid, shown before confirming: "Refund 300 LM"); Rail Run drag shows running total "42 m · 84 LM" before release; Ctrl / left-stick click toggles snap; Q / (Y) cycles mode |
-| States | Validity reasons (amber ghost + line): no-build zone (15 m of services), Temp limits (Services tab hidden for Temps; "Not within 10 m of a Services piece you didn't place"), insufficient LM, permit cap ("Plant Permits 5/5"), collision, out of range (12 m), slope. Gated pieces show their Review chip. Empty tab never occurs (all tabs have pieces) |
+| States | Validity reasons (amber ghost + line): no-build zone (15 m of services), Temp limits (Services tab hidden for Temps; "Not within 10 m of a Services piece you didn't place"), insufficient LM, permit cap ("Plant Permits 5/5"), collision, out of range (12 m), slope. Locked pieces show "Requires <item>". Empty tab never occurs (all tabs have pieces) |
 | Motion | Catalog sheet rises `spring-soft` (translateY 40 → 0 px + fade); mode switch label slides `spring-snap`; validity line cross-fades; successful place: small teal check burst on the HUD strip (`spring-pop`) synced with the world's blueprint-to-solid VFX; Reclaim: refund floater on HUD-01 |
 | Navigation | Catalog: LB/RB tabs, LT/RT sub-tabs, D-pad grid, (A) select (closes catalog), (B) close. Build HUD is not focusable; all its actions are bound keys shown with glyphs |
 | Accessibility | Validity is text + ghost colour + glyph; Settle progress announced at start/end only |
 
 ### 3.14 SCR-14 Equipment Card — robots, machines, Gates, power (MVP: Roost; v1.0: all)
 
-**Purpose.** For any piece of equipment: what it is doing, **"Why isn't this working?"** (GDD §10, the status line on every machine, Roost, Nest and Gate), and its actions. (The reference's equivalent is not copied: our card is a compact corporate equipment tag.)
+**Purpose.** For any piece of equipment: what it is doing, **"Why isn't this working?"** (GDD §10, the status line on every machine, Roost, Nest and Gate), and its actions. Information and function may match the reference; the card's layout, art and text are ours (a compact corporate equipment tag). Robot cards show **base-rate** work (no Effort, On-Shift or Unattended modifier), the nine states, and any **visible technical cap or budget** (e.g. "Roosts 7 / 16"); a cap that limits work is stated in the status line, never a silent slowdown.
 **Entry / exit.** [E] on equipment; hover chip (L1) shows state only; Survey Globe robot layer → Open card. Esc closes.
 
 ```
@@ -736,7 +736,8 @@ Build HUD (HUD-19), replaces Holster bottom-right:
 |  Status  All good. Patch 62% Polished.    |  <- the status line, always one sentence
 |  -----------------------------------------|
 |  Store   184 / 300 kg   =========----     |
-|  Rate    1.8 m2/s x Flock 2.04            |
+|  Rate    1.8 m2/s (base rate)             |
+|  Cap     Roosts 7 / 16 (entity cap)       |
 |  Patch   2 rings · 19 plots · 7 Polished  |
 |  Output  Roost Uplink (pays on arrival)   |  (MVP stand-in for rails)
 |  -----------------------------------------|
@@ -749,8 +750,8 @@ Build HUD (HUD-19), replaces Holster bottom-right:
 | Components | C-02 card (360 px, anchored right of center, never over the target), C-11 state chip with the state light colour, C-07 meters, C-01 |
 | --- | --- |
 | Data | `equipment.target` (`kind`, `name`, `state` ∈ the 9 robot states, `statusLine`, `stats[]`, `actions[]`) |
-| Content per kind | **Roost** (Sandpiper/Plover): state, status line, store fill, rate × Flock, patch rings/plots, output; actions Re-site (nearest Grimy / here / pick on globe v1.0), Ground toggle, Upgrade to Plover (v1.0). **Albatross group** (v1.0): count, Work Front, Formation, Bales in flight. **Nest**: fill `n / 40 Bales`, output (rail or Bale Chute). **Bead Kiln / Tile Sinterer**: Grade, input/output rates, power "Needs 20 kW, has 13 kW (Night Cell empty in 4 min)", upgrade Grade. **Receiving / Field Gate**: inputs used, "Gate input at 85%", paid today. **Power** pieces: output now, storage. **Motor Pool**: vehicle out, Dust Vault fill |
-| Status line catalogue (examples, all from game-data) | "All good." · "Patch Picked Clean. Re-site?" · "Roost Brimming: no rail attached" · "Night Cell empty" · "Nest 80% full" · "Gate input at 85%" · "No power: needs 12 kW" · "Grounded by Ana" |
+| Content per kind | **Roost** (Sandpiper/Plover): state, status line, store fill, base rate, entity cap used / limit, patch rings/plots, output; actions Re-site (nearest Grimy / here / pick on globe v1.0), Ground toggle, Upgrade to Plover (v1.0). **Albatross group** (v1.0): count, Work Front, Formation, Bales in flight. **Nest**: fill `n / 40 Bales`, output (rail or Bale Chute). **Bead Kiln / Tile Sinterer**: Grade, input/output rates, power "Needs 20 kW, has 13 kW (Night Cell empty in 4 min)", upgrade Grade. **Receiving / Field Gate**: inputs used, "Gate input at 85%", paid today. **Power** pieces: output now, storage. **Motor Pool**: vehicle out, Dust Vault fill |
+| Status line catalogue (examples, all from game-data) | "All good." · "Patch Picked Clean. Re-site?" · "Roost Brimming: no rail attached" · "Night Cell empty" · "Nest 80% full" · "Gate input at 85%" · "No power: needs 12 kW" · "Grounded by Ana" · "Roost cap reached (16 / 16)" |
 | Actions | `intent.resite`, `intent.ground` *(proposed)*; Upgrade → `intent.purchase` |
 | States | Target despawned / out of range while open: card dims with "Out of range" and closes after 2 s. Action pending → button spinner; result failure inline |
 | Motion | Card `spring-ui` from x +16 px; state chip cross-fades on change; Re-site confirm: card collapses to a 1-line "Re-siting… 60 s" toast-like row then closes |
@@ -759,7 +760,7 @@ Build HUD (HUD-19), replaces Holster bottom-right:
 
 ### 3.15 SCR-15 Survey Globe (v1.0)
 
-**Purpose.** The rotatable Moon map that works **anywhere** (GDD §10, §16): plot states with pattern + colour legend, remaining-dust heat, robots with states and one-click Re-site, outposts, Flare Beacons, Work Fronts, finds, the Punch List (Review 2), and **Relay mode** for Relay Pad teleports.
+**Purpose.** The rotatable Moon map that works **anywhere** (GDD §10, §16): plot states with pattern + colour legend, remaining-dust heat, robots with states and one-click Re-site, outposts, Flare Beacons, Work Fronts, finds, the Punch List, and **Relay mode** for Relay Pad teleports.
 **Entry / exit.** [M] / View → browse mode; [E] at a Relay Pad → **Relay mode** (destinations panel open). Esc / (B) / [M] closes. The globe is rendered by the main renderer (rendering-pipeline §15); the DOM draws legend, labels and controls.
 
 ```
@@ -775,7 +776,7 @@ Build HUD (HUD-19), replaces Holster bottom-right:
 |  <> Flare Beacons       |          \     o   <>     /             | (A) Set Flare Beacon   |
 |  ^  Roosts (state)      |           '.   ^ ^      .'              | (X) Tag Work Front     |
 |                         |              '-.......-'                | (Y) Clean-up Order     |
-|  PUNCH LIST (R2)        |                                         |------------------------|
+|  PUNCH LIST             |                                         |------------------------|
 |  41-209  Opened  0.4 km |   drag/LS rotate · wheel/RS zoom ·      | RELAY (at a Relay Pad) |
 |  41-311  Grimy   0.9 km |   click/(A) select · RMB context        | > Dawnside    50 LM    |
 |  ...                    |                                         |   Austral  not visited |
@@ -841,21 +842,21 @@ Build HUD (HUD-19), replaces Holster bottom-right:
 | Motion | `spring-ui` from y +8 px; remaining % ticks down live (≤ 10 Hz); when the plot hits Polished while open, the card does the Stamp pulse (`spring-pop`) |
 | Accessibility | Announces on open: "Plot 41-207, Opened, 38 percent remaining" |
 
-### 3.18 SCR-18 Moments: Inspector's Stamp, Performance Review, Contract Fulfilled, Shift Report
+### 3.18 SCR-18 Moments: Inspector's Stamp, Contract Fulfilled, Shift Report
 
 | Moment | Tier | Surface | Content | Motion | Input |
 | --- | --- | --- | --- | --- | --- |
 | **Inspector's Stamp** (own-credited) | MVP | HUD-09 callout + HUD-04 pulse | "PLOT STAMPED · +50 LM · Plot 41-207", streak ×n | `spring-pop`; Shine ivory pulse; wallet tick-up | None |
-| **Pilot Review** | MVP | L4 banner + card (centered, 640 px) | "PILOT REVIEW PASSED" (`type-banner`), Brightside slide-deck line, "Roost pad activated · first Sandpiper issued" | Banner `spring-heavy` (y +24 → 0, scale 0.96 → 1); card rows stagger 60 ms; Commendations count tick-up | Continue (A); auto-dismiss 12 s; never blocks movement |
-| **Performance Review 1–6** | v1.0 | Same | Review n, Shine threshold, slide-deck snippet, free issue, Commendations (+n each to eligible members), unlocks list, permits change, "Not eligible yet" note for ineligible members (economy §13) | As above; unlock rows reveal with check draws | Continue; "View in Ops Console" (Y) |
 | **Contract Fulfilled** | v1.0 | Full-screen sequence (~60 s, skippable after first view, GDD §15) then card | Orbital pull-back (render), DOT performance letter, shift stats, rewards, Showcase Moon intro | Letter types in line-by-line (120 ms per line), `spring-heavy` banner | Skip (hold B / Esc 1 s, after first view) |
-| **Shift Report** | v1.0 | L4 card after Clock Out | LM earned, plots stamped, Shine delta, best Hang Time, Docket results, Effort, progress to the next Review + Brief, Tenure bar | Rows tick up in sequence (wallet → plots → Shine → Tenure), each starting when the previous is 60 % done; Tenure level-up uses `spring-heavy` | Back to Contracts (A), Clock In again (Y), Title (B) |
+| **Shift Report** | v1.0 | L4 card after Clock Out | LM earned, plots stamped, Shine delta, best Hang Time, Tenure bar | Rows tick up in sequence (wallet → plots → Shine → Tenure), each starting when the previous is 60 % done; Tenure level-up uses `spring-heavy` | Back to Contracts (A), Clock In again (Y), Title (B) |
 
-Rules: only one L4 moment at a time; a Review that fires while a panel is open queues until it closes (max 30 s, then shows over the panel). Reduced motion: banners fade in 120 ms, tick-ups jump.
+Rules: only one L4 moment at a time; a moment that fires while a panel is open queues until it closes (max 30 s, then shows over the panel). Reduced motion: banners fade in 120 ms, tick-ups jump.
 
-### 3.19 SCR-19 Locker — Personnel File, suit, Tenure, Commendations, Certifications, Benefits (MVP stub; v1.0 full)
+**First-robot suggestion.** When the player can afford the first Roost, DOT may say so (P2 notice, optional compass marker to the shop surface that sells it). It is a hint only: it never opens a modal, blocks input or gates a purchase, and the Roost is bought with LM like any other item (§3.10/§3.11).
 
-**Purpose.** The persistent profile across Contracts (GDD §12) and the suit/avatar editor. Nothing is paid; everything is earned with Commendations or unlocked by Tenure and achievements.
+### 3.19 SCR-19 Locker — Personnel File, suit, Tenure, account (MVP stub; v1.0 full)
+
+**Purpose.** The persistent profile across Contracts (GDD §12) and the suit/avatar editor. Nothing is paid; cosmetics are unlocked by Tenure and achievements (rules from game-data). Commendations, Certifications and Benefits are ★ optional progression (§11 ★-04).
 **Entry / exit.** Title → Locker; Time Card → Locker (world keeps running). Esc closes.
 
 ```
@@ -866,19 +867,13 @@ Rules: only one L4 moment at a time; a Review that fires while a panel is open q
 |   (live 3D suit preview, |  Casey                       [ Edit name ]                     |
 |    turntable, player     |  Senior Custodian · Tenure 17                                   |
 |    colour slots shown,   |  ====================--------  6 120 / 7 380 XP                 |
-|    rotate with RS/drag)  |  Commendations  37                                              |
-|                          |  CERTIFICATIONS   slots 1/1 (2nd at Tenure 20)                  |
-|                          |   [ Brushwork * active ] [ Railhand 30 ] [ Driver 60 ] ...      |
-|                          |  BENEFITS PACKAGE                                               |
-|                          |   [ Quick Clip 15 ] [ Signing Bonus 20 ] [ Lope Training 25 ]...|
-|                          |   Apply in Contracts you hold; your Benefits apply to everyone  |
-|                          |   in them.                                                      |
+|                          |  Achievements  3 / 33                                           |
 +--------------------------------------------------------------------------------------------+
 ```
 
 | Tab | Content | Tier |
 | --- | --- | --- |
-| **Personnel File** | Display name (edit → `intent.displayNameSet`, validated per security §6), rank + Tenure bar (`100 + 40·level` XP per level), Commendations balance, Certifications ladder (Brushwork 0 · Railhand 30 · Driver 60 · Assembly 100 · Aviary 160 · Finisher 250 · Dispatch 400) with slots (1, +1 at Tenure 20, +1 at Tenure 40) and the active one(s), Benefits Package (7 items with prices and the "Holder's Benefits apply to everyone" rule) | MVP: name + Tenure stub bar; v1.0 rest |
+| **Personnel File** | Display name (edit → `intent.displayNameSet`, validated per security §6), rank + Tenure bar (`100 + 40·level` XP per level), achievements summary | MVP: name + Tenure stub bar; v1.0 rest |
 | **Suit** | Rank liveries (Learner Band, Teal Chevron, Service Stripe, Graphite Gold, Inverse Issue; one per 5 Tenure levels), collectible-set liveries (Lost & Found, Bedrock), visor tints, helmet decals, patches, Dust Cell skins, lamp colours (warm-white range). Player colour is **assigned per shift** (shown, not chosen) | MVP: Learner Band + Teal Chevron; v1.0 rest |
 | **Shift Kit** | Flare Beacon colour labels, Deck Plate finishes preview, emotes | v1.0 |
 | **Achievements** | SCR-20 | MVP (3) |
@@ -887,16 +882,16 @@ Rules: only one L4 moment at a time; a Review that fires while a panel is open q
 | Components | C-03 tabs, 3D preview (canvas region owned by render; DOM controls), C-14 cosmetic cards with owned/equipped/locked/price states, C-07 Tenure meter, C-08 counters, C-12 inputs, C-09 modals |
 | --- | --- |
 | Data | `profile.*`, `achievements.items` |
-| Actions | Equip → `intent.lockerEquip`; buy with Commendations → `intent.lockerBuy`; Certification slot → `intent.certificationSet`; Benefit → `intent.benefitBuy` |
-| States | **Loading**: tab content skeletons; **offline** (`records_offline`): read-only with banner; insufficient Commendations: card shows "need 8 more" (no shake; Commendations are not a live wallet) |
-| Motion | Overlay `spring-soft`; card equip: outline `spring-snap` + preview swap cross-fade 200 ms; Commendation purchase uses the purchase timeline with ivory instead of lumen-gold |
+| Actions | Equip → `intent.lockerEquip`; buy where game-data prices a cosmetic → `intent.lockerBuy` |
+| States | **Loading**: tab content skeletons; **offline** (`records_offline`): read-only with banner; locked cosmetic: card shows the Tenure level or achievement that unlocks it (no shake) |
+| Motion | Overlay `spring-soft`; card equip: outline `spring-snap` + preview swap cross-fade 200 ms; a priced cosmetic purchase uses the purchase timeline |
 | Navigation | Initial focus: first tab content control. LB/RB tabs; RS rotates the preview; (A) equip/buy; (Y) preview without equipping |
 | Accessibility | Preview is decorative with a text description of the equipped set; all prices and requirements are text |
 
 ### 3.20 SCR-20 Achievements (MVP: First Light, Stamped, Shift Work; v1.0: all 33)
 
 **Purpose.** Show progress toward the 33 achievements (naming bible §10), no AFK grinds.
-**Layout.** Locker tab: filter chips (All · Unlocked · In progress), a 3-column grid of cards (glyph, name, one-line condition, progress bar for count-based ones "Century Mark 64 / 100 kg", reward "+50 XP · 1 Commendation", unlock date). Unlock **toast** (HUD-08 P2, DOT light replaced by the achievement glyph, short bright motif, audio §2.6).
+**Layout.** Locker tab: filter chips (All · Unlocked · In progress), a 3-column grid of cards (glyph, name, one-line condition, progress bar for count-based ones "Century Mark 64 / 100 kg", reward "+50 XP", unlock date). Unlock **toast** (HUD-08 P2, DOT light replaced by the achievement glyph, short bright motif, audio §2.6).
 
 | Data | `achievements.items[]` + game-data definitions |
 | --- | --- |
@@ -930,7 +925,7 @@ Rules: only one L4 moment at a time; a Review that fires while a panel is open q
 | **Controls** | Rebind KBM and gamepad separately (C-23 keybind rows grouped On foot / Vehicle / Build / Menus); conflict detection with swap prompt; mouse sensitivity, invert Y, gamepad look sensitivity, deadzones; hold/toggle for sweep, Lope, Hop, Roster; auto-sweep; vehicle camera Follow / Free-look; prompt glyphs Auto / Keyboard / Xbox / PlayStation | MVP |
 | **Audio** | Master, Voice (DOT), Interface, Effects, Ambience, Breathing, Music sliders (audio §5.1 buses), Night mode, radio-style music, mute when tab hidden | MVP: sliders |
 | **Accessibility** | Subtitles On (size S/M/L/XL = 16/20/24/32 px, background opacity 0–100 %), captions for key sounds (Off), colour-blind mode (Off / Deuteranopia / Protanopia / Tritanopia), high-contrast HUD, text size 80–200 % (menus, subtitles), reduced motion (System / On / Off), reduce transparency, camera shake off, Railshot flash dimming, night assist floor (always on; this shows the "boost" level), Ballast Soles default on, confirm-with-second-press instead of holds, Read Aloud for chat (v1.0) | MVP: subtitles, colour-blind, reduced motion, reduce transparency, text size |
-| **Interface** | HUD scale 80–150 %, notification verbosity (All / Important / Minimal, §5.2), teammate purchase notices, name tags (Always / Nearby / Off), compass distances, Induction/Docket auto-collapse, Hide HUD key | MVP: HUD scale, verbosity |
+| **Interface** | HUD scale 80–150 %, notification verbosity (All / Important / Minimal, §5.2), teammate purchase notices, name tags (Always / Nearby / Off), compass distances, Induction auto-collapse, Hide HUD key | MVP: HUD scale, verbosity |
 
 | Components | C-03 tabs, C-24 slider (with value field), C-17 segmented, C-15 toggle, C-25 select, C-23 keybind row, C-09 confirm (reset) |
 | --- | --- |
@@ -971,7 +966,7 @@ Rules: only one L4 moment at a time; a Review that fires while a panel is open q
 | 4105 ROOM_FULL | "This shift is full" | "16 Custodians already. Try again soon." | Try again, Back | MVP |
 | 4105 AT_CAPACITY / 507 | "Brightside is at capacity" | As SCR-03 `at_capacity` | Shift Board (v1.0), Try again, Back | MVP |
 | 4106 DUPLICATE_SESSION (older tab) | "You clocked in from another tab" | "This tab has stepped aside." | Use this tab instead (rejoin), Close | MVP |
-| 4107 IDLE_TIMEOUT | "Clocked out for inactivity" | "30 minutes On Break. The robots took over (at half speed)." | Clock In again, Back | MVP |
+| 4107 IDLE_TIMEOUT | "Clocked out for inactivity" | "30 minutes On Break. Your shift keeps running without you." | Clock In again, Back | MVP |
 | 4108 CONTRACT_UNAVAILABLE | "This Contract is unavailable" | "Brightside couldn't open the file. It has been reported." | Back to Contracts | MVP |
 | 409 CONTRACT_BUSY (repeated > 30 s) | "Brightside is shuffling paperwork" | Retries continue automatically | Back | MVP |
 | Unsupported browser (no WebGPU, no WebGL2) | "This browser can't run Clean The Moon!" | "Clean The Moon! needs WebGPU or WebGL2. Try a current Chrome, Edge, Firefox or Safari." | Learn more (Handbook page), — | MVP |
@@ -1053,8 +1048,10 @@ flowchart TD
   ST --> I6["6: Buy the Crescent Squeegee (SCR-10 Desk)"]
   I6 --> I7["7: Buy a Dust Cell (SCR-11 Ops Console) ~9 min"]
   I7 --> I8["8: Find a Near Parcel (within 300 m)"]
-  I8 --> END["Induction complete: DOT points to the Pilot Review chip"]
+  I8 --> END["Induction complete: DOT suggests the first Roost (hint only, nothing locked)"]
 ```
+
+Induction is a non-blocking guide: skipping or hiding it never locks a purchase or a tool.
 
 The recovery code returned by `POST /v1/auth/guest` is held **in memory only** (`profile.pendingRecoveryCode`) and shown on a dismissible card after the first Stamp, or on Clock Out, whichever comes first, and in Locker → Account until acknowledged. If the tab closes first, the code is gone and Locker → Account offers "Issue a new recovery code" *(proposed REST, §9 U8)*.
 
@@ -1070,7 +1067,7 @@ flowchart TD
   C -->|"Contracts"| L["SCR-04 pick another Contract"] --> J
   J --> R{"refresh token valid?"}
   R -->|"401 twice"| RE["SCR-22 session expired: Recover account"]
-  R -->|"ok"| BR["Shift Briefing (v1.0): Shine delta, Review + Brief, Docket, who's on"]
+  R -->|"ok"| BR["Shift Briefing (v1.0): Shine delta, tracked item, who's on"]
   BR -->|"Continue / move / 10 s"| PLAY["Play"]
   J -->|"MVP: no Briefing"| PLAY
 ```
@@ -1090,7 +1087,7 @@ flowchart TD
   W -->|"no"| WK["SCR-03 Waking"] --> J
   W -->|"yes"| J["clockIn -> SCR-06 Joining"]
   J -->|"4105 full"| F["SCR-22 This shift is full: Try again"]
-  J -->|"ready"| O["Orientation Packet: Shine, next Review + Brief, Docket, where people are; Standard Issue tools"]
+  J -->|"ready"| O["Orientation Packet: Shine, tracked item, where people are; Standard Issue tools"]
   O --> PLAY["Play next to friends at the most recent outpost"]
 ```
 
@@ -1127,7 +1124,7 @@ sequenceDiagram
   UI->>ST: intent.purchase {itemId}
   ST->>N: control purchase {requestId, itemId}
   Note over UI: no reply in 150 ms, button shows pending spinner
-  N->>S: validate funds, gate, permit, role, race
+  N->>S: validate funds, prerequisite, entity cap, role, race
   alt ok
     S-->>N: purchase_result {ok, walletAfter}
     N-->>ST: wallet.lm = walletAfter; event purchase.completed
@@ -1206,10 +1203,10 @@ flowchart TD
 | --- | --- | --- |
 | Store flush (all slices) | **≤ 15 Hz** | Batched at the end of the frame (module-boundaries §4), coalesced per slice; one `useSyncExternalStore` notification per flush; selectors return primitives or memoised objects (no identity churn) |
 | Numeric text in HUD (wallet at rest, Shine, kg, %) | **≤ 10 Hz** (art-direction §8.7) | Text nodes update only when the formatted string changes and at most every 100 ms |
-| **Tick-ups** (wallet, Shine, Assay Slip, Commendations, Tenure, Shift Report) | Display refresh (rAF) while animating | Motion values write `textContent` / transforms directly; React does not re-render per frame. Animation length per art-direction §8.7 formula; ≥ 3 increments in 500 ms merge |
+| **Tick-ups** (wallet, Shine, Assay Slip, Tenure, Shift Report) | Display refresh (rAF) while animating | Motion values write `textContent` / transforms directly; React does not re-render per frame. Animation length per art-direction §8.7 formula; ≥ 3 increments in 500 ms merge |
 | Per-frame direct writers | Display refresh | Compass markers, world labels (≤ 48), hold rings, Survey Globe labels: transforms written immediately after render submit (rendering-pipeline §15) |
 | Gauges (Cell, payload, meters) | ≤ 15 Hz data, smooth display | `transform: scaleX/scaleY` on a fill element with a 66 ms linear transition between updates |
-| Low-rate widgets | Roster 1 Hz · On-Shift chip 2 Hz · suit strip 4 Hz · vote bar 1 Hz | Throttled selectors |
+| Low-rate widgets | Roster 1 Hz · suit strip 4 Hz · vote bar 1 Hz | Throttled selectors |
 | Hidden tab | 0 | All rAF animations stop; on return one flush, tick-ups jump to final values |
 | Budget | UI flush ≤ 0.3 ms (Tier A) / 0.6 ms (Tier B) per frame; UI composite ≤ 0.2 / 0.5 ms (performance-budgets) | Measured by `/perf-check` with per-module marks |
 
@@ -1218,8 +1215,8 @@ flowchart TD
 | Priority | Examples | Visible TTL | Merge key / rule | Shown while a panel is open? | Verbosity: All / Important / Minimal |
 | --- | --- | --- | --- | --- | --- |
 | **P0 System** | Connection, kick, ban, restart | — | Never a toast: SCR-22 overlay | Yes (overlay) | always |
-| **P1 Action** | "Cell full — pour or band it (F)", "Roost idle: Patch Picked Clean · [Y] Re-site", "Not enough LM", vote-kick opened, "Pilot Review ready" | 8 s (actionable), pauses while hovered/focused | One per subject id (same Roost updates in place) | Yes | ✓ / ✓ / ✓ |
-| **P2 Progress** | "Requisition approved", own "Plot stamped" (when callouts are off), Induction/Docket goal done, achievement unlocked, "Back on shift" | 3.5 s (art-direction toast hold) | Same text within 3 s → "×n" counter | Yes | ✓ / ✓ / — |
+| **P1 Action** | "Cell full — pour or band it (F)", "Roost idle: Patch Picked Clean · [Y] Re-site", "Not enough LM", vote-kick opened | 8 s (actionable), pauses while hovered/focused | One per subject id (same Roost updates in place) | Yes | ✓ / ✓ / ✓ |
+| **P2 Progress** | "Requisition approved", own "Plot stamped" (when callouts are off), Induction goal done, achievement unlocked, "Back on shift" | 3.5 s (art-direction toast hold) | Same text within 3 s → "×n" counter | Yes | ✓ / ✓ / — |
 | **P3 Ambient** | "Railshot away", teammate purchases, Next Requisition 25/50/75 %, teammate joined/left, "Ana stamped 3 plots" | 3.5 s | Same kind within 10 s merge ("Railshot away ×2"); teammate stamps always aggregate | Queued until close, dropped if > 30 s old | ✓ / — / — |
 
 Rules:
@@ -1248,7 +1245,7 @@ Rules:
 
 | Viewport (CSS @ DPR) | Device px | HUD scale (user 100 %) | Notes |
 | --- | --- | --- | --- |
-| 1280×720 @1 | 1280×720 | 0.85, fonts floored at 14 | Compact mode: Docket collapses to its header, mini roster shows 2 names, compass = min(640, 50vw) |
+| 1280×720 @1 | 1280×720 | 0.85, fonts floored at 14 | Compact mode: Checklist collapses to its header, mini roster shows 2 names, compass = min(640, 50vw) |
 | 1280×720 @1.5 | 1920×1080 | 0.85 | Same layout as above at higher density |
 | 1280×800 @2 | 2560×1600 | 0.85 | — |
 | 1920×1080 @1 | 1920×1080 | 1.0 | Reference layout (wireframe §3.7) |
@@ -1297,17 +1294,17 @@ All components live in `apps/client/src/ui/components/`, take tokens only (no li
 | C-08 | **Counter (tick-up)** | wallet (`type-wallet`), value, inline | tabular digits in fixed columns; income flash `lumen-gold`; spend no flash; floater | art-direction §8.7 formula; merge rule; reduced motion = jump + 1-frame highlight | Value in `aria-label`; changes not announced except where stated |
 | C-09 | **Modal** | confirm, input (code, name), info, destructive | strong glass, `e-2`, `ui-scrim` behind; primary right, cancel left | `spring-ui` scale 0.96 → 1 + fade; scrim fade 200 ms | `dialog`/`alertdialog`, focus trap, initial focus on the safest action for destructive modals |
 | C-10 | **List** | listbox, grid (table), compact, virtualised (> 50 rows: Punch List, Credits, Bans) | row hover tint 6 %, selected teal left bar 2 px, focus ring inside | rows `spring-ui` 30 ms stagger (first 8 only); re-sort layout animation ≤ 1 per 2 s | `listbox`/`grid` with full-text row labels |
-| C-11 | **Chip / badge** | role, state, gate ("R2"), status, count, server state | colour + glyph + text, never colour only; `r-xs` | cross-fade on change | text content |
+| C-11 | **Chip / badge** | role, state, lock ("Requires …"), status, count, server state | colour + glyph + text, never colour only; `r-xs` | cross-fade on change | text content |
 | C-12 | **Text / code input** | name, invite code (segmented `XX-XXXX-X`), search, chat | focus ring; invalid: `danger` border + hint below; paste normalises (trim, uppercase) | none | label, `aria-invalid`, hint `aria-describedby` |
 | C-13 | **Input prompt glyph** | keyboard keycap, mouse button, Xbox, PlayStation, generic pad; sizes 20/24/28 | follows `input.lastDevice` and bindings; dimmed when blocked | 150 ms cross-fade on device switch | glyph has a text alternative ("E key", "X button") |
-| C-14 | **Item card** | tool, suit line, piece, cosmetic, vehicle row | owned (check, ivory edge) · Standard Issue ("SI") · affordable (teal edge) · unaffordable (price `ui-text-2`) · gated (lock + chip) · role-blocked · maxed · pending · equipped | hover lift 2 px; select outline `spring-snap`; purchase glow | `option` with state in the label |
+| C-14 | **Item card** | tool, suit line, piece, cosmetic, vehicle row | owned (check, ivory edge) · Standard Issue ("SI") · affordable (teal edge) · unaffordable (price `ui-text-2`) · locked (lock + chip) · role-blocked · maxed · pending · equipped | hover lift 2 px; select outline `spring-snap`; purchase glow | `option` with state in the label |
 | C-15 | **Toggle** | switch, checkbox, layer toggle | on teal track, off graphite; focus ring | thumb `spring-snap`; toggle cue (audio) | `switch`/`checkbox` |
 | C-16 | **Skeleton / empty state** | row, card, panel; empty with illustration + action | 6 % white shimmer bar (static under reduced motion) | shimmer 1.2 s loop, opacity only | `aria-busy` on the container; empty state text is real content |
 | C-17 | **Segmented control** | 2–5 options (preset, shift type, tone mapper) | selected pill slides | `spring-snap` | `radiogroup` |
 | C-18 | **Stat comparison row** | current → next | better values `ok` with ▲, worse `warn` ▼, equal `ui-text-2` | numbers cross-fade on selection change | text includes "up from" / "down from" |
-| C-19 | **Price tag** | LM, Commendations, free, discounted (strike-through list price) | unaffordable shows the shortfall | tick-down on purchase | full text ("750 Lumens, you have 48,210") |
-| C-20 | **Tree node** (Promotions Board, Flight Plan) | hub, root (3 pips), secondary (2), capstone (1), per-tool Cell mini-node | locked · available-unaffordable · available-affordable · partial · maxed · Review-gated · selected | pip fill `spring-ui`; unlock fade 60 ms stagger; connector draw 300 ms | `treeitem` with level and state |
-| C-21 | **Upgrade line row** | vehicle line, Flight Plan track, suit line | level pips, next effect, price, gate chips per level | as C-20 | row label with level text |
+| C-19 | **Price tag** | LM, free, discounted (strike-through list price) | unaffordable shows the shortfall | tick-down on purchase | full text ("750 Lumens, you have 48,210") |
+| C-20 | **Tree node** (Promotions Board, Flight Plan) | hub, root (3 pips), secondary (2), capstone (1), per-tool Cell mini-node | locked · available-unaffordable · available-affordable · partial · maxed · selected | pip fill `spring-ui`; unlock fade 60 ms stagger; connector draw 300 ms | `treeitem` with level and state |
+| C-21 | **Upgrade line row** | vehicle line, Flight Plan track, suit line | level pips, next effect, price, prerequisite chips per level | as C-20 | row label with level text |
 | C-22 | **Map legend item** | plot state, layer, player pip | pattern + colour + glyph swatch (hatched / dotted / solid + stamp) | none | text label |
 | C-23 | **Keybind row** | KBM, gamepad | capture mode ("Press a key…"), conflict warning with "Swap" | pulse while capturing | instructions announced on capture |
 | C-24 | **Slider** | value, percent, EV | track teal fill; value field editable; step hints | thumb `spring-snap` | `slider` with value text |
@@ -1335,7 +1332,6 @@ One table so motion, audio and events stay in sync. Presets and tweens: art-dire
 | `plot.polished` (own credit) | Callout + Shine ivory pulse + tick-up | `spring-pop` | Stamp thunk + chord |
 | `plot.polished` (others / flock) | Shine tick-up only, merged | tick-up | none (world sound only) |
 | Notice in / out | y −8 px → 0 / fade + y −8 px | `spring-pop` 240 ms / 180 ms | DOT bloop (DOT notices only) |
-| `review.reached`, Pilot Review | Banner + card | `spring-heavy` | Music sting |
 | Tenure level-up, Contract Fulfilled | Banner | `spring-heavy` | Achievement motif / fanfare |
 | `achievement.unlocked` | Toast with glyph | `spring-pop` | Short bright motif |
 | Cell full | Gauge "FULL", one 2-pulse outline | `spring-pop` ×1 | Cell-full clunk (tools bus) |
@@ -1357,7 +1353,7 @@ Reduced motion replaces every row's motion with 120 ms opacity fades; sounds are
 | AC-X-3 | Glass contrast ≥ 4.5:1 for `ui-text-1/2` over a pure white backdrop (art-direction §8.3) | Contrast test page (VT-M0-10) |
 | AC-X-4 | Every screen fully operable with keyboard only and with gamepad only; focus visible; initial focus as specified; focus returns to the opener on close | Vitest browser + Playwright keyboard script; gamepad via mocked `navigator.getGamepads` |
 | AC-X-5 | Reduced motion (OS and in-game): no spring overshoot, no shake, no floaters, tick-ups jump | Playwright with `prefers-reduced-motion: reduce`, frame-stepped (VT-M1-25) |
-| AC-X-6 | Every player-facing string comes from the strings module and passes the naming-bible ban-list check | CI ban-list grep + unit test that no JSX literal text exists outside the strings module |
+| AC-X-6 | Every player-facing string comes from the strings module and uses naming-catalog labels | Unit/lint test that no JSX literal text exists outside the strings module; strings reviewed against the naming catalog |
 | AC-X-7 | UI never mutates sim state and never imports three.js | ESLint import rules (module-boundaries §1) |
 | AC-X-8 | Store flush ≤ 15 Hz; HUD numeric text ≤ 10 Hz | Instrumented counters over 10 s of scripted play: ≤ 150 flushes, ≤ 100 text commits per widget |
 | AC-X-9 | UI CPU ≤ 0.3 ms (Tier A) / 0.6 ms (Tier B) per frame in the S1 perf scene | `/perf-check` per-module marks |
@@ -1372,16 +1368,16 @@ Reduced motion replaces every row's motion with 120 ms opacity fades; sounds are
 | SCR-03 Waking | (1) Shown only after Clock In while not awake; never on page load. (2) Elapsed timer increments once per second (fake clock). (3) At 120 s switches to `slow_wake` with Retry. (4) On `awake` continues the pending action without another click. (5) `update_required` (client old) shows Reload as initial focus. (6) `records_offline` disables Clock In with a reason |
 | SCR-04 Contracts | (1) Renders mocked rows with name, type, role, Shine (4 decimals), online count. (2) Empty state shows New Contract focused. (3) New Contract disabled with reason at `ownedCount = maxOwned` (1 in MVP). (4) Invite code input normalises pasted lowercase/spaced codes; unknown / banned / rate-limited codes show their inline messages and keep the value. (5) Holder sees Copy link, Rotate, shift type, Rename, Delete; Staff sees none of the Holder controls. (6) Delete requires a 1.2 s hold |
 | SCR-06 Joining | (1) Steps reflect `joinStage` in order. (2) Cancel sends a consented leave and returns to Contracts. (3) 4105 → SCR-22 full / capacity; 409 retries silently for 30 s before the "shuffling paperwork" line |
-| SCR-07 HUD | (1) MVP widgets present with live data: HUD-01, 02, 03 (outposts, nearest arrow, pings, fence), 04 (Pilot Review chip), 05, 06 (Lamp + ring), 07 (Induction), 08, 09, 10, 11, 12, 13, 14, 15 (Trundle), 16. (2) Wallet tick-up durations for Δ = 10 / 1,000 / 1,000,000 are 570 / 1,010 / 1,200 ms ± 1 frame; 3 increments within 500 ms produce one animation. (3) Wallet, Shine and Holster bounding boxes do not move during tick-ups (layout-shift observer = 0). (4) Never more than 3 notices visible; P1 pre-empts P3. (5) Cell gauge shows warn at 80 % and FULL at 100 %. (6) Nearest-outpost arrow visible at every camera heading (rotate 360° in 10° steps). (7) No overlap or clipping at 1280×720 CSS with HUD scale 150 % (VT-M3-07). (8) Panel open fades non-essential widgets and keeps wallet, Shine and notices |
+| SCR-07 HUD | (1) MVP widgets present with live data: HUD-01, 03 (outposts, nearest arrow, pings, fence), 04, 05, 06 (Lamp + ring), 07 (Induction), 08, 09, 10, 11, 12, 13, 14, 15 (Trundle), 16. (2) Wallet tick-up durations for Δ = 10 / 1,000 / 1,000,000 are 570 / 1,010 / 1,200 ms ± 1 frame; 3 increments within 500 ms produce one animation. (3) Wallet, Shine and Holster bounding boxes do not move during tick-ups (layout-shift observer = 0). (4) Never more than 3 notices visible; P1 pre-empts P3. (5) Cell gauge shows warn at 80 % and FULL at 100 %. (6) Nearest-outpost arrow visible at every camera heading (rotate 360° in 10° steps). (7) No overlap or clipping at 1280×720 CSS with HUD scale 150 % (VT-M3-07). (8) Panel open fades non-essential widgets and keeps wallet, Shine and notices |
 | SCR-08 Time Card | (1) Esc/Menu opens and closes; the server tick keeps advancing while open (world not paused). (2) Clock Out shows the confirm, then closes with code 4000 and lands on Contracts with the "Clocked out" notice |
-| SCR-09 Roster | (1) Rows show name, numeral, role, status, Effort. (2) Holder row menu has Kick and Ban; Staff's does not; Holder row cannot be kicked. (3) Kick sends `kick {playerId, reasonCode}`; the target sees SCR-22 "Clocked out by the Holder" with a 15:00 countdown. (4) Mute persists across rejoin for that player id |
+| SCR-09 Roster | (1) Rows show name, numeral, role, status. (2) Holder row menu has Kick and Ban; Staff's does not; Holder row cannot be kicked. (3) Kick sends `kick {playerId, reasonCode}`; the target sees SCR-22 "Clocked out by the Holder" with a 15:00 countdown. (4) Mute persists across rejoin for that player id |
 | SCR-10 Desk | (1) Shows T1–T4, Holster Rig L1, Crown Lamp L1 with prices from game-data and Standard Issue state. (2) Wallet never changes before `purchase_result`. (3) Success follows the FL-5 timeline (frame-stepped capture at 0/80/120/400 ms after the reply). (4) Each §3.10.1 code shows its copy and behaviour. (5) Hold-to-approve appears at ≥ 50 % of the wallet. (6) Gamepad: (A) on a card focuses Requisition, second (A) buys |
-| SCR-11 Ops Console | (1) Shows exactly the 10 MVP nodes (scope-tiers §1), hidden (not greyed) others. (2) Prereq-locked nodes explain the missing prerequisite. (3) Purchase fills the node pip and unlocks children visibly. (4) Exposed as `role="tree"` with level text. (5) Reviews tab shows the Pilot Review Brief with live progress |
+| SCR-11 Ops Console | (1) Shows exactly the 10 MVP nodes (scope-tiers §1), hidden (not greyed) others. (2) Prereq-locked nodes explain the missing prerequisite. (3) Purchase fills the node pip and unlocks children visibly. (4) Exposed as `role="tree"` with level text. (5) Locked nodes show "Requires <item>" or "Costs N LM", never a cleaned-percentage or Review gate; the Permits tab shows `used / cap` meters |
 | SCR-12 Motor Pool | (1) Trundle purchasable at 1,800 LM; shows the 40 % Repeat Requisition price when another member owns one. (2) Bring out disabled with the reason while another vehicle from this Motor Pool is out |
-| SCR-14 Equipment Card | (1) Roost card shows state (one of the 9 names), the status line, store fill, rate × Flock. (2) Re-site nearest / here and Ground send their intents and show pending → result. (3) "Patch Picked Clean" makes Re-site the initial focus |
+| SCR-14 Equipment Card | (1) Roost card shows state (one of the 9 names), the status line, store fill, base rate and its cap. (2) Re-site nearest / here and Ground send their intents and show pending → result. (3) "Patch Picked Clean" makes Re-site the initial focus |
 | SCR-16 Assay Slip | (1) Appears within 1 frame of the first gram poured. (2) Weighed and Paid are monotonic and finish exactly at the server totals. (3) Wallet tick-up starts on `cargo.sold`, not before. (4) With 4 slots busy the prompt shows the queue message |
 | SCR-17 Plot Card | (1) [C] toggles; ID rendered as `Plot NN-NNN` in JetBrains Mono. (2) State chip has the pattern glyph. (3) Live % updates ≤ 10 Hz; Polished shows the stamp glyph |
-| SCR-18 Moments | (1) Stamp callout only for own-credited plots; streak counter within 60 s. (2) Pilot Review banner appears once on the event, auto-dismisses at 12 s, never blocks movement |
+| SCR-18 Moments | (1) Stamp callout only for own-credited plots; streak counter within 60 s. (2) The first-Roost suggestion is a dismissible P2 notice (never a modal) and no purchase is blocked whether or not it was shown |
 | SCR-19 Locker (MVP) | (1) Name edit validates per security §6 and saves via `PATCH /v1/me`. (2) Recovery code is shown once, then never re-rendered after acknowledgement (DOM and memory cleared). (3) Delete account needs the 2 s hold and typed confirmation |
 | SCR-20 Achievements | (1) Lists First Light, Stamped, Shift Work with conditions. (2) Unlock shows a toast with the achievement glyph |
 | SCR-21 Settings | (1) Preset change shows the 1.5 s "Applying settings" overlay and persists. (2) Rebinding detects conflicts and offers Swap; glyphs update everywhere immediately. (3) Device switch changes all glyphs within 1 frame + 150 ms fade; idle pad axes never switch it. (4) Text size 200 % at 1280×720: no clipped text in any menu (scroll allowed). (5) Colour-blind modes change plot-state and player colours and keep glyphs (VT-M3-06) |
@@ -1400,19 +1396,19 @@ Captured by the screenshot harness (qa-test-engineer) and judged by visual-qa-re
 | UIS-03 | Waking at 0:37 + UIS-03b `slow_wake` | SCR-03 | VT-M1-24 |
 | UIS-04 | Contracts: 2 rows + details (Holder); UIS-04b empty; UIS-04c invite-code modal with an error | SCR-04 | VT-M3-11 |
 | UIS-05 | Joining strip at "Receiving the Moon 62 %" | SCR-06 | VT-M1-24 |
-| UIS-06 ◆ ☾ | Full MVP HUD: wallet mid tick-up with floater, On-Shift chip, compass with nearest arrow, Shine + Pilot Review chip, Holster 2 slots (one at 85 %), Lamp + day ring, Induction step 3, 3 notices (P1 actionable, P2, P3), subtitle, interaction prompt | SCR-07 | VT-M1-24, VT-M0-10 (test page variant) |
+| UIS-06 ◆ ☾ | Full MVP HUD: wallet mid tick-up with floater, compass with nearest arrow, Shine, Holster 2 slots (one at 85 %), Lamp + day ring, Induction step 3, 3 notices (P1 actionable, P2, P3), subtitle, interaction prompt | SCR-07 | VT-M1-24, VT-M0-10 (test page variant) |
 | UIS-06b | UIS-06 at 1280×720 @1 with HUD scale 150 % (compact mode) | SCR-07 | VT-M3-07 |
 | UIS-06c | UIS-06 in Deuteranopia + high-contrast HUD | SCR-07 | VT-M3-06 |
 | UIS-07 | Trundle vehicle cluster (payload 70 %) | HUD-15 | VT-M1-24 |
 | UIS-08 | Time Card over the world | SCR-08 | VT-M1-24 |
 | UIS-09 | Roster with the Holder row menu open + kick confirm modal | SCR-09 | VT-M1-24 |
 | UIS-10 ◆ | Requisitions Desk, Hand tools, Lane Broom detail; UIS-10b success frame at reply + 400 ms; UIS-10c insufficient-funds outline | SCR-10 | VT-M1-24, VT-M1-25 |
-| UIS-11 ◆ | Ops Console board subset with a node selected; UIS-11b Reviews tab with the Pilot Review | SCR-11 | VT-M1-24 |
+| UIS-11 ◆ | Ops Console board subset with a node selected; UIS-11b Permits tab with entity-cap meters | SCR-11 | VT-M1-24 |
 | UIS-12 | Motor Pool with Trundle selected | SCR-12 | VT-M1-24 |
 | UIS-14 ☾ | Roost Equipment Card, "Patch Picked Clean" | SCR-14 | VT-M1-24 |
 | UIS-16 | Assay Slip mid-pour; UIS-16b "APPROVED" frame | SCR-16 | VT-M1-25 |
 | UIS-17 | Plot Card on an Opened plot | SCR-17 | VT-M1-24 |
-| UIS-18 | Stamp callout ×2 streak; UIS-18b Pilot Review banner | SCR-18 | VT-M1-25 |
+| UIS-18 | Stamp callout ×2 streak; UIS-18b first-Roost suggestion notice (P2) | SCR-18 | VT-M1-25 |
 | UIS-19 | Locker Personnel File; UIS-19b Account with recovery code card | SCR-19 | VT-M3-11 |
 | UIS-20 | Achievements grid | SCR-20 | VT-M3-11 |
 | UIS-21 | Settings Graphics; UIS-21b Controls in capture mode; UIS-21c Accessibility at text size 200 % | SCR-21 | VT-M3-11 |
@@ -1420,7 +1416,7 @@ Captured by the screenshot harness (qa-test-engineer) and judged by visual-qa-re
 | UIS-23 | Credits, Data section in view | SCR-23 | VT-M3-11 |
 | UIS-24 | Handbook article with gamepad glyphs | SCR-24 | VT-M3-11 |
 
-v1.0 adds UIS-30 Shift Board, UIS-31 Shift Briefing, UIS-32 Parts Catalog + build HUD with an invalid placement, UIS-33 Survey Globe (states + robots, Relay mode), UIS-34 full Promotions Board, UIS-35 Flight Plan, UIS-36 Shift Report, UIS-37 Performance Review banner, UIS-38 Locker cosmetics, UIS-39 chat.
+v1.0 adds UIS-30 Shift Board, UIS-31 Shift Briefing, UIS-32 Parts Catalog + build HUD with an invalid placement, UIS-33 Survey Globe (states + robots, Relay mode), UIS-34 full Promotions Board, UIS-35 Flight Plan, UIS-36 Shift Report, UIS-37 Contract Fulfilled card, UIS-38 Locker cosmetics, UIS-39 chat.
 
 ---
 
@@ -1429,25 +1425,51 @@ v1.0 adds UIS-30 Shift Board, UIS-31 Shift Briefing, UIS-32 Parts Catalog + buil
 | # | Issue | Owner | Default used here |
 | --- | --- | --- | --- |
 | U1 | HUD zone map differs between GDD §10 and art-direction §8.6 | technical-artist (align §8.6) | GDD §10 zones (§3.7) |
-| U2 | "Plot Card (G)" survives in art-direction §8.6, audio-direction §2.6 and M1-W6-T04 | technical-artist, audio-engineer, lead | Plot Card on [C] (naming bible A8) |
-| U3 | art-direction still uses retired names: Ballast Soles, Crescent Squeegee, Shift build mode (→ Reposition), Rails & Railings (→ Handrails), finishes Tread/Mesh/Glow/Chevron, Tile Sinterer, Dust Vault, Spot Ring/Wide Halo, and **robot state lights keyed to the old, banned state names** (Sweeping, Docking, Bin Full…) in §6.3 | technical-artist | UI uses only naming-bible v2 names; state-light colours must be re-keyed to Foraging · Flying · Inbound · Molting · Patch Picked Clean · Roost Brimming · Crop Full · Grounded · Resting |
+| U2 | *(Resolved 2026-11-12)* Plot Card is on [C] everywhere (audio-direction and world-and-dust fixed) | — | — |
+| U3 | art-direction still uses retired names: Ballast Soles, Crescent Squeegee, Shift build mode (→ Reposition), Rails & Railings (→ Handrails), finishes Tread/Mesh/Glow/Chevron, Tile Sinterer, Dust Vault, Spot Ring/Wide Halo, and **robot state lights keyed to the old, retired state names** (Sweeping, Docking, Bin Full…) in §6.3 | technical-artist | UI uses only naming-bible v2 names; state-light colours must be re-keyed to Foraging · Flying · Inbound · Molting · Patch Picked Clean · Roost Brimming · Crop Full · Grounded · Resting |
 | U4 | M1-W7-T03 lists the Survey Globe and 12 Flare Beacons, which scope-tiers §1 cut from MVP | lead | Resolved 2026-11-12: M1-W7-T03 trimmed, Survey Globe render (old M1-W7-T04) moved to M2-W1-T05, Globe UI to M2-W5-T03, Flare Beacons + Spot Check to M2-W9-T03; both v1.0 |
 | U5 | HUD-scale clamp (0.85 at 720p) would put text below the 14 px minimum | technical-artist (art-direction §8.2 note) | Fonts floored at 14 CSS px (§5.4) |
 | U6 | UI store shape (§1.3) | contracts-architect (M1-W0-T03) | Proposal |
-| U7 | Missing wire messages: control `resite`, `ground`, `work_front_tag`, `formation_set`, `cleanup_order`, `incident_revert`, `vehicle_dispatch`, `convoy_record`; REST `POST /v1/me/recovery-code/rotate`, cosmetics/Benefit/Certification purchase; events `review.reached`, `docket.issued`, `docket.goal_done`, `cell.full`, `roost.idle`, `railshot.fired`, `trick.landed`, `notice.dot` | contracts-architect, netcode-engineer, backend-data-engineer | Proposed; UI uses local adapters until they land |
+| U7 | Missing wire messages: control `resite`, `ground`, `work_front_tag`, `formation_set`, `cleanup_order`, `incident_revert`, `vehicle_dispatch`, `convoy_record`; REST `POST /v1/me/recovery-code/rotate`, cosmetics/Benefit/Certification purchase; events `cell.full`, `roost.idle`, `railshot.fired`, `trick.landed`, `notice.dot` | contracts-architect, netcode-engineer, backend-data-engineer | Proposed; UI uses local adapters until they land |
 | U8 | Recovery code display timing (after first Stamp / Clock Out, memory only) and a rotate endpoint | backend-data-engineer + netcode-security-reviewer | §4 FL-1 note |
 | U9 | Assay Counter pour order across Holster Cells is unspecified | game-designer | Active Cell first, then slot order |
 | U10 | Key for opening the Parts Catalog while the Assembly Gun is drawn | game-designer (GDD §9) | [G] / right-stick click |
-| U11 | Title rename to **Clean The Moon!** not yet applied in GDD §1, naming-bible §1, system-overview hub metadata `title`, package scope; naming-rule risk X14 | lead / Cee | UI strings use Clean The Moon! |
+| U11 | Title is **Clean The Moon!** (owner-selected, ADR-0030); GDD §1, naming-bible §1 and system-overview hub metadata `title` should follow. Package scope and saved IDs stay `moon-cleanup` | lead | UI strings use Clean The Moon! |
 | U12 | HYG credit line in ASSET_LICENSES §2 says "Clean The Moon! contributors" | docs-keeper | Credits render "Clean The Moon! contributors" after the rename |
 | U13 | system-overview §3 `at_capacity` mentions an Open Shifts button; MVP has no Open Shifts | lead | Button hidden in MVP |
-| U14 | e2e browsers report `navigator.webdriver`, which suppresses the wake probe; netcode §17 still needs a cold-start e2e | qa-test-engineer + netcode-engineer | A test-only probe override on staging/local builds |
-| U15 | "robot panel" is a banned reference term (mechanics §8); GDD §10 prose says "robot and machine panels" | game-designer (resolved: GDD §10, §6 and scope-tiers now say Equipment Card) | Player-facing name **Equipment Card** (naming bible A10) |
+| U14 | e2e browsers report `navigator.webdriver`, which suppresses the wake probe; netcode §17 still needs a cold-start e2e | qa-test-engineer + netcode-engineer | A test-only probe override on local/CI builds |
+| U15 | Earlier rule banned the phrase "robot panel"; superseded by REFERENCE_TARGET (common words are not banned) | — | Player-facing name stays **Equipment Card** (naming bible A10) as a clear label of our own |
 | U16 | art-direction §8.7 says HUD numbers ≤ 10 Hz; ADR-0012 says store ≤ 15 Hz | — | Both hold: store ≤ 15 Hz, numeric text ≤ 10 Hz (§5.1) |
 | U17 | art-direction §8.7 purchase timeline starts at the press; the server is authoritative | technical-artist | Press feedback at 0 ms; the rest re-based to `purchase_result` (FL-5) |
 | U18 | GDD §10 "right-click to set a Flare Beacon or Relay" on the Survey Globe; netcode validates Relay only near a Relay Pad | game-designer | Relay mode only when at a pad (§3.15) |
 | U19 | Temp permission toggles (`set_permissions` incl. `tempCanSpendShared`) vs GDD §7.5 "Temps never spend" | game-designer + netcode-engineer | Toggles shown to the Holder in v1.0; default off |
+| U20 | ★ optional events and wire messages for Reviews/Dockets (`review.reached`, `docket.issued`, `docket.goal_done`, Commendation/Certification/Benefit purchases) | contracts-architect | Not needed by the baseline; UI does not subscribe to them (§11) |
+| U21 | How entity caps (Roost/Flock/Plant Permits) are raised once Reviews no longer grant them: purchase, fixed technical limit, or both | game-designer + economy | UI shows `used / cap` and the limit text only; no raise path is assumed |
+| U22 | Prerequisite items for the first Roost, Remote Assay, Refits, Behemoth and capstone nodes (formerly Review gates) | game-designer + game-data owner | Every lock reads "Costs N LM" or "Requires <item>"; illustrative items in wireframes |
+| U23 | Cosmetic unlock rules in the Locker now that Commendations are ★ | game-designer | Tenure level / achievement unlocks, optional LM price from game-data |
 
 ## 10. Names introduced by this spec
 
-New player-facing UI names are recorded in [naming-bible](naming-bible.md) §A10: **Time Card**, **Equipment Card**, **Parts Catalog**, **Assay Slip**, **Personnel File**, **Signal Lost**, **DOT Notice**, **Clock Out**. Everything else on screen uses existing naming-bible names.
+New player-facing UI names are recorded in [naming-bible](naming-bible.md) §A10: **Time Card**, **Equipment Card**, **Parts Catalog**, **Assay Slip**, **Personnel File**, **Signal Lost**, **DOT Notice**, **Clock Out**. Everything else on screen uses existing naming-catalog names (display labels are editable; IDs are stable).
+
+---
+
+## 11. Optional custom progression screens (★ backlog, not in reference-mode baseline)
+
+These screens and widgets came from the earlier custom design. Per REFERENCE_TARGET they are **not deleted** but are **not launch gates**: nothing in §1–§10 depends on them, no baseline flow points at them, and none of them may gate a core purchase (tools, vehicles, robots, machines, permits, Refits, Flight Plan, Work Front, Grades). Build them only after core fidelity, by deliberate decision, and only if the matching ★ rows in the GDD, economy and scope-tiers are pulled in. Reading note: store shapes were removed from §1.3; the ★ shapes are listed here.
+
+| ID | ★ screen / widget | Preserved spec (condensed from the earlier draft) | Store / wire (★) |
+| --- | --- | --- | --- |
+| ★-01 | **On-Shift chip (HUD-02)**, Effort column in Roster and Time Card, Shift Report Effort | Chip "Flock ×2.04 · Effort 100%" under the wallet; amber "Unattended ×0.5" outline when nobody's Effort > 0; "On Break · Effort 0%" grey; multiplier cross-fades, no tick-up; DOT tip on first Unattended. **Retired outright in reference mode** (REFERENCE_TARGET: robots work at the calibrated base rate); listed only so the earlier spec is not lost. Bulk Rate payout UI (Settle line "Bulk Rate paid") is retired the same way: the Assay Slip pays the ordinary sale rule for the tracked material | `onShift.{multiplier, effortPct, unattended, onBreak}`, `roster.players[].effortPct` |
+| ★-02 | **Performance Reviews, Pilot Review, Briefs** | HUD-04 **Next Review chip** ("Review 2 at 5% · 3.80% to go · Brief 1/2"; MVP "Pilot Review · 12/25 plots · Brief 3/6"), opening **Reviews tab** (SCR-11: timeline Pilot / Reviews 1–6 + Fulfilled with threshold, Brief items with live progress and "Show on compass", free issue, Commendations, unlocks, permits). **Review banner + card** (L4, 640 px): "PERFORMANCE REVIEW PASSED" (`type-banner`, `spring-heavy`, y +24 → 0, scale 0.96 → 1), rows stagger 60 ms, Commendations tick-up, "Not eligible yet" for ineligible members, Continue (A) / "View in Ops Console" (Y), auto-dismiss 12 s, never blocks movement. Review gate chips ("R2"), `GATED` copy "That unlocks at Performance Review 2.", Briefing and Orientation Packet lines "Next: Performance Review 2 at 5% · Brief 1/2", P1 notice "Review ready", capture IDs for the Review banner | `shine.nextReview`, `shine.pilot`, `review.overlay`, `board.reviews[]`, `*.gateReview`; event `review.reached` |
+| ★-03 | **Shift Docket and Probation** | HUD-07 modes: Probation; Shift Docket with 3 shared goals ("4/12", "New Docket in 12:40" when complete); Briefing "Shift Docket (3)" block; Shift Report "Docket results"; Settings "Docket auto-collapse"; P2 "Docket goal done" | `checklist.mode ∈ {probation, docket}`, `nextDocketInS`; events `docket.issued`, `docket.goal_done` |
+| ★-04 | **Commendations, Certifications, Benefits Package** (Locker, SCR-19) | Personnel File blocks: Commendations balance; Certifications ladder (Brushwork 0 · Railhand 30 · Driver 60 · Assembly 100 · Aviary 160 · Finisher 250 · Dispatch 400) with slots (1, +1 at Tenure 20, +1 at Tenure 40) and the active one(s); Benefits Package (7 items with prices; "Holder's Benefits apply to everyone"). Commendation purchases use the purchase timeline with ivory instead of `lumen-gold`; insufficient Commendations show "need 8 more" without a shake | `profile.{commendations, certifications, benefits}`; `intent.certificationSet`, `intent.benefitBuy`, *(proposed)* `POST /v1/me/purchases` |
+| ★-05 | **Final Walkthrough and late-contract helpers** | Review-6 mode: Closing Bonus (Stamp ×2) indicator and Homing II auto-placed Flare Beacons. The Survey Globe **Punch List**, **Spot Check** and **Clean-up Order** are baseline (ungated) functions of §3.15 | *(game-design owned)* |
+
+**Baseline independence checklist** (verify at review):
+
+1. No HUD, panel, tooltip or notice string mentions a Review, Brief, Docket, Pilot Review, Effort, Unattended or Bulk Rate.
+2. Every lock reason is "Costs N LM" or "Requires <item>"; `desk.items[].requires` and `board.nodes[].requires` list ordinary items only.
+3. FL-1 Induction ends at a DOT purchase suggestion and nothing else waits on it.
+4. Robot UI (Equipment Card, Survey Globe robot layer) shows base rate, state and technical caps only.
+5. Removing §11 entirely leaves §1–§10 buildable and testable.

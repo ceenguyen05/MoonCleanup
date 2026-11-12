@@ -1,7 +1,6 @@
 # Security — Clean The Moon!
 
 > **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
-> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
 > Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
 > [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
 
@@ -50,7 +49,7 @@ Anything a client claims beyond intent (e.g., a position in an input) does not e
 | Guest creation | `POST /v1/auth/guest {displayName?}` → player + profile + recovery-code identity. Returns refresh token, access JWT and a **one-time recovery code** (shown once, "save this to recover your account") |
 | Refresh token | 256-bit random, base64url; stored only as HMAC-SHA256 with `REFRESH_TOKEN_PEPPER`; TTL 180 days; **rotated on every use** |
 | Rotation grace window (M13) | A lost response (cold-start proxy timeout, tab closed mid-request) makes the client retry with the token it already sent. So, when the presented token was replaced **≤ 60 s ago** (`replaced_at`, DB clock) and is the **immediate predecessor** of the family's newest token: (a) if that successor has never been used, it is revoked (`superseded`) and a fresh successor is issued — the retry succeeds and the family survives; (b) if the successor has already been used (another tab or browser won the race), reply 409 `TOKEN_SUPERSEDED` without revoking anything — the client re-reads `localStorage` / waits for the other tab's BroadcastChannel message. Only reuse of a token **older than the immediate predecessor, or after 60 s**, counts as theft → revoke the whole family + `token_reuse` audit |
-| Access token | JWT, HS256 via `jose`, signed with `JWT_SECRET`; 15-min `exp`; claims `sub` (playerId), `iat`, `exp`, `iss` = `moon-cleanup`, `aud` = `mc-<ENV_NAME>` (a staging token is rejected by prod), `jti` |
+| Access token | JWT, HS256 via `jose`, signed with `JWT_SECRET`; 15-min `exp`; claims `sub` (playerId), `iat`, `exp`, `iss` = `moon-cleanup`, `aud` = `mc-<ENV_NAME>` (a token minted by another environment, e.g. local, is rejected by prod), `jti` |
 | Key rotation | Optional `JWT_SECRET_PREVIOUS` accepted for verification for ≤ 15 min after a rotation |
 | Client storage | Refresh token in `localStorage` (for a guest the token *is* the account); access token in memory only. One tab refreshes at a time (Web Locks / BroadcastChannel); others pick up the new token |
 | REST | `Authorization: Bearer <access JWT>`; no cookies anywhere → no CSRF surface ([data-auth-observability.md §5.1](../research/tech/data-auth-observability.md)) |
@@ -67,7 +66,6 @@ Anything a client claims beyond intent (e.g., a position in an input) does not e
 | Environment | `ALLOWED_ORIGINS` (exact, comma-separated, no wildcards, no suffix matching) |
 | --- | --- |
 | production | The Vercel production origin only (e.g. `https://moon-cleanup.vercel.app`) |
-| staging | Vercel branch URL of `main` (`https://moon-cleanup-git-main-<scope>.vercel.app`) + an explicit, short list of specific preview branch URLs added by Cee when needed + `http://localhost:5173`…`http://localhost:5182` (dev ports) |
 | local | `http://localhost:5173+N` |
 
 Rules: response echoes the request origin only on exact match; `Access-Control-Allow-Credentials` never set; allowed headers `Authorization, Content-Type`; methods `GET, POST, PATCH, DELETE`; preflight cache 600 s. Exception: `GET /healthz` returns `Access-Control-Allow-Origin: *` (no data, needed for wake probing). Never match `*.vercel.app` ([data-auth-observability.md §7.3](../research/tech/data-auth-observability.md)).
@@ -88,7 +86,7 @@ At upgrade (uWS transport hook) the `Origin` header must be in `ALLOWED_ORIGINS`
 | Header | Value |
 | --- | --- |
 | `Content-Security-Policy` (header, static in `vercel.json`) | `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' https://*.onrender.com wss://*.onrender.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; img-src 'self' data: blob:; style-src 'self'; font-src 'self'; media-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'none'` |
-| CSP (meta, per environment) | The client build injects `<meta http-equiv="Content-Security-Policy" content="connect-src 'self' <VITE_SERVER_HTTP_URL origin> <VITE_SERVER_WS_URL origin> <Sentry ingest origin>">` into `index.html` (Vite HTML transform). Browsers enforce **both** policies, so the effective `connect-src` is the exact per-environment origins while `vercel.json` stays static (one file serves production and staging). `frame-ancestors` can only come from the header, which is why it stays there |
+| CSP (meta, per environment) | The client build injects `<meta http-equiv="Content-Security-Policy" content="connect-src 'self' <VITE_SERVER_HTTP_URL origin> <VITE_SERVER_WS_URL origin> <Sentry ingest origin>">` into `index.html` (Vite HTML transform). Browsers enforce **both** policies, so the effective `connect-src` is the exact per-environment origins while `vercel.json` stays static (one file serves production and previews). `frame-ancestors` can only come from the header, which is why it stays there |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `X-Content-Type-Options` | `nosniff` |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=()`, `gamepad=(self)`, `fullscreen=(self)` (pointer lock needs no policy) |
@@ -152,7 +150,7 @@ Lessons: griefing, kicks and public-lobby surprises were top multiplayer complai
 | Private by default | New Contracts default to Private Shift; making one Open requires a confirm dialog: **"Strangers can change your moon."** (cleaning, selling and anything you allow below) |
 | Joiner warning | Joining an Open Shift shows "This is someone else's Contract; the owner can remove you." |
 | Roles | One enum everywhere — DB (`contract_members.role`), Schema (`PlayerInfo.role`), REST DTOs and control messages: **`holder`** (contract owner, one), **`supervisor`** (appointed by the Holder via `appoint_role`), **`staff`** (redeemed Private invite), **`temp`** (Open Shift drop-in). Names and permissions per [GDD §7.5](../design/GDD.md) |
-| Temp defaults (GDD §7.5) | Can clean, deliver and sell (income to shared wallet), place builds (tagged with the author), use Relay Pads. Spending is **Loaner Kit** only: at most the lower of 2% of the wallet and 25,000 LM per 10 min, own tools and vehicles only. Cannot buy shared items (Promotions, Flight Plan, robots, machines), cannot sell or drive others' vehicles, cannot Shift/Reclaim others' builds (own only), only 1 personal ping instead of Flare Beacons. Holder toggles `tempCanBuild`, `tempCanSpendShared`, `tempCanDriveShared` |
+| Temp defaults (GDD §7.5) | Can clean, deliver and sell (income to shared wallet), place builds (tagged with the author), use Relay Pads. Spending is **Loaner Kit** only: at most the lower of 2% of the wallet and 25,000 LM per 10 min, own tools and vehicles only. Cannot buy shared items (Promotions, robots, machines), cannot sell or drive others' vehicles, cannot Shift/Reclaim others' builds (own only), only 1 personal ping instead of Flare Beacons. Holder toggles `tempCanBuild`, `tempCanSpendShared`, `tempCanDriveShared` |
 | Staff / Supervisor | Staff: everything except kick/ban, rename, delete, permissions, invite rotation; `vote_kick` of Temps when no Holder or Supervisor is online (majority of online Staff, 60 s vote, `vote_kick_state` messages, `vote_kick` audit). Supervisor: also kick and 24 h ban. Only the Holder changes room type and appoints roles |
 | Kick | Holder (and Supervisor); immediate close 4102; same player blocked from that Contract for 15 min (in memory); `kick` audit |
 | Ban | Holder (Supervisor: 24 h ban only); persisted in `contract_members.status = banned`; enforced in `onAuth` and join-by-code; `ban` audit; unban via member list |
@@ -182,7 +180,7 @@ Lessons: griefing, kicks and public-lobby surprises were top multiplayer complai
 | Pinned versions | Exact versions in every `package.json`; `pnpm-lock.yaml` committed; installs with `--frozen-lockfile` in CI, Vercel and Render |
 | uWebSockets.js | Not on npm: install from the GitHub release tag pinned to an exact version/commit; verify the tag in review |
 | Install scripts | pnpm's build-script allowlist lists only the packages that need it (e.g., uWS binary, esbuild-class tools) |
-| Dependabot | Weekly, grouped minor/patch per area; engine-level majors ignored (ADR required, [tech-stack.md §4](tech-stack.md)) |
+| Dependency updates | No Dependabot (owner decision): bumps are deliberate devops tasks; run `pnpm audit` before a bump; engine-level majors need an ADR ([tech-stack.md §4](tech-stack.md)) |
 | Audit | `pnpm audit --prod` in CI (high/critical fail on server deps) |
 | GitHub Actions | Third-party actions pinned by commit SHA; `GITHUB_TOKEN` least privilege; no secrets for PRs from forks |
 | New dependency | One designated installer when needed; review license, lockfile and lifecycle scripts; ADR only for major architecture/toolchain decisions ([module-boundaries.md §3](module-boundaries.md)) |

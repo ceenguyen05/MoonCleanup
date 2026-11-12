@@ -1,7 +1,7 @@
 # @moon-cleanup/server
 
-**Path:** `apps/server` - **Deploys to:** Render Free web service x2 (`moon-cleanup-server` from `release`,
-`moon-cleanup-server-staging` from `main`) - **Dev port:** 2567 + agent offset N
+**Path:** `apps/server` - **Deploys to:** one Render Free web service (`moon-cleanup-server` from `main`,
+ADR-0029) - **Dev port:** 2567 + agent offset N
 
 ## Purpose and ownership
 
@@ -34,7 +34,7 @@ three.js and never `apps/client`.
 
 ## Environment
 
-See `apps/server/.env.example` (all keys of the canonical list). Production/staging values live only in the Render
+See `apps/server/.env.example` (all keys of the canonical list). Production values live only in the Render
 dashboard; `render.yaml` declares the keys (`sync: false` for secrets).
 
 ## Notes and open items (verify before relying)

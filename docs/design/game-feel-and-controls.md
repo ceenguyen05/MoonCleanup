@@ -38,7 +38,7 @@ While a player holds Sweep over grime, **every 1-second window** must contain al
 | C7 | Progress is legible | Plot Card % and the albedo / "dust removed" readout update at ≥ 2 Hz while you clean in the plot | ui-ux |
 | C8 | Nothing dead | If no dust is collected for > 1 s while Sweep is held, the cause is shown within 1 frame of detection: Cell full (amber prompt), head lifted (fast turn, airborne, out of reach: dashed reticle), clean ground (thin "squeak" + ivory reticle) | gameplay + ui-ux |
 
-And at the **minute** scale: the music Pulse layer (audio-direction §4.2 L1) is up while you clean; at least one "progress beat" (Cell 90%, pour, Stamp, Next Requisition tick, Docket goal) lands every 3 min in the first hour (GDD §8 pacing makes this true: first Stamp ≈ 6 min, Cell fills every 1–4 min).
+And at the **minute** scale: the music Pulse layer (audio-direction §4.2 L1) is up while you clean; at least one "progress beat" (Cell 90%, pour, Stamp, Next Requisition tick) lands every 3 min in the first hour (GDD §8 pacing makes this true: first Stamp ≈ 6 min, Cell fills every 1–4 min).
 
 ---
 
@@ -67,7 +67,7 @@ And at the **minute** scale: the music Pulse layer (audio-direction §4.2 L1) is
 | **Sweep-walk** (while sweeping) | **2.2** | Sweep held | 2.96 (+ Brushwork ×1.05); 3.40 with the Lane Broom locked (×1.15) |
 | Steep plots, sweeping | ×0.6 | Plot class Steep (>25°), unless Sure Footing / Charge | — |
 
-- **Speed multiplier** `s = 1 + Cadence (0.07 / 0.14 / 0.20) + Second Wind (0.08)` applies to all three (E §6, same additive form as the balance-sim formula, E §22.2). Lope Training (×1.05, Lope only), Brushwork Certification (×1.05, sweep-walk only), Lane Lock trait (×1.15, Lane Broom, sweep-walk only, while locked) and the Steep rule (×0.6) multiply after it.
+- **Speed multiplier** `s = 1 + Cadence (0.07 / 0.14 / 0.20) + Second Wind (0.08)` applies to all three (E §6, same additive form as the balance-sim formula, E §22.2). Lope Training (×1.05, Lope only), Brushwork Certification (★ optional; ×1.05, sweep-walk only), Lane Lock trait (×1.15, Lane Broom, sweep-walk only, while locked) and the Steep rule (×0.6) multiply after it.
 - **No separate sprint.** Lope is the top ground speed. A third, faster ground state would change the hand-trip times the balance sim assumes (walk 3.4 m/s, E §22.2), and Hop bursts already give a fast "dash" over terrain. The INPUT bit called `sprint` means Lope (§6.8).
 - **Analog stick:** target speed = state speed × `max(0.15, curve(deflection))`, curve exponent 1.6 after the radial deadzone (§6.6). Full deflection = walk; Lope is a button (toggle by default on gamepad).
 - **Steep and local slope.** While **sweeping**, only the plot rule above applies (×0.6 on Steep plots), so the sim matches the balance sim. While **walking or loping**, local slope θ (finite differences) scales uphill speed by `1 − 0.5·clamp((θ − 20°)/(42° − 20°), 0, 1)` (×0.5 at 42°); downhill speed is not raised. Above **42°** there is no traction: the avatar slides along the gradient at `g·(sin θ − 0.4·cos θ)` (friction 0.4) until the slope drops below 42°. The terrain bake keeps > 45° to ≤ 1% of the surface (WDS §3.3).
@@ -376,7 +376,7 @@ Spring constants are given as natural frequency f and damping ratio ζ (mass-ind
 
 - Wheel radii, travel and f / ζ match the visual body springs of animation-spec §5.2, so the sim compression animation reads is the same spring it shows (Behemoth: 8 sim probes; the 14 visual road wheels follow interpolated heights).
 - Yaw rate = `min(turn rate cap, lateral cap ÷ |v|)` × steer input. Handbrake (Space / B): grip ×0.35 and lateral cap ×1.6 for drifts and turnarounds.
-- **Speed modifiers:** Gear Ratio +8 / 16 / 24% on cruise and boost; Wide Mouth ×0.92 / 0.85 / 0.78 on cruise **while the intake is down**; Driver Certification +5% cruise; Second Wind "vehicle trip time −5%" = cruise ×1.053 **while the payload is full, and always on the Carryall** (the trip leg only, so the area rate is unchanged; *interpretation, §12 Q2*).
+- **Speed modifiers:** Gear Ratio +8 / 16 / 24% on cruise and boost; Wide Mouth ×0.92 / 0.85 / 0.78 on cruise **while the intake is down**; Driver Certification (★ optional) +5% cruise; Second Wind "vehicle trip time −5%" = cruise ×1.053 **while the payload is full, and always on the Carryall** (the trip leg only, so the area rate is unchanged; *interpretation, §12 Q2*).
 - **Boost meter:** 4.0 s full (Comfort Seat +5% → 4.2 s); regenerates at 0.5 s per s after a 1.0 s delay (8 s to full). **Boosting raises the intake** (no cleaning, no downforce): boost is for travel, so vehicle area rates stay at cruise, as the balance sim assumes (E §22.2).
 - **Intake** is down when moving forward with payload space and ≥ 2 probes in contact; it lifts when boosting, airborne, reversing or full. Intake downforce ("skirt suction") keeps a cleaning vehicle planted over small bumps; boost removes it, which is when you get air.
 - **Throttle Lock** (C / Right-stick click): holds the current target speed hands-free; steering stays live; brake or throttle input cancels.
@@ -608,8 +608,8 @@ Event names follow the dot-namespaced catalog of module-boundaries §2 (`events/
 | `purchase.completed` | existing | 2-note rise + soft stamp at 0 / 120 ms | Item card glow | Purchase timeline (art-direction §8.7) | — | 0 / 0.20, 40 |
 | `purchase.rejected` | proposed | Soft low double buzz | — | 6 px × 3 shake (outline flash with Reduce Motion) | — | — |
 | `unlock.granted` | existing | Short stinger in the set key | — | Unlock card (`spring-pop`), DOT line | — | 0.20 / 0.20, 80 |
-| `review.passed` (Performance Review) | proposed | Stinger; music gains its sparse Review layer | Every visible Railshot fires a salute | Review overlay (`spring-heavy`), DOT line | — (never forced) | 0.50 / 0.30, 200 |
-| `brief.task_completed` / `docket.goal_completed` | proposed | Check chime | — | Checklist row fills, toast | — | 0 / 0.20, 50 |
+| `review.passed` (★ optional Performance Review, scope-tiers §2.1) | proposed | Stinger; music gains its sparse Review layer | Every visible Railshot fires a salute | Review overlay (`spring-heavy`), DOT line | — (never forced) | 0.50 / 0.30, 200 |
+| `brief.task_completed` / `docket.goal_completed` (★ optional) | proposed | Check chime | — | Checklist row fills, toast | — | 0 / 0.20, 50 |
 | `requisition.progress` (25/50/75%) | proposed | Soft ping | — | Next Requisition tick | — | — |
 | `robot.deployed` | proposed | Roost clamp click / Albatross take-off call | Wing unfold, first hop | Toast "Roost online" | — | 0 / 0.15, 60 |
 | `robot.state_changed` (alerts) | proposed | Amber two-note (radio) | Robot amber state light | State chip + edge chevron; caption | — | — |
@@ -686,9 +686,9 @@ The **camera follows the displayed (smoothed) pose**, plus its own springs, so a
 ## 9. Tuning workflow
 
 1. **Data first.** Every number marked [tunable] is a key in §10; code reads it through `@moon-cleanup/game-data` (the package scope changes with the lead's title rename). Hot reload in dev.
-2. **Feel panel (dev and staging only, `?feel=1`).** Sliders bound to §10 keys, writing a local override JSON; "Export diff" produces the JSON patch for a game-data PR. Never shipped to production builds.
+2. **Feel panel (dev and preview builds only, `?feel=1`).** Sliders bound to §10 keys, writing a local override JSON; "Export diff" produces the JSON patch for a game-data PR. Never shipped to production builds.
 3. **Input recorder.** Record input logs with the contract seed; replay deterministically headless (`packages/sim`) and in the client with a ghost overlay, to A/B two tunable sets on identical input.
-4. **Telemetry (dev/staging):** time-to-first-stroke, strokes per minute, idle time between `cell.full` and the next pour or puck, jump / Hop / Touchdown / Lane Lock usage, camera pull-ins per minute, reconcile error histograms, rejected strokes per player (should be 0).
+4. **Telemetry (dev/preview builds):** time-to-first-stroke, strokes per minute, idle time between `cell.full` and the next pour or puck, jump / Hop / Touchdown / Lane Lock usage, camera pull-ins per minute, reconcile error histograms, rejected strokes per player (should be 0).
 5. **Playtest protocol.** 5 testers × 20 min scripted session (first Stamp, pour, Lane Broom lanes, Hop a crater wall, Skiff jump); 1–7 ratings for control, floatiness, satisfaction, comfort. Ship bar: median ≥ 5.5 on each, no tester reports motion discomfort with default settings.
 6. **Change gates.** Pacing-relevant keys (walk/Lope/sweep speeds, jump apex, Hop Δv and recharge, stroke times, widths, vehicle cruise and boost, pour time) need a `tools/balance-sim` run and **balance-reviewer**. Feel-only keys (accelerations, coyote/buffer, camera, shake, haptics, suspension, air control, assists) need the acceptance tests of §11 to stay green.
 
@@ -860,4 +860,4 @@ Sim tests run headless in `packages/sim` (Vitest, fixed tick); client tests in P
 | Q4 | INPUT widening (§6.8) and Self feel timers | Proposed for the next contract batch | contracts-architect + netcode-engineer |
 | Q5 | Partial-step presentation (§2.10) vs plain interpolation | Partial step, with the debug toggle to compare | gameplay-systems-engineer (measure GF-20/GF-35) |
 | Q6 | On-foot Faceplant threshold: animation-spec §4.2 plays `land.stumble` (the Faceplant) above **5.0 m/s** (≥ 7.7 m falls); this doc sets the sim Faceplant at **8.0 m/s** (≥ 19.7 m), because two Hop bursts already reach 6–9 m and a Hop landing should not lock input. Landings of 5.0–8.0 m/s play `land.hard` | **Resolved 2026-11-12:** sim value 8.0 m/s (canonical here); animation reads `movement.faceplantMps` instead of its own constant | game-designer + animation-engineer |
-| Q7 | Stale names in other docs: netcode §4.1/§4.4 and security.md use "Ballast Soles", `sprint`, `plotScan`; audio-direction and art-direction use "Ballast Soles", "Crescent Squeegee", "Plot Card (G)", "Throttle Lock", "Cargo Expander", "Running Lamps", "Tile Sinterer" | This doc uses naming-bible v2 names | docs-keeper (`/update-docs`) |
+| Q7 | *(Resolved 2026-11-12)* Names: the listed display names are current catalog names; netcode input bits now `lope`/`ballast` (no `plotScan`); Plot Card is on C everywhere | — | — |

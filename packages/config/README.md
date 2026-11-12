@@ -35,7 +35,7 @@ The sources are `.ts` files loaded directly by Node 26 (native type stripping), 
   version on the registry and record it in an ADR first; core `no-restricted-imports` is enough so far.
 - ESLint ignores `docs/**` (including the vendored `docs/vendor/**`), `prototypes/**`, `assets/**`, generated output.
   `.claude/hooks/**/*.mjs` is linted with the plain, non-type-aware JavaScript block (core recommended + Node globals).
-- Shared root files: change only between waves.
+- Shared root files: one designated writer at a time, sequenced so consumers migrate together (docs/handoff/WORKFLOW.md).
 
 ## Commands
 

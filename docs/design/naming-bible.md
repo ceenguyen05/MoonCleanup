@@ -2,7 +2,7 @@
 
 Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
-Status: **Editable catalog, 2026-11-12.** Owner: game-designer; Cee and the Sonnet lead may refine display names.
+Status: **Editable catalog, 2026-11-12.** Owner: game-designer; Cee and the lead may refine display names.
 Follow [REFERENCE_TARGET](REFERENCE_TARGET.md). This catalog keeps terminology consistent; it is **not a hard naming lock**.
 
 ## Naming policy
@@ -20,14 +20,17 @@ Follow [REFERENCE_TARGET](REFERENCE_TARGET.md). This catalog keeps terminology c
   Renaming an ID/save key follows the normal contract/migration process; a display rename alone does not.
 - Keep authored assets/text/logos and distinct fictional branding; use reference names freely in research/review discussion.
   Do not ship the reference's distinctive studio/organization/character branding or present this as its official game.
-- Historical rename log §A8 explains old edits; its bans/reasons are retired and cannot block a task.
+- Historical rename log §A8 explains old edits; its bans/reasons are retired and cannot block a task. No name in this
+  catalog is "required to differ" from the reference; "not X" notes below are label preferences, not bans.
+- Entries marked **(optional ★)** name parked custom progression ([GDD §18](GDD.md), [economy §24](progression-and-economy.md));
+  keep their IDs reserved, but they are not baseline UI.
 
 ## 1. Identity
 
 | Thing | Name | Description / visual concept |
 | --- | --- | --- |
 | Game title | **Clean The Moon!** | Owner-selected exact title; keep technical slug `moon-cleanup`. Logo/key art use the same title. |
-| Employer | **Brightside Facilities Co.** ("Brightside") | Cheerful private facilities contractor that won the Moon tender on a very confident slide deck. Motto: *"We keep the bright side bright."* PR-voiced and wildly overconfident (not cheap: that beat belongs to the reference). Logo: a crescent squeegee |
+| Employer | **Brightside Facilities Co.** ("Brightside") | Cheerful private facilities contractor that won the Moon tender on a very confident slide deck. Motto: *"We keep the bright side bright."* PR-voiced, wildly overconfident and a little cheap. Logo: a crescent squeegee |
 | Dispatcher AI | **DOT** (Dispatch Operations Terminal) | Voice of tutorials, tips and contract reports. Dry corporate politeness. Appears as a small amber status light on HUD panels |
 | Player job title | **Custodian** | Ranks shown on profile: Trainee → Custodian → Senior Custodian → Lead Custodian → Head Custodian |
 | A saved world | **Contract** | "The Brightside contract for Luna": one persistent moon. Players start, resume, share contracts. Never shown as a signing/agreement screen |
@@ -40,8 +43,8 @@ Follow [REFERENCE_TARGET](REFERENCE_TARGET.md). This catalog keeps terminology c
 | --- | --- | --- |
 | Main currency | **Lumens** (symbol `LM`, icon: small sunburst) | Paid per kg sold; one shared shift wallet per contract |
 | Global progress meter | **Shine Index** | % of plots Polished, shown to four decimals; secondary readout shows the moon's **albedo** rising (flavor) |
-| Meta currency (profile, persists across contracts) | **Commendations** | Earned from contract milestones and achievements; spent on cosmetics and small quality-of-life perks |
-| Profile prestige | **Tenure** (levels) | Grows with plots credited and dust you cleaned yourself; unlocks suit liveries |
+| Meta currency (profile, persists across contracts) **(optional ★)** | **Commendations** | Earned from contract milestones and achievements; spent on cosmetics and small quality-of-life perks |
+| Profile prestige **(optional ★)** | **Tenure** (levels) | Grows with plots credited and dust you cleaned yourself; unlocks suit liveries |
 | Completion of a contract | **Contract Fulfilled** | Ending sequence + Tenure bonus; contract becomes a free-roam "showcase moon" |
 
 ## 3. World
@@ -62,14 +65,14 @@ Follow [REFERENCE_TARGET](REFERENCE_TARGET.md). This catalog keeps terminology c
 | Map | **Survey Globe** | 3D rotatable moon with plot states, robots, beacons, outposts |
 | Teleport | **Relay Pad** | Only to outposts the shift has visited; small Lumens fee; not from vehicles |
 | Waypoints (12, shared) | **Flare Beacons** | Tall colored light pillars |
-| Collectibles (exploration rewards) | **Stray Cargo** (150 pieces of lost Brightside freight: Near Parcels, Parcels, Crates, Pallets) · **Survey Points** (24 notable real craters/rilles to scan, e.g. a central peak) · **Core Samples** (40 on Steep plots, Review 3+) | Replaces the reference game's flags/mission sites with our own concept |
+| Collectibles (exploration rewards) | **Stray Cargo** (150 pieces of lost Brightside freight: Near Parcels, Parcels, Crates, Pallets) · **Survey Points** (24 notable real craters/rilles to scan, e.g. a central peak) · **Core Samples** (optional ★: 40 on Steep plots) | Our counterpart of the reference's flags and mission sites |
 | Dust | **regolith dust** (prose) | Dark gray-brown, fine, clingy |
 
 ## 4. Hand tools (6 + building tool) — bought per player at the Requisitions Desk
 
 | Tier | ID | Name | Visual concept |
 | --- | --- | --- | --- |
-| T1 (free) | `tool.desk_duster` | **Desk Duster** | Small ceremonial desk brush, polished wood and brass, from Brightside's winning tender presentation ("used to dust the model Moon"). The genre's "absurdly small start" — ours, without the cheap-employer joke |
+| T1 (free) | `tool.desk_duster` | **Desk Duster** | Small ceremonial desk brush, polished wood and brass, from Brightside's winning tender presentation ("used to dust the model Moon"). The "absurdly small start"; display alias Toothbrush / Starter Brush allowed |
 | T2 | `tool.crescent_squeegee` | **Crescent Squeegee** | Hand squeegee shaped like Brightside's crescent logo; rubber blade, orange grip |
 | T3 | `tool.bristle_broom` | **Bristle Broom** | Full-length broom with an aluminum shaft |
 | T4 | `tool.lane_broom` | **Lane Broom** | Wide flat head on a T-handle; leaves lane-straight trails |
@@ -112,7 +115,7 @@ Hub (owned from start): **Employee Badge**.
 | 5 | **Behemoth** | 1 (+cab) | Tracked mega-cleaner, slow and enormous, giant payload bay |
 
 Vehicle upgrade lines (7): **Gear Ratio** (speed) · **Cargo Expander** (payload) · **Afterburner** (boost) · **Throttle Lock** (hands-free cruise) · **Wide Mouth** (cleaning width, trades speed) · **Fast Tip** (unload speed) · **Running Lamps** (vehicle lights).
-Review-gated personal track: **Refit I / II / III** (wider skirt, bigger payload).
+**(optional ★)** Late personal track: **Refit I / II / III** (wider skirt, bigger payload).
 Vehicle capacity stat label: **Payload** (not "hopper").
 Garage parts: **Motor Pool** (garage), **Dust Vault** (buffer store), **Dump Plate** (unload pad).
 Air-time callouts: **Hang Time**, **Moonshot!**, **Lunar Loop**, **Corkscrew**, **Faceplant** (wipeout).
@@ -123,10 +126,10 @@ Air-time callouts: **Hang Time**, **Moonshot!**, **Lunar Loop**, **Corkscrew**, 
 | --- | --- | --- | --- |
 | Local Mk I | **Sandpiper** | **Roost** (dock; cleans 2 rings of plots around it) | Small skittering bird-like bot with a brush beak |
 | Local Mk II | **Plover** | Roost (3 rings) | Bigger, faster, two brush heads |
-| Global | **Albatross** | none; delivers to **Nests** (catcher buildings) as 20-kg **Bales** | Long-range hopping drone that seeks the nearest Grimy plot near its Work Front, else anywhere |
+| Global | **Albatross** | none; delivers to **Nests** (catcher buildings) as 20-kg **Bales** | Long-range hopping drone that seeks the nearest Grimy plot anywhere |
 
 States (UI, 9): **Foraging** (cleaning) · **Flying** (travelling) · **Inbound** (returning to the Roost) · **Molting** (emptying the crop) · **Patch Picked Clean** (patch done) · **Roost Brimming** (store full) · **Crop Full** (bin full) · **Grounded** (switched off) · **Resting** (idle).
-Robot actions: **Re-site** (move a Roost) · **Ground** (switch off) · **Work Front** (where the flock works) · **Flock Formations**: *Spread*, *Sweep Line*, *Ring*.
+Robot actions: **Re-site** (move a Roost) · **Ground** (switch off). **(optional ★)** **Work Front** (where the flock works) · **Flock Formations**: *Spread*, *Sweep Line*, *Ring*.
 
 ## 9. Logistics, production, power, building
 
@@ -153,38 +156,40 @@ First Light (first stroke) · New Equipment Smell (first tool upgrade) · Assay 
 ## 11. UI vocabulary
 
 Main menu: **Clock In** (play) · **Contracts** · **Locker** (cosmetics/profile/avatar editor) · **Settings** · **Credits**.
-HUD labels: **Cell** (dust gauge), **LM**, **Shine**, **Holster**, **Lamp**, **Visor**, **Hop**, **Flock** (On-Shift chip), **Effort**.
+HUD labels: **Cell** (dust gauge), **LM**, **Shine**, **Holster**, **Lamp**, **Visor**, **Hop**. (The former **Flock** On-Shift chip and **Effort** labels are optional ★.)
 Tutorial voice: DOT. Notifications: "Requisition approved", "Plot stamped", "Railshot away", "Roost idle: Re-site?".
 
 ## Additions (game-designer, 2026-11-12)
 
-Catalog additions from the earlier GDD/economy pass. Labels remain editable; IDs follow `category.snake_case`. Old generic-name bans no longer apply.
+Catalog additions from the earlier GDD/economy pass. Labels remain editable; IDs follow `category.snake_case`. Old generic-name bans no longer apply. In A1, rows marked **(optional ★)** are parked custom progression.
 
 ### A1. Progression systems
 
 | Thing | Name | Notes |
 | --- | --- | --- |
-| Contract milestones at Shine 1/5/10/25/50/75% | **Performance Review** (Review 1–6) | Unlocks content, gives a free issue and Commendations. DOT: "Performance Review scheduled." |
-| Two hands-on tasks a Review needs | **Review Brief** | |
-| Robot upgrade tree (Ops Console tab) | **Flight Plan** | 5 lines: **Keen Beak** (clean rate) · **Deep Crop** (bins/stores) · **Tailwind** (Albatross speed) · **Wide Wing** (Roost rings) · **Homing** (I **Straggler Priority**, II **Punch List Sweep**); one-time item **Auto-Relocate** |
-| Robot rate multiplier from active players | **On-Shift Bonus** | HUD chip, e.g. "Flock ×2.04 · Effort 100%" |
-| A player's measured cleaning work | **Effort** | |
-| Robots with nobody cleaning | **Unattended** (×0.5) | |
-| Where the Albatross flock works | **Work Front**; modes **Flock Formations** (*Spread*, *Sweep Line*, *Ring*) | Plots finished there are **Escorted** |
-| Raw sale rate for unprocessed Albatross Bales | **Bulk Rate** | |
-| Count caps granted by Reviews | **Roost Permits** · **Flock Permits** (Albatross) · **Plant Permits** (Kilns + Tile Sinterers) | |
-| Production machine levels | **Grade I / II / III** | |
-| Vehicle late track | **Refit I / II / III** | |
+| Progress celebrations at Shine 1/5/10/25/50/75% (baseline) | **Shine milestone** | DOT toast + music layer; unlocks nothing |
+| **(optional ★)** Contract milestones that gate content | **Performance Review** (Review 1–6) | Would unlock content, give a free issue and Commendations. DOT: "Performance Review scheduled." |
+| **(optional ★)** Two hands-on tasks a Review needs | **Review Brief** | |
+| **(optional ★)** Robot upgrade tree (Ops Console tab) | **Flight Plan** | 5 lines: **Keen Beak** (clean rate) · **Deep Crop** (bins/stores) · **Tailwind** (Albatross speed) · **Wide Wing** (Roost rings) · **Homing** (I **Straggler Priority**, II **Punch List Sweep**); one-time item **Auto-Relocate** |
+| **(optional ★, retired from baseline)** Robot rate multiplier from active players | **On-Shift Bonus** | HUD chip, e.g. "Flock ×2.04 · Effort 100%" |
+| **(optional ★, retired)** A player's measured cleaning work | **Effort** | |
+| **(optional ★, retired)** Robots with nobody cleaning | **Unattended** (×0.5) | |
+| **(optional ★)** Where the Albatross flock works | **Work Front**; modes **Flock Formations** (*Spread*, *Sweep Line*, *Ring*) | Plots finished there are **Escorted** |
+| **(optional ★, retired)** Raw sale rate for unprocessed Albatross Bales | **Bulk Rate** | |
+| Fixed technical count limits (baseline) | **Fleet cap** (Roosts, Albatross) · **Plant cap** (Kilns + Tile Sinterers) | Shown as "12 / 24" |
+| **(optional ★)** Count caps granted by Reviews | **Roost Permits** · **Flock Permits** (Albatross) · **Plant Permits** (Kilns + Tile Sinterers) | |
+| **(optional ★)** Production machine levels | **Grade I / II / III** | |
+| **(optional ★)** Vehicle late track | **Refit I / II / III** | |
 | Buildable selling point | **Field Gate** | Includes a mini-Railshot |
 | Direct Nest/Dust Vault output into an adjacent Gate or machine | **Bale Chute** | |
-| Recorded Carryall shuttle route | **Carryall Convoy** | |
-| Sell-from-anywhere suit add-on | **Remote Assay** | |
+| **(optional ★)** Recorded Carryall shuttle route | **Carryall Convoy** | |
+| **(optional ★)** Sell-from-anywhere suit add-on | **Remote Assay** | |
 | Repeat-copy discount for tools/vehicles | **Repeat Requisition** | |
 | Free low-tier tools for all members | **Standard Issue** | |
 | Building on dust | **Settle** | |
-| Late-contract helpers | **Spot Check** (nearest-unpolished ping) · **Punch List** (remaining-plot list) · **Final Walkthrough** (Review 6 mode) · **Closing Bonus** (Stamp ×2) · **Clean-up Order** (priority robot pass on a flagged plot) · **Brightside Service Call** (pre-Albatross clean-up) | |
+| Late-contract helpers | **Spot Check** (nearest-unpolished ping) · **Punch List** (remaining-plot list) · **Clean-up Order** (priority robot pass on a flagged plot) · **Brightside Service Call** (pre-Albatross clean-up); **(optional ★)** **Final Walkthrough** (Review 6 mode) · **Closing Bonus** (Stamp ×2) | |
 | Next-purchase HUD tracker | **Next Requisition** | |
-| Permit-free cosmetic money sink | **Brightside Monument** | |
+| **(optional ★)** Permit-free cosmetic money sink | **Brightside Monument** | |
 
 ### A2. Tool traits
 
@@ -200,7 +205,7 @@ Catalog additions from the earlier GDD/economy pass. Labels remain editable; IDs
 | Paid return to nearest outpost | **Outpost Recall** |
 | In-game help (H) | **DOT Handbook** |
 | Outpost social room | **Break Room**, with **Rock Garden** (rake patterns into a regolith tray; screenshot-able), **Postcard Rack** (send a Shine postcard to the shift), **Earthview Window**, **Hold Music** (Brightside's on-hold tracks on the DOT terminal) |
-| MVP play-area boundary | **Pilot Fence** around the **Boreal Pilot Area**; MVP milestone **Pilot Review** |
+| MVP play-area boundary | **Pilot Fence** around the **Boreal Pilot Area**; **(optional ★)** MVP milestone **Pilot Review** (no longer gates the first Roost) |
 | MVP stand-in for Roost rails | **Roost Uplink** |
 | Contract sizes | **Standard Contract** (163,842 plots) · **Moonlet Contract** (post-launch, 40,962 plots) |
 | Post-completion modes | **Overtime** (post-game goals) · **Beacon Run** (time trials between Flare Beacons) |
@@ -215,13 +220,13 @@ Catalog additions from the earlier GDD/economy pass. Labels remain editable; IDs
 | Mass-revert one player's builds | **Incident Report** (→ Revert) |
 | Idle state | **On Break** |
 | Public shift list / player list (Tab) | **Shift Board** / **Shift Roster** |
-| Session bookends and goals | **Shift Briefing** · **Shift Docket** (3 shared goals) · **Shift Report** |
+| Session bookends and goals | **Shift Briefing** · **Shift Report**; **(optional ★)** **Shift Docket** (3 shared goals) |
 | Joiner catch-up summary | **Orientation Packet** |
 | Chat text-to-speech | **Read Aloud** |
 | Onboarding quest chains | **Induction Checklist** · **Probation Checklist** |
 | Offline robot catch-up (post-launch) | **Night Shift** |
 
-### A5. Meta layer
+### A5. Meta layer (optional ★)
 
 | Thing | Name |
 | --- | --- |
@@ -287,14 +292,14 @@ Editable UI vocabulary; generic labels such as robot panel are permitted. Curren
 
 | Thing | ID | Name | Tier | Notes |
 | --- | --- | --- | --- | --- |
-| Pause menu (Esc / Menu; the world keeps running) | `ui.time_card` | **Time Card** | MVP | Fits Clock In / Clock Out. Shows this session's time, Lumens earned, plots stamped, Effort |
+| Pause menu (Esc / Menu; the world keeps running) | `ui.time_card` | **Time Card** | MVP | Fits Clock In / Clock Out. Shows this session's time, Lumens earned, plots stamped |
 | Leave the shift (counterpart of Clock In) | `ui.clock_out` | **Clock Out** | MVP | Already GDD §8 prose; now a UI label. Leads to the Shift Report (v1.0) |
 | Info and actions panel for a Roost, Nest, machine, Gate or power piece, with the "Why isn't this working?" status line | `ui.equipment_card` | **Equipment Card** | MVP (Roost) | Robot/equipment panel; editable label |
-| Assembly Gun build menu (5 tabs) | `ui.parts_catalog` | **Parts Catalog** | v1.0 | Not "build menu", "lobby shop" or "supply wall" |
+| Assembly Gun build menu (5 tabs) | `ui.parts_catalog` | **Parts Catalog** | v1.0 | Plain alias **Build Menu** is allowed |
 | Assay Counter pour readout (weighed kg, rate, Lumens paid, Railshot progress) | `ui.assay_slip` | **Assay Slip** | MVP | Prints "APPROVED" with a stamp glyph on completion |
-| Profile page in the Locker (name, rank, Tenure, Commendations, Certifications, Benefits Package) | `ui.personnel_file` | **Personnel File** | MVP (stub) | Not "YOUR ASTRONAUT" |
+| Profile page in the Locker (name, achievements; rank, Tenure, Commendations, Certifications, Benefits Package only with the optional ★ meta) | `ui.personnel_file` | **Personnel File** | MVP (stub) | Plain alias **Profile** is allowed |
 | Reconnect overlay and the avatar tag of a disconnected player | `ui.signal_lost` | **Signal Lost** | MVP | Same words as the netcode seat-hold avatar flag |
-| HUD toast notification with DOT's amber light | `ui.dot_notice` | **DOT Notice** | MVP | "Notice Board" (retired in A8) is not reused as a place name |
+| HUD toast notification with DOT's amber light | `ui.dot_notice` | **DOT Notice** | MVP | Plain alias **Notification** is allowed |
 
 ### A11. Feel & controls names (game-designer brief, 2026-11-12, for [game-feel-and-controls.md](game-feel-and-controls.md))
 
@@ -308,7 +313,7 @@ Control-label defaults. Familiar labels such as Follow Camera, Auto-Level, Auto-
 | Accessibility: start in Earth-feel, toggle available without buying Ballast Soles | `setting.earth_feel_comfort` | **Earth-Feel Comfort** | MVP | The "Ballast Soles default on" row of ui-screens-and-flows §3.21 |
 | Vehicle self-levelling in the air | `setting.auto_level` | **Auto-Level** | v1.0 | Default on |
 | Longer coyote, buffer and hold windows | `setting.relaxed_timing` | **Relaxed Timing** | MVP | Accessibility |
-| Vehicle camera modes | `setting.vehicle_cam_chase` / `setting.vehicle_cam_free` | **Chase** / **Free Look** | MVP | Replaces "Follow / Free-look" |
+| Vehicle camera modes | `setting.vehicle_cam_chase` / `setting.vehicle_cam_free` | **Chase** / **Free Look** | MVP | Alias **Follow Camera** is allowed |
 | RMB / LT aim mode for tools without an active trait | `action.precision_aim` | **Precision Aim** | MVP | Twin Pass aim is its Ion Curtain variant |
 
 ## Current familiar-label aliases

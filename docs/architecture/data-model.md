@@ -1,7 +1,6 @@
 # Data model — Clean The Moon!
 
 > **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
-> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
 > Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
 > [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
 
@@ -170,7 +169,7 @@ Indexes: PK `(contract_id, player_id)`; `(player_id, last_seen_at desc)` for "my
 
 **This section and §3.7b are the canonical save layout** (lead decision 2026-11-12; [world-and-dust-simulation.md §6](world-and-dust-simulation.md) defines only the dust chunk payload and defers here).
 
-**Scope of the header slots:** the A/B slot blob is the *header save*: wallet, unlocks, Promotions Board, suit gear, vehicles, robots, buildings, rails, players, Performance Reviews, Shine mirror. It contains **no per-plot dust data** — plot states, remaining values, ledgers and stroke logs live only in `contract_dust_chunks` (§3.7b), so a checkpoint writes the header plus only the dirty chunks (typically 1–20) instead of the whole dust state.
+**Scope of the header slots:** the A/B slot blob is the *header save*: wallet, unlocks, Promotions Board, suit gear, vehicles, robots, buildings, rails, players, Shine mirror (optional ★ systems add fields only if Cee pulls them in). It contains **no per-plot dust data** — plot states, remaining values, ledgers and stroke logs live only in `contract_dust_chunks` (§3.7b), so a checkpoint writes the header plus only the dirty chunks (typically 1–20) instead of the whole dust state.
 
 Write rules (one checkpoint = **one transaction**):
 1. `BEGIN`.
@@ -247,7 +246,7 @@ Indexes: `(at)`; `(contract_id, at)`; `(target_player_id, at)`. Writes are rate-
 
 | Table | Columns | Purpose |
 | --- | --- | --- |
-| `ops_usage_daily` | `day` date PK, `bytes_out` bigint, `bytes_in` bigint, `bot_bytes_out` bigint (staging bot runs), `instance_seconds` bigint (process uptime → Render instance-hours), `room_seconds` bigint, `player_seconds` bigint, `peak_clients` smallint, `peak_rooms` smallint, `rooms_refused` integer, `boots` smallint, `db_bytes` bigint, `saves_bytes` bigint, `contracts_by_tier` jsonb, `updated_at` | Month-to-date bandwidth, instance-hours, admission refusals and DB size that survive restarts (owner: log, no cap). Upserted every 10 min and on shutdown; each environment writes its own DB. Month-to-date values are shown on `/status` ([system-overview.md §2.1](system-overview.md)) |
+| `ops_usage_daily` | `day` date PK, `bytes_out` bigint, `bytes_in` bigint, `bot_bytes_out` bigint (hosted test-window bot runs), `instance_seconds` bigint (process uptime → Render instance-hours), `room_seconds` bigint, `player_seconds` bigint, `peak_clients` smallint, `peak_rooms` smallint, `rooms_refused` integer, `boots` smallint, `db_bytes` bigint, `saves_bytes` bigint, `contracts_by_tier` jsonb, `updated_at` | Month-to-date bandwidth, instance-hours, admission refusals and DB size that survive restarts (owner: log, no cap). Upserted every 10 min and on shutdown; each environment writes its own DB. Month-to-date values are shown on `/status` ([system-overview.md §2.1](system-overview.md)) |
 | `ops_jobs` | `name` text PK, `last_run_at` timestamptz, `last_result` text | Daily maintenance (retention, compaction, size metrics) runs at boot or on a 24 h timer if `last_run_at` > 24 h (the server is not always awake); sliced so it never costs a live room more than 1.5 ms per tick |
 
 ## 4. Size math against 1 GB
@@ -272,9 +271,9 @@ Budget split (single source; WDS defers here):
 | Bucket | Budget | Holds |
 | --- | --- | --- |
 | Reserve: WAL, catalogs, autovacuum headroom | 200 MB | — |
-| `moon_staging` | 100 MB | Test data; wiped freely |
-| `moon_prod` players/tokens/achievements/audit/ops | 100 MB | ≈ 50,000 players |
-| `moon_prod` saves (headers + dust chunks) | 600 MB | ≈ 170 typical active Contracts at full tier, far more once compaction applies (§5.1) |
+| Hosted test-window fixtures / headroom | 100 MB | Fresh isolated fixtures during an approved test window, deleted afterwards; otherwise headroom (local tests use local Postgres) |
+| Schema `prod` players/tokens/achievements/audit/ops | 100 MB | ≈ 50,000 players |
+| Schema `prod` saves (headers + dust chunks) | 600 MB | ≈ 170 typical active Contracts at full tier, far more once compaction applies (§5.1) |
 | **Total** | **1,000 MB** | |
 
 Capacity thresholds (daily job logs a `db_size` line, writes `ops_usage_daily.db_bytes/saves_bytes`, Sentry warns): **warn** at total > 700 MB or any Contract over its soft cap; **refuse new Contract creation** at total > 800 MB (`POST /v1/contracts` → 507 `STORAGE_FULL`, `/readyz` and `/status` report `storage: "full"`; existing Contracts keep playing and saving); **emergency compaction** at > 900 MB (§5.1 stages applied to the largest idle Contracts first). Real per-Contract sizes are **measured in P2 and before launch** and these numbers updated.
@@ -319,7 +318,7 @@ Compaction rewrites a Contract's chunk rows only while no room is live for it (l
 | Compression | gzip of the whole header envelope; deflate per chunk payload |
 | Ownership | `packages/shared/src/save/format.ts` defines layout + versions; `packages/world` and `packages/sim` write/read their sections (`apps/server/src/world` the chunk payloads); `apps/server/src/persistence` compresses and stores |
 | Upgrades | Loader runs an in-memory chain `vN → vN+1 → … → current`; the next checkpoint writes the current version. Each step is owned by the package that changed its section |
-| Downgrades | **Never.** A server whose `SAVE_FORMAT_VERSION` is older than a blob refuses it (4108). So a code rollback after a save-format bump makes touched Contracts unavailable until roll-forward. Release rule: save-format bumps ship alone, soak 48 h on staging |
+| Downgrades | **Never.** A server whose `SAVE_FORMAT_VERSION` is older than a blob refuses it (4108). So a code rollback after a save-format bump makes touched Contracts unavailable until roll-forward. Release rule: save-format bumps ship alone, soak 48 h locally against copies of representative saves before the push to `main` |
 | Fixtures | One golden save per historical version, committed as test fixtures; CI loads every fixture with the current loader |
 | Validation before write | Encode → decode header + section table → CRC32 → size sanity (header ≤ 1 MB, each chunk payload ≤ 256 KB, Contract within its hard cap, §5.1) before the write; failure skips the write, leaves both slots and all chunk versions untouched and alerts |
 | Game-data changes | Balance changes need no save migration; IDs are never reused; removed IDs need an explicit mapping in game-data |
@@ -347,16 +346,16 @@ Write volume per busy room-hour ≈ 120 checkpoints × (≈ 0.1 MB header + ≈ 
 | Session limits | `lock_timeout = 5s`, `statement_timeout = 60s` for the migration connection |
 | Expand/contract | Migration N must work with code N−1 (old instance keeps running during the build). Add nullable/defaulted columns first → code writes them → backfill → constraint in a later release. Drop columns ≥ 2 releases after code stops reading them. Renames = add + copy + drop |
 | Never | `drizzle-kit push` against Aiven (local Docker only); editing an applied migration |
-| Backups | Before any risky migration Cee takes a manual `pg_dump` of `moon_prod` (free-tier backup policy unverified) |
-| Order across envs | Merge to `main` → staging build migrates `moon_staging`; fast-forward `release` → prod build migrates `moon_prod` |
+| Backups | Before any risky migration Cee takes a manual `pg_dump` of schema `prod` (free-tier backup policy unverified) |
+| Order across envs | Migrate an isolated local Postgres first; a push to `main` → Render build migrates schema `prod` (ADR-0029) |
 
-## 9. Two logical databases
+## 9. Database layout (one schema, ADR-0029)
 
 | Item | Plan | Fallback |
 | --- | --- | --- |
-| Layout | One Aiven PG Free service; databases `moon_prod` and `moon_staging`; roles `mc_prod`, `mc_staging`, each with `CONNECT` only on its own DB (revoked from `PUBLIC`) | If Aiven Free does not allow extra databases/roles (unverified, [platform-limits.md §C1](../research/tech/platform-limits.md)): one `defaultdb` with schemas `prod` and `staging`, selected via the connection's `search_path` option, one Drizzle migrations table per schema |
-| Connections | Pools: prod max 4 (×2 during deploy overlap), staging max 2, migrations 1, admin 1 → ≤ 14 | Aiven Free `max_connections` is unpublished (PG Developer = 20) |
-| Shared limits | 1 GB storage and CPU are shared; a runaway staging test can starve prod — staging budget 100 MB, wipe at will | — |
+| Layout | One Aiven PG Free service; application tables in schema `prod` (`DB_SCHEMA`), inside a dedicated application database/role when Aiven Free allows it (`CONNECT` revoked from `PUBLIC`); one Drizzle migrations table in that schema. `staging` stays a valid but unused `DB_SCHEMA` value | If extra databases/roles are not available (unverified, [platform-limits.md §C1](../research/tech/platform-limits.md)): the supplied `defaultdb` with schema `prod`, selected via the connection's `search_path` option |
+| Connections | Pools: prod max 4 (×2 during deploy overlap), migrations 1, admin 1 → ≤ 10 | Aiven Free `max_connections` is unpublished (PG Developer = 20) |
+| Shared limits | 1 GB storage and CPU are shared with live play; hosted test-window fixtures stay within their 100 MB bucket and are deleted afterwards | — |
 
 ## 10. Open issues
 

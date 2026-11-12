@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADRs)
 
-ADRs record the decisions behind [`docs/architecture/tech-stack.md`](../architecture/tech-stack.md), which is canonical: every ADR here matches it. Where research evidence disagrees, the ADR states the disagreement under **Consequences**. ADRs are **append-only**: to change a decision, add a new ADR that supersedes the old one and update the old ADR's status line. A new dependency or a major bump of an engine-level package needs an ADR.
+ADRs record the decisions behind [`docs/architecture/tech-stack.md`](../architecture/tech-stack.md), which is canonical: every ADR here matches it. Where research evidence disagrees, the ADR states the disagreement under **Consequences**. ADRs are **append-only**: to change a decision, add a new ADR that supersedes the old one and update the old ADR's status line. A major bump of an engine-level package or a new core architecture/toolchain choice needs an ADR; routine project-local dependencies do not ([ADR-0028](0028-dependency-policy.md)).
 
 Evidence lives in [`docs/research/`](../research/) (see each ADR's Evidence section). Module ownership is in [`docs/architecture/module-boundaries.md`](../architecture/module-boundaries.md).
 
@@ -34,7 +34,7 @@ Evidence lives in [`docs/research/`](../research/) (see each ADR's Evidence sect
 | [0024](0024-validation-zod.md) | Validation and config schemas: zod 4 | Accepted | 2026-11-12 |
 | [0025](0025-netcode-model-revision.md) | Netcode model revision: bytes frames, horizon-aware interest, one room per Contract | Accepted (supersedes 0015) | 2026-11-12 |
 | [0026](0026-dust-ledger-absolute-removal.md) | Dust ledger: absolute coverage-weighted removal, server-sequenced ops | Accepted (amends 0009) | 2026-11-12 |
-| [0027](0027-3d-art-production-path.md) | 3D art production path | Accepted (default path; Q15/Q23 owner decisions open) | 2026-11-12 |
+| [0027](0027-3d-art-production-path.md) | 3D art production path | Accepted (default path; Q23 resolved: Blender installed; Q15 open) | 2026-11-12 |
 | [0028](0028-dependency-policy.md) | Dependency policy | Accepted | 2026-11-12 |
 | [0029](0029-single-deploy-branch-main.md) | Single deploy branch (`main` only) and one Render service | Accepted (supersedes the branch/staging topology of 0002) | 2026-11-12 |
 | [0030](0030-reference-first-design.md) | Reference-first recreation and flexible display naming | Accepted | 2026-11-12 |

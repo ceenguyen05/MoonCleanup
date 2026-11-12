@@ -289,7 +289,8 @@ Assignment order maximizes the distance between consecutive joins (P01, P07, P04
 
 ### 4.5 Liveries via Tenure
 
-Rank and livery display names come from the naming bible (A6). Tenure thresholds belong to the game-designer.
+Reference mode: Tenure is optional ★ (scope-tiers §2.1). The baseline Locker unlocks liveries from defaults and achievements;
+the rank column applies only if Cee pulls Tenure in. Rank and livery display names come from the naming bible (A6). Tenure thresholds belong to the game-designer.
 
 | Livery (ID) | Unlocked at rank | Look |
 |---|---|---|
@@ -524,7 +525,7 @@ Performance: at most 4 simultaneously visible `backdrop-filter` panels. **Any Ti
 
 | Zone | Content |
 |---|---|
-| Top-left | **LM** wallet (shift wallet) with tick-up ticker + income floaters; On-Shift chip ("Flock ×2.04 · Effort 100%") |
+| Top-left | **LM** wallet (shift wallet) with tick-up ticker + income floaters |
 | Top-center | Compass strip (outposts, nearest arrow, pings; Flare Beacons from v1.0); toasts under it ("Requisition approved", "Plot stamped", "Railshot away"), max 3 stacked |
 | Top-right | **Shine** (Shine Index %) + small albedo readout + Next Review chip |
 | Bottom-right | **Holster** slots, each with its **Cell** gauge (matches the Dust Cell window); active tool enlarged |
@@ -671,7 +672,7 @@ The look depends on the custodian, tools, vehicles, robots and outpost hardware 
 
 | # | Source | Used for | Rules |
 | --- | --- | --- | --- |
-| 1 | **Original work by agents, scripted and reproducible**: `technical-artist` (meshes, UVs, trim sheets, materials, LODs, KTX2 export) and `animation-engineer` (rigs, skinning, animation) | Everything the player looks at: custodian, tools, vehicles, robots, outpost kit, machines, build pieces, props | This is decision D5 / [OPEN_QUESTIONS Q23](../OPEN_QUESTIONS.md). Scripts in `tools/asset-pipeline/` build each asset from parameters (procedural modelling: bevelled panels, rounded-rect shells, swept tubes, panel lines, arrayed fasteners) plus a **shared kitbash library** authored once (fasteners, hinges, vents, lamps, hazard tabs, hoses, wheel/track sets). Bevelled high-poly → baked normal and AO onto the game mesh; trim-sheet UVs for hardware; glTF → glTF-Transform (meshopt, KTX2). **Preferred tool: headless Blender** (`blender -b --python`, scripts in `tools/asset-pipeline/blender/`; Blender is GPL, its *output* is ours), which gives proper bevels, booleans, bakes and rigging. Its install is Cee's call (Q23); without it the same scripts target the Node path (three.js geometry + glTF-Transform), with rigs built in code |
+| 1 | **Original work by agents, scripted and reproducible**: `technical-artist` (meshes, UVs, trim sheets, materials, LODs, KTX2 export) and `animation-engineer` (rigs, skinning, animation) | Everything the player looks at: custodian, tools, vehicles, robots, outpost kit, machines, build pieces, props | This is decision D5 / [OPEN_QUESTIONS Q23](../OPEN_QUESTIONS.md). Scripts in `tools/asset-pipeline/` build each asset from parameters (procedural modelling: bevelled panels, rounded-rect shells, swept tubes, panel lines, arrayed fasteners) plus a **shared kitbash library** authored once (fasteners, hinges, vents, lamps, hazard tabs, hoses, wheel/track sets). Bevelled high-poly → baked normal and AO onto the game mesh; trim-sheet UVs for hardware; glTF → glTF-Transform (meshopt, KTX2). **Preferred tool: headless Blender** (`blender -b --python`, scripts in `tools/asset-pipeline/blender/`; Blender is GPL, its *output* is ours), which gives proper bevels, booleans, bakes and rigging. Installed: Blender 4.5.10 LTS (Q23 resolved, path in OPEN_QUESTIONS); as a fallback the same scripts can target the Node path (three.js geometry + glTF-Transform), with rigs built in code |
 | 2 | **CC0 libraries**: Poly Haven, ambientCG, Kenney | Base materials and texture inputs (metal, paint, rubber, regolith detail after the desaturate-and-calibrate step, §11); reference-quality kitbash greebles from Poly Haven models; Kenney only for placeholders | Manual download, manifest entry per file. Never used unmodified for a hero silhouette |
 | 3 | **Commissioned art (optional)** | First candidate: custodian base mesh and helmet; second: Behemoth | Only if Cee funds it (§12 item 7). Work-for-hire or exclusive commercial licence, logged in the manifest. The plan does not depend on it |
 | 4 | **AI-generated** | Nothing in the current plan | Only after [OPEN_QUESTIONS Q15](../OPEN_QUESTIONS.md) is closed: tool terms grant commercial rights, lead approval per asset, disclosed in Credits and the ledger (§11) |

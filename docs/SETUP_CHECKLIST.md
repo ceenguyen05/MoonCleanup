@@ -15,7 +15,8 @@ No setup commit, PR, tag, branch promotion or stage sign-off is required. Cee co
 - Copy `.env.example` templates to ignored local env files. Use memory persistence or isolated local Postgres for testing;
   never point local destructive tests at live saved games. See [environment contract](architecture/environments.md#9-canonical-env-var-list).
 - Replace stub scripts in M0-W0-T03. Then use `pnpm dev`, meaningful `pnpm verify` and browser checks. Stub exit 0 is not a pass.
-- Ask for Blender executable path (Q23) when needed for asset proof; do not install software machine-wide automatically.
+- Blender 4.5.10 LTS is installed (Q23 resolved): `C:\Program Files\Blender Foundation\Blender 4.5\blender.exe`. Agents run it headless only; never
+  install, update or configure software machine-wide.
   Keep working on other local features if the path/device/cloud credentials are unavailable.
 - Keep the custom git-blocking hook and permission denies (owner confirmed November 12). Run its Node matrix and piped
   PreToolUse JSON cases; never invoke a real git mutation to test it. Hook config changes activate next session.

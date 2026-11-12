@@ -11,7 +11,7 @@ Cards here are **compact**: every field of the brief template is present, but "R
 
 ## 1. Goal
 
-Full parity with the genre reference's systems plus our ★ improvements: the whole Moon playable with 4 outposts, all tools/suit/vehicles, robots, logistics, production and power, building, Performance Reviews, the last-1 % toolkit, Open Shifts with roles, the meta layer, and the Contract Fulfilled ending — inside the free-tier budgets.
+Full reference-system parity in reference mode ([REFERENCE_TARGET](../design/REFERENCE_TARGET.md), [scope-tiers §2](../design/scope-tiers.md)): the whole Moon playable with 4 outposts, all tools/suit/vehicles, robots at base rate with visible technical caps, logistics, production and power, building, Shine milestone celebrations, the last-1 % toolkit, Open Shifts with roles, Contracts/Locker/achievements, and the Contract Fulfilled ending — inside the free-tier budgets. Optional ★ custom progression (scope-tiers §2.1: Performance Reviews, Flight Plan, On-Shift, Bulk Rate, Docket, Tenure/Commendations/Certifications/Benefits) is **not** M2 scope unless Cee pulls it in.
 
 ## 2. Exit criteria
 
@@ -19,7 +19,7 @@ Full parity with the genre reference's systems plus our ★ improvements: the wh
 | --- | --- | --- |
 | E1 | Every scope-tiers §2 row implemented; mechanics-parity-matrix rows marked v1.0 = done | qa parity pass (W12-T04) |
 | E2 | `tools/balance-sim` meets every `pacing-targets.json` row (solo contract 30–35 h, milestones to 75 %) | `/balance-check` |
-| E3 | 16 bots + 64 robots: room tick p95 ≤ 3.5 ms, CPU ≤ 60 % of 0.1 quota, ≤ 6.5 KB/s/client on staging Render Free | `/bot-test` |
+| E3 | 16 bots + 64 robots: room tick p95 ≤ 3.5 ms, CPU ≤ 60 % of 0.1 quota, ≤ 6.5 KB/s/client in the local CPU-limited container (hosted window when authorized) | `/bot-test` |
 | E4 | 400 robots + 4 bots, 30 min: dust ≤ 10 % of 0.1 CPU, RSS ≤ 300 MB (world-and-dust §10 S5) | qa scenario |
 | E5 | Save size and DB growth fit the 1 GB plan (data-model §4) with 4,000 structures and max permits | backend report |
 | E6 | VT-M2-01…22: all V1 pass, ≤ 3 V2 open; Safari 26 gating (VT-M2-20); Ultra preset (VT-M2-17) | `/visual-check M2` |
@@ -37,11 +37,11 @@ Full parity with the genre reference's systems plus our ★ improvements: the wh
 | W2 | Tools T5–T6, suit gear, full board | **M2-S5**: T01, T02, T03 | **M2-S6**: T04, T05, T06 (integ) |
 | W3 | Vehicles: Carryall, Bulldust, Behemoth | **M2-S7**: T01, T02, T04 | **M2-S8**: T03, T05, T06 (integ) |
 | W4 | Robots I: Roost, Sandpiper, Plover | **M2-S9**: T01, T03, T04 | **M2-S10**: T02, T05, T06 (integ) |
-| W5 | Robots II + Flight Plan | **M2-S11**: T01, T02, T05 | **M2-S12**: T03, T04, T06 (integ) |
+| W5 | Robots II | **M2-S11**: T01, T02, T05 | **M2-S12**: T03, T04, T06 (integ) |
 | W6 | Logistics + Railshot away | **M2-S13**: T01, T03, T05 | **M2-S14**: T02, T04, T06 (integ) |
 | W7 | Production & power | **M2-S15**: T01, T02, T05 | **M2-S16**: T03, T04, T06 (integ) |
 | W8 | Building (Assembly Gun) | **M2-S17**: T01, T02, T05 | **M2-S18**: T03, T04, T06 (integ) |
-| W9 | Reviews, economy completion, last-1 %, session | **M2-S19**: T01, T02, T04 | **M2-S20**: T03, T05, T06 (integ) |
+| W9 | Economy completion, Shine milestones, last-1 %, session | **M2-S19**: T01, T02, T04 | **M2-S20**: T03, T05, T06 (integ) |
 | W10 | Co-op & social (Open Shifts, roles, chat) | **M2-S21**: T01, T02, T03 | **M2-S22**: T04, T05, T06 (integ) |
 | W11 | Meta layer + ending | **M2-S23**: T01, T02, T05 | **M2-S24**: T03, T04, T06 (integ) |
 | W12 | Parity hardening + v1.0 gate | **M2-S25**: T01, T02, T03 | **M2-S26**: T04, T05, T06 (integ, close) |
@@ -62,7 +62,7 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 | M2-W1-T04 | M2-S3 | game-designer | World content data: outposts, cargo, survey memos, fees | M2-W0-T04 | 4 | todo |
 | M2-W1-T05 | M2-S4 | terrain-dust-engineer | Whole-moon streaming: server interest at scale, client residency, far side; orbit/mid-field coverage + Survey Globe render (moved from M1) | M2-W1-T01 | 5 | todo |
 | M2-W1-T06 | M2-S4 | integrator | M2-W1 integration | M2-W1-T01, M2-W1-T02, M2-W1-T03, M2-W1-T04, M2-W1-T05 | 9 | todo |
-| M2-W2-T01 | M2-S5 | gameplay-systems-engineer | Tools T5-T6 + traits, 18 Dust Cell levels, Promotions 23 nodes + Review gates | M2-W1-T06 | 1 | todo |
+| M2-W2-T01 | M2-S5 | gameplay-systems-engineer | Tools T5-T6 + traits, 18 Dust Cell levels, Promotions 23 nodes + prerequisites | M2-W1-T06 | 1 | todo |
 | M2-W2-T02 | M2-S5 | gameplay-systems-engineer | Suit gear: Hop Pack, Ballast Soles, Lowlight Visor (5 lines, 14 levels) | M2-W1-T06 | 2 | todo |
 | M2-W2-T03 | M2-S5 | technical-artist | T5-T6 models, Hop Pack plumes, Lowlight Visor grade | M2-W1-T06 | 3 | todo |
 | M2-W2-T04 | M2-S6 | ui-ux-motion-designer | Full Promotions Board + suit UI | M2-W2-T01, M2-W2-T02 | 4 | todo |
@@ -74,15 +74,15 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 | M2-W3-T04 | M2-S7 | netcode-engineer | Multi-seat vehicle sync, interest tuning for fast vehicles | M2-W2-T06 | 4 | todo |
 | M2-W3-T05 | M2-S8 | ui-ux-motion-designer | Motor Pool UI full, trick callouts | M2-W3-T01 | 5 | todo |
 | M2-W3-T06 | M2-S8 | integrator | M2-W3 integration | M2-W3-T01, M2-W3-T02, M2-W3-T03, M2-W3-T04, M2-W3-T05 | 9 | todo |
-| M2-W4-T01 | M2-S9 | gameplay-systems-engineer | Robot behaviour: Roost, Sandpiper, Plover, states, Permits | M2-W3-T06 | 1 | todo |
+| M2-W4-T01 | M2-S9 | gameplay-systems-engineer | Robot behaviour: Roost, Sandpiper, Plover, states, money purchase + technical caps | M2-W3-T06 | 1 | todo |
 | M2-W4-T02 | M2-S10 | gameplay-systems-engineer | Server robot scheduling budget + shedding | M2-W4-T01 | 2 | todo |
 | M2-W4-T03 | M2-S9 | terrain-dust-engineer | Robots as ledger operations + lane math | M2-W3-T06 | 3 | todo |
 | M2-W4-T04 | M2-S9 | technical-artist | Sandpiper, Plover, Roost models + state lights | M2-W3-T06 | 4 | todo |
 | M2-W4-T05 | M2-S10 | animation-engineer | Shorebird-motif robot motion | M2-W4-T04 | 5 | todo |
 | M2-W4-T06 | M2-S10 | integrator | M2-W4 integration (bot-test with 64 robots) | M2-W4-T01, M2-W4-T02, M2-W4-T03, M2-W4-T04, M2-W4-T05 | 9 | todo |
-| M2-W5-T01 | M2-S11 | gameplay-systems-engineer | Albatross, Nests, Bale Chute, Flight Plan (5 lines/15 levels), On-Shift Bonus | M2-W4-T06 | 1 | todo |
+| M2-W5-T01 | M2-S11 | gameplay-systems-engineer | Albatross, Nests, Bale Chute, base-rate robot work | M2-W4-T06 | 1 | todo |
 | M2-W5-T02 | M2-S11 | netcode-engineer | Robot intent stream (150 m), bandwidth caps | M2-W4-T06 | 2 | todo |
-| M2-W5-T03 | M2-S12 | ui-ux-motion-designer | Equipment Cards, Survey Globe overlay + robot layer, Permits UI | M2-W5-T01 | 3 | todo |
+| M2-W5-T03 | M2-S12 | ui-ux-motion-designer | Equipment Cards, Survey Globe overlay + robot layer, cap readouts | M2-W5-T01 | 3 | todo |
 | M2-W5-T04 | M2-S12 | qa-test-engineer | 400-robot server scenario + robot soak | M2-W5-T01, M2-W5-T02 | 4 | todo |
 | M2-W5-T05 | M2-S11 | animation-engineer | Albatross ballistic hop + wing fold | M2-W4-T06 | 5 | todo |
 | M2-W5-T06 | M2-S12 | integrator | M2-W5 integration | M2-W5-T01, M2-W5-T02, M2-W5-T03, M2-W5-T04, M2-W5-T05 | 9 | todo |
@@ -92,7 +92,7 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 | M2-W6-T04 | M2-S14 | ui-ux-motion-designer | Logistics placement + status UI | M2-W6-T01 | 4 | todo |
 | M2-W6-T05 | M2-S13 | game-designer | Logistics tables + balance rows | M2-W5-T06 | 5 | todo |
 | M2-W6-T06 | M2-S14 | integrator | M2-W6 integration | M2-W6-T01, M2-W6-T02, M2-W6-T03, M2-W6-T04, M2-W6-T05 | 9 | todo |
-| M2-W7-T01 | M2-S15 | gameplay-systems-engineer | Bead Kiln, Tile Sinterer, Grades I-III, Sun Sprig/Fan, Heliostat, Night Cell, power radius | M2-W6-T06 | 1 | todo |
+| M2-W7-T01 | M2-S15 | gameplay-systems-engineer | Bead Kiln, Tile Sinterer, Sun Sprig/Fan, Heliostat, Night Cell, power radius | M2-W6-T06 | 1 | todo |
 | M2-W7-T02 | M2-S15 | technical-artist | Machine models + Bead Kiln glow, power visuals | M2-W6-T06 | 2 | todo |
 | M2-W7-T03 | M2-S16 | animation-engineer | Machine motion (Sun Fan tracking, press, kiln) | M2-W7-T02 | 3 | todo |
 | M2-W7-T04 | M2-S16 | ui-ux-motion-designer | Machine status panels, power overlay | M2-W7-T01 | 4 | todo |
@@ -104,11 +104,11 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 | M2-W8-T04 | M2-S18 | ui-ux-motion-designer | Build menu: palette, finishes, placement feedback | M2-W8-T01 | 4 | todo |
 | M2-W8-T05 | M2-S17 | rendering-engineer | Structure batching + build-piece LOD | M2-W7-T06 | 5 | todo |
 | M2-W8-T06 | M2-S18 | integrator | M2-W8 integration | M2-W8-T01, M2-W8-T02, M2-W8-T03, M2-W8-T04, M2-W8-T05 | 9 | todo |
-| M2-W9-T01 | M2-S19 | gameplay-systems-engineer | 6 Performance Reviews, Final Walkthrough, Closing Bonus, economy completion | M2-W8-T06 | 1 | todo |
-| M2-W9-T02 | M2-S19 | gameplay-systems-engineer | Last-1% toolkit + session (Briefing, Docket, Next Requisition, Report) | M2-W8-T06 | 2 | todo |
-| M2-W9-T03 | M2-S20 | ui-ux-motion-designer | Reviews, Punch List, Docket/Briefing/Report, tracker UI, compass Flare Beacons + Spot Check (moved from M1) | M2-W9-T01, M2-W9-T02 | 3 | todo |
-| M2-W9-T04 | M2-S19 | game-designer | Reviews + full pacing tables; balance-sim all pacing-targets rows | M2-W8-T06 | 4 | todo |
-| M2-W9-T05 | M2-S20 | audio-engineer | Music layers per Review, vehicle/robot/machine SFX | M2-W8-T06 | 5 | todo |
+| M2-W9-T01 | M2-S19 | gameplay-systems-engineer | Economy completion + Shine milestone celebrations | M2-W8-T06 | 1 | todo |
+| M2-W9-T02 | M2-S19 | gameplay-systems-engineer | Last-1% toolkit + session (Briefing, Next Requisition, Report) | M2-W8-T06 | 2 | todo |
+| M2-W9-T03 | M2-S20 | ui-ux-motion-designer | Shine milestone moments, Punch List, Briefing/Report, tracker UI, compass Flare Beacons + Spot Check (moved from M1) | M2-W9-T01, M2-W9-T02 | 3 | todo |
+| M2-W9-T04 | M2-S19 | game-designer | Full reference-mode pacing tables; balance-sim all pacing-targets rows | M2-W8-T06 | 4 | todo |
+| M2-W9-T05 | M2-S20 | audio-engineer | Music layers per Shine milestone, vehicle/robot/machine SFX | M2-W8-T06 | 5 | todo |
 | M2-W9-T06 | M2-S20 | integrator | M2-W9 integration | M2-W9-T01, M2-W9-T02, M2-W9-T03, M2-W9-T04, M2-W9-T05 | 9 | todo |
 | M2-W10-T01 | M2-S21 | netcode-engineer | Open Shifts, Shift Board, role enforcement, vote-kick, AFK, quick-chat + moderation | M2-W9-T06 | 1 | todo |
 | M2-W10-T02 | M2-S21 | backend-data-engineer | Persisted bans, abuse_events, contracts hold 3, Loaner Kit persistence, save-size check | M2-W9-T06 | 2 | todo |
@@ -116,11 +116,11 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 | M2-W10-T04 | M2-S22 | ui-ux-motion-designer | Shift Board, roles UI, chat, Read Aloud, report flows | M2-W10-T01 | 4 | todo |
 | M2-W10-T05 | M2-S22 | qa-test-engineer | Griefing/abuse bots, Open Shift churn soak | M2-W10-T01, M2-W10-T03 | 5 | todo |
 | M2-W10-T06 | M2-S22 | integrator | M2-W10 integration | M2-W10-T01, M2-W10-T02, M2-W10-T03, M2-W10-T04, M2-W10-T05 | 9 | todo |
-| M2-W11-T01 | M2-S23 | gameplay-systems-engineer | Tenure 1-50, Commendations, Certifications, Benefits, 33 achievements | M2-W10-T06 | 1 | todo |
+| M2-W11-T01 | M2-S23 | gameplay-systems-engineer | 33 achievements + Locker cosmetic unlocks | M2-W10-T06 | 1 | todo |
 | M2-W11-T02 | M2-S23 | backend-data-engineer | Profile meta persistence, achievements tables, Locker | M2-W10-T06 | 2 | todo |
-| M2-W11-T03 | M2-S24 | ui-ux-motion-designer | Locker, Tenure, Commendations, Contracts list, ending UI | M2-W11-T01, M2-W11-T02 | 3 | todo |
+| M2-W11-T03 | M2-S24 | ui-ux-motion-designer | Locker, Contracts list, ending UI | M2-W11-T01, M2-W11-T02 | 3 | todo |
 | M2-W11-T04 | M2-S24 | technical-artist | Liveries, suit patina, Contract Fulfilled sequence, Showcase Moon | M2-W10-T06 | 4 | todo |
-| M2-W11-T05 | M2-S23 | game-designer | Meta tables, achievements, Commendations | M2-W10-T06 | 5 | todo |
+| M2-W11-T05 | M2-S23 | game-designer | Achievement and Locker unlock tables | M2-W10-T06 | 5 | todo |
 | M2-W11-T06 | M2-S24 | integrator | M2-W11 integration | M2-W11-T01, M2-W11-T02, M2-W11-T03, M2-W11-T04, M2-W11-T05 | 9 | todo |
 | M2-W12-T01 | M2-S25 | performance-profiler | Full capture suite incl. S3 factory, Ultra, Safari 26, 30-min memory | M2-W11-T06 | 1 | todo |
 | M2-W12-T02 | M2-S25 | rendering-engineer | Perf fixes, Ultra preset | M2-W11-T06 | 2 | todo |
@@ -134,8 +134,8 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 ```mermaid
 flowchart LR
   W0[W0 contracts v2] --> W1[W1 whole Moon + outposts] --> W2[W2 tools + suit + board] --> W3[W3 vehicles]
-  W3 --> W4[W4 robots I] --> W5[W5 robots II + Flight Plan] --> W6[W6 logistics + Railshot]
-  W6 --> W7[W7 production + power] --> W8[W8 building] --> W9[W9 Reviews + last-1% + session]
+  W3 --> W4[W4 robots I] --> W5[W5 robots II] --> W6[W6 logistics + Railshot]
+  W6 --> W7[W7 production + power] --> W8[W8 building] --> W9[W9 economy + milestones + last-1% + session]
   W9 --> W10[W10 co-op + social] --> W11[W11 meta + ending] --> W12[W12 hardening + v1.0 gate]
   W5 -.playtest.-> PT1((Cee playtest robots))
   W9 -.playtest.-> PT2((Cee playtest pacing))
@@ -223,7 +223,7 @@ M2-S4 · `integrator` · 9 · `todo` · T01–T05
 #### M2-W2-T01 — Tools T5–T6, 18 Dust Cell levels, 23 board nodes
 M2-S5 · `gameplay-systems-engineer` · 1 · `todo` · M2-W1-T06
 - **Owned:** `packages/sim/src/tools/**`, `packages/sim/src/economy/promotions/**`.
-- **Acceptance:** Static Rake, Ion Curtain + traits; all 18 Cell levels; 23 Promotions nodes with prerequisites and Review gates; server race resolution.
+- **Acceptance:** Static Rake, Ion Curtain + traits; all 18 Cell levels; 23 Promotions nodes with prerequisites (no milestone gates); server race resolution.
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer, performance-reviewer · **DoD:** Standard.
 
 #### M2-W2-T02 — Suit gear lines
@@ -260,7 +260,7 @@ M2-S6 · `integrator` · 9 · `todo` · T01–T05
 #### M2-W3-T01 — Skiff, Carryall, Bulldust, Behemoth, upgrade lines, tricks
 M2-S7 · `gameplay-systems-engineer` · 1 · `todo` · M2-W2-T06
 - **Owned:** `packages/sim/src/vehicles/**`, `apps/client/src/gameplay/vehicles/**`.
-- **Acceptance:** 4 vehicles (Skiff gated by Pilot Review, moved from M1; Carryall 8 seats); all 7 upgrade lines; Dust Vault; tricks (Hang Time, Moonshot!, Lunar Loop, Corkscrew, Faceplant) with capped payout; vehicle step ≤ 10 µs.
+- **Acceptance:** 4 vehicles (Skiff money-gated with the Motor Pool required, moved from M1; Carryall 8 seats); all 7 upgrade lines; Dust Vault; tricks (Hang Time, Moonshot!, Lunar Loop, Corkscrew, Faceplant) with capped payout; vehicle step ≤ 10 µs.
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer, performance-reviewer, netcode-security-reviewer · **DoD:** Standard.
 
 #### M2-W3-T02 — Vehicle models (Skiff + 3), rooster tails, tracks
@@ -294,10 +294,10 @@ M2-S8 · `integrator` · 9 · `todo` · T01–T05
 
 ### M2-W4 — Robots I
 
-#### M2-W4-T01 — Robot behaviour: Roost, Sandpiper, Plover, Permits
+#### M2-W4-T01 — Robot behaviour: Roost, Sandpiper, Plover, technical caps
 M2-S9 · `gameplay-systems-engineer` · 1 · `todo` · M2-W3-T06
 - **Owned:** `packages/sim/src/robots/**`.
-- **Acceptance:** states and AI per GDD; Permits cap counts; deterministic; AI ≤ 15 µs/decision.
+- **Acceptance:** states and AI per GDD; robots bought with money; fixed visible technical caps (economy §9.2); deterministic; AI ≤ 15 µs/decision.
 - **Visual:** n/a · **Review lenses:** code-reviewer, performance-reviewer, balance-reviewer · **DoD:** Standard.
 
 #### M2-W4-T02 — Server robot scheduling budget
@@ -326,15 +326,15 @@ M2-S10 · `animation-engineer` · 5 · `todo` · M2-W4-T04
 
 #### M2-W4-T06 — M2-W4 integration
 M2-S10 · `integrator` · 9 · `todo` · T01–T05
-- **Acceptance:** `/verify`, `/bot-test` with 64 robots on staging, `/visual-check` (S15), `/perf-check` (S2) PASS.
+- **Acceptance:** `/verify`, `/bot-test` with 64 robots (local; hosted window when authorized), `/visual-check` (S15), `/perf-check` (S2) PASS.
 - **Review lenses:** code-reviewer, visual-qa-reviewer, performance-reviewer, netcode-security-reviewer · **DoD:** implemented and meaningfully verified; continue ready work.
 
-### M2-W5 — Robots II + Flight Plan
+### M2-W5 — Robots II
 
-#### M2-W5-T01 — Albatross, Nests, Bale Chute, Flight Plan, On-Shift Bonus
+#### M2-W5-T01 — Albatross, Nests, Bale Chute, base-rate robot work
 M2-S11 · `gameplay-systems-engineer` · 1 · `todo` · M2-W4-T06
 - **Owned:** `packages/sim/src/robots/**`.
-- **Acceptance:** Albatross hop logic, Nests, Bale Chute; Flight Plan 5 lines/15 levels incl. Auto-Relocate and Homing; ★ On-Shift Bonus; tests.
+- **Acceptance:** Albatross hop logic (nearest dusty plot), Nests, Bale Chute; all robots at calibrated base rate independent of player activity, within technical caps; empty-room checkpoint/suspend per netcode; tests.
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer, performance-reviewer · **DoD:** Standard.
 
 #### M2-W5-T02 — Robot intent stream + bandwidth caps
@@ -343,10 +343,10 @@ M2-S11 · `netcode-engineer` · 2 · `todo` · M2-W4-T06
 - **Acceptance:** compact robot intents within 150 m; per-client bytes within §14 with 400 robots.
 - **Visual:** n/a · **Review lenses:** code-reviewer, netcode-security-reviewer, performance-reviewer · **DoD:** Standard.
 
-#### M2-W5-T03 — Equipment Cards, Survey Globe overlay + robot layer, Permits UI
+#### M2-W5-T03 — Equipment Cards, Survey Globe overlay + robot layer, cap readouts
 M2-S12 · `ui-ux-motion-designer` · 3 · `todo` · M2-W5-T01
 - **Owned:** `apps/client/src/ui/**`.
-- **Acceptance:** Equipment Cards with robot states, Survey Globe overlay (plot-state legend, heat toggle, zoom; moved from M1) with robot layer, Permits and Flight Plan screens.
+- **Acceptance:** Equipment Cards with robot states, Survey Globe overlay (plot-state legend, heat toggle, zoom; moved from M1) with robot layer; cap readouts (e.g. "Roosts 3 / 24") on Equipment Cards.
 - **Visual:** VT-M1-24/25 on new screens · **Review lenses:** code-reviewer, visual-qa-reviewer · **DoD:** Standard.
 
 #### M2-W5-T04 — 400-robot server scenario + robot soak
@@ -408,7 +408,7 @@ M2-S14 · `integrator` · 9 · `todo` · T01–T05
 #### M2-W7-T01 — Machines + power
 M2-S15 · `gameplay-systems-engineer` · 1 · `todo` · M2-W6-T06
 - **Owned:** `packages/sim/src/production/**`, `packages/sim/src/power/**`.
-- **Acceptance:** Bead Kiln, Tile Sinterer, ★ Grades I–III, Sun Sprig, Sun Fan, Heliostat, Night Cell; wireless power radius; status lines; ≤ 0.1 ms/tick for a full farm.
+- **Acceptance:** Bead Kiln, Tile Sinterer (one size each, ★ machine cap 14), Sun Sprig, Sun Fan, Heliostat, Night Cell; wireless power radius; status lines; ≤ 0.1 ms/tick for a full farm.
 - **Visual:** n/a · **Review lenses:** code-reviewer, performance-reviewer, balance-reviewer · **DoD:** Standard.
 
 #### M2-W7-T02 — Machine models + power visuals
@@ -477,24 +477,24 @@ M2-S18 · `integrator` · 9 · `todo` · T01–T05
 - **Acceptance:** `/verify`, `/bot-test` (builders), `/visual-check` (S16), `/perf-check` (S3), save-size check PASS.
 - **Review lenses:** code-reviewer, visual-qa-reviewer, performance-reviewer, netcode-security-reviewer · **DoD:** implemented and meaningfully verified; continue ready work.
 
-### M2-W9 — Reviews, economy completion, last-1 %, session
+### M2-W9 — Economy completion, Shine milestones, last-1 %, session
 
-#### M2-W9-T01 — Performance Reviews + economy completion
+#### M2-W9-T01 — Economy completion + Shine milestone celebrations
 M2-S19 · `gameplay-systems-engineer` · 1 · `todo` · M2-W8-T06
 - **Owned:** `packages/sim/src/economy/**`, `packages/sim/src/reviews/**`.
-- **Acceptance:** 6 Reviews with unlocks/bonuses/permits, Final Walkthrough, Closing Bonus; Bulk Rate, Stamp Premium, Golden Handshake, Repeat Requisition, Standard Issue, Relay/Recall fees.
+- **Acceptance:** Shine milestone celebrations at 1/5/10/25/50/75 % (no unlocks or cash); one price per material regardless of origin; Stamp Premium, Golden Handshake, Repeat Requisition, Standard Issue, Relay/Recall fees.
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer, netcode-security-reviewer · **DoD:** Standard.
 
 #### M2-W9-T02 — Last-1 % toolkit + session flow
 M2-S19 · `gameplay-systems-engineer` · 2 · `todo` · M2-W8-T06
 - **Owned:** `packages/sim/src/survey/**`, `packages/sim/src/session/**`.
-- **Acceptance:** heat layer data anywhere, Spot Check, Punch List, Homing I/II, Clean-up Orders; Shift Briefing, Docket, Next Requisition tracker, Shift Report data.
+- **Acceptance:** heat layer data anywhere, Spot Check, Punch List, Clean-up Orders; Shift Briefing, Next Requisition tracker, Shift Report data.
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer, performance-reviewer · **DoD:** Standard.
 
-#### M2-W9-T03 — Reviews, Punch List, Docket/Briefing/Report UI
+#### M2-W9-T03 — Shine milestone moments, Punch List, Briefing/Report UI
 M2-S20 · `ui-ux-motion-designer` · 3 · `todo` · M2-W9-T01, M2-W9-T02
 - **Owned:** `apps/client/src/ui/**`.
-- **Acceptance:** all screens; compass with 12 shared Flare Beacons and Spot Check (moved from M1-W7-T03); tracker in HUD; celebratory Review moment with motion presets.
+- **Acceptance:** all screens; compass with 12 shared Flare Beacons and Spot Check (moved from M1-W7-T03); tracker in HUD; celebratory Shine milestone moment with motion presets.
 - **Visual:** VT-M1-24/25 on new screens · **Review lenses:** code-reviewer, visual-qa-reviewer · **DoD:** Standard.
 
 #### M2-W9-T04 — Full pacing tables, balance-sim all rows
@@ -503,10 +503,10 @@ M2-S19 · `game-designer` · 4 · `todo` · M2-W8-T06
 - **Acceptance:** balance-sim meets every `pacing-targets.json` row (30–35 h solo; milestones to 75 %; co-op scaling 1–16).
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer · **DoD:** Standard.
 
-#### M2-W9-T05 — Music layers per Review, new SFX
+#### M2-W9-T05 — Music layers per Shine milestone, new SFX
 M2-S20 · `audio-engineer` · 5 · `todo` · M2-W8-T06
 - **Owned:** `apps/client/src/audio/**`, `assets/audio/**`.
-- **Acceptance:** music layer system per Review; SFX for 5 vehicles, robots, machines, building, Railshot; download size within budget.
+- **Acceptance:** music layer system per Shine milestone; SFX for 5 vehicles, robots, machines, building, Railshot; download size within budget.
 - **Visual:** n/a · **Review lenses:** code-reviewer, performance-reviewer · **DoD:** Standard.
 
 #### M2-W9-T06 — M2-W9 integration
@@ -553,10 +553,10 @@ M2-S22 · `integrator` · 9 · `todo` · T01–T05
 
 ### M2-W11 — Meta layer + ending
 
-#### M2-W11-T01 — Tenure, Commendations, Certifications, Benefits, 33 achievements
+#### M2-W11-T01 — 33 achievements + Locker cosmetic unlocks
 M2-S23 · `gameplay-systems-engineer` · 1 · `todo` · M2-W10-T06
 - **Owned:** `packages/sim/src/meta/**`.
-- **Acceptance:** Tenure 1–50 with ranks, Commendations, 7 Certifications with slots, 7 Benefits, all 33 achievements; no AFK-only achievements.
+- **Acceptance:** all 33 achievements; Locker defaults + achievement-unlocked cosmetics; Contracts list (hold 3); no AFK-only achievements.
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer · **DoD:** Standard.
 
 #### M2-W11-T02 — Profile meta persistence + Locker
@@ -565,7 +565,7 @@ M2-S23 · `backend-data-engineer` · 2 · `todo` · M2-W10-T06
 - **Acceptance:** profiles/achievements tables per data-model §3.4, §3.8–§3.9; Locker cosmetics; profile flush ≤ 60 s.
 - **Visual:** n/a · **Review lenses:** code-reviewer, netcode-security-reviewer · **DoD:** Standard.
 
-#### M2-W11-T03 — Locker, Tenure, Commendations, Contracts list, ending UI
+#### M2-W11-T03 — Locker, Contracts list, ending UI
 M2-S24 · `ui-ux-motion-designer` · 3 · `todo` · M2-W11-T01, M2-W11-T02
 - **Owned:** `apps/client/src/ui/**`.
 - **Acceptance:** all meta screens; Contract Fulfilled banner per art-direction §8.
@@ -580,7 +580,7 @@ M2-S24 · `technical-artist` · 4 · `todo` · M2-W10-T06
 #### M2-W11-T05 — Meta tables
 M2-S23 · `game-designer` · 5 · `todo` · M2-W10-T06
 - **Owned:** `packages/game-data/**`, `tools/balance-sim/**`.
-- **Acceptance:** Tenure curve, Commendations, Certifications, Benefits, 33 achievements data; balance-sim meta rows.
+- **Acceptance:** 33 achievements and Locker unlock data; balance-sim meta rows.
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer · **DoD:** Standard.
 
 #### M2-W11-T06 — M2-W11 integration
@@ -622,7 +622,7 @@ M2-S26 · `technical-artist` · 5 · `todo` · M2-W12-T01
 
 #### M2-W12-T06 — M2 closing integration
 M2-S26 · `integrator` · 9 · `todo` · T01–T05
-- **Acceptance:** `/verify`, `/bot-test` (staging), `/visual-check M2` (full §6.5 matrix), `/perf-check`, `/balance-check` PASS; `/release-checklist` go for `v1.0.0`.
+- **Acceptance:** `/verify`, `/bot-test` (local; hosted window when authorized), `/visual-check M2` (full §6.5 matrix), `/perf-check`, `/balance-check` PASS; `/release-checklist` go for `v1.0.0`.
 - **Review lenses:** code-reviewer, visual-qa-reviewer, performance-reviewer, netcode-security-reviewer, balance-reviewer · **DoD:** implemented and meaningfully verified; continue ready work.
 
 ## 7. Notes

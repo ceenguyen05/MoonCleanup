@@ -1,7 +1,6 @@
 # System overview — Clean The Moon!
 
 > **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
-> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
 > Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
 > [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
 
@@ -23,8 +22,7 @@ flowchart LR
     S["apps/server (Node 26)<br/>Colyseus 0.18 + uWS transport<br/>REST /v1/* · /healthz · /readyz · /status<br/>RoomSim (packages/sim) per room"]
   end
   subgraph Aiven["Aiven PostgreSQL Free (1 GB)"]
-    DBP[("moon_prod")]
-    DBS[("moon_staging")]
+    DBP[("schema prod")]
   end
   Hub["Games hub site<br/>(separate project)"]
   Sentry["Sentry Developer<br/>(browser + node)"]
@@ -38,8 +36,8 @@ flowchart LR
   Hub -- "link → game URL" --> C
   C -. "errors, low-rate traces" .-> Sentry
   S -. "errors, low-rate traces" .-> Sentry
-  GH -- "push release → prod / main → staging" --> Vercel
-  GH -- "push release → prod / main → staging<br/>build cmd runs DB migrations" --> Render
+  GH -- "push main → production" --> Vercel
+  GH -- "push main → production (after CI passes)<br/>build cmd runs DB migrations" --> Render
 ```
 
 | Component | Hosted on | Responsibility | Never does |
@@ -92,7 +90,7 @@ All JSON bodies are validated with zod schemas from `packages/shared/src/api/res
 
 ## 3. Boot and cold-start sequence
 
-Render Free spins the server down after 15 minutes without inbound traffic, and waking takes about a minute ([platform-limits.md §B2](../research/tech/platform-limits.md)). Assets start streaming at page load, but the client wakes the server only on the **first user interaction on the title screen** (pointer down, key press, or hovering Clock In). A wake costs at least 15 instance-minutes, so waking on every page load would let hub visitors who bounce keep production up ≈ 744 h/month, past the 600 h plan and close to the 750 h workspace limit that also suspends staging (M9). The probe is never sent by bots or crawlers (`navigator.webdriver`, bot user-agent list, prerendering, hidden tab), and automated tests never target production.
+Render Free spins the server down after 15 minutes without inbound traffic, and waking takes about a minute ([platform-limits.md §B2](../research/tech/platform-limits.md)). Assets start streaming at page load, but the client wakes the server only on the **first user interaction on the title screen** (pointer down, key press, or hovering Clock In). A wake costs at least 15 instance-minutes, so waking on every page load would let hub visitors who bounce keep production up ≈ 744 h/month, past the 600 h plan and close to the 750 h workspace limit (M9). The probe is never sent by bots or crawlers (`navigator.webdriver`, bot user-agent list, prerendering, hidden tab), and automated tests never target production.
 
 ```mermaid
 sequenceDiagram
@@ -139,7 +137,7 @@ Client wake-up states (owned by `apps/client/src/net`, rendered by `ui`):
 | `waking` | First probe failed or >2 s, or a non-JSON / non-CORS response | Only if the player presses Clock In: **"Waking the moon…"** screen with elapsed timer, "usually about a minute", DOT tips |
 | `slow_wake` | 120 s without `awake` | DOT message "The servers are taking longer than usual" + Retry button; probing continues every 10 s |
 | `records_offline` | `/readyz` says `db: down` | DOT message that Contract records are unavailable; Clock In disabled (see [environments.md §6](environments.md#6-aiven-postgresql-free-power-off-and-reconnect)) |
-| `update_required` | Server `protocolVersion` ≠ client's | Older client: "New shift orders — reload" (reload button). Newer client (prevented by the release gate): "Brightside is updating the servers", probe every 30 s for ≤ 10 min, then stop and show "Still updating — try again in a few minutes" with Retry ([netcode.md §13](netcode.md)) |
+| `update_required` | Server `protocolVersion` ≠ client's | Older client: "New shift orders — reload" (reload button). Newer client (expected briefly after a protocol-changing push, ADR-0029): "Brightside is updating the servers", probe every 30 s for ≤ 10 min, then stop and show "Still updating — try again in a few minutes" with Retry ([netcode.md §13](netcode.md)) |
 | `at_capacity` | Join refused with 4105 at capacity / 507 storage full | DOT message: "Brightside is at capacity — join an Open Shift or try again later", Open Shifts list button |
 
 ## 4. Session lifecycle
@@ -205,7 +203,7 @@ Owner: devops-engineer (per [module-boundaries.md §3](module-boundaries.md)). P
 | `tagline` | string, ≤ 80 chars | Written by game-designer; Brightside voice |
 | `descriptionShort` | string, ≤ 160 chars | For cards |
 | `descriptionLong` | string, ≤ 1,200 chars, plain text | For the detail page |
-| `url` | absolute URL | Production client origin (Vercel production branch `release`) |
+| `url` | absolute URL | Production client origin (Vercel production branch `main`) |
 | `status` | enum `prototype` / `alpha` / `beta` / `live` | Honest scope label ([moon-sweepers-reception.md §8](../research/moon-sweepers-reception.md), "Feels unfinished") |
 | `version` | string | Same value as `VITE_BUILD_VERSION` of the release build (written by the build, not by hand) |
 | `updatedAt` | ISO-8601 date-time | Build time |

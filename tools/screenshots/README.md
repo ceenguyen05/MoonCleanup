@@ -16,8 +16,8 @@ Playwright-driven capture of fixed scenes and camera paths from the running clie
 
 ## Key contracts consumed
 
-`@moon-cleanup/shared` (render quality presets, IDs). The client needs a stable "scene ready" hook (a contract to propose
-between waves).
+`@moon-cleanup/shared` (render quality presets, IDs). The client needs a stable "scene ready" hook (a contract change requested
+through the lead; module-boundaries "Contract change process").
 
 ## Notes
 

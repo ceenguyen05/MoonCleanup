@@ -23,9 +23,9 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | E4 | Sweeping feels good (internal playtest ≥ 4/5); Lane Lock works | Gate P1 |
 | E5 | Pucks and vehicles sync for 16 players; no rubber-banding at 120 ms ± 30 jitter | `/bot-test` + manual |
 | E6 | Payment server-authoritative; wallet never desyncs; shared purchase races resolved server-side | tests + `/bot-test` |
-| E7 | Pilot Review reached solo in 2.3–2.8 h (hand + Trundle); 4 players < 1 h | `/balance-check` + playtest |
+| E7 | First Roost bought solo in 1.5–2 h (hand + Trundle; money only, no quest gate); 4 players < 1 h (scope-tiers MVP pacing, sim to confirm) | `/balance-check` + playtest |
 | E8 | New tester buys the Crescent Squeegee in 5–10 min unaided | Gate P2 |
-| E9 | `/bot-test`: 16 bots, 10 min, within tick (p95 ≤ 3.5 ms) and bandwidth (≤ 6.5 KB/s/client busy) budgets on staging Render Free | `/bot-test` |
+| E9 | `/bot-test`: 16 bots, 10 min, within tick (p95 ≤ 3.5 ms) and bandwidth (≤ 6.5 KB/s/client busy) budgets locally (CPU-limited container), plus a ≤ 5-min hosted run when Cee authorizes a test window | `/bot-test` |
 | E10 | Kill the server mid-session: ≤ 30 s progress lost; contract resumes after cold start with the waking screen | restart scenario + e2e |
 | E11 | KBM and gamepad complete; frame time VT-M1-27 on Tier A High and Tier B Medium | `/perf-check` |
 | E12 | M1 closing integration PASS; `/release-checklist` go | `M1-W9-integration.md` |
@@ -38,7 +38,7 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | D2 | Dust contest winner (P1/P2/P3) | after M1-S5 | P2 unless the world-and-dust §10 decision rule says otherwise → ADR; W3 cards re-planned only if P1/P3 wins |
 | D3 | *(resolved)* Earth apparent size is 2.4° (visual-target and rendering-pipeline §20 item 11 agree) | — | — |
 | D4 | Vehicles are in MVP scope (scope-tiers says yes) → VM-09 and CMP-03/04/09 judged at M1 for the Trundle (the Skiff is v1.0, scope-tiers §1) | M1-S16 | Yes (VM-09 at M1) |
-| D5 | **3D art production path** (OPEN_QUESTIONS Q23): how original custodian, hand tools, outpost kit, Trundle is modelled, rigged, LODed and textured (technical-artist has no DCC tool); ADR + a "placeholder quality bar" (blockout assets still meet art-direction §13.4: final proportions, final shader and player-colour slots, not merely a 32 px silhouette (VT-M1-18); see ADR-0027 for the path and ADR-0028 for the dependency policy) | M1-S9 | Scripted, licence-clean procedural modelling in `tools/asset-pipeline` (bevelled primitives, baked AO, glTF-Transform, KTX2) for hard-surface assets; a modular, bevelled custodian suit with 16 colour slots; CC0/commercial base meshes only if Cee approves the licence and budget; headless Blender is the preferred source when Cee has installed it (Q23 default: Cee installs Blender LTS when the M0 asset-pipeline proof starts, M0-W0-T06; the Node path otherwise) |
+| D5 | **3D art production path** (OPEN_QUESTIONS Q23): how original custodian, hand tools, outpost kit, Trundle is modelled, rigged, LODed and textured (technical-artist has no DCC tool); ADR + a "placeholder quality bar" (blockout assets still meet art-direction §13.4: final proportions, final shader and player-colour slots, not merely a 32 px silhouette (VT-M1-18); see ADR-0027 for the path and ADR-0028 for the dependency policy) | M1-S9 | Scripted, licence-clean procedural modelling in `tools/asset-pipeline` (bevelled primitives, baked AO, glTF-Transform, KTX2) for hard-surface assets; a modular, bevelled custodian suit with 16 colour slots; CC0/commercial base meshes only if Cee approves the licence and budget; headless Blender 4.5.10 LTS is installed and is the preferred source (Q23 resolved; path in OPEN_QUESTIONS) |
 | D6 | Project-local dependencies: designated devops writer installs sequentially when needed; review scripts/licenses/pins | Before affected work | No per-package ADR or between-wave wait; major architecture/toolchain changes still need a concise decision |
 
 ## 4. Stage plan
@@ -57,13 +57,13 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | **M1-S10** | W4 | T01, T03, T05 | |
 | **M1-S11** | W4 | T02, T04, T07 (3D art), then T06 (integrator) | Verify affected checks; continue |
 | **M1-S12** | W5 | T01, T02, T03 | |
-| **M1-S13** | W5 | T04, T05, then T06 (integrator) | **G-M1-1** staging bot-test |
+| **M1-S13** | W5 | T04, T05, then T06 (integrator) | **G-M1-1** bot-test (local; hosted window when authorized) |
 | **M1-S14** | W6 | T01, T02, T03 | |
 | **M1-S15** | W6 | T04, T05, then T06 (integrator) | **Visual gate V-M1c**, **P1** playtest |
 | **M1-S16** | W7 | T01, T02, T03 | |
 | **M1-S17** | W7 | T05, then T06 (integrator) | Verify affected checks; continue |
 | **M1-S18** | W8 | T01, T02, T03 | |
-| **M1-S19** | W8 | T04, T05, then T06 (integrator) | **P2** playtest, **G-M1-2** staging soak |
+| **M1-S19** | W8 | T04, T05, then T06 (integrator) | **P2** playtest, **G-M1-2** local soak |
 | **M1-S20** | W9 | T01, T02, T03 | |
 | **M1-S21** | W9 | T04, T05, then T06 (integrator, milestone close) | **Final visual gate**, technical candidate check; Cee commits later |
 
@@ -118,7 +118,7 @@ Unavailable testers/cloud checks remain pending; continue independent work and r
 | M1-W5-T05 | M1-S13 | terrain-dust-engineer | Footprints and tracks ring | M1-W4-T06 | 5 | todo |
 | M1-W5-T06 | M1-S13 | integrator | M1-W5 integration: persistence + characters, first 16-bot run | M1-W5-T01, M1-W5-T02, M1-W5-T03, M1-W5-T04, M1-W5-T05 | 9 | todo |
 | M1-W6-T01 | M1-S14 | gameplay-systems-engineer | Tools T1-T4 + traits, Dust Cells I-III, Dust Pucks, Plot Card | M1-W5-T06 | 1 | todo |
-| M1-W6-T02 | M1-S14 | gameplay-systems-engineer | Economy: selling, wallet, Promotions subset, suit gear, Stamp, Pilot Review, cargo, achievements | M1-W5-T06 | 2 | todo |
+| M1-W6-T02 | M1-S14 | gameplay-systems-engineer | Economy: selling, wallet, Promotions subset, suit gear, Stamp, Roost purchase, cargo, achievements | M1-W5-T06 | 2 | todo |
 | M1-W6-T03 | M1-S14 | technical-artist | VFX: ballistic dust, Inspector's Stamp, Assay pour, Railshot, lamp pools | M1-W5-T06 | 3 | todo |
 | M1-W6-T04 | M1-S15 | ui-ux-motion-designer | HUD, toasts, Requisitions Desk, Ops Console, settings | M1-W6-T01, M1-W6-T02 | 4 | todo |
 | M1-W6-T05 | M1-S15 | technical-artist | Outpost Boreal hardware kit part 2 (Motor Pool, Requisitions Desk, Ops Console) | M1-W5-T06 | 5 | todo |
@@ -133,7 +133,7 @@ Unavailable testers/cloud checks remain pending; continue independent work and r
 | M1-W8-T03 | M1-S18 | game-designer | MVP pacing pass, DOT copy, Induction/Handbook text, achievements wording | M1-W7-T06 | 3 | todo |
 | M1-W8-T04 | M1-S19 | qa-test-engineer | MVP e2e flows, 16-bot drive scenario, 8x30 min soak | M1-W8-T01 | 4 | todo |
 | M1-W8-T05 | M1-S19 | performance-profiler | MVP capture suite (S10 16 bots, P1/P2/P4), budget tracker | M1-W7-T06 | 5 | todo |
-| M1-W8-T06 | M1-S19 | integrator | M1-W8 integration: full MVP feature set on staging | M1-W8-T01, M1-W8-T02, M1-W8-T03, M1-W8-T04, M1-W8-T05 | 9 | todo |
+| M1-W8-T06 | M1-S19 | integrator | M1-W8 integration: full MVP feature set integrated and playable | M1-W8-T01, M1-W8-T02, M1-W8-T03, M1-W8-T04, M1-W8-T05 | 9 | todo |
 | M1-W9-T01 | M1-S20 | technical-artist | Visual V1 fixes + comparator CMP-02/05/07/15 | M1-W8-T06 | 1 | todo |
 | M1-W9-T02 | M1-S20 | rendering-engineer | Perf fixes, Low preset dignity, WebGL2 MVP parity | M1-W8-T06 | 2 | todo |
 | M1-W9-T03 | M1-S20 | devops-engineer | Sentry + source maps, release config, usage logging, size gate | M1-W8-T06 | 3 | todo |
@@ -199,7 +199,7 @@ flowchart TB
     i5[T05 capture suite]
     i2 & i3 & i4 & i5 --> i6{{T06 integrate}}
   end
-  subgraph W9["W9 release gate (S20-S21)"]
+  subgraph W9["W9 MVP candidate (S20-S21)"]
     j1[T01 visual fixes] & j2[T02 perf + parity] & j3[T03 Sentry/release] --> j5[T05 exit tests]
     j4[T04 UI polish]
     j4 & j5 --> j6{{T06 close M1}}
@@ -458,7 +458,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Acceptance criteria:**
   - [ ] Tables for every MVP schema validate; names from the naming bible only.
   - [ ] Gameplay sun path for Boreal (D1).
-  - [ ] balance-sim v0 outputs time-to-unlock curves: Crescent Squeegee 5–10 min; Pilot Review solo 2.3–2.8 h; 4 players < 1 h.
+  - [ ] balance-sim v0 outputs time-to-unlock curves: Crescent Squeegee 5–10 min; first Roost bought solo 1.5–2 h; 4 players < 1 h.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
@@ -713,7 +713,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W5-T01 … T05.
 - **Input contracts:** W5 exports.
 - **Read first:** WORKFLOW.
-- **Acceptance criteria:** [ ] persistence wired to room lifecycle + SIGTERM; animation + marks registered; [ ] `/verify`, `/bot-test` (local; staging after G-M1-1), restart scenario, `/visual-check` (S02, S05, S10 partial), `/perf-check` PASS.
+- **Acceptance criteria:** [ ] persistence wired to room lifecycle + SIGTERM; animation + marks registered; [ ] `/verify`, `/bot-test` (local; hosted window optional after G-M1-1), restart scenario, `/visual-check` (S02, S05, S10 partial), `/perf-check` PASS.
 - **Visual acceptance:** VT-M1-07, 15, 18.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
@@ -727,19 +727,19 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Read first:** progression-and-economy (tools, cells, pucks); GDD §4, §9; scope-tiers §1 rows Hand tools, Dust Cells, Dust Pucks, Plots.
 - **Input contracts:** game-data tables; input contract (Lane Lock, puck actions).
 - **Depends on:** M1-W5-T06.
-- **Acceptance criteria:** [ ] Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom with Detailing, Flick, Sure Footing, Lane Lock; [ ] Dust Cells I–III, full-cell stop; [ ] Pucks: form (F), carry, drop, throw (Q), pour back; [ ] Plot Card (G) data; [ ] deterministic tests.
+- **Acceptance criteria:** [ ] Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom with Detailing, Flick, Sure Footing, Lane Lock; [ ] Dust Cells I–III, full-cell stop; [ ] Pucks: form (F), carry, drop, throw (Q), pour back; [ ] Plot Card (C) data; [ ] deterministic tests.
 - **Visual acceptance:** n/a (VFX in T03).
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
 
-#### M1-W6-T02 — Economy: selling, wallet, Promotions subset, suit gear, Stamp, Pilot Review, cargo, achievements
+#### M1-W6-T02 — Economy: selling, wallet, Promotions subset, suit gear, Stamp, Roost purchase, cargo, achievements
 - **Stage** M1-S14 · **Role** `gameplay-systems-engineer` · **Port** 2 · **Status** `todo`
 - **Goal:** Lumens in, upgrades out, all server-authoritative.
 - **Owned files:** `packages/sim/src/economy/**` (own sub-barrel only).
 - **Read first:** progression-and-economy (MVP rows); scope-tiers §1 rows Selling, Promotions Board, Suit gear, Milestone demo, Exploration, Achievements; security §1–§2.
 - **Input contracts:** game-data; event catalog v1.
 - **Depends on:** M1-W5-T06.
-- **Acceptance criteria:** [ ] Assay Counter hold-to-pour, Receiving Gate + Dump Plate intake, Railshot shipment every 2 t (event only), shared wallet; [ ] 10 Promotions nodes with server-side race resolution; Holster Rig L1–3, Crown Lamp L1–2; [ ] Stamp 50 LM, Pilot Review at 25 Polished (2,500 LM; unlocks the Skiff in v1.0); 12 Stray Cargo Parcels; 10 achievement triggers → events; [ ] no client outcome trusted.
+- **Acceptance criteria:** [ ] Assay Counter hold-to-pour, Receiving Gate + Dump Plate intake, Railshot shipment every 2 t (event only), shared wallet; [ ] 10 Promotions nodes with server-side race resolution; Holster Rig L1–3, Crown Lamp L1–2; [ ] Stamp 50 LM; first Roost purchasable with money from the start (4,500 × 1.15^(n−1), cap 3, DOT suggestion only, no quest gate); 12 Stray Cargo Parcels; 10 achievement triggers → events; [ ] no client outcome trusted.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
@@ -763,7 +763,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Read first:** GDD §10, §13; art-direction §8; visual-target §2.3, VT-M1-24, 25; naming-bible.
 - **Input contracts:** UI store v1, event catalog v1.
 - **Depends on:** M1-W6-T01, M1-W6-T02 (data shapes).
-- **Acceptance criteria:** [ ] HUD: wallet, Shine, Cell gauges, compass, suit icons, Docket placeholder, Plot Card overlay; tick-ups and toasts; [ ] Requisitions Desk, Ops Console (board subset), settings (remap, accessibility basics, quality preset, volume placeholder); [ ] reduced-motion; KBM + gamepad focus navigation.
+- **Acceptance criteria:** [ ] HUD: wallet, Shine, Cell gauges, compass, suit icons, Next Requisition tracker, Plot Card overlay; tick-ups and toasts; [ ] Requisitions Desk, Ops Console (board subset), settings (remap, accessibility basics, quality preset, volume placeholder); [ ] reduced-motion; KBM + gamepad focus navigation.
 - **Visual acceptance:** VT-M1-24, 25.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD.
@@ -889,7 +889,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Read first:** progression-and-economy; naming-bible; P1 playtest notes.
 - **Input contracts:** config schemas v1.
 - **Depends on:** M1-W7-T06.
-- **Acceptance criteria:** [ ] balance-sim: Crescent Squeegee 5–10 min, Pilot Review solo 2.3–2.8 h, 4 players < 1 h; [ ] DOT tips, Handbook, Induction, achievements text in data.
+- **Acceptance criteria:** [ ] balance-sim: Crescent Squeegee 5–10 min, first Roost bought solo 1.5–2 h, 4 players < 1 h; [ ] DOT tips, Handbook, Induction, achievements text in data.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
@@ -918,19 +918,19 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
-#### M1-W8-T06 — M1-W8 integration: full MVP on staging
+#### M1-W8-T06 — M1-W8 integration: full MVP integrated
 - **Stage** M1-S19 · **Role** `integrator` · **Port** 9 · **Status** `todo`
-- **Goal:** feature-complete MVP running on staging Render Free.
+- **Goal:** feature-complete MVP running locally (client + server + Postgres); on the hosted service too when Cee has deployed `main`.
 - **Owned files:** `apps/client/src/app/**`, `apps/server/src/app/**`, `docs/agent-reports/M1-W8-integration.md`.
 - **Depends on:** M1-W8-T01 … T05.
 - **Input contracts:** W8 exports.
 - **Read first:** §2.
-- **Acceptance criteria:** [ ] all gates PASS; staging `/bot-test` (G-M1-2) numbers recorded; build handed to P2 playtest.
+- **Acceptance criteria:** [ ] all gates PASS; `/bot-test` soak (G-M1-2, local) numbers recorded; build handed to P2 playtest.
 - **Visual acceptance:** VT-M1-01 progress list.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
-### M1-W9 — MVP release gate
+### M1-W9 — MVP release candidate
 
 #### M1-W9-T01 — Visual V1 fixes + comparator CMP-02/05/07/15
 - **Stage** M1-S20 · **Role** `technical-artist` · **Port** 1 · **Status** `todo`
@@ -963,7 +963,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Read first:** ADR-0020; environments §7; security §7, §9.
 - **Input contracts:** —
 - **Depends on:** M1-W8-T06.
-- **Acceptance criteria:** [ ] Sentry browser + node with environment/release tags and uploaded source maps (no secrets in repo); [ ] room-stats + monthly egress visible in logs; [ ] CI first-load size gate green; root-file changes requested for the between-wave slot.
+- **Acceptance criteria:** [ ] Sentry browser + node with environment/release tags and uploaded source maps (no secrets in repo); [ ] room-stats + monthly egress visible in logs; [ ] CI first-load size gate green; root-file changes sequenced through the designated writer.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`.
 - **Definition of done:** Standard DoD.
@@ -999,7 +999,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W9-T01 … T05.
 - **Input contracts:** —
 - **Read first:** `.claude/commands/release-checklist.md`.
-- **Acceptance criteria:** [ ] `/verify`, `/bot-test` (staging), `/visual-check M1` (full matrix §6.5), `/perf-check`, `/balance-check` PASS; [ ] `/release-checklist` go.
+- **Acceptance criteria:** [ ] `/verify`, `/bot-test` (local; hosted window when authorized), `/visual-check M1` (full matrix §6.5), `/perf-check`, `/balance-check` PASS; [ ] `/release-checklist` go.
 - **Visual acceptance:** VT-M1-01…31.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`, `netcode-security-reviewer`, `balance-reviewer`.
 - **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.

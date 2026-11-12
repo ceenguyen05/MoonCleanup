@@ -556,7 +556,7 @@ P2 must also benchmark the fragment path **on WebGPU**; if it is as fast and loo
 | Edge read | Berm lit side brightens, shadow side darkens → the stepped lip of the reference stroke (visual-analysis §2.1). **Readability targets (art-direction §2.3; 8-bit sRGB luma after AgX in capture mode): noon ratio ≥ 1.45 and clean − grime ≥ 50 codes** (4× albedo gives 1.53 / 63; AgX is log-domain, so a 1.9 ratio is not reachable). Calibrate with AgX on (visual-target VT-M0-06/08) |
 | Thinning checks (TAD F10) | See **VT-M1-34** (visual-target): monotonic ramp with step ≥ 8 codes, ledger agreement ±10 points, no island > 0.5 m² |
 | Inspector's Stamp | Shader multiplies R by (1 − stamp progress) for fragments of the stamping plot; after 0.6 s the stamp operation (rasterise the plot's hexagon, edge jittered ±0.3 m by noise, R −= 1) is applied to every resident tile overlapping it |
-| Plot Card (key G) | Outline where the distance difference between the nearest and second-nearest plot centre < 8 cm; the scanned plot's 32 × 32 ledger is uploaded as a tiny r8 texture and texels with dust left glow faintly ("what's left" highlight) |
+| Plot Card (key C) | Outline where the distance difference between the nearest and second-nearest plot centre < 8 cm; the scanned plot's 32 × 32 ledger is uploaded as a tiny r8 texture and texels with dust left glow faintly ("what's left" highlight) |
 
 ### 7.8 Mid field, orbit and Survey Globe coverage
 

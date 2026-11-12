@@ -1,7 +1,6 @@
 # Netcode — Clean The Moon!
 
 > **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
-> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
 > Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
 > [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
 
@@ -75,7 +74,7 @@ The single catalog (type ids, bit layouts, rates, direction) is `packages/shared
 
 | Name | Channel / type id | Rate | Wire size | Fields (type, quantization) | Validation |
 | --- | --- | --- | --- | --- | --- |
-| `INPUT` | bytes `0x01` | `SIM_TICK_HZ` while visible; may carry 1–2 inputs if the client fell behind | **10 B** per input (+1 B count) | `seq` u16 (wraps); `moveX`,`moveY` i8 (stick/WASD ×127, server normalises length ≤ 1); `yaw` u16 (camera yaw, 65,536 steps); `pitch` i8 (±90°); `buttons` u16 bitfield: jump, hopPack, sprint, toolPrimary, toolSecondary, interact, brake/descend, boost, anchorBoots, lampCycle, plotScan, holsterNext, holsterPrev, seatSwitch; `toolParam` u8 (aim distance 0–255 → 0–reach) | Exact length 1 + 1 + 10·n (n ≤ 2); `seq` newer than last received (mod 2¹⁶ window 1,024) else dropped as late; token bucket derived from `SIM_TICK_HZ` (§11); NaN impossible (integers) |
+| `INPUT` | bytes `0x01` | `SIM_TICK_HZ` while visible; may carry 1–2 inputs if the client fell behind | **10 B** per input (+1 B count) | `seq` u16 (wraps); `moveX`,`moveY` i8 (stick/WASD ×127, server normalises length ≤ 1); `yaw` u16 (camera yaw, 65,536 steps); `pitch` i8 (±90°); `buttons` u16 bitfield: jump, hopPack, lope, toolPrimary, toolSecondary, interact, brake/descend, boost, ballast, lampCycle, holsterNext, holsterPrev, seatSwitch (names per game-feel §9; the Plot Card is UI-only); `toolParam` u8 (aim distance 0–255 → 0–reach) | Exact length 1 + 1 + 10·n (n ≤ 2); `seq` newer than last received (mod 2¹⁶ window 1,024) else dropped as late; token bucket derived from `SIM_TICK_HZ` (§11); NaN impossible (integers) |
 | `PING` | bytes `0x02` | every 2 s (also while tab hidden; keeps Render awake while in a room) | 5 B | `clientTimeMs` u32 | Length 5; ≤ 2/s |
 | `DUST_REQUEST` | bytes `0x03` | ≤ 1 per 2 s | ≤ 34 B | WDS §5.1 `dust.request` (≤ 8 PlotIds or one chunkId) | Bounds (PlotId < plotCount, chunkId ≤ 640); only plots/chunks inside the client's dust radius |
 | `ready` | control | once after the blocking join snapshot is applied | ~20 B | `{}` | zod |
@@ -161,7 +160,7 @@ Expected Schema traffic: ≤ 200 B/s per client (wallet and cell changes dominat
 | --- | --- | --- | --- |
 | Avatar (other player) | 13 B: pos 60 b, yaw 10 b, pitch 6 b, anim state 6 b, toolId 4 b, flags 6 b (cleaning, hop thrust, lamp, visor, seated, afk) | ≈ 8 B | every frame inside entity interest (§7) |
 | Vehicle | 16 B: pos 60 b, orientation 32 b, steer 6 b, speed 8 b, driverSlot 8 b, flags 8 b (lights, boost, intake, hopper level 4 b) | ≈ 11 B | as avatars |
-| Robot (Sandpiper, Plover, Albatross) | 10 B: pos 60 b, heading 8 b, state 4 b (11 UI states), cargo 3 b | ≈ 6 B | every 2nd frame inside entity interest; markers only beyond |
+| Robot (Sandpiper, Plover, Albatross) | 10 B: pos 60 b, heading 8 b, state 4 b (9 UI states, naming bible), cargo 3 b | ≈ 6 B | every 2nd frame inside entity interest; markers only beyond |
 | Dust Puck on Glide Rail | not streamed: simulated on the client from rail graph + `spawnTick` events | 0 | — |
 
 ## 5. Prediction and reconciliation
@@ -302,7 +301,7 @@ Serialization (header blob + dirty dust chunk versions, [data-model.md §3.7/§3
 | Keep-alive while in a room | Inputs at `SIM_TICK_HZ`; when the tab is hidden, `PING` every 2 s (throttled browsers still fire ≥ 1/min, below the 15-min spin-down window) |
 | AFK | No non-neutral input for 10 min → `afk` flag in roster; 30 min → close 4107 `IDLE_TIMEOUT` (saves instance hours) |
 | Spin-down | After the last client leaves, Render stops the instance after 15 min of no inbound traffic; nothing is lost |
-| Tests | Automated tests (e2e, bots, perf) target local or **staging** only; `tools/bots`, `tools/perf` and the e2e config refuse a production server URL ([environments.md §3](environments.md)) |
+| Tests | Automated tests (e2e, bots, perf) target **local** by default; `tools/bots`, `tools/perf` and the e2e config refuse the production server URL unless a hosted run is explicitly opted into for an isolated, Cee-authorized test window on the one Render service (environments.md §3) |
 
 ## 11. Rate limits (per connection, in-memory `rate-limiter-flexible`)
 
@@ -348,8 +347,8 @@ Exact Colyseus reserved values must be checked against the 0.18 `CloseCode` enum
 | `PROTOCOL_VERSION` | Integer in `packages/shared/src/protocol/messages.ts`. Bumped on any wire-incompatible change (bytes layout, Schema fields, control payload). Commit footer `BREAKING CHANGE:` |
 | Handshake | Client sends `{protocolVersion, clientBuild}` with the join request; mismatch → 4100 with `{serverProtocol, serverBuild}`. `/healthz` exposes the same values so the mismatch is caught before Clock In |
 | Compatibility | Strict equality for required messages. Optional message types may be added server-first within one protocol version (unknown bytes types are ignored by the client) |
-| **Release order (M12)** | The production client never goes live ahead of the server. Vercel's automatic deployment of `release` is disabled (`vercel.json` `git.deploymentEnabled`); the `release-client` GitHub workflow waits until production `/healthz` reports the commit's `PROTOCOL_VERSION` (poll every 30 s, ≤ 30 min; client-only commits pass immediately) and then calls the Vercel production deploy hook. If Render's build fails (migration error, Aiven off, build minutes exhausted) the old client stays live. Manual fallback: `/release-checklist` |
-| Client after mismatch | Older client: "New shift orders — reload" (reload `index.html`, short TTL). Newer client (should not happen with the gate): "Brightside is updating the servers", probe `/healthz` every 30 s for ≤ 10 min; after 10 min stop probing, show "Still updating — try again in a few minutes" with a Retry button (restarts one 10-min wait) and send one Sentry event `protocol_wait_timeout` |
+| **Release order ([ADR-0029](../adr/0029-single-deploy-branch-main.md))** | A push to `main` deploys the client (Vercel) and the server (Render, `autoDeployTrigger: checksPass`) independently; there is no deploy gate. On a protocol-changing commit the new client can be live minutes before the server, so the newer-client flow below is a **required, tested path from M1**. Recovery: Vercel Instant Rollback for the client, Render rollback or fix-forward for the server. Before pushing: `/verify` and `/release-checklist` |
+| Client after mismatch | Older client: "New shift orders — reload" (reload `index.html`, short TTL). Newer client (expected briefly after a protocol-changing push, ADR-0029): "Brightside is updating the servers", probe `/healthz` every 30 s for ≤ 10 min; after 10 min stop probing, show "Still updating — try again in a few minutes" with a Retry button (restarts one 10-min wait) and send one Sentry event `protocol_wait_timeout` |
 | `SAVE_FORMAT_VERSION` | Independent; see [data-model.md §6](data-model.md#6-save-format-and-versioning) |
 
 ## 14. Bandwidth budget (server → client)
@@ -382,7 +381,7 @@ Assumptions: busy 16-player Private Shift, everyone inside each other's horizon-
 | Hidden tab (any room) | ≈ 0.3 KB/s | — | — | — |
 | Joins | ≈ 0.05–0.3 MB each | — | — | 1,000 joins ≈ 0.1 GB |
 
-Upstream per client ≈ 20 × (10 + 6 + ~60) B ≈ 1.5 KB/s (inbound is not metered by Render per [netcode-case-raw-websocket.md §6](../research/tech/netcode-case-raw-websocket.md)). Owner accepted the suspension risk: no cap, but bytes out are logged per room per minute, persisted daily (`ops_usage_daily`) and shown month-to-date on `/status`. **Staging shares the workspace egress:** staging bot runs are capped at 5 min and soaks run locally in a CPU-limited container ([performance-budgets.md §8](performance-budgets.md)).
+Upstream per client ≈ 20 × (10 + 6 + ~60) B ≈ 1.5 KB/s (inbound is not metered by Render per [netcode-case-raw-websocket.md §6](../research/tech/netcode-case-raw-websocket.md)). Owner accepted the suspension risk: no cap, but bytes out are logged per room per minute, persisted daily (`ops_usage_daily`) and shown month-to-date on `/status`. **Hosted test runs share the same egress:** hosted bot runs (isolated test window only) are capped at 5 min and soaks run locally in a CPU-limited container ([performance-budgets.md §8](performance-budgets.md)).
 
 ## 15. Server CPU budget (0.1 CPU)
 
@@ -451,11 +450,11 @@ Not in the steady-state table, gated separately:
 | Reconciliation | Vitest + netsim | 120 ms ± 30 ms RTT, 1 % loss: own-avatar correction | p95 < 5 cm on flat ground; snaps ≤ 1 per 10 min |
 | Room uniqueness | Vitest + `@colyseus/testing` | Concurrent joins, full room, drain lock, shift-type change, two instances against one DB | Exactly one room per Contract |
 | Network conditions | `tools/netsim` (in-process conditioner) + Toxiproxy | Profiles: good (40 ms RTT), typical (120 ms, 15 ms jitter), bad (250 ms, 50 ms jitter, 1 % loss → TCP stalls), outage (5 s blackhole) | No desync; reconnect inside 60 s |
-| Load | `tools/bots` (headless bots using `packages/protocol` + the `packages/sim` reconciler) + `@colyseus/loadtest` | 16 bots per room: walk, clean, drive, buy, build; join/leave churn every 30 s. **1 h soaks run locally** in a CPU-limited (0.1 CPU) container, never on staging | §15 gates; bytes/client ≤ budget §14 |
+| Load | `tools/bots` (headless bots using `packages/protocol` + the `packages/sim` reconciler) + `@colyseus/loadtest` | 16 bots per room: walk, clean, drive, buy, build; join/leave churn every 30 s. **1 h soaks run locally** in a CPU-limited (0.1 CPU) container, never on the hosted service | §15 gates; bytes/client ≤ budget §14 |
 | Restart | Bots + scripted SIGTERM | Drain completes ≤ 25 s; all bots rejoin and positions match checkpoint | 100 % rejoin |
 | Gate command | `/bot-test`: 16 headless bots via `tools/bots`, netsim 120 ms ± 30 ms, 1 % loss, 10 min **locally**; reports tick p50/p95/max, GC stalls, bytes per client per message type, desync (checksum mismatches, reconciliation error) | Local | §14–15 budgets; zero unrecovered desync |
-| Real host | `/bot-test --staging`: same scenario on staging Render Free, **≤ 5 min**, bytes recorded in `ops_usage_daily` (M0-W2 spike and before releases only) | Staging | Tech-stack revisit trigger |
-| E2E | Playwright (local or staging, never production) | Cold start (server asleep) → first title interaction → Waking screen → join; protocol mismatch flow; bots/crawlers do not probe | |
+| Real host | `/bot-test --hosted-spike`: same scenario during an isolated, Cee-authorized test window on the one Render service (environments.md §3), **≤ 5 min**, no live player data, bytes recorded in `ops_usage_daily` (M0 netcode spike and before launch only) | Hosted window | Tech-stack revisit trigger |
+| E2E | Playwright (local; hosted only in an approved isolated test window, never against live player data) | Cold start (server asleep) → first title interaction → Waking screen → join; protocol mismatch flow; bots/crawlers do not probe | |
 
 ## 18. Open issues
 

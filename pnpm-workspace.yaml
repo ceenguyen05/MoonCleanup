@@ -29,8 +29,8 @@ overrides:
 
 # Dependency lifecycle scripts: pnpm 11 blocks them by default and fails the install (ERR_PNPM_IGNORED_BUILDS)
 # until every package with a script is reviewed. M0-W0-T02 reviewed none: the packages below are recorded as
-# explicitly NOT built (false) so that no third-party script runs. Cee decides at Gate G0b whether to flip any
-# of them to true (`pnpm approve-builds`); what each script does is listed in
+# explicitly NOT built (false) so that no third-party script runs. The designated devops writer reviews a script
+# when a task needs it and asks Cee only for a genuine trust decision before flipping it to true (`pnpm approve-builds`); what each script does is listed in
 # docs/agent-reports/M0-W0-T02-devops-engineer.md.
 allowBuilds:
   esbuild: false

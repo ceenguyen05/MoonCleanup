@@ -9,4 +9,5 @@ The initial install already exists; rerun only for a fresh checkout or actual ma
 Pin compatible versions, review licenses/transitive changes, keep manifest and lockfile consistent, and verify affected builds/tests.
 Review third-party lifecycle scripts before allowing them; ask Cee only when trust/permission is genuinely unresolved.
 No machine-wide installs or paid services without owner authorization. Major toolchain/architecture changes still get a concise ADR.
-Existing Dependabot grouping/engine constraints and SHA-pinned Actions remain; Cee chooses git/merge timing after validation.
+No Dependabot (owner, 2026-11-12): no automated dependency PRs. Version bumps are deliberate devops tasks; SHA-pinned Actions remain
+and are updated manually. Cee chooses git/merge timing after validation.

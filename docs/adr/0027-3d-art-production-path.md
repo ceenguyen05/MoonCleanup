@@ -1,6 +1,6 @@
 # ADR-0027: 3D art production path
 
-- **Status:** Accepted (2026-11-12) as the default path (decision D5). The owner decisions inside it (Q15, Q23) stay open and can only widen the path, not remove the default.
+- **Status:** Accepted (2026-11-12) as the default path (decision D5). The owner decisions inside it can only widen the path, not remove the default. **Q23 resolved 2026-11-12:** Cee installed Blender 4.5.10 LTS, so headless Blender is the preferred source (path in OPEN_QUESTIONS). Q15 (AI assets) stays open.
 - **Deciders:** lead/orchestrator, technical-artist (after the technical-art-director planning review, finding F4)
 - **Canonical source:** [art-direction.md §13](../design/art-direction.md) (asset production plan); [OPEN_QUESTIONS Q23](../OPEN_QUESTIONS.md); [ADR-0013](0013-asset-pipeline-gltf-ktx2.md) (delivery format)
 

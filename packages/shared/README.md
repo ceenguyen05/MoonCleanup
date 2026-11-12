@@ -24,7 +24,7 @@ None. This package is the root of the dependency graph. Only external dependency
 ## Rules
 
 - Environment-agnostic: no DOM, no Node APIs (the tsconfig has an empty `types` array and no DOM lib on purpose).
-- Contracts change only between waves, through a proposal in an agent report (module-boundaries "Contract change process").
+- Contracts change only through the lead and `contracts-architect` (module-boundaries "Contract change process"); consumers migrate together.
 - Expose everything through the `src/index.ts` barrel; deep imports are banned.
 
 ## Commands

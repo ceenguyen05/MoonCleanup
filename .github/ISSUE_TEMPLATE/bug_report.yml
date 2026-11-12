@@ -52,8 +52,8 @@ body:
     id: build
     attributes:
       label: Build / environment
-      description: Production, staging, Vercel preview URL or local. Include the build version shown in Settings → About.
-      placeholder: "staging, build 0.3.1+abc1234"
+      description: Production, Vercel preview URL or local. Include the build version shown in Settings → About.
+      placeholder: "production, build 0.3.1+abc1234"
   - type: input
     id: hardware
     attributes:

@@ -1,6 +1,6 @@
 # ADR-0018: Authentication - guest-first, opaque refresh token + short JWT
 
-- **Status:** Accepted (2026-11-12)
+- **Status:** Accepted (2026-11-12); staging-origin note superseded by [ADR-0029](0029-single-deploy-branch-main.md) (no staging service; origins in security.md)
 - **Deciders:** lead/orchestrator, backend-data-engineer
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) section 4 (Auth row), section 5 (cookies)
 

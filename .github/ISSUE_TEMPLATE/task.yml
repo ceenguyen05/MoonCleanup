@@ -1,5 +1,5 @@
 name: Roadmap task
-description: A single-agent-session task from docs/milestones (mirrors the task card format in AGENT_ORCHESTRATION.md).
+description: A single-agent-session task from docs/milestones (mirrors the task card format in docs/milestones).
 title: "[Task] <ID> — <goal>"
 labels: ["task"]
 body:

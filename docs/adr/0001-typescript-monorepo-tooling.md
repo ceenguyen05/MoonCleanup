@@ -1,6 +1,6 @@
 # ADR-0001: TypeScript monorepo and tooling baseline
 
-- **Status:** Accepted (2026-11-12)
+- **Status:** Accepted (2026-11-12); amended 2026-11-12: Dependabot removed by owner (see Consequences note)
 - **Deciders:** lead/orchestrator (planning session 2026-11-11/12)
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) section 4, rows Language / Runtime / Package manager / Bundler / Lint
 
@@ -23,7 +23,7 @@ The game is built by many AI agents in parallel, so it needs one language end to
 - **pnpm 11.28.9** workspaces, pinned through `packageManager`. Corepack is not bundled with Node 25+, so CI uses `pnpm/action-setup` and Vercel/Render use an explicit install command.
 - **Turborepo 2.x** for the task graph; **Vite 8.3.x** (Rolldown) for the client.
 - **ESLint 9 flat config + typescript-eslint 8.72 + Prettier 3**, including `no-restricted-imports` rules for package boundaries and the three.js legacy-API ban-list (ADR-0003).
-- Dependabot ignores major bumps of engine-level packages; a new major requires an ADR.
+- Engine-level majors require an ADR. (Amendment: Owner decision 2026-11-12: Dependabot removed (no automated dependency PRs); engine-level majors still need an ADR and are bumped manually by the designated devops writer.)
 
 ## Consequences
 

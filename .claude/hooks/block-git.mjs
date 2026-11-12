@@ -10,7 +10,7 @@
 // Runtime: the harness starts hooks with its own `node` (system Node 22.20.0 today, project Node is 26.13.1),
 // so this file must stay dependency-free and use only features present in both.
 //
-// Protocol (docs/research/tech/claude-code-formats.md section 4): PreToolUse JSON on stdin
+// Protocol (Claude Code hooks reference, https://code.claude.com/docs/en/hooks): PreToolUse JSON on stdin
 // ({ tool_name, tool_input: { command } }); exit 2 + stderr = block and feed the reason to the model; exit 0 = allow.
 //
 // FAILURE BEHAVIOUR (explicit decision, covered by tests):
@@ -390,7 +390,7 @@ function dialectOfShell(name) {
 
 function mutating(sub) {
   return `\`git ${sub}\` changes repository state. Cee runs all git; do not retry it in another form. ` +
-    'Describe the change in your report or hand over a commit plan instead (CLAUDE.md "NEVER", docs/handoff/WORKFLOW.md).';
+    'Leave the change in the working tree and describe it; Cee does all git (CLAUDE.md, docs/handoff/WORKFLOW.md).';
 }
 
 /** Judges one git invocation. `words[k]` is the first word after `git`. Returns a reason or null. */

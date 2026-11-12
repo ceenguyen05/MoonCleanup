@@ -4,7 +4,8 @@
 
 ## Purpose
 
-Headless bot clients that join a real server (local, staging or a Render Free instance) with the Colyseus SDK and the
+Headless bot clients that join a real server (local by default, or the one Render Free service during
+an isolated, Cee-authorized test window; environments.md §3) with the Colyseus SDK and the
 shared protocol codec, run 16-player scenarios and write reports (`tools/bots/reports/` is git-ignored). Used by `/bot-test`
 and the M0-W2 netcode spike (one 16-bot room must stay under 50% of the 0.1-CPU budget at 20 Hz).
 

@@ -1,6 +1,6 @@
 // PLACEHOLDER Vitest browser-mode preset (real browser tests for apps/client modules that need WebGL2/WebGPU or the DOM).
-// Browser mode needs a provider package (`@vitest/browser-playwright`) that is NOT installed in M0-W0: adding it needs
-// an ADR and a between-waves install (ADR-0028). Until then this preset takes the provider as an argument so that no
+// Browser mode needs a provider package (`@vitest/browser-playwright`) that is NOT installed in M0-W0: adding it is a
+// designated devops install when a task needs it (ADR-0028). Until then this preset takes the provider as an argument so that no
 // dependency is imported here, and nothing in the repo uses it yet.
 //
 // Future opt-in from apps/client/vitest.config.ts:

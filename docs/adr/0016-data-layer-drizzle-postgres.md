@@ -1,6 +1,6 @@
 # ADR-0016: Data layer - Drizzle ORM on Aiven PostgreSQL Free
 
-- **Status:** Accepted (2026-11-12)
+- **Status:** Accepted (2026-11-12); staging database/budget superseded by [ADR-0029](0029-single-deploy-branch-main.md): one schema `prod`, layout in data-model.md §9
 - **Deciders:** owner (engine choice), lead/orchestrator, backend-data-engineer
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) section 4 (Database row), section 5 (Prisma)
 

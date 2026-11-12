@@ -22,7 +22,7 @@ Retention and readiness for wider sharing: pacing tuned from real playtests, the
 | E3 | VT-M3-01…13: V2 items pass (≤ 3 open), V3 best effort | `/visual-check M3` (A-High, B-Medium) |
 | E4 | Tier A/B budgets with max permits, 16 players and a full solar farm; 2 h long-session stable | `/perf-check` |
 | E5 | Localization pipeline: every player-facing string in tables; English complete; no machine-translated shipping text | ui + game-designer |
-| E6 | Launch checklist: production on `release`, Sentry alerts, usage logging, uptime policy (Q11) decided, credits/licences complete | `/release-checklist` |
+| E6 | Launch checklist: production on `main` (ADR-0029), Sentry alerts, usage logging, uptime policy (Q11) decided, credits/licences complete | `/release-checklist` |
 | E7 | Launch-week stability: no unrecovered P1 incident open | M3-W5 report |
 
 ## 3. Stage plan

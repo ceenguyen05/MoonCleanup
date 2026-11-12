@@ -115,7 +115,7 @@ Your own vehicle comes through the contact channel and is loud and clear. Others
 | Insufficient LM | Soft low double buzz | Never harsh |
 | LM income tick | "Lumen shimmer" granular ticks, pitch rising over a streak | Merged like the visual tick-up |
 | Inspector's Stamp / "Plot stamped" | Stamp thunk + chord (shared with the world event) | — |
-| Plot Card (`G`) | Sonar-like sweep + soft ping per edge | — |
+| Plot Card (`C`) | Sonar-like sweep + soft ping per edge | — |
 | Survey Globe | Deep glassy open; rotate = subtle detents | — |
 | DOT message | Amber "bloop" (two notes) before each line | Matches the amber status light |
 | Achievement | Short bright motif | — |

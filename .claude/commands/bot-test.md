@@ -16,8 +16,7 @@ Multiplayer load gate for `$ARGUMENTS` (default: the current wave in `docs/STATU
 test fixture on the single Render service, with no active player/save data, for ≤5 minutes, logging bot egress.
 Honor tool URL guards; do not bypass them or recreate staging. If existing tooling refuses the only hosted URL,
 mark the hosted spike BLOCKED and ask the owner/netcode engineer for an explicitly supported safe test path.
-Never run destructive load scenarios against live production data. Legacy `--staging` means the same bounded
-isolated test intent, not a requirement for a second service.
+Never run destructive load scenarios against live production data.
 
 ## Inputs
 

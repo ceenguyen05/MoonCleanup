@@ -1,9 +1,9 @@
 # Continuous integration: install -> lint / typecheck / test / build.
 #
 # EMPTY-REPO GATING
-# The repository starts as a scaffold with no TypeScript sources and no pnpm-lock.yaml. The first
-# lockfile is created by agent task M0-W0-T02 (devops-engineer performs the first install; Cee
-# reviews it and commits it at Gate G0b). Until then, running pnpm with
+# The repository started as a scaffold with no TypeScript sources and no pnpm-lock.yaml. The first
+# lockfile was created by M0-W0-T02 (devops-engineer, first install); Cee commits it with the rest of
+# the working tree. Without a lockfile, running pnpm with
 # `--frozen-lockfile` or setup-node with `cache: pnpm` would fail without a lockfile, and linting or
 # building zero sources is meaningless. So the `detect` job looks for both:
 #   - has_lockfile: pnpm-lock.yaml exists at the repo root

@@ -23,7 +23,7 @@ IDs & units, REST DTOs (`api/rest`), save format (`save/format`, `SAVE_FORMAT_VE
 
 - Imported only by `apps/server`. `apps/client` never imports this package.
 - Drivers: `drizzle-orm` 0.45.4 + `postgres` (postgres.js) 4.1.1, `drizzle-kit` 0.31.11. Drizzle 1.0 is in RC: a major
-  migration needs an ADR (Dependabot ignores `drizzle-*` majors).
+  migration needs an ADR.
 - Free tier has no connection pooling and a 1 GB cap: keep writes coalesced and rows small.
 
 ## Commands

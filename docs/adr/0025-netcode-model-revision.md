@@ -1,6 +1,6 @@
 # ADR-0025: Netcode model revision - entities in bytes frames, horizon-aware interest, one room per Contract
 
-- **Status:** Accepted (2026-11-12). **Supersedes ADR-0015.**
+- **Status:** Accepted (2026-11-12). **Supersedes ADR-0015.** Release-order bullet superseded by [ADR-0029](0029-single-deploy-branch-main.md) (no deploy gate; newer-client flow is a tested path)
 - **Deciders:** lead/orchestrator, netcode-engineer (after the principal-engineer planning review, findings B1, M4, M5, M8, M10, M11, m2, m3)
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) section 3; details in [netcode.md](../architecture/netcode.md); dust semantics in [world-and-dust-simulation.md](../architecture/world-and-dust-simulation.md)
 
