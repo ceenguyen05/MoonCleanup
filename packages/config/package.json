@@ -1,0 +1,20 @@
+{
+  "name": "@moon-cleanup/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared tooling presets: ESLint flat config (import + ban-list rules), Vitest presets, Prettier config.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "lint": "echo config lint: placeholder until sources land - see README",
+    "typecheck": "echo config typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@eslint/js": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.14.0",
+    "typescript-eslint": "8.72.2"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@moon-cleanup/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Playwright end-to-end flows (client + server).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "test:e2e": "echo e2e placeholder: Fable replaces with playwright test",
+    "install:browsers": "playwright install --with-deps chromium",
+    "lint": "echo e2e lint: placeholder until sources land - see README",
+    "typecheck": "echo e2e typecheck: placeholder until sources land - see README"
+  },
+  "dependencies": {
+    "@moon-cleanup/shared": "workspace:*",
+    "@playwright/test": "1.65.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6"
+  }
+}

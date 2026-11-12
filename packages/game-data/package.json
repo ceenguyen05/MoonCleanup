@@ -1,0 +1,21 @@
+{
+  "name": "@moon-cleanup/game-data",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Balance and content tables validated by the zod schemas in shared/config.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "lint": "echo game-data lint: placeholder until sources land - see README",
+    "typecheck": "echo game-data typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/shared": "workspace:*"
+  },
+  "devDependencies": {}
+}

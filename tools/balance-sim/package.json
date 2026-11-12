@@ -1,0 +1,23 @@
+{
+  "name": "@moon-cleanup/balance-sim",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pacing simulator producing time-to-unlock curves.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "balance": "echo balance-sim placeholder: Fable replaces with tsx src/run.ts",
+    "lint": "echo balance-sim lint: placeholder until sources land - see README",
+    "typecheck": "echo balance-sim typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/game-data": "workspace:*",
+    "@moon-cleanup/shared": "workspace:*",
+    "@moon-cleanup/sim": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15"
+  }
+}

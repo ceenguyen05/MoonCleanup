@@ -1,0 +1,21 @@
+{
+  "name": "@moon-cleanup/protocol",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bit-packed codecs, compact snapshot/dust/stroke formats, client session state machine, interpolation buffer.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "lint": "echo protocol lint: placeholder until sources land - see README",
+    "typecheck": "echo protocol typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/shared": "workspace:*"
+  },
+  "devDependencies": {}
+}

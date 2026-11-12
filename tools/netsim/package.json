@@ -1,0 +1,21 @@
+{
+  "name": "@moon-cleanup/netsim",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Network conditioner (latency, jitter, loss) and Toxiproxy configs.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "lint": "echo netsim lint: placeholder until sources land - see README",
+    "typecheck": "echo netsim typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/shared": "workspace:*",
+    "toxiproxy-node-client": "4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15"
+  }
+}

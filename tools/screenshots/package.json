@@ -1,0 +1,26 @@
+{
+  "name": "@moon-cleanup/screenshots",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Playwright capture scenes, camera paths and image comparison for visual QA.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "screenshots": "echo screenshots placeholder: Fable replaces with tsx src/capture.ts",
+    "install:browsers": "playwright install chromium",
+    "lint": "echo screenshots lint: placeholder until sources land - see README",
+    "typecheck": "echo screenshots typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/shared": "workspace:*",
+    "@playwright/test": "1.65.0",
+    "pixelmatch": "8.0.0",
+    "pngjs": "7.0.0"
+  },
+  "devDependencies": {
+    "@types/pngjs": "6.0.5",
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15"
+  }
+}

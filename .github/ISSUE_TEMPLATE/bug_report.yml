@@ -1,0 +1,81 @@
+name: Bug report
+description: Something is broken or behaves incorrectly (gameplay, netcode, rendering, UI, server, tooling).
+title: "[Bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Include enough detail for an agent to reproduce it without asking follow-up questions.
+        Never paste secrets, tokens or connection strings.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Gameplay / simulation
+        - Netcode / multiplayer
+        - Rendering / terrain / dust visuals
+        - Animation
+        - UI / HUD
+        - Audio
+        - Server / API / persistence
+        - Build / CI / deploy
+        - Tooling / tests / bots
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug. Include the error text if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Join a crew moon with 3 players
+        2. Drive a hauler into the depot bay
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Build / environment
+      description: Production, staging, Vercel preview URL or local. Include the build version shown in Settings → About.
+      placeholder: "staging, build 0.3.1+abc1234"
+  - type: input
+    id: hardware
+    attributes:
+      label: Browser, OS, GPU, graphics preset
+      placeholder: "Chrome 142 / Windows 11 / RTX 4060 Laptop / High / WebGPU"
+  - type: input
+    id: players
+    attributes:
+      label: Players in session / room ID
+      placeholder: "6 players, room C7Q-2LM"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots, video
+      description: Drag files here. Browser console logs and the in-game debug overlay (F3) help a lot.
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "S1 — crash, data loss, or blocks play"
+        - "S2 — major feature broken, workaround exists"
+        - "S3 — minor / cosmetic"
+    validations:
+      required: true

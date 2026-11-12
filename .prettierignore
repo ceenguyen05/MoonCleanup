@@ -1,0 +1,15 @@
+# Generated / vendored / binary-ish content that Prettier must not rewrite.
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+pnpm-lock.yaml
+docs/research/
+docs/vendor/
+apps/client/public/assets/
+assets/
+tools/screenshots/output/
+tools/screenshots/diff/
+prototypes/
+packages/db/migrations/

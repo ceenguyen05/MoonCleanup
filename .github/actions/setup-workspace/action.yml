@@ -1,0 +1,34 @@
+# Composite action: toolchain + dependencies + Turborepo cache for every CI job.
+# The caller must run actions/checkout first. Only call this from jobs that are gated on a
+# lockfile existing (see .github/workflows/ci.yml), because setup-node's pnpm cache and
+# `--frozen-lockfile` both require pnpm-lock.yaml.
+name: Setup workspace
+description: Install pnpm 11.28.9, Node from .nvmrc, workspace dependencies and restore the Turborepo cache.
+
+runs:
+  using: composite
+  steps:
+    # Corepack is not bundled with Node >= 25, so pnpm is installed explicitly.
+    # Must run BEFORE setup-node so that `cache: pnpm` can find the pnpm executable.
+    - name: Install pnpm
+      uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      with:
+        version: 11.28.9
+
+    - name: Install Node.js (version from .nvmrc)
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - name: Restore Turborepo cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      with:
+        path: .turbo
+        key: turbo-${{ runner.os }}-${{ github.job }}-${{ github.sha }}
+        restore-keys: |
+          turbo-${{ runner.os }}-${{ github.job }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

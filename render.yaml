@@ -1,0 +1,249 @@
+# ===========================================================================================
+# Moon Cleanup - Render Blueprint (game server + REST API)
+#
+# Two FREE web services built from the SAME repo root:
+#   moon-cleanup-server          -> branch `release`  (production)
+#   moon-cleanup-server-staging  -> branch `main`     (staging)
+# Setup steps are in docs/SETUP_CHECKLIST.md. Spec: https://render.com/docs/blueprint-spec
+# Schema: https://render.com/schema/render.yaml.json
+#
+# This file is the SOURCE OF TRUTH for server env values; docs/architecture/environments.md
+# section 7.2 mirrors it. Change both together.
+#
+# Hard facts that shaped this file (docs/research/tech/platform-limits.md section B):
+#  - `plan: free` MUST be written explicitly. If `plan` is omitted Render creates a PAID
+#    0.5c-512mb service.
+#  - Free = 0.1 CPU / 512 MB, spins down after 15 min idle, ~1 min cold start.
+#  - 750 free instance-hours per workspace per month are SHARED by both services; staging is
+#    expected to sleep most of the time. Hobby egress (5 GB/month) is shared as well, so staging
+#    bot runs are capped at 5 minutes (docs/architecture/performance-budgets.md section 8).
+#  - `region` cannot be changed after creation.
+#  - `rootDir` is deliberately omitted (= repo root): pnpm workspaces need files outside
+#    apps/server at build time. `buildFilter` limits which commits trigger a deploy instead.
+#  - `preDeployCommand` is paid-only, so DB migrations and the achievements seed run inside the
+#    build command.
+#  - `sync: false` secrets are asked for ONCE when the Blueprint is created and ignored on later
+#    syncs; later changes are made in the Render dashboard (Environment tab).
+#  - BUILD_VERSION is deliberately NOT set: the server derives it from RENDER_GIT_COMMIT
+#    (a hard-coded value would make /healthz, Sentry releases and lease ids all report it).
+#  - healthCheckPath: the M0 spike verifies that Render health checks do not count as inbound
+#    traffic on Free. If they keep the instance awake, delete `healthCheckPath` from BOTH
+#    services (docs/architecture/environments.md section 4.1).
+# ===========================================================================================
+
+services:
+  # --------------------------- PRODUCTION (tracks `release`) ---------------------------
+  - type: web
+    name: moon-cleanup-server
+    runtime: node
+    # Explicit free plan (see header). Never remove.
+    plan: free
+    # PLACEHOLDER - Cee confirms or edits BEFORE the first Blueprint apply: the Render region
+    # nearest to the region Aiven assigned to the free PostgreSQL service (create Aiven first;
+    # the Render region is immutable). docs/architecture/environments.md section 4.1.
+    region: oregon
+    # Production deploys only from the fast-forward-only `release` branch.
+    branch: release
+    # Build steps, in order:
+    #  1. Install pnpm 11.28.9 explicitly (Corepack is not bundled with Node >= 25).
+    #  2. Install ONLY the server, its workspace dependencies and the root toolchain (turbo,
+    #     typescript) - never Playwright, gltf-transform or three - to save build minutes.
+    #     `--prod=false`: Render sets NODE_ENV=production during build, which would otherwise make
+    #     pnpm skip devDependencies (turbo, typescript, esbuild ...) that the build needs.
+    #  3. Build the server and everything it depends on through Turborepo.
+    #  4. Apply database migrations with the programmatic Drizzle migrator (sets lock_timeout and
+    #     statement_timeout) against DATABASE_URL (this service's own database).
+    #  5. Upsert the achievements catalog from packages/game-data (idempotent).
+    buildCommand: >-
+      npm install --global pnpm@11.28.9 &&
+      pnpm install --frozen-lockfile --prod=false --filter "@moon-cleanup/server..." --filter moon-cleanup &&
+      pnpm exec turbo run build --filter=@moon-cleanup/server &&
+      pnpm --filter @moon-cleanup/db run migrate &&
+      pnpm --filter @moon-cleanup/server run seed
+    startCommand: node apps/server/dist/index.js
+    # Render marks the deploy healthy only after this returns 2xx; also used for restarts.
+    # See the header note: removed if M0 shows it keeps the free instance awake.
+    healthCheckPath: /healthz
+    # Production deploys only after the commit's GitHub checks pass (CI gate).
+    autoDeployTrigger: checksPass
+    # Globs are relative to the repo root. Changes to render.yaml always deploy.
+    buildFilter:
+      paths:
+        - apps/server/**
+        - packages/**
+        - pnpm-lock.yaml
+        - render.yaml
+        - package.json
+        - pnpm-workspace.yaml
+        - turbo.json
+        - tsconfig.base.json
+        - .nvmrc
+    # On deploy/restart Render sends SIGTERM and waits this long (1-300 s, default 30) so the
+    # server can checkpoint rooms to the database and close sockets cleanly.
+    maxShutdownDelaySeconds: 30
+    # Environment variables: KEYS ONLY for anything secret. Real values go in the Render dashboard.
+    envVars:
+      # No NODE_VERSION: Render honours .nvmrc (docs/architecture/environments.md section 8, issue 3).
+      - key: NODE_ENV
+        value: production
+      # Render's default port for web services.
+      - key: PORT
+        value: "10000"
+      - key: ENV_NAME
+        value: production
+      # SECRET: Aiven PostgreSQL service URI for database `moon_prod`
+      # (Aiven console -> service Overview -> Connection information -> Service URI).
+      - key: DATABASE_URL
+        sync: false
+      # SECRET-ish: Aiven project CA certificate, full PEM text including BEGIN/END lines
+      # (Aiven console -> service Overview -> Connection information -> CA certificate).
+      - key: DATABASE_CA_CERT
+        sync: false
+      # Postgres schema this service uses (Drizzle pgSchema / search_path). Lets prod and staging
+      # share ONE Aiven database when the free plan allows no second database (OPEN_QUESTIONS Q19).
+      - key: DB_SCHEMA
+        value: prod
+      # SECRET: signs 15-minute access tokens (jose). Render generates a random 256-bit value
+      # once, at Blueprint creation. Rotating it logs every player out.
+      - key: JWT_SECRET
+        generateValue: true
+      # SECRET: server-side pepper for refresh-token, recovery-code, join-ticket and IP hashes.
+      # Render generates it once at Blueprint creation. Changing it invalidates every stored
+      # refresh token and recovery code.
+      - key: REFRESH_TOKEN_PEPPER
+        generateValue: true
+      # Exact browser origins allowed for CORS + WebSocket handshake (no trailing slash).
+      - key: ALLOWED_ORIGINS
+        value: https://moon-cleanup.vercel.app
+      # Sentry DSN of the server (Node) project: Sentry -> Project Settings -> Client Keys (DSN).
+      - key: SENTRY_DSN
+        sync: false
+      - key: LOG_LEVEL
+        value: info
+      # Fixed simulation step rate. 20 Hz is the Render Free (0.1 CPU) budget.
+      - key: SIM_TICK_HZ
+        value: "20"
+      # Frame/patch rate to clients; must divide SIM_TICK_HZ (bandwidth budget: 5 GB/month egress).
+      - key: SNAPSHOT_HZ
+        value: "10"
+      # HARD CEILING on live rooms per instance. Admission is decided by the measured tick budget
+      # below it (TICK_BUDGET_MS); the free tier hosts only a few live Contracts at once.
+      - key: MAX_ROOMS
+        value: "3"
+      # Admission budget in ms: sum of room tick p95 + new-room estimate must stay below this
+      # (70 % of a 50 ms / 0.1-CPU tick budget of 5 ms).
+      - key: TICK_BUDGET_MS
+        value: "3.5"
+      # The single Render-documented client-IP header used for per-IP rate limits (confirm the
+      # name in M0). Never an arbitrary X-Forwarded-For chain; `x-forwarded-for` = right-most only.
+      - key: CLIENT_IP_HEADER
+        value: true-client-ip
+      - key: PERSISTENCE_DRIVER
+        value: postgres
+      - key: DB_POOL_MAX
+        value: "4"
+      # SECRET (optional, temporary): previous JWT key accepted during rotation. Leave empty normally.
+      - key: JWT_SECRET_PREVIOUS
+        sync: false
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.01"
+      - key: MAX_CLIENTS
+        value: "24"
+      - key: CHECKPOINT_INTERVAL_S
+        value: "30"
+      - key: SEAT_HOLD_S
+        value: "60"
+      # Heap cap for the 512 MB free instance (the M0 spike evaluates 192-256 MB and GC flags).
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=384
+  # --------------------------- STAGING (tracks `main`) ---------------------------
+  # Same as production except: branch, service name, deploy trigger, ENV_NAME, DATABASE_*
+  # (database `moon_staging`), DB_POOL_MAX 2 (data-model.md section 9 pool math),
+  # ALLOWED_ORIGINS (Vercel's stable branch URL for `main`), and its own Sentry DSN.
+  # Staging is expected to sleep: do not point an uptime pinger at it.
+  - type: web
+    name: moon-cleanup-server-staging
+    runtime: node
+    plan: free
+    # PLACEHOLDER - same region as production (see above).
+    region: oregon
+    branch: main
+    buildCommand: >-
+      npm install --global pnpm@11.28.9 &&
+      pnpm install --frozen-lockfile --prod=false --filter "@moon-cleanup/server..." --filter moon-cleanup &&
+      pnpm exec turbo run build --filter=@moon-cleanup/server &&
+      pnpm --filter @moon-cleanup/db run migrate &&
+      pnpm --filter @moon-cleanup/server run seed
+    startCommand: node apps/server/dist/index.js
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - apps/server/**
+        - packages/**
+        - pnpm-lock.yaml
+        - render.yaml
+        - package.json
+        - pnpm-workspace.yaml
+        - turbo.json
+        - tsconfig.base.json
+        - .nvmrc
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: ENV_NAME
+        value: staging
+      # SECRET: Service URI for database `moon_staging` (see docs/SETUP_CHECKLIST.md, Aiven).
+      - key: DATABASE_URL
+        sync: false
+      # Aiven project CA certificate PEM (the same CA covers both databases on one Aiven service).
+      - key: DATABASE_CA_CERT
+        sync: false
+      # Staging schema (see the production service above).
+      - key: DB_SCHEMA
+        value: staging
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REFRESH_TOKEN_PEPPER
+        generateValue: true
+      # Vercel stable branch URL for `main` (Vercel -> project -> Domains), no trailing slash.
+      # Several origins may be comma-separated (for example also http://localhost:5173 to run the
+      # local client against staging).
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      # Same as production; raise to debug temporarily from the dashboard only.
+      - key: LOG_LEVEL
+        value: info
+      - key: SIM_TICK_HZ
+        value: "20"
+      - key: SNAPSHOT_HZ
+        value: "10"
+      - key: MAX_ROOMS
+        value: "3"
+      - key: TICK_BUDGET_MS
+        value: "3.5"
+      - key: CLIENT_IP_HEADER
+        value: true-client-ip
+      - key: PERSISTENCE_DRIVER
+        value: postgres
+      - key: DB_POOL_MAX
+        value: "2"
+      # SECRET (optional, temporary): previous JWT key accepted during rotation. Leave empty normally.
+      - key: JWT_SECRET_PREVIOUS
+        sync: false
+      - key: SENTRY_TRACES_SAMPLE_RATE
+        value: "0.01"
+      - key: MAX_CLIENTS
+        value: "24"
+      - key: CHECKPOINT_INTERVAL_S
+        value: "30"
+      - key: SEAT_HOLD_S
+        value: "60"
+      # Heap cap for the 512 MB free instance.
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=384

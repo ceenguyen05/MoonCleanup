@@ -1,0 +1,211 @@
+# Asset validation for pull requests that touch source assets or shipped web assets.
+#
+# Checks (bash only, no dependencies installed):
+#   1. SIZE      - fail if any single file under assets/ or apps/client/public/assets/ is larger than
+#                  10 MiB (no Git LFS, ADR-0017); warn if the combined size exceeds a soft budget.
+#   2. FILE TYPES- fail on reference/unapproved types: .fbx under apps/client/public, .blend anywhere in
+#                  the repo outside assets/source/, archives and executables under the asset folders, and
+#                  extensions outside the allow-list inside apps/client/public/assets/.
+#   3. LEDGER    - every NEWLY ADDED asset path must appear in docs/ASSET_LICENSES.md (ledger table rows
+#                  below the LEDGER-START marker). A row may list exact paths or a directory prefix
+#                  ending in "/", "/*" or "/**".
+#
+# GATING: the workflow only triggers on PRs that touch the asset paths (see `paths`). On a repo with no
+# assets yet every step finds nothing to check and passes, so it is safe to make required.
+name: Asset validation
+
+on:
+  pull_request:
+    paths:
+      - "assets/**"
+      - "apps/client/public/assets/**"
+      - "docs/ASSET_LICENSES.md"
+
+concurrency:
+  group: asset-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Hard limit per file (bytes): 10 MiB.
+      MAX_FILE_BYTES: "10485760"
+      # Soft budget for all asset files combined (bytes): 100 MiB. Exceeding it only warns.
+      WARN_TOTAL_BYTES: "104857600"
+      BASE_REF: ${{ github.base_ref }}
+    steps:
+      - name: Check out (full history for the base diff)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Collect asset files
+        id: collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          roots=()
+          for d in assets apps/client/public/assets; do
+            if [ -d "$d" ]; then roots+=("$d"); fi
+          done
+          : > "$RUNNER_TEMP/all_assets.txt"
+          if [ "${#roots[@]}" -gt 0 ]; then
+            # README.md and .gitkeep are documentation/placeholders, not assets.
+            find "${roots[@]}" -type f ! -name 'README.md' ! -name '.gitkeep' -print0 > "$RUNNER_TEMP/all_assets.z"
+          else
+            : > "$RUNNER_TEMP/all_assets.z"
+          fi
+          tr '\0' '\n' < "$RUNNER_TEMP/all_assets.z" > "$RUNNER_TEMP/all_assets.txt"
+          count="$(grep -c . "$RUNNER_TEMP/all_assets.txt" || true)"
+          echo "asset files present: $count"
+
+          # Newly added asset paths in this PR (three-dot diff against the base branch).
+          git fetch --no-tags origin "$BASE_REF"
+          git diff --name-only -z --diff-filter=A "origin/$BASE_REF...HEAD" -- assets apps/client/public/assets \
+            | tr '\0' '\n' \
+            | grep -v -E '(^|/)(README\.md|\.gitkeep)$' > "$RUNNER_TEMP/new_assets.txt" || true
+          echo "newly added asset files: $(grep -c . "$RUNNER_TEMP/new_assets.txt" || true)"
+
+      - name: Check file sizes
+        shell: bash
+        run: |
+          set -uo pipefail
+          fail=0
+          total=0
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            size="$(stat -c '%s' -- "$f")"
+            total=$((total + size))
+            if [ "$size" -gt "$MAX_FILE_BYTES" ]; then
+              echo "::error file=$f::File is $size bytes; the limit is $MAX_FILE_BYTES bytes (10 MiB). Compress it or keep it out of git (ADR-0017)."
+              fail=1
+            fi
+          done < "$RUNNER_TEMP/all_assets.txt"
+          echo "total asset bytes: $total"
+          if [ "$total" -gt "$WARN_TOTAL_BYTES" ]; then
+            echo "::warning::Combined asset size is $total bytes, above the soft budget of $WARN_TOTAL_BYTES bytes (100 MiB). Check clone size and Vercel build time."
+          fi
+          exit "$fail"
+
+      - name: Check forbidden and unapproved file types
+        shell: bash
+        run: |
+          set -uo pipefail
+          fail=0
+
+          # (a) .fbx must never ship in the client's public folder (and is a reference-format type).
+          if [ -d apps/client/public ]; then
+            while IFS= read -r f; do
+              echo "::error file=$f::.fbx files are not allowed under apps/client/public (use glTF/GLB)."
+              fail=1
+            done < <(find apps/client/public -type f -iname '*.fbx')
+          fi
+
+          # (b) .blend (and Blender backups) anywhere in the repo except assets/source/ (not used by default).
+          while IFS= read -r f; do
+            case "$f" in
+              assets/source/*) ;;
+              node_modules/*|*/node_modules/*) ;;
+              *)
+                echo "::error file=$f::.blend files are not allowed outside assets/source/ (large, binary, not shipped)."
+                fail=1
+                ;;
+            esac
+          done < <(find . -type f \( -iname '*.blend' -o -iname '*.blend1' -o -iname '*.blend2' \) -not -path './.git/*' -not -path '*/node_modules/*' | sed 's|^\./||')
+
+          # (c) archives and executables inside asset folders hide unreviewed content.
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            case "${f,,}" in
+              *.zip|*.rar|*.7z|*.tar|*.tar.gz|*.tgz|*.exe|*.dll|*.dmg|*.msi|*.bat|*.sh|*.ps1|*.jar|*.apk)
+                echo "::error file=$f::Archives and executables are not allowed in asset folders; extract and ledger the individual files."
+                fail=1
+                ;;
+            esac
+          done < "$RUNNER_TEMP/all_assets.txt"
+
+          # (d) shipped web assets must use an approved extension.
+          allowed='glb|gltf|bin|ktx2|png|jpg|jpeg|webp|svg|json|ogg|opus|webm|m4a|aac|mp3|woff2|txt|md'
+          if [ -d apps/client/public/assets ]; then
+            while IFS= read -r f; do
+              [ -n "$f" ] || continue
+              ext="${f##*.}"
+              ext="${ext,,}"
+              if ! printf '%s' "$ext" | grep -q -E "^($allowed)$"; then
+                echo "::error file=$f::Extension .$ext is not approved for apps/client/public/assets (allowed: $allowed)."
+                fail=1
+              fi
+            done < <(find apps/client/public/assets -type f ! -name '.gitkeep')
+          fi
+          exit "$fail"
+
+      # Everything under apps/client/public/assets/ is served with a 1-year `immutable` cache
+      # (vercel.json), so every file must carry a content hash in its name, e.g.
+      # height-cube-1024.3f9a2c1d.bin. Only manifest.json (short TTL) is exempt.
+      # docs/architecture/environments.md section 4.2, world-and-dust-simulation.md section 3.2.
+      - name: Check shipped assets are content-hashed
+        shell: bash
+        run: |
+          set -uo pipefail
+          fail=0
+          if [ -d apps/client/public/assets ]; then
+            while IFS= read -r f; do
+              [ -n "$f" ] || continue
+              base="$(basename -- "$f")"
+              case "$base" in
+                manifest.json|.gitkeep|README.md) continue ;;
+              esac
+              if ! printf '%s' "$base" | grep -q -E '\.[0-9a-f]{8,}\.[A-Za-z0-9]+$'; then
+                echo "::error file=$f::Shipped asset names must contain a content hash (name.<8+ hex>.ext); unhashed files would be cached immutably forever."
+                fail=1
+              fi
+            done < <(find apps/client/public/assets -type f)
+          fi
+          exit "$fail"
+
+      - name: Check new assets are in the license ledger
+        shell: bash
+        run: |
+          set -uo pipefail
+          ledger="docs/ASSET_LICENSES.md"
+          if [ ! -s "$RUNNER_TEMP/new_assets.txt" ]; then
+            echo "No newly added asset files: nothing to check."
+            exit 0
+          fi
+          if [ ! -f "$ledger" ]; then
+            echo "::error::$ledger is missing."
+            exit 1
+          fi
+          # Ledger table rows only: lines after the LEDGER-START marker that start with a pipe.
+          awk '/LEDGER-START/{on=1; next} on && /^\|/ {print}' "$ledger" > "$RUNNER_TEMP/ledger_rows.txt"
+
+          fail=0
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            covered=0
+            # Exact path mentioned in a ledger row.
+            if grep -F -q -- "$f" "$RUNNER_TEMP/ledger_rows.txt"; then covered=1; fi
+            if [ "$covered" -eq 0 ]; then
+              # Directory prefix mentioned as "dir/", "dir/*" or "dir/**".
+              dir="$f"
+              while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+                dir="$(dirname "$dir")"
+                [ "$dir" = "." ] && break
+                if grep -F -q -e "$dir/**" -e "$dir/*" -e "$dir/ " -e "$dir/\`" -e "$dir/<br" -e "$dir/," -e "$dir/|" "$RUNNER_TEMP/ledger_rows.txt"; then
+                  covered=1
+                  break
+                fi
+              done
+            fi
+            if [ "$covered" -eq 0 ]; then
+              echo "::error file=$f::New asset is not listed in $ledger. Add a ledger row (path or covering directory) in the same PR."
+              fail=1
+            fi
+          done < "$RUNNER_TEMP/new_assets.txt"
+          exit "$fail"

@@ -1,0 +1,41 @@
+{
+  "name": "@moon-cleanup/server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Moon Cleanup game server: Colyseus 0.18 rooms on uWebSockets.js + REST API (deployed to Render Free).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "dev": "echo server dev placeholder: Fable replaces with tsx watch src/app/index.ts",
+    "build": "echo server build placeholder: Fable replaces with an esbuild bundle to dist/index.js (--platform=node --external:uWebSockets.js; precomputed world grid binaries copied next to it)",
+    "start": "node dist/index.js",
+    "seed": "echo server seed placeholder: Fable replaces with an idempotent upsert of the achievements catalog from @moon-cleanup/game-data through @moon-cleanup/db (run by the Render build after migrate)",
+    "lint": "echo server lint: placeholder until sources land - see README",
+    "typecheck": "echo server typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@colyseus/core": "0.18.28",
+    "@colyseus/schema": "5.0.48",
+    "@colyseus/uwebsockets-transport": "0.18.5",
+    "@moon-cleanup/db": "workspace:*",
+    "@moon-cleanup/game-data": "workspace:*",
+    "@moon-cleanup/protocol": "workspace:*",
+    "@moon-cleanup/shared": "workspace:*",
+    "@moon-cleanup/sim": "workspace:*",
+    "@moon-cleanup/world": "workspace:*",
+    "@sentry/node": "11.12.0",
+    "jose": "6.2.17",
+    "pino": "10.4.0",
+    "rate-limiter-flexible": "11.4.1",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.71.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@colyseus/testing": "0.18.6",
+    "@types/node": "26.6.6",
+    "esbuild": "0.28.2",
+    "pino-pretty": "13.2.0",
+    "tsx": "4.23.15"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@moon-cleanup/bots",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Headless bot clients, 16-player scenarios and reports.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "bots": "echo bots placeholder: Fable replaces with tsx src/cli.ts",
+    "lint": "echo bots lint: placeholder until sources land - see README",
+    "typecheck": "echo bots typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@colyseus/loadtest": "0.18.4",
+    "@colyseus/sdk": "0.18.10",
+    "@moon-cleanup/protocol": "workspace:*",
+    "@moon-cleanup/shared": "workspace:*",
+    "@moon-cleanup/sim": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15"
+  }
+}

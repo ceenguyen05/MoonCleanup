@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a new mechanic, improvement or quality-of-life change.
+title: "[Feature] "
+labels: ["feature", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Features are scheduled through docs/ROADMAP.md. Check docs/design/scope-tiers.md first — it may already be planned
+        for MVP, v1.0 or post-launch. All player-facing names must be original (see docs/design/naming-bible.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Player problem or opportunity
+      description: What should players be able to do or feel that they can't today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the mechanic or change. Reference GDD sections if relevant.
+    validations:
+      required: true
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Suggested scope tier
+      options:
+        - MVP
+        - v1.0 (mechanics parity)
+        - Polish
+        - Post-launch
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact on contracts, balance, performance or netcode
+      description: New messages? New tunables in packages/game-data? Frame-time or bandwidth cost?
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria (draft)
+      placeholder: "- [ ] ...\n- [ ] ..."

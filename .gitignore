@@ -1,0 +1,106 @@
+# ─────────────────────────────────────────────────────────────
+# Moon Cleanup — .gitignore
+# ─────────────────────────────────────────────────────────────
+
+# Dependencies / package managers
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn/
+.npm/
+
+# Build output
+dist/
+build/
+out/
+*.tsbuildinfo
+.vite/
+.turbo/
+.cache/
+.eslintcache
+.stylelintcache
+
+# Environment & secrets (only *.env.example files are committed)
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.crt
+ca.pem
+ca-cert*.pem
+secrets/
+
+# Logs
+logs/
+*.log
+
+# Test & coverage output
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+tools/screenshots/output/
+tools/screenshots/diff/
+tools/bots/reports/
+tools/perf/captures/
+tools/balance-sim/out/
+
+# Deploy tooling local state
+.vercel/
+.render/
+
+# Claude Code local-only files (shared config in .claude/ IS committed)
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+
+# Prototypes: keep source + README, ignore their build output and deps
+prototypes/**/dist/
+prototypes/**/build/
+prototypes/**/node_modules/
+prototypes/**/.vite/
+
+# Large or raw source data that must never enter git (download/bake via tools/)
+assets/terrain/raw/
+assets/terrain/cache/
+assets/source/**/*.blend1
+assets/source/**/*.blend2
+assets/source/**/*.blend@
+*.blend1
+*.blend2
+*.blend@
+*.spp.autosave
+*.tmp
+*.bak
+*.orig
+*.swp
+*~
+
+# Generated web assets (produced by tools/asset-pipeline; see ADR-0017)
+apps/client/public/assets/.generated/
+
+# OS junk
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editors
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.code-workspace
+.history/
+.fleet/
+.zed/

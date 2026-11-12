@@ -1,0 +1,35 @@
+{
+  "name": "moon-cleanup",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Moon Cleanup - browser co-op moon-cleaning game (monorepo root).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "packageManager": "pnpm@11.28.9",
+  "engines": {
+    "node": "26.x"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e --filter=@moon-cleanup/e2e",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "verify": "turbo run lint typecheck test build",
+    "bots": "turbo run bots --filter=@moon-cleanup/bots",
+    "perf": "turbo run perf --filter=@moon-cleanup/perf"
+  },
+  "devDependencies": {
+    "@moon-cleanup/config": "workspace:*",
+    "@playwright/test": "1.65.0",
+    "eslint": "9.39.5",
+    "prettier": "3.10.1",
+    "turbo": "2.11.11",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2",
+    "vitest": "5.1.0"
+  }
+}

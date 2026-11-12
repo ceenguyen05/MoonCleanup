@@ -1,0 +1,21 @@
+{
+  "name": "@moon-cleanup/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Contracts: ids, units, protocol catalog, event catalog, config schemas (types, constants, zod only).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "lint": "echo shared lint: placeholder until sources land - see README",
+    "typecheck": "echo shared typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  },
+  "devDependencies": {}
+}

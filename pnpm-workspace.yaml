@@ -1,0 +1,12 @@
+# pnpm workspace definition. Every folder below that contains a package.json is a workspace package.
+# Package scope: @moon-cleanup/* (workspace-only, never published). See docs/architecture/module-boundaries.md.
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tools/*"
+  # The Playwright end-to-end package lives at tests/e2e (@moon-cleanup/e2e).
+  - "tests/*"
+
+# Note for Cee: pnpm blocks dependency lifecycle scripts by default. If `pnpm install` prints
+# "Ignored build scripts: ...", run `pnpm approve-builds` once and commit the resulting setting
+# in this file (do not do it blindly - review the package list first).

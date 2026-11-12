@@ -1,0 +1,66 @@
+name: Visual quality issue
+description: Something looks cheap, blurry, aliased, flat, noisy or inconsistent with docs/design/visual-target.md.
+title: "[Visual] "
+labels: ["visual-quality", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        "Looks like a cheap browser game" is a failed build. Compare against the reference board and the
+        per-milestone checklist in docs/design/visual-target.md, and attach screenshots captured with /visual-check
+        (or the in-game photo mode) at native resolution — never resized.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Terrain / regolith detail
+        - Dust layer / sweep trails / clean-vs-dirty contrast
+        - Lighting / shadows / night
+        - Sky (stars, Earth, sun)
+        - Materials (suits, vehicles, robots, buildings)
+        - Particles / VFX
+        - Animation / motion
+        - Camera
+        - UI / HUD / text sharpness
+        - Anti-aliasing / upscaling / resolution
+        - Performance-related visual degradation (LOD pop, shimmer)
+    validations:
+      required: true
+  - type: input
+    id: checklist-item
+    attributes:
+      label: visual-target.md checklist item(s) failed
+      placeholder: "VT-M1-07 Sweep trail edge is crisp at 1 m camera distance"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What looks wrong and what it should look like
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (native resolution) and reference links
+      description: Before/after or ours-vs-reference. Reference images are LINKS only — never attach reference-game assets.
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware tier, browser, backend, preset, resolution, DPR
+      placeholder: "Tier B (iGPU) / Edge 142 / WebGPU / Medium / 2560x1600 @ DPR 2"
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "V1 — immediately reads as low quality"
+        - "V2 — noticeable on inspection"
+        - "V3 — polish"
+    validations:
+      required: true

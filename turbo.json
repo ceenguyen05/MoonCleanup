@@ -1,0 +1,57 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "ui": "stream",
+  "globalDependencies": ["tsconfig.base.json", ".nvmrc"],
+  "globalPassThroughEnv": ["CI", "GITHUB_ACTIONS", "GITHUB_SHA", "GITHUB_REF_NAME", "RUNNER_OS"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env.production", "!**/*.md", "!**/*.test.*"],
+      "outputs": ["dist/**"],
+      "env": ["VITE_*"],
+      "passThroughEnv": [
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "VERCEL_GIT_COMMIT_SHA",
+        "VERCEL_ENV",
+        "RENDER_GIT_COMMIT",
+        "BUILD_VERSION",
+        "NODE_ENV"
+      ]
+    },
+    "lint": {
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+      "outputs": ["coverage/**"],
+      "passThroughEnv": ["DATABASE_URL", "DATABASE_CA_CERT", "PERSISTENCE_DRIVER", "TEST_DB_SCHEMA", "ENV_NAME"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "passThroughEnv": ["E2E_SERVER_HTTP_URL", "E2E_CLIENT_URL", "PROD_SERVER_HTTP_URL"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "bots": {
+      "cache": false,
+      "passThroughEnv": ["BOTS_SERVER_WS_URL", "BOTS_SERVER_HTTP_URL", "PROD_SERVER_HTTP_URL"]
+    },
+    "perf": {
+      "cache": false,
+      "passThroughEnv": ["PERF_SERVER_HTTP_URL", "PROD_SERVER_HTTP_URL"]
+    }
+  }
+}

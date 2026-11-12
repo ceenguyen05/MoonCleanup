@@ -1,0 +1,23 @@
+{
+  "name": "@moon-cleanup/sim",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure-TypeScript room simulation: movement, low-g kinematics, vehicles, tools, cargo, economy, robots, unlocks.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "lint": "echo sim lint: placeholder until sources land - see README",
+    "typecheck": "echo sim typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/game-data": "workspace:*",
+    "@moon-cleanup/shared": "workspace:*",
+    "@moon-cleanup/world": "workspace:*"
+  },
+  "devDependencies": {}
+}

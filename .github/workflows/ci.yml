@@ -1,0 +1,283 @@
+# Continuous integration: install -> lint / typecheck / test / build.
+#
+# EMPTY-REPO GATING
+# The repository starts as a scaffold with no TypeScript sources and no pnpm-lock.yaml. The first
+# lockfile is created by agent task M0-W0-T02 (devops-engineer performs the first install; Cee
+# reviews it and commits it at Gate G0b). Until then, running pnpm with
+# `--frozen-lockfile` or setup-node with `cache: pnpm` would fail without a lockfile, and linting or
+# building zero sources is meaningless. So the `detect` job looks for both:
+#   - has_lockfile: pnpm-lock.yaml exists at the repo root
+#   - has_source:   at least one *.ts / *.tsx file under apps/, packages/, tools/ or tests/
+# Every later job runs only when BOTH are true. While the repo is a scaffold, those jobs are
+# skipped (shown as "skipped", not failed) and the always-running `ci-gate` job succeeds, so it can
+# be used as the single required status check in branch protection from day one.
+name: CI
+
+on:
+  push:
+    branches: [main, release, "hotfix/**"]
+  pull_request:
+
+# Cancel superseded runs of the same ref (saves free Actions minutes).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------------------
+  # detect: decides whether the heavy jobs have anything to do. Always runs, always cheap.
+  # ---------------------------------------------------------------------------------------
+  detect:
+    name: Detect lockfile and sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      has_lockfile: ${{ steps.detect.outputs.has_lockfile }}
+      has_source: ${{ steps.detect.outputs.has_source }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Detect lockfile and TypeScript sources
+        id: detect
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -f pnpm-lock.yaml ]; then has_lockfile=true; else has_lockfile=false; fi
+
+          # Any .ts/.tsx (type declaration files count too) outside node_modules.
+          has_source=false
+          dirs=()
+          for d in apps packages tools tests; do
+            if [ -d "$d" ]; then dirs+=("$d"); fi
+          done
+          if [ "${#dirs[@]}" -gt 0 ]; then
+            found="$(find "${dirs[@]}" -type f \( -name '*.ts' -o -name '*.tsx' \) -not -path '*/node_modules/*' -print -quit)"
+            if [ -n "$found" ]; then has_source=true; fi
+          fi
+
+          echo "has_lockfile=$has_lockfile" >> "$GITHUB_OUTPUT"
+          echo "has_source=$has_source" >> "$GITHUB_OUTPUT"
+          echo "has_lockfile=$has_lockfile has_source=$has_source"
+          if [ "$has_lockfile" != "true" ] || [ "$has_source" != "true" ]; then
+            echo "::notice title=CI gated::Scaffold repo (no lockfile or no TypeScript sources yet): install/lint/typecheck/test/build are skipped."
+          fi
+
+      # security.md section 10 requires third-party actions pinned by full commit SHA. The actions in
+      # ci.yml and .github/actions/setup-workspace are pinned (verified against the GitHub API, with a
+      # `# vX.Y.Z` comment per line). asset-validation.yml and release-client.yml still use
+      # `actions/checkout@v7`; until their owner (devops-engineer) pins them to
+      # actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 (v7.0.1) this step only WARNS.
+      # Then flip PIN_ENFORCE to "true" so regressions fail.
+      - name: Check action pins (SHA)
+        shell: bash
+        env:
+          PIN_ENFORCE: "true"
+        run: |
+          set -uo pipefail
+          bad=0
+          while IFS= read -r line; do
+            file="${line%%:*}"
+            ref="$(printf '%s' "$line" | sed -E 's/.*uses:[[:space:]]*//; s/[[:space:]]+#.*$//')"
+            case "$ref" in
+              ./*|docker://*) continue ;;
+            esac
+            if ! printf '%s' "$ref" | grep -q -E '@[0-9a-f]{40}$'; then
+              echo "::warning file=$file::Action not pinned by commit SHA: $ref"
+              bad=1
+            fi
+          done < <(grep -rn -E '^[[:space:]]*-?[[:space:]]*uses:' .github/workflows .github/actions || true)
+          if [ "$bad" = "1" ] && [ "$PIN_ENFORCE" = "true" ]; then exit 1; fi
+
+      # vercel.json must implement the documented contract (security.md section 4.4,
+      # environments.md section 4.2): CSP, COOP, /hub headers, extension-less SPA rewrite only,
+      # build version from the commit SHA, no automatic production deploys.
+      - name: Check vercel.json contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e '
+            const v = JSON.parse(require("fs").readFileSync("vercel.json", "utf8"));
+            const all = (v.headers || []).flatMap(h => h.headers.map(x => ({ src: h.source, key: x.key.toLowerCase(), value: x.value })));
+            const has = (src, key) => all.some(x => x.src === src && x.key === key);
+            const errs = [];
+            if (!has("/(.*)", "content-security-policy")) errs.push("missing CSP on /(.*)");
+            if (!has("/(.*)", "cross-origin-opener-policy")) errs.push("missing COOP on /(.*)");
+            if (!has("/hub/(.*)", "access-control-allow-origin")) errs.push("missing ACAO on /hub/(.*)");
+            const csp = (all.find(x => x.key === "content-security-policy") || {}).value || "";
+            for (const d of ["frame-ancestors", "object-src", "base-uri", "connect-src"]) if (!csp.includes(d)) errs.push("CSP lacks " + d);
+            const rw = (v.rewrites || []).map(r => r.source);
+            if (rw.some(s => s === "/(.*)")) errs.push("catch-all rewrite would serve index.html for missing assets");
+            if (!/VITE_BUILD_VERSION=\$VERCEL_GIT_COMMIT_SHA/.test(v.buildCommand || "")) errs.push("buildCommand must set VITE_BUILD_VERSION");
+            if (!(v.git && v.git.deploymentEnabled && v.git.deploymentEnabled.release === false)) errs.push("release must not auto-deploy (release gate)");
+            if (errs.length) { for (const e of errs) console.log("::error file=vercel.json::" + e); process.exit(1); }
+            console.log("vercel.json contract OK");
+          '
+
+  # ---------------------------------------------------------------------------------------
+  # install: proves `pnpm install --frozen-lockfile` works and warms the pnpm store cache.
+  # ---------------------------------------------------------------------------------------
+  install:
+    name: Install
+    needs: detect
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+
+  lint:
+    name: Lint
+    needs: [detect, install]
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+      - name: Format check (Prettier)
+        run: pnpm format:check
+      - name: Lint (turbo)
+        run: pnpm lint
+
+  # security.md section 10: high/critical advisories in production dependencies fail CI.
+  audit:
+    name: Dependency audit
+    needs: [detect, install]
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+      - name: pnpm audit (prod, high+)
+        run: pnpm audit --prod --audit-level high
+
+  # world-and-dust-simulation.md sections 1 and 4.5b: grid + ledger golden hashes must match in
+  # Node 26, Chromium, Firefox and WebKit. Runs once packages/world defines `test:golden`.
+  golden:
+    name: Golden hashes (4 engines)
+    needs: [detect, install]
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+      - name: Detect golden test script
+        id: g
+        shell: bash
+        run: |
+          if node -e 'process.exit(require("./packages/world/package.json").scripts?.["test:golden"] ? 0 : 1)'; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::packages/world has no test:golden script yet; golden job skipped."
+          fi
+      - name: Install Playwright browsers
+        if: steps.g.outputs.present == 'true'
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Golden hashes (Node + 3 browsers)
+        if: steps.g.outputs.present == 'true'
+        run: pnpm --filter @moon-cleanup/world run test:golden
+
+  # data-model.md section 6: every committed golden save fixture must load with the current loader.
+  save-fixtures:
+    name: Save fixtures
+    needs: [detect, install]
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+      - name: Load golden save fixtures
+        run: pnpm --filter @moon-cleanup/server run --if-present test:save-fixtures
+
+  typecheck:
+    name: Typecheck
+    needs: [detect, install]
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+      - name: Typecheck (turbo)
+        run: pnpm typecheck
+
+  test:
+    name: Unit tests
+    needs: [detect, install]
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+      - name: Test (turbo)
+        run: pnpm test
+
+  build:
+    name: Build
+    needs: [detect, install]
+    if: needs.detect.outputs.has_lockfile == 'true' && needs.detect.outputs.has_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up workspace
+        uses: ./.github/actions/setup-workspace
+      - name: Build (turbo)
+        run: pnpm build
+      # performance-budgets.md section 5/8: first-load asset group <= 20 MB (compressed). Runs once
+      # the client defines `size:check`.
+      - name: First-load size check (<= 20 MB)
+        run: pnpm --filter @moon-cleanup/client run --if-present size:check
+
+  # ---------------------------------------------------------------------------------------
+  # ci-gate: single required status check for branch protection (main and release).
+  # Always runs. Passes when every gated job succeeded OR was skipped by the empty-repo gating;
+  # fails if any job failed or was cancelled.
+  # ---------------------------------------------------------------------------------------
+  ci-gate:
+    name: CI gate
+    if: always()
+    needs: [detect, install, lint, audit, typecheck, test, golden, save-fixtures, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Evaluate results
+        shell: bash
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          set -euo pipefail
+          echo "job results: $RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then
+              echo "::error::At least one CI job failed or was cancelled."
+              exit 1
+            fi
+          done
+          echo "CI gate passed."

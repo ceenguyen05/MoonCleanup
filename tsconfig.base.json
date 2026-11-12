@@ -1,0 +1,33 @@
+{
+  // Shared compiler options for every workspace package. Packages extend this file with
+  // "extends": "../../tsconfig.base.json" and add only what differs (lib, types, jsx, include).
+  // TypeScript 6.0.3 is pinned (typescript-eslint 8.x does not support TS 7 yet).
+  "compilerOptions": {
+    // Language / emit target
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "noEmit": true,
+
+    // Strictness
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Bundler/transpiler friendliness (Vite, tsx, esbuild transpile file-by-file)
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+
+    // TS 6 no longer auto-includes every @types/* package. Packages that need Node or Vite
+    // typings list them in their own "types" array. Environment-agnostic packages
+    // (shared, protocol, sim, world, game-data) keep this empty on purpose: no DOM, no Node.
+    "types": []
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@moon-cleanup/world",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Plot grid (icosahedral hex GP(m,0)), point-to-plot, neighbors, height sampling, stroke rasterization, coverage math.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "lint": "echo world lint: placeholder until sources land - see README",
+    "typecheck": "echo world typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/shared": "workspace:*"
+  },
+  "devDependencies": {}
+}

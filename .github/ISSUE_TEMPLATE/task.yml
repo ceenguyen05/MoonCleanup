@@ -1,0 +1,71 @@
+name: Roadmap task
+description: A single-agent-session task from docs/milestones (mirrors the task card format in AGENT_ORCHESTRATION.md).
+title: "[Task] <ID> — <goal>"
+labels: ["task"]
+body:
+  - type: input
+    id: task-id
+    attributes:
+      label: Task ID
+      placeholder: "M1-W2-T03"
+    validations:
+      required: true
+  - type: input
+    id: owner-role
+    attributes:
+      label: Owning agent role
+      description: Must match a file in .claude/agents/ (e.g. terrain-dust-engineer).
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+    validations:
+      required: true
+  - type: textarea
+    id: owned-files
+    attributes:
+      label: Files / packages owned in this wave
+      description: Two agents never own the same path in the same wave.
+    validations:
+      required: true
+  - type: textarea
+    id: contracts
+    attributes:
+      label: Input contracts it depends on
+      placeholder: "packages/shared/src/protocol/*, packages/shared/src/world/sector-id.ts ..."
+  - type: input
+    id: depends-on
+    attributes:
+      label: Depends on task IDs
+      placeholder: "M1-W0-T01, M1-W1-T02"
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria (testable)
+    validations:
+      required: true
+  - type: textarea
+    id: visual-acceptance
+    attributes:
+      label: Visual acceptance criteria (if any)
+      description: Reference checklist items in docs/design/visual-target.md.
+  - type: input
+    id: reviewers
+    attributes:
+      label: Required reviewers
+      placeholder: "code-reviewer, visual-qa-reviewer, performance-reviewer"
+    validations:
+      required: true
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of done
+      value: |
+        - [ ] Acceptance criteria met and demonstrated
+        - [ ] /verify green (lint, typecheck, test, build)
+        - [ ] Agent report written to docs/agent-reports/<taskID>-<role>.md
+        - [ ] Required reviewers signed off
+        - [ ] Docs updated if behavior or contracts changed
+        - [ ] Committed by Cee (lead marks done)

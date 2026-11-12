@@ -1,0 +1,83 @@
+# Release gate: the production client must never go live ahead of the production server.
+#
+# Vercel's automatic deployment of `release` is disabled in vercel.json (git.deploymentEnabled).
+# On every push to `release` this workflow:
+#   1. reads PROTOCOL_VERSION from packages/shared/src/protocol/messages.ts (the commit's version);
+#   2. polls production GET /healthz every 30 s for up to 30 min until it reports that
+#      protocolVersion (a client-only commit passes on the first poll; a failed Render build -
+#      migration error, Aiven powered off, build minutes exhausted - leaves the old client live
+#      and fails this workflow visibly);
+#   3. POSTs the Vercel production Deploy Hook for `release`.
+# Spec: docs/architecture/netcode.md section 13, docs/architecture/environments.md section 4.3.
+#
+# One-time setup by Cee (never by agents):
+#   - repository secret   VERCEL_PROD_DEPLOY_HOOK_URL (Vercel -> Project -> Settings -> Git ->
+#     Deploy Hooks -> branch `release`)
+#   - repository variable PROD_SERVER_HTTP_URL (production Render HTTPS URL, no trailing slash)
+# Polling /healthz wakes production once per release (~15 instance-minutes); that is accepted.
+name: Release client
+
+on:
+  push:
+    branches: [release]
+  workflow_dispatch:
+
+concurrency:
+  group: release-client
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate-and-deploy:
+    name: Wait for server protocol, then deploy client
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read PROTOCOL_VERSION of this commit
+        id: proto
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=packages/shared/src/protocol/messages.ts
+          if [ ! -f "$f" ]; then
+            echo "::notice::$f does not exist yet (scaffold); no protocol to wait for, deploying directly."
+            echo "version=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          v="$(grep -E 'PROTOCOL_VERSION[^=]*=[[:space:]]*[0-9]+' "$f" | head -1 | sed -E 's/.*=[[:space:]]*([0-9]+).*/\1/')"
+          if [ -z "$v" ]; then echo "::error file=$f::PROTOCOL_VERSION not found"; exit 1; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "commit PROTOCOL_VERSION=$v"
+
+      - name: Wait for production server
+        if: steps.proto.outputs.version != ''
+        shell: bash
+        env:
+          SERVER: ${{ vars.PROD_SERVER_HTTP_URL }}
+          WANT: ${{ steps.proto.outputs.version }}
+        run: |
+          set -uo pipefail
+          if [ -z "$SERVER" ]; then echo "::error::Repository variable PROD_SERVER_HTTP_URL is not set."; exit 1; fi
+          for i in $(seq 1 60); do
+            got="$(curl -fsS --max-time 10 "$SERVER/healthz" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).protocolVersion)}catch{console.log("")}})' || true)"
+            echo "poll $i: server protocolVersion=${got:-none}, want $WANT"
+            if [ "$got" = "$WANT" ]; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::Production server did not report protocolVersion $WANT within 30 min; client NOT deployed (old client stays live)."
+          exit 1
+
+      - name: Trigger Vercel production deploy
+        shell: bash
+        env:
+          HOOK: ${{ secrets.VERCEL_PROD_DEPLOY_HOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "$HOOK" ]; then echo "::error::Secret VERCEL_PROD_DEPLOY_HOOK_URL is not set."; exit 1; fi
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Vercel production deploy triggered."

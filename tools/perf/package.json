@@ -1,0 +1,25 @@
+{
+  "name": "@moon-cleanup/perf",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Benchmarks and performance capture scripts.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "perf": "echo perf placeholder: Fable replaces with tsx src/run.ts",
+    "lint": "echo perf lint: placeholder until sources land - see README",
+    "typecheck": "echo perf typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/protocol": "workspace:*",
+    "@moon-cleanup/shared": "workspace:*",
+    "@moon-cleanup/sim": "workspace:*",
+    "@moon-cleanup/world": "workspace:*",
+    "@playwright/test": "1.65.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@moon-cleanup/terrain-bake",
+  "version": "0.0.0",
+  "private": true,
+  "description": "LOLA LDEM to height cube map baking with a checksummed manifest.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "bake": "echo terrain-bake placeholder: Fable replaces with tsx src/bake.ts",
+    "lint": "echo terrain-bake lint: placeholder until sources land - see README",
+    "typecheck": "echo terrain-bake typecheck: placeholder until sources land - see README",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@moon-cleanup/shared": "workspace:*",
+    "@moon-cleanup/world": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15"
+  }
+}
