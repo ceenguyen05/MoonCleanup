@@ -1,4 +1,6 @@
-# Audio direction — Moon Cleanup
+# Audio direction — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Accepted for build (planning session 2026-11-12)** · Owner: audio-engineer · Related: [`art-direction.md`](art-direction.md) (departure D-17), [`visual-target.md`](visual-target.md), [`naming-bible.md`](naming-bible.md) (all names), [`../research/asset-and-data-licensing.md`](../research/asset-and-data-licensing.md) §8 (audio licensing), [`../architecture/tech-stack.md`](../architecture/tech-stack.md) (Opus/WebM + AAC fallback).
 

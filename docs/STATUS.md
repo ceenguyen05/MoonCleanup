@@ -1,41 +1,42 @@
-# STATUS — single source of truth
+# STATUS — resume here
 
-Owner: lead (update via `/status` after every agent report and before every session ends — see AGENT_ORCHESTRATION §14).
+Updated: 2026-11-12. Lead alone patches current state; detailed evidence stays in task/review reports.
+**Clean The Moon!**; close Moon Sweepers-like design: [REFERENCE_TARGET](design/REFERENCE_TARGET.md).
+Model/usage rules: [MODEL_POLICY](handoff/MODEL_POLICY.md). Deadline: November 17, 2026 (America/Chicago).
 
 ## Now
 
-| Field | Value |
-| --- | --- |
-| Phase | **Planning complete → ready for M0** |
-| Current milestone | M0 — Foundation (`v0.1.0`) — [milestones/M0-foundation.md](milestones/M0-foundation.md) |
-| Next stage | **M0-S1**: first `/plan-wave M0-W0` (writes `docs/handoff/waves/M0-W0.md`), then M0-W0-T02 devops (performs the FIRST install) → M0-W0-T01 contracts v0 when T02 reports; M0-W0-T04 git hook + three r187 docs in parallel |
-| Blocking owner gate | **G0** — Cee completes [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md) §0–§2 (repo `ceenguyen05/mooncleanup` exists; local folder unchanged; remote set-url, planning commit, first push, `release` branch); the lead verifies it per [FABLE_KICKOFF.md §2](handoff/FABLE_KICKOFF.md#2-how-the-lead-verifies-gate-g0-read-only-never-run-anything-else) |
-| Last commit plan | [`handoff/commit-plans/planning-session.md`](handoff/commit-plans/planning-session.md) (planning files; written by the lead) |
-| Open owner questions | [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) — Q8, Q9, Q10, Q11, Q14, Q15, Q18, Q19, Q21 have defaults in effect |
+- M0 foundation, wave [M0-W0](handoff/waves/M0-W0.md), stages S1/S2. Continue authorized M0; do not restart or reinstall.
+- Setup is complete. Build/test continuously through M0–M3; Cee chooses when satisfied and ready to commit/publish.
+- **Do not infer live-agent state from historical launch times.** Recover IDs from wave §11; verify stopped/live before dispatch.
+- Node commands on this laptop need the per-command fnm Node 26 prefix in wave §3; do not change the machine profile.
 
-## Milestones
+## Active work and findings
 
-| Milestone | Tasks | Stages (usage windows) | Status |
-| --- | --- | --- | --- |
-| M0 Foundation | 27 | 8 (+1 contingent) | todo |
-| M1 MVP (`v0.2.0`) | 60 | 21 | todo |
-| M2 v1.0 parity (`v1.0.0`) | 76 | 26 | todo |
-| M3 Polish & launch | 30 | 11 | todo |
-| M4 Post-launch | backlog | — | — |
-
-## In-progress tasks (resume these first in a new session)
-
-_None._
-
-## Gates
-
-| Gate | Result | Report |
+| Task | Recorded state | Resume evidence / Next |
 | --- | --- | --- |
-| Planning handoff review (4 independent reviewers) | see [REVIEW_LOG.md](REVIEW_LOG.md) | 2026-11-12 |
+| M0-W0-T01 contracts | in-progress | [partial report](agent-reports/M0-W0-T01-contracts-architect.md); protocol/types/tests and additional source exist. Reconcile disk, finish missing contracts/barrels and focused checks. |
+| M0-W0-T02 tooling | changes-requested | [author](agent-reports/M0-W0-T02-devops-engineer.md), [code review](agent-reports/M0-W0-T02-review-code-reviewer.md). Fix boundary dynamic/sibling-import gaps and recorded required findings. Collect unfinished security review once, no duplicate review. |
+| M0-W0-T04 hook/docs | changes-requested | [author](agent-reports/M0-W0-T04-devops-engineer.md), [code](agent-reports/M0-W0-T04-review-code-reviewer.md), [security](agent-reports/M0-W0-T04-review-netcode-security-reviewer.md). Keep verified findings; combine a bounded fix/review cycle. |
+| M0-W0-T03 scripts/build/CI/env | todo | Brief wave §8.1. Real scripts/configs/stubs/smoke/env work remains. Main-only deploy cleanup and Markdown formatter exclusion already applied; inspect/reuse. |
+| M0-W0-T06 asset proof | todo | After T03; Blender path needed from Cee. Wave §8.2. |
+| M0-W0-T05 integration | todo | After required technical inputs; wave §8.3. Verify meaningful checks, record evidence and continue M0-W1; no commit stop. |
 
-## Log (append one line per event: date · stage · task · event)
+Task-state authority remains [M0 §5](milestones/M0-foundation.md#5-status-table); no new approval/completion is inferred here.
+Full build/boot/deploy is not proven: package scripts still include placeholders. Local config/format/graph checks passed in
+the cleanup pass; they are not M0 integration acceptance. No new task completion is inferred.
 
-- 2026-11-11 · planning · — · Research (17 agents) completed; owner decisions: title Moon Cleanup, $0 budget, Contracts + Solo/Private/Open, Postgres (Aiven MySQL free retired), accept bandwidth suspension risk, mirror reference progression, own visual identity.
-- 2026-11-12 · planning · — · Architecture, design, ADRs 0001–0024, roadmap (M0–M4 in stages), agents (22), commands (13), scaffold written. Staged-session protocol added (AGENT_ORCHESTRATION §14).
-- 2026-11-12 · planning · — · Handoff fix pass: install exception (M0-W0-T02 first install), Gate G0b (commit M0-W0), wave-file-before-launch rule, permission-mode guidance, render spike moved after look-dev + real height cube (M0-W3-T07), 3D art production tasks added to M1 (W3-T07, W4-T07), prototype install rule. See `docs/agent-reports/planning-fix-handoff.md`.
-- 2026-11-12 · planning · — · Gap docs added (animation-spec, game-feel-and-controls, ui-screens-and-flows); title renamed to Moon Cleanup repo-wide; design rename map applied; wave cap 6/stage cap 3; CI actions SHA-pinned.
+## Owner inputs / carry-over
+
+- Cee: Blender LTS executable path before asset proof (Q23); Tier B device or explicit provisional fallback for hardware measurement (Q21).
+- Review blocked build scripts/release-age exceptions/uWS override in T02's report when needed; ask only for a real trust/permission decision.
+- Main-only / one Render / DB schema prod (ADR-0029); root config cleanup applied. Reconcile remaining setup/architecture prose before deploy.
+- Product override (ADR-0030): common names/style allowed; old forced differences and custom Review/Effort/Bulk-Rate gates are retired from the baseline.
+- Models pinned Fable 5.2/Opus 5.5/Sonnet 5.5; Sonnet lead chooses task effort. Default one implementer, max two workers, one premium worker combined.
+- [OPEN_QUESTIONS](OPEN_QUESTIONS.md) holds only outstanding owner decisions/defaults; [deadline plan](handoff/DEADLINE_PLAN.md) holds delivery checkpoints.
+
+Update this file after a coherent checkpoint: actual report/agent ID, evidence, blocker and exact Next. Do not append full transcripts.
+
+
+Owner workflow, November 12: no intermediate commits, formal wave plans, stage permission stops or per-task reviewer swarm.
+Keep compact recovery state, meaningful tests and known findings. Keep the custom git hook as an extra safeguard.

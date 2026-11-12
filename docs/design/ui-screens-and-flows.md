@@ -1,9 +1,11 @@
-# UI screens and flows — Moon Cleanup
+# UI screens and flows — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Draft v1 for build (planning, 2026-11-12).** Owner: ui-ux-motion-designer (builds `apps/client/src/ui/**`, `assets/ui/**`). Approver: lead. Cee (owner) may override anything.
 Builds on: [GDD](GDD.md) §7, §8, §9, §10, §12–§16 · [art-direction](art-direction.md) §8 (tokens, type, motion presets, UI accessibility) · [visual-target](visual-target.md) §2.3, §6, VT-M0-10, VT-M1-24/25, VT-M3-06/07/11 · [naming-bible](naming-bible.md) (every label; UI additions in §A10) · [progression-and-economy](progression-and-economy.md) (what each shop and tree shows) · [scope-tiers](scope-tiers.md) (MVP vs v1.0) · [netcode](../architecture/netcode.md) §4, §9, §10, §12, §13, §16 · [system-overview](../architecture/system-overview.md) §2, §3, §4 · [module-boundaries](../architecture/module-boundaries.md) §2, §4 · [rendering-pipeline](../architecture/rendering-pipeline.md) §14, §15 · [audio-direction](audio-direction.md) §2.6, §5, §9 · [security](../architecture/security.md) §3, §8.
 
-**Title.** The owner renamed the game to **Moon Cleanup**. Every player-facing string in this spec uses **Moon Cleanup**. The naming-rule risk (close variant of the banned "Moon Cleaners" / "Clean the Moon") is recorded as X14 in `docs/agent-reports/planning-fix-design.md`; it is the owner's call, and the GDD §1 mitigations apply even more strongly: the **Brightside** mark is prominent on the title screen and loading screen (§3.1, §3.2).
+**Title.** **Clean The Moon!** is owner-selected. Use this exact name on the title/loading screens, browser title, metadata and accessibility labels. One display-name source; item labels remain editable.
 
 **What this file is.** The single build spec for every DOM screen, overlay and HUD widget: layout, data, intents, states, motion, navigation, accessibility and testable acceptance. It does not restate tokens or presets (art-direction §8 is canonical) or numbers (progression-and-economy is canonical); it names them.
 
@@ -22,7 +24,7 @@ Builds on: [GDD](GDD.md) §7, §8, §9, §10, §12–§16 · [art-direction](art
 | Tokens | Color, type, spacing, radius, elevation tokens of art-direction §8.2–§8.4 (`ui-glass-bg`, `type-value`, `sp-4`, `r-xl`, `e-1` …) |
 | Device glyphs | `[E]` = the key bound to that action; `(X)` = the gamepad face button by position (A bottom, B right, X left, Y top, Xbox labels; PlayStation glyphs swap in automatically, §1.2) |
 | Wireframes | ASCII, not to scale; proportions indicative at 1920×1080 CSS, HUD scale 100% |
-| Strings | All strings live in one strings module keyed by ID (localization-ready). Names come only from the naming bible. DOT lines are dry, polite, literal (GDD §3) |
+| Strings | All strings live in one strings module keyed by ID (localization-ready). Names use the editable catalog; familiar generic labels are allowed. DOT lines are dry, polite, literal (GDD §3) |
 
 ---
 
@@ -204,7 +206,7 @@ Each screen lists: **Purpose · Entry / exit · Wireframe · Components · Data 
 +--------------------------------------------------------------------------------+
 |                                                                                |
 |                                                                                |
-|                         ( SVG wordmark: MOON CLEANUP )                         |
+|                         ( SVG wordmark: Clean The Moon! )                         |
 |                       the two O's are a half-cleaned moon                      |
 |                                                                                |
 |                      ======================--------------                      |
@@ -234,7 +236,7 @@ The static first paint (wordmark + background) is inline in `index.html` (devops
 ```
 +--------------------------------------------------------------------------------+
 |                                                              (orbit view of    |
-|   MOON CLEANUP                                                 your Contract's |
+|   Clean The Moon!                                                 your Contract's |
 |   Brightside Facilities Co. -- "We keep the bright side bright."   moon, Earth |
 |                                                                 in frame, slow |
 |   +------------------------------+                              rotation)      |
@@ -292,7 +294,7 @@ The static first paint (wordmark + background) is inline in `index.html` (devops
 | `probing` (> 2 s) / `waking` | "Waking the moon…" | "Usually about a minute." Elapsed `m:ss`. DOT tips rotate every 8 s (from a 12-line pool; GDD §3 tone). Back |
 | `slow_wake` (≥ 120 s) | "The servers are taking longer than usual" | Retry (restarts a probe immediately; probing continues every 10 s regardless), Back. Elapsed timer keeps counting |
 | `records_offline` | "Contract records are offline" | DOT: "Your Contracts are safe; the filing cabinet is just switched off." Retry in 30 s countdown, Back. Clock In stays disabled until `/readyz` reports the DB up |
-| `update_required` (client old) | "New shift orders" | "A newer version of Moon Cleanup is out." **Reload** (primary, initial focus) |
+| `update_required` (client old) | "New shift orders" | "A newer version of Clean The Moon! is out." **Reload** (primary, initial focus) |
 | `update_required` (client new) | "Brightside is updating the servers" | Probe every 30 s up to 10 min, then "Still updating — try again in a few minutes" + Retry (netcode §13) |
 | `at_capacity` | "Brightside is at capacity" | "Join an Open Shift or try again later." Buttons: Shift Board (v1.0 only; hidden in MVP), Try again, Back |
 
@@ -972,7 +974,7 @@ Rules: only one L4 moment at a time; a Review that fires while a panel is open q
 | 4107 IDLE_TIMEOUT | "Clocked out for inactivity" | "30 minutes On Break. The robots took over (at half speed)." | Clock In again, Back | MVP |
 | 4108 CONTRACT_UNAVAILABLE | "This Contract is unavailable" | "Brightside couldn't open the file. It has been reported." | Back to Contracts | MVP |
 | 409 CONTRACT_BUSY (repeated > 30 s) | "Brightside is shuffling paperwork" | Retries continue automatically | Back | MVP |
-| Unsupported browser (no WebGPU, no WebGL2) | "This browser can't run Moon Cleanup" | "Moon Cleanup needs WebGPU or WebGL2. Try a current Chrome, Edge, Firefox or Safari." | Learn more (Handbook page), — | MVP |
+| Unsupported browser (no WebGPU, no WebGL2) | "This browser can't run Clean The Moon!" | "Clean The Moon! needs WebGPU or WebGL2. Try a current Chrome, Edge, Firefox or Safari." | Learn more (Handbook page), — | MVP |
 | Generic / unknown | "Something went sideways" | "Not your fault. Brightside has been told." | Reload, Back | MVP |
 
 | Data | `session.conn`, `closeCode`, `closeInfo`, `reconnectAttempt`, `seatHoldRemainingS` |
@@ -988,8 +990,8 @@ Rules: only one L4 moment at a time; a Review that fires while a panel is open q
 
 | Section | Content |
 | --- | --- |
-| Moon Cleanup | Made by (contributors list from `CREDITS.md`), Brightside Facilities Co. is fictional |
-| Data | Exact lines from ASSET_LICENSES §2: "NASA's Scientific Visualization Studio." · "Elevation: NASA LRO Lunar Orbiter Laser Altimeter (LOLA) Science Team, NASA/GSFC; data via NASA Planetary Data System." · "NASA/GSFC/Arizona State University" (if LROC used) · "NASA Earth Observatory / NASA Visible Earth" · "Star data: HYG Database (astronexus.com), CC BY-SA 4.0; derived starfield (c) Moon Cleanup contributors, CC BY-SA 4.0." (license link; the ledger line still says "Moon Cleanup contributors" until the rename, §9 U12) · "NASA does not endorse this game." |
+| Clean The Moon! | Made by (contributors list from `CREDITS.md`), Brightside Facilities Co. is fictional |
+| Data | Exact lines from ASSET_LICENSES §2: "NASA's Scientific Visualization Studio." · "Elevation: NASA LRO Lunar Orbiter Laser Altimeter (LOLA) Science Team, NASA/GSFC; data via NASA Planetary Data System." · "NASA/GSFC/Arizona State University" (if LROC used) · "NASA Earth Observatory / NASA Visible Earth" · "Star data: HYG Database (astronexus.com), CC BY-SA 4.0; derived starfield (c) Clean The Moon! contributors, CC BY-SA 4.0." (license link; the ledger line still says "Clean The Moon! contributors" until the rename, §9 U12) · "NASA does not endorse this game." |
 | Fonts and icons | Inter, Space Grotesk, JetBrains Mono (SIL OFL 1.1), Lucide (ISC) |
 | Software | three.js, React, Motion, Colyseus and the other runtime libraries with licences (generated list) |
 | Audio and art | Every CC-BY entry from the asset ledger with its exact attribution line |
@@ -1365,7 +1367,7 @@ Reduced motion replaces every row's motion with 120 ms opacity fades; sounds are
 
 | Screen | Acceptance criteria (each is a test) |
 | --- | --- |
-| SCR-01 Boot | (1) No request to the game-server origin before the first title interaction (Playwright network log, production-like build). (2) Progress text updates at least every 1 s while bytes arrive. (3) CLS ≤ 0.1 from first paint to title (VT-M3-11). (4) With WebGPU and WebGL2 disabled, SCR-22 "This browser can't run Moon Cleanup" appears within 3 s |
+| SCR-01 Boot | (1) No request to the game-server origin before the first title interaction (Playwright network log, production-like build). (2) Progress text updates at least every 1 s while bytes arrive. (3) CLS ≤ 0.1 from first paint to title (VT-M3-11). (4) With WebGPU and WebGL2 disabled, SCR-22 "This browser can't run Clean The Moon!" appears within 3 s |
 | SCR-02 Title | (1) Initial focus on Clock In; Enter starts the flow. (2) Exactly one probe sequence starts on the first pointer down / key press / Clock In hover (test-only probe override, because e2e browsers report `navigator.webdriver`; §9 U14). (3) First visit: one Clock In produces `POST /v1/auth/guest` → `POST /v1/contracts` → `POST /v1/contracts/:id/join` in order and lands in the world. (4) Invalid name shows an inline hint and Clock In still proceeds with the default. (5) Server chip shows the correct text for each `wakeState` |
 | SCR-03 Waking | (1) Shown only after Clock In while not awake; never on page load. (2) Elapsed timer increments once per second (fake clock). (3) At 120 s switches to `slow_wake` with Retry. (4) On `awake` continues the pending action without another click. (5) `update_required` (client old) shows Reload as initial focus. (6) `records_offline` disables Clock In with a reason |
 | SCR-04 Contracts | (1) Renders mocked rows with name, type, role, Shine (4 decimals), online count. (2) Empty state shows New Contract focused. (3) New Contract disabled with reason at `ownedCount = maxOwned` (1 in MVP). (4) Invite code input normalises pasted lowercase/spaced codes; unknown / banned / rate-limited codes show their inline messages and keep the value. (5) Holder sees Copy link, Rotate, shift type, Rename, Delete; Staff sees none of the Holder controls. (6) Delete requires a 1.2 s hold |
@@ -1436,8 +1438,8 @@ v1.0 adds UIS-30 Shift Board, UIS-31 Shift Briefing, UIS-32 Parts Catalog + buil
 | U8 | Recovery code display timing (after first Stamp / Clock Out, memory only) and a rotate endpoint | backend-data-engineer + netcode-security-reviewer | §4 FL-1 note |
 | U9 | Assay Counter pour order across Holster Cells is unspecified | game-designer | Active Cell first, then slot order |
 | U10 | Key for opening the Parts Catalog while the Assembly Gun is drawn | game-designer (GDD §9) | [G] / right-stick click |
-| U11 | Title rename to **Moon Cleanup** not yet applied in GDD §1, naming-bible §1, system-overview hub metadata `title`, package scope; naming-rule risk X14 | lead / Cee | UI strings use Moon Cleanup |
-| U12 | HYG credit line in ASSET_LICENSES §2 says "Moon Cleanup contributors" | docs-keeper | Credits render "Moon Cleanup contributors" after the rename |
+| U11 | Title rename to **Clean The Moon!** not yet applied in GDD §1, naming-bible §1, system-overview hub metadata `title`, package scope; naming-rule risk X14 | lead / Cee | UI strings use Clean The Moon! |
+| U12 | HYG credit line in ASSET_LICENSES §2 says "Clean The Moon! contributors" | docs-keeper | Credits render "Clean The Moon! contributors" after the rename |
 | U13 | system-overview §3 `at_capacity` mentions an Open Shifts button; MVP has no Open Shifts | lead | Button hidden in MVP |
 | U14 | e2e browsers report `navigator.webdriver`, which suppresses the wake probe; netcode §17 still needs a cold-start e2e | qa-test-engineer + netcode-engineer | A test-only probe override on staging/local builds |
 | U15 | "robot panel" is a banned reference term (mechanics §8); GDD §10 prose says "robot and machine panels" | game-designer (resolved: GDD §10, §6 and scope-tiers now say Equipment Card) | Player-facing name **Equipment Card** (naming bible A10) |

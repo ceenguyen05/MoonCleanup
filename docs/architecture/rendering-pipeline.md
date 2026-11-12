@@ -1,4 +1,6 @@
-# Rendering pipeline — Moon Cleanup
+# Rendering pipeline — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Draft for implementation (planning session 2026-11-12)** · Owner: lead (authored via brief) · Implementers: `rendering-engineer` (`apps/client/src/render`), `technical-artist` (`apps/client/src/visuals`), `terrain-dust-engineer` (`apps/client/src/terrain`), `performance-profiler` (`apps/client/src/debug`), `ui-ux-motion-designer` (DOM UI).
 Canonical inputs (never overridden here): [tech-stack.md](tech-stack.md) (ADR-0003/0004/0005/0006), [module-boundaries.md](module-boundaries.md), [naming-bible.md](../design/naming-bible.md).
@@ -224,7 +226,7 @@ With a black sky, metals and the visor reflect nothing unless we give them an en
 | --- | --- |
 | Background | Pure black; no gradient, no nebula (the reference game's blue nebula is a stated shortfall, VA §2.1) |
 | Stars — data | **HYG Database v4.x, CC BY-SA 4.0**; stars with V ≤ 6.5 (naked-eye set) baked offline (technical-artist, `tools/asset-pipeline`) into `stars_hyg.bin`: direction in the world frame (ecliptic north ≈ +Y), magnitude, B−V colour. The bake reads **only** the position, `mag` and `ci` columns (for V ≤ 6.5 these come from Hipparcos/Yale/Gliese) and **never** a Gaia cross-identifier or Gaia-derived column; the bake script asserts this. **No NASA SVS Deep Star Maps.** Gaia is excluded by policy; the Gaia licence wording in [licensing §5](../research/asset-and-data-licensing.md) is under verification by docs-keeper from the primary source. Alternative under evaluation: Yale Bright Star Catalogue 5th ed. (≈ 9,100 stars, V ≤ 6.5) if its terms verify as unrestricted, which would remove share-alike |
-| Stars — licence | The baked file ships as a **separate file under CC BY-SA 4.0** with its own notice. Credits and `docs/ASSET_LICENSES.md`: "Star data: HYG Database (astronexus.com), CC BY-SA 4.0; derived star file © Moon Cleanup contributors, CC BY-SA 4.0." Share-alike on screenshots/trailers: open question for docs-keeper (same check as above) |
+| Stars — licence | The baked file ships as a **separate file under CC BY-SA 4.0** with its own notice. Credits and `docs/ASSET_LICENSES.md`: "Star data: HYG Database (astronexus.com), CC BY-SA 4.0; derived star file © Clean The Moon! contributors, CC BY-SA 4.0." Share-alike on screenshots/trailers: open question for docs-keeper (same check as above) |
 | Stars — visibility model (one model) | Limiting magnitude from the scripted exposure: **m_lim = clamp(6.5 − (EV100 − 7.3) × 4/7, 2.0, 6.5)** → night 6.5, dawn ≈ 4.2, noon (EV 14.3) 2.5. Stars with V ≤ m_lim are drawn; a 0.5-mag soft fade avoids pops. Setting "Realistic" sets m_lim = −2 whenever the sun is up (no daytime stars). Preset caps (§14) can only lower m_lim |
 | Stars — render | Drawn **after AA and upscaling, at output resolution**, as analytic Gaussian disks with radius ≥ 1.2 output px (1.2–2.0 px by magnitude, constant at any DPR), depth-tested against the upsampled scene depth (nearest). Brightness ∝ 10^(−0.4·mag). No twinkle. This keeps 1-px stars stable on SMAA presets and under TAAU (§8.1) |
 | Earth — texture | **NASA Blue Marble Next Generation** (day, with clouds) and optional Black Marble (night lights), KTX2, **capped at 2048 × 1024** (Low/Medium 1024 × 512; photo-mode telephoto at ≈ 173 px needs no more). Credit "NASA Earth Observatory / NASA Visible Earth" (NASA credit mandatory) |
@@ -496,7 +498,7 @@ Each step is a `quality.ts` value change, not new code. The savings are estimate
 
 | Feature | Decision |
 | --- | --- |
-| Quick screenshot (proposed key F2; bindings owned by gameplay) | Canvas only (no HUD), current resolution, PNG via render-target readback, saved with a Moon Cleanup filename |
+| Quick screenshot (proposed key F2; bindings owned by gameplay) | Canvas only (no HUD), current resolution, PNG via render-target readback, saved with a Clean The Moon! filename |
 | Photo mode (proposed key F9) | HUD hidden; free camera within 30 m of the player, kept above H + 0.3 m; local presentation frozen (entity interpolation and particles paused for rendering; network and sim continue); controls: FOV, exposure ±2 EV, roll, DOF (r180+ DOF node), LUT filters, frame overlays, toggle Earth size realistic/stylised |
 | Capture | Supersample up to 2× output (Tier B 1.5×), capped by 8,192 px and 600 MB of extra targets; 16 jittered frames accumulated with TRAA off |
 | Multiplayer | Other players see nothing different; photo mode exits on Esc or after 5 min idle |

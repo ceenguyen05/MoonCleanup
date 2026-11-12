@@ -1,4 +1,6 @@
-# Visual target — Moon Cleanup
+# Visual target — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Accepted for build (planning session 2026-11-12)** · Owner: technical-artist · Reviewed by: visual-qa-reviewer · Changes via PR that names the VT IDs it changes.
 Companion docs: [`art-direction.md`](art-direction.md) (what things look like) · [`audio-direction.md`](audio-direction.md) · [`naming-bible.md`](naming-bible.md) (all names) · evidence in [`../research/visual-analysis.md`](../research/visual-analysis.md), [`../research/browser-feasibility.md`](../research/browser-feasibility.md), [`../architecture/tech-stack.md`](../architecture/tech-stack.md).
@@ -39,15 +41,18 @@ Rules: never download, embed, trace, re-host or commit reference images or video
 | News hub | https://store.steampowered.com/news/app/5335510 [K] | Devlogs and patch visuals | — |
 
 **What we take from it:** clean has to read as brighter at once, stroke feedback is instant, silhouettes are strong, player identity comes through color, and the scene is a cheerful high-key world.
-**What we must NOT copy:** chibi astronauts, LED/cartoon-eye visors, white-and-orange toy vehicles and modules, the van shape, the blue nebula or blue-tinted sky, lavender regolith, blue shadows, mesh-pebble debris, the toothbrush starter tool, the hex-floor white/orange interiors, and their palette. See [`art-direction.md` §1.3](art-direction.md#13-do-not-copy-list).
+**How to use the reference:** broad style, familiar equipment, palette families, brush-width paths and readable
+worksite composition are intentional targets. Author our own assets/UI/text/branding; no extracted reference content.
+The old blanket visual exclusions are retired. See [REFERENCE_TARGET](REFERENCE_TARGET.md) for RF checks and exact
+style-dependent VT precedence; numerical artifact/performance/usability checks still apply.
 
 ### 1.2 Roblox moon-cleaning games (genre context only; thumbnails not yet inspected)
 
 | Game | Link | Note |
 |---|---|---|
 | Sweep The Moon | https://www.roblox.com/games/109576450376407/Sweep-The-Moon [S] | Tile-quantized cleaning. Our continuous mask has to beat it at a glance |
-| Clean the Moon! (Lunarlit Works) | https://www.roblox.com/games/76678170614451/Clean-the-Moon [S] | Incremental and robots |
-| Clean the Moon! (StaticStudios6) | https://www.roblox.com/games/78086118798161/Clean-the-Moon [S] | Vehicles, pets |
+| Clean The Moon! (Lunarlit Works) | https://www.roblox.com/games/76678170614451/Clean-the-Moon [S] | Incremental and robots |
+| Clean The Moon! (StaticStudios6) | https://www.roblox.com/games/78086118798161/Clean-the-Moon [S] | Vehicles, pets |
 | Clean THE Moon | https://www.roblox.com/games/73695758197534/Clean-THE-Moon [S] | — |
 
 ### 1.3 NASA / Apollo / LRO references (truth for light and material)

@@ -1,7 +1,9 @@
-# Art direction — Moon Cleanup
+# Art direction — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Accepted for build (planning session 2026-11-12)** · Owner: technical-artist · Reviewed by: visual-qa-reviewer · Measurable targets and the screenshot protocol live in [`visual-target.md`](visual-target.md). Sound lives in [`audio-direction.md`](audio-direction.md).
-Names: every player-facing name comes from [`naming-bible.md`](naming-bible.md). Token, scene and asset IDs in this file are internal. If a new player-facing name is needed (for example a livery display name), the game-designer adds it to the naming bible first.
+Names: [`naming-bible.md`](naming-bible.md) is an editable label catalog; ordinary terms and reference-like equipment categories are allowed. Internal IDs stay stable.
 
 ---
 
@@ -9,33 +11,27 @@ Names: every player-facing name comes from [`naming-bible.md`](naming-bible.md).
 
 ### 1.1 Identity statement
 
-**Bright, readable stylized realism.** It is a cheerful facilities job on a real-looking Moon. The light obeys the Moon: black sky, one hard white sun, the Earth and its earthshine, stars. The *stuff* is friendly: chunky Brightside hardware, slightly stylized custodians and a calm, premium UI. When physics and readability conflict, **readability wins** and the departure is documented (§2.4).
+**Bright, readable stylized lunar-cleaning presentation, close to Moon Sweepers.** Physical lunar lighting is a useful starting point, not a requirement to reject the reference's cheerful readable look. The *stuff* is friendly: chunky Brightside hardware, slightly stylized custodians and a calm, premium UI. When physics and readability conflict, **readability wins** and the departure is documented (§2.4).
 
 ### 1.2 Pillars
 
 | # | Pillar | Means | Never |
 |---|---|---|---|
 | P1 | **Clean is obvious** | Dark gray-brown grime against bright clean ground: ≈ 4× linear albedo, which displays as ≥ 1.45× luma and ≥ 50 codes brighter at noon after AgX (§2.3), plus a warm-vs-neutral hue cue and a crisp raised berm at every edge. Readable from 1 m to orbit | Clean that reads as "slightly different gray"; tile-stepped strokes |
-| P2 | **Real light, friendly things** | Physically motivated sun, shadows, earthshine and stars, plus rounded, chunky, toy-*friendly* but not toy-*plastic* hardware | Blue sky fill, nebula, fog, haze, colored sunsets |
+| P2 | **Real light, friendly things** | Physically motivated sun, shadows, earthshine and stars, plus rounded, chunky, toy-*friendly* but not toy-*plastic* hardware | Muddy silhouettes, unreadable shadowed work surfaces or effects that hide the cleaning result |
 | P3 | **Every stroke shows** | Instant tactile feedback: grains arc, berms rise, stripes form, the Dust Cell window fills | Delayed or invisible feedback; a cleaning "fade" with no mechanism |
 | P4 | **The bright side of the job** | Brightside corporate optimism: big friendly signage, cheerful stencils, DOT's amber light, humor in decals | Grim, dystopian, militaristic, horror-dark night |
 | P5 | **Premium, quiet UI** | Dark glass, generous spacing, tabular numbers, spring micro-motion, one accent per moment | Neon overload, sci-fi clichés (Orbitron, hex-grid wallpaper), cluttered HUD |
 
-### 1.3 Do-not-copy list
+### 1.3 Reference style and original asset production
 
-Moon Sweepers is the quality bar, not a style guide.
-
-| Theirs (do not copy) | Ours instead |
-|---|---|
-| Chibi astronauts, oversized heads | Human-proportioned custodians, 4.4–4.8 helmet-heights tall |
-| Black visor with cartoon LED eyes | Smoked-bronze reflective visor. A simple stylized face shows through at close range |
-| White + orange toy machines; van-like vehicle | Ivory + teal body, graphite rubber, safety-yellow accents ≤ 10% of the area; our own vehicle archetypes (§5) |
-| Blue nebula sky, blue-tinted shadows | Pure black sky, starfield, warm-neutral ground-bounce fill |
-| Lavender, snow-white regolith | Warm gray-brown grime and neutral light-gray clean ground modulated by real maria/highland albedo |
-| Chunky mesh-pebble debris | Fine ballistic grains that vanish on landing |
-| Toothbrush starter tool (long thin handle, small head) | Desk Duster: a **palm-held round puck brush** with no handle (a desk-crumb brush with a Brightside sticker on its domed back), wiped in small circles; its own sound identity ([audio-direction §2](audio-direction.md)). Same "absurdly small starter" joke, different silhouette, motion and sound |
-| White/orange hex-floor interiors and a blue wireframe hologram moon | Survey Globe: a real-albedo moon with ivory/cyan/umber plot states on dark glass |
-| Their palette, logos, UI, fonts | Brightside tokens (§5.1, §8.3) |
+Moon Sweepers is both the quality bar **and the primary style reference**. Match its approachable lunar-cleaning
+appeal, readable worksite scale and satisfying surface transformation. Broad similarities are intentional.
+Stylized/chunky astronauts, expressive visors, compact work vehicles, light/orange hardware, cool/pale regolith,
+readable tinted fill and a tiny handled toothbrush are allowed; do not force a different silhouette/palette just to differ.
+Use independently authored models, textures, UI art/text and animation; never extract or ship reference assets/branding.
+Previous teal/bronze/4.4–4.8-head/palm-brush/bird-robot choices are optional style candidates, not mandatory differentiators.
+Preserve one coherent look and approve with REFERENCE_TARGET RF checks plus artifact/performance/readability checks.
 
 ---
 
@@ -46,7 +42,7 @@ Moon Sweepers is the quality bar, not a style guide.
 | Light | Model | Color (linear-sRGB hex for authoring) | Shadows | Notes |
 |---|---|---|---|---|
 | **Sun** | Directional, 0.53° disk | `#FFF4EA` (≈ 5772 K white). **Same color at every elevation:** no atmosphere means no orange sunsets | CSM per preset ([rendering-pipeline §14](../architecture/rendering-pipeline.md#14-quality-presets--the-canonical-preset-table-contract-sharedrenderqualityts), the canonical preset table) + baked horizon map beyond CSM range on every preset (rendering-pipeline §5.2) | Intensity follows sin(elevation) on flat ground. Slopes facing the sun get full intensity |
-| **Regolith bounce fill** | Normal-dependent stylised ambient (a hemisphere light used with sky = warm gray at 15 % and ground = warm gray at 35 % of the key's flat-ground illuminance) + GTAO on indirect only + terrain cavity term | Warm gray `#8C8478`. **Never blue** | — | Up-facing ground in shadow gets **15 %** of the key (D-05), vertical faces 25 %, undersides 35 %. A black-sky hemisphere would give up-facing ground nothing, so the "sky" side is deliberately warm gray. Scales with the active key (sun by day, earthshine at night) |
+| **Regolith bounce fill** | Normal-dependent stylised ambient (a hemisphere light used with sky = warm gray at 15 % and ground = warm gray at 35 % of the key's flat-ground illuminance) + GTAO on indirect only + terrain cavity term | Warm gray `#8C8478`. **Tunable to the reference-like palette** | — | Up-facing ground in shadow gets **15 %** of the key (D-05), vertical faces 25 %, undersides 35 %. A black-sky hemisphere would give up-facing ground nothing, so the "sky" side is deliberately warm gray. Scales with the active key (sun by day, earthshine at night) |
 | **Earthshine** | Directional from the Earth's position | `#CFE0FF` cool blue-white | **Yes, every preset, at near-side night:** the sun's CSM is re-pointed at the Earth (zero extra cost), softened for the 2.4° disk | Intensity × Earth phase factor: full 1.0, gibbous 0.6, half 0.3, crescent 0.08, new 0 |
 | **Far-side floor** | Ambient | `#AEB9D6` | — | Only where Earth is below the horizon, at night |
 | **Crown Lamp** | Spot + IES-like falloff on the helmet crown | `#FFE7C8` (≈ 4500 K) | **Local player: shadowed on every preset.** Other players: nearest 1 (High) / 2 (Ultra) shadowed; all other lamps unshadowed with range clamped to 8 m so their light never passes through a rock | Four levels, §2.2 |
@@ -175,7 +171,7 @@ Albedo values are linear. sRGB hex values are given for authoring.
 | Re-sweeping a berm | Removes it (the berm is dust) | same | same |
 | Beyond the detail ring | The atlas has no distance-field channel (world-and-dust-simulation §7.2). Edges are the thresholded bilinear R of the 20/40 cm atlas texel: smooth contours, softer than in the ring, never stair-stepped. Strokes narrower than 2 atlas texels (Desk Duster, Crescent Squeegee) would break up if thresholded, so the height blend below turns their partial R into an **area-correct lighter line**: continuous, with the right average brightness. Fallback if VT-M1-05b fails: promote recently stroked plots within 40 m to a 10 cm tile (extra atlas slots), decided in M1-W1 | same | same |
 | Ring ↔ atlas handoff | 2 m cross-fade at the ring edge (rendering-pipeline §14). A Lane Broom stroke crossing it changes width by ≤ 1 px and berm difference by ≤ 20 %; a Desk Duster stroke (sub-texel in the atlas, so its width cannot be held to 1 px) stays continuous with mean luma change ≤ 15 % (VT-M1-05b) | same | same |
-| End caps | Rounded, following the tool head shape. Never square (avoids the reference's rectangle look) | Follows the intake width | — |
+| End caps | Rounded, following the tool head shape. Rounded or squared to suit the tool; brush-width rectangular paths are allowed | Follows the intake width | — |
 
 #### Partial removal (dust thinning)
 

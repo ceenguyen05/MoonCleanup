@@ -9,7 +9,7 @@ Evidence lives in [`docs/research/`](../research/) (see each ADR's Evidence sect
 | # | Title | Status | Date |
 | --- | --- | --- | --- |
 | [0001](0001-typescript-monorepo-tooling.md) | TypeScript monorepo and tooling baseline | Accepted | 2026-11-12 |
-| [0002](0002-hosting-topology-free-tier.md) | Free-tier hosting topology ($0 forever) | Accepted (amended 2026-11-12) | 2026-11-12 |
+| [0002](0002-hosting-topology-free-tier.md) | Free-tier hosting topology ($0 forever) | Accepted (amended 2026-11-12; branch/staging topology superseded by 0029) | 2026-11-12 |
 | [0003](0003-rendering-engine-threejs-webgpu.md) | Rendering engine: Three.js WebGPURenderer + TSL | Accepted (follow-up note: Tier B ladder, spike ADR) | 2026-11-12 |
 | [0004](0004-webgpu-first-webgl2-fallback.md) | WebGPU-first with a real WebGL2 fallback (feature tiers) | Accepted | 2026-11-12 |
 | [0005](0005-post-processing-tonemapping-aa.md) | Post-processing, tone mapping, anti-aliasing and dynamic resolution | Accepted | 2026-11-12 |
@@ -36,6 +36,8 @@ Evidence lives in [`docs/research/`](../research/) (see each ADR's Evidence sect
 | [0026](0026-dust-ledger-absolute-removal.md) | Dust ledger: absolute coverage-weighted removal, server-sequenced ops | Accepted (amends 0009) | 2026-11-12 |
 | [0027](0027-3d-art-production-path.md) | 3D art production path | Accepted (default path; Q15/Q23 owner decisions open) | 2026-11-12 |
 | [0028](0028-dependency-policy.md) | Dependency policy | Accepted | 2026-11-12 |
+| [0029](0029-single-deploy-branch-main.md) | Single deploy branch (`main` only) and one Render service | Accepted (supersedes the branch/staging topology of 0002) | 2026-11-12 |
+| [0030](0030-reference-first-design.md) | Reference-first recreation and flexible display naming | Accepted | 2026-11-12 |
 
 ## Template
 
@@ -72,9 +74,14 @@ The measurable condition that reopens this decision.
 - [report.md](../research/...) (section or finding)
 ```
 
+## Current product-direction amendment
+
+[0030 — Reference-first recreation and flexible display naming](0030-reference-first-design.md) is accepted by owner instruction.
+It supersedes older design naming/style/custom-gate rules, not technical architecture or model assignments.
+
 ## Process
 
 1. Draft the ADR from the template; link evidence; set status `Proposed`.
-2. The lead reviews it against `tech-stack.md` and accepts it between waves.
+2. The lead reviews it against `tech-stack.md` and accepts it when the affected architecture change is needed.
 3. Update `tech-stack.md`, `module-boundaries.md` and this index in the same change.
 4. Never edit an accepted decision in place: supersede it with a new ADR.

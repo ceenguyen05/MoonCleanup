@@ -43,5 +43,5 @@ ADR-0015 was accepted before the netcode and dust specs were written. Review fou
 
 ## Evidence
 
-- [planning-review-principal-engineer.md](../agent-reports/planning-review-principal-engineer.md) (B1, M4, M5, M8, M10, M11, m2, m3, m5, m11)
+- [current authority; obsolete report removed](../REVIEW_LOG.md) (B1, M4, M5, M8, M10, M11, m2, m3, m5, m11)
 - [netcode-case-raw-websocket.md](../research/tech/netcode-case-raw-websocket.md), [netcode-case-colyseus.md](../research/tech/netcode-case-colyseus.md), [platform-limits.md](../research/tech/platform-limits.md)

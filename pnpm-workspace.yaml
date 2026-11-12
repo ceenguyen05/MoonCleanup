@@ -7,6 +7,31 @@ packages:
   # The Playwright end-to-end package lives at tests/e2e (@moon-cleanup/e2e).
   - "tests/*"
 
-# Note for Cee: pnpm blocks dependency lifecycle scripts by default. If `pnpm install` prints
-# "Ignored build scripts: ...", run `pnpm approve-builds` once and commit the resulting setting
-# in this file (do not do it blindly - review the package list first).
+minimumReleaseAgeExclude:
+  - "@colyseus/schema@5.0.48"
+  - "@turbo/darwin-64@2.11.11"
+  - "@turbo/darwin-arm64@2.11.11"
+  - "@turbo/linux-64@2.11.11"
+  - "@turbo/linux-arm64@2.11.11"
+  - "@turbo/windows-64@2.11.11"
+  - "@turbo/windows-arm64@2.11.11"
+  - prettier@3.10.1
+  - turbo@2.11.11
+
+# uWebSockets.js is published only as a git dependency (github:uNetworking/uWebSockets.js#<tag>), and
+# apps/server/package.json pins it directly (allowed: direct dependency). @colyseus/uwebsockets-transport@0.18.5
+# declares it AGAIN as a sub-dependency (v20.52.0), which pnpm 11 rejects (ERR_PNPM_EXOTIC_SUBDEP) while
+# blockExoticSubdeps is true (the default; kept on, there is no per-package allowlist). Removing the transitive
+# edge with the scoped "-" override leaves exactly one uWebSockets.js: the directly pinned one, which pnpm's
+# default hoisting still exposes to the transport. See docs/agent-reports/M0-W0-T02-devops-engineer.md.
+overrides:
+  "@colyseus/uwebsockets-transport>uWebSockets.js": "-"
+
+# Dependency lifecycle scripts: pnpm 11 blocks them by default and fails the install (ERR_PNPM_IGNORED_BUILDS)
+# until every package with a script is reviewed. M0-W0-T02 reviewed none: the packages below are recorded as
+# explicitly NOT built (false) so that no third-party script runs. Cee decides at Gate G0b whether to flip any
+# of them to true (`pnpm approve-builds`); what each script does is listed in
+# docs/agent-reports/M0-W0-T02-devops-engineer.md.
+allowBuilds:
+  esbuild: false
+  msgpackr-extract: false

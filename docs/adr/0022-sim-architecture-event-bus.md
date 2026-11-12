@@ -32,7 +32,7 @@ Option 1:
 - Few dependencies; boundaries are explicit and lint-checkable; the same sim runs in client, server and Worker.
 
 **Negative / risks**
-- Event-bus overuse can hide data flow; the catalog is a contract changed only between waves.
+- Event-bus overuse can hide data flow; the catalog is a contract changed sequentially with affected consumers coordinated.
 - Hand-rolled stores may need performance work for robots and many entities.
 - No off-the-shelf ECS tooling or inspectors.
 

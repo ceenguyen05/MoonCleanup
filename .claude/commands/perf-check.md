@@ -2,9 +2,12 @@
 description: Capture frame-time, memory, draw-call, download-size and server-tick numbers and have performance-reviewer judge them against docs/architecture/performance-budgets.md.
 argument-hint: "[M#-W#, optional]"
 allowed-tools: Read, Write, Glob, Grep, Agent, SendMessage
+effort: medium
 ---
 
 # /perf-check
+
+Follow MODEL_POLICY; reuse applicable evidence.
 
 Performance gate for `$ARGUMENTS` (default: the current wave in `docs/STATUS.md`). You are the lead. Never run git.
 
@@ -18,8 +21,8 @@ Performance gate for `$ARGUMENTS` (default: the current wave in `docs/STATUS.md`
 ## Procedure
 
 1. **Check tooling.** If `tools/perf` or the F3 HUD export does not exist or cannot run, launch `performance-profiler` first (owned files: `apps/client/src/debug/**`, `tools/perf/**`), unique port offset, wait.
-2. **Capture** with `performance-profiler` (or run its documented scripts): fixed seed, fixed camera path, fixed duration, warm-up discarded, at least 3 runs, median and spread, on **Tier A** (High), **Tier B** (Medium, the real iGPU device named at M0 Gate G1) and **Tier C** (Low, `webgl2`) at the presets the budgets doc names. Backends are `webgpu` / `webgpu-compat` / `webgl2`; the Tier B verdict is marked provisional if the device is the Tier A laptop's iGPU. Record machine, GPU, browser, OS. GPU numbers must come from timestamp queries or be labeled estimates.
-3. **Gather the other budget inputs:** gzipped first-load JS and asset sizes, JS heap growth over a 10-minute soak, draw calls (at most 600 on Tier A), server tick ms and bandwidth per player from the latest local `/bot-test` report (a `--staging` run only if the gate plan says so; never production).
+2. **Capture** with `performance-profiler` (or run its documented scripts): fixed seed, fixed camera path, fixed duration, warm-up discarded, at least 3 runs, median and spread, on **Tier A** (High), **Tier B** (Medium, the real iGPU device named for hardware measurement (Q21)) and **Tier C** (Low, `webgl2`) at the presets the budgets doc names. Backends are `webgpu` / `webgpu-compat` / `webgl2`; the Tier B verdict is marked provisional if the device is the Tier A laptop's iGPU. Record machine, GPU, browser, OS. GPU numbers must come from timestamp queries or be labeled estimates.
+3. **Gather the other budget inputs:** gzipped first-load JS and asset sizes, JS heap growth over a 10-minute soak, draw calls (at most 600 on Tier A), server tick ms and bandwidth per player from the latest local `/bot-test` report (an isolated hosted-spike run only under the safety conditions of /bot-test; never live player data).
 4. **Launch `performance-reviewer`** (`subagent_type: performance-reviewer`, no isolation) with the capture paths, budgets doc, the unique port offset, and the review file to write. It judges each budget PASS/FAIL with margin, flags UNVERIFIED items, and flags revisit triggers (for example WebGPU-path CPU above 6 ms on Tier B for the MVP scene).
 5. Wait for the notification; read the review file; confirm every number cites its source file.
 

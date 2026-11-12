@@ -13,3 +13,6 @@ tools/screenshots/output/
 tools/screenshots/diff/
 prototypes/
 packages/db/migrations/
+
+# Prose is maintained manually; do not reflow design docs, reports or Claude instructions.
+**/*.md

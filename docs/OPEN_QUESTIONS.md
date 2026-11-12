@@ -1,30 +1,31 @@
-# Open questions & assumptions
+# Owner questions / defaults
 
-Owner: lead. Each item has a **recommended default** that the build follows until Cee decides otherwise.
-Status: `open` (default in effect) · `decided` (Cee answered) · `closed`.
+Ask only for an input currently blocking useful work. Established decisions are not questions to repeat.
 
-| # | Question | Status | Decision / recommended default | Impact if changed |
-| --- | --- | --- | --- | --- |
-| Q1 | Game title | decided | **Moon Cleanup** (owner choice, 2026-11-12); package slug `moon-cleanup`; GitHub repo `ceenguyen05/mooncleanup` (Q8). History: interim working title Moon Custodians; the owner's requests for exact reference titles (Moon Sweepers Inc., Sweep The Moon!, Clean the Moon!) were declined by the planner (trademark/clone risk); the request to delete the do-not-use lists was declined | Rename = naming-bible + game-data strings + package scope find/replace |
-| Q2 | World/session model | decided | Persistent **Contracts** (one saved moon each) + room types **Solo / Private (invite) / Open (public drop-in)**; personal profile (Tenure, Commendations, cosmetics) persists | — |
-| Q3 | Hosting budget | decided | **$0 forever**: Vercel Hobby, Render Free ×2, Aiven PostgreSQL Free, Sentry Developer, GitHub Free | Paid Render Starter would allow 30/20 Hz and no cold starts |
-| Q4 | Render 5 GB/month bandwidth cap | decided | **Accept suspension risk**; no cap logic. Server still logs bytes-out per room and a monthly running total so Cee can see it coming | Adding a card switches to $0.15/GB overage instead of suspension |
-| Q5 | Database | decided | **Aiven PostgreSQL Free** (Aiven free MySQL retired 2026-11-06). 1 GB storage → compressed saves in two alternating slots (A/B), save only when dirty | MySQL Developer $5/mo would need a driver/dialect switch in `packages/db` only |
-| Q6 | Visual style | decided | "Bright, readable stylized realism": same approachable, readable feel as the reference game, but our own character/vehicle/robot designs, palette and sky (not a copy of its look) | — |
-| Q7 | Progression fidelity | decided | Mirror the reference structure, unlock order and pacing closely (tier counts, branches, layers); our own names, numbers and lore; fix its pacing cliff | — |
-| Q8 | Repo folder/name | decided | GitHub repo is `ceenguyen05/mooncleanup` (Cee, 2026-11-12); the local folder stays `BroswerMoonSweeper` (no rename). Cee runs `git remote set-url origin https://github.com/ceenguyen05/mooncleanup.git` | — |
-| Q9 | LICENSE | open | **Recommend "All rights reserved" (no LICENSE file) while the repo is private; if public, use a source-available license or MIT for code only**, and keep `assets/` under a separate notice. NASA/HYG attributions live in `docs/ASSET_LICENSES.md` + in-game credits. Planner did not create a LICENSE file. | Public + MIT lets anyone redeploy the game |
-| Q10 | Public vs private GitHub repo | open | **Private** to start (Vercel Hobby works with personal private repos; GitHub Free private gets ~2,000 Actions min/month). Go public at v1.0 if desired | Public = unlimited Actions minutes, but anyone can copy the game |
-| Q11 | Keep production server warm? | open | **No pinger by default** (750 free hours are shared by prod + staging; cold start ~1 min is hidden behind the asset download + "Waking the moon…" screen). Option: UptimeRobot every 10 min on prod only during launch week, staging left asleep | Pinging prod 24/7 uses ~730 of 750 hours |
-| Q12 | Mobile/touch | open | Out of MVP and v1.0 (ADR-0021); desktop browsers + gamepad | Touch UI + perf tier = new milestone |
-| Q13 | Monetization | open | None (Vercel Hobby is non-commercial). Roblox-style paid conveniences become earnable upgrades | Any monetization requires Vercel Pro ($20/mo) |
-| Q14 | DOT voice | open | Text + optional browser TTS for MVP; recorded/AI voice later only with clear rights | Voice budget/licensing |
-| Q15 | AI-generated assets | open | Allowed only with a tool whose terms grant commercial rights; disclose in credits + ledger (reception research shows players punish *undisclosed* AI art) | Store/hub disclosure |
-| Q16 | Offline Solo (in-browser Web Worker host) | open | **Post-launch** (scope-tiers.md is canonical): Solo shifts run on the server in MVP/v1.0. `RoomSim` stays environment-agnostic so a Web Worker host can be added later to save server bandwidth/CPU | Pulling it into v1.0 adds ~1 wave and reduces Render bandwidth use |
-| Q17 | Contract size options | open | MVP/v1.0: Standard only (163,842 plots, R 2 km). "Moonlet" (40,962 plots, R 1 km) for shorter sessions = post-launch | — |
-| Q18 | Aiven region | open | Pick the free-plan region closest to Render `oregon` (free plans have limited regions — Cee picks in console) | Latency to DB affects save time only |
-| Q19 | Two logical DBs on one Aiven free service | open | Try `moon_prod` and `moon_staging` databases on one free service. **If the console does not allow a second database, use one database with two Postgres schemas, `prod` and `staging`, selected by the `DB_SCHEMA` env var** (Drizzle `pgSchema` / `search_path`; set in `render.yaml`, built in M0-W1-T03). Staging never uses a local DB (Render cannot reach it) | Staging fidelity; schema selection code in `packages/db` |
-| Q20 | JAXA-containing terrain (SLDEM2015) / Gaia stars | open | Not used (LOLA-only; HYG CC BY-SA 4.0 stars) until a human clears the terms | Better terrain detail |
-| Q21 | Tier B (integrated-GPU) test machine | open (**owner gate G1 in M0**) | **Cee names the device at Gate G1; M0 does not pass G1 until she has named one or explicitly chosen the provisional fallback.** The M0 render spike (captured in M0-S8, after look-dev) and every /perf-check need a real iGPU laptop (Iris Xe / Arc 140V / Radeon 780M class). **Cee answers at Gate G1.** Default if none is available: run on the Tier A laptop's integrated GPU, forced through Windows *Settings → System → Display → Graphics* (power saving) or Chrome's low-power adapter; the Tier B verdict is then marked **provisional** until a real iGPU run | Provisional Tier B budgets = risk of a slow game on common laptops |
-| Q22 | Sun path | decided (lead, 2026-11-12) | Great circle through both poles in the plane of longitude 45°/225°: all 4 outposts get 30/30 day/night; equatorial **Twilight Strips** (≈135°E, ≈45°W) keep a permanent grazing sun | — |
-| Q23 | 3D art production path (custodian, hand tools, outpost kit, Trundle, Skiff) | open | **Default (decision D5 in M1-mvp.md; ADR-0027 3D art path, ADR-0028 dependency policy):** scripted, licence-clean procedural modelling in `tools/asset-pipeline` (bevelled primitives, baked AO, glTF-Transform, KTX2) for hard-surface assets and a modular, bevelled custodian suit with 16 colour slots; blockout assets meet art-direction §13.4 (final proportions, final shader, player-colour slots) until the production tasks (M1-W3-T07 blockout, M1-W4-T07 production) land. CC0/commercial base meshes only if Cee approves licence and budget. **Headless Blender: Cee installs Blender LTS when the M0 asset-pipeline proof starts (M0-W0-T06, before M0-S2; SETUP_CHECKLIST section 0); if she declines, the Node-only path is used.** The pipeline is proven on one rock and one outpost module in M0 (art-direction §13.5) | Quality of the hero character and hardware; possible spend or tooling install |
+| ID | Outstanding input / default | When |
+| --- | --- | --- |
+| Q9 | License: no new LICENSE declaration until Cee chooses; retain NASA/HYG/asset attribution | Before public release |
+| Q10 | Repo visibility: private by default | Owner decision before publication |
+| Q11 | No uptime pinger by default; accept free-server cold starts | Revisit only if launch needs it |
+| Q12 | Desktop KBM/gamepad first; mobile not in core scope (ADR-0021) | Scope change only by Cee |
+| Q13 | No monetization/paid hosting by default | Cee authorizes any change |
+| Q14 | DOT text/chime first; voice requires a rights-cleared source | When audio needs it |
+| Q15 | AI assets only with appropriate rights/disclosure and ledger entries | Before shipping those assets |
+| Q16 | Offline Solo is post-launch; current solo uses authoritative server | Optional owner scope decision |
+| Q17 | Standard Moon only; smaller Moonlet is optional later | No current blocker |
+| Q18 | Cee selects compatible Aiven/Render region; do not recreate services automatically | Deploy setup |
+| Q20 | LOLA terrain + HYG stars; other datasets need cleared terms | Only if a new dataset is proposed |
+| Q21 | Cee names Tier B iGPU, or explicitly accepts provisional laptop-iGPU fallback | When hardware measurement is needed |
+| Q23 | Blender LTS accepted; Cee supplies executable path | Before M0-W0-T06 |
+| Q25 | Per-command fnm Node 26 prefix; do not alter the user's profile/system PATH | Every Node/tool command |
+
+## Settled choices (do not reopen on resume)
+
+- Q1/Q6/Q7: exact title **Clean The Moon!**; close Moon Sweepers experience, flexible item names, authored assets/branding;
+  [REFERENCE_TARGET](design/REFERENCE_TARGET.md) and ADR-0030 supersede prior forced differences/custom gates.
+- Q2: persistent saved Contracts; Solo/Private/Open sessions; up to 16 players. Q3/Q5: $0 budget, Aiven Postgres.
+- Q4: owner accepts free-tier egress suspension risk; monitor usage, do not add paid billing.
+- Q8: existing folder/repo identifiers and package scope stay stable; no agent git mutations.
+- Q19/Q24/Q24b: main-only, one Render service and schema prod (ADR-0029); no release/staging setup.
+- Q22: existing sun-path plan is in rendering/world specs; reference-style presentation controls artistic tuning.
+- Q26: superseded by current MODEL_POLICY: pinned three-model routing, bounded concurrency/batched reviews; no repeated permission question.

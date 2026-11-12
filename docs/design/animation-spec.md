@@ -1,12 +1,14 @@
-# Animation specification: Moon Cleanup
+# Animation specification: Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Planning baseline (2026-11-12).** Owner: animation-engineer. Reviewers: visual-qa-reviewer (look, acceptance), performance-reviewer (budgets). The lead approves changes.
-Title note: the game is now titled **Moon Cleanup** (formerly "Moon Cleanup"). Other docs, the naming bible and the `@moon-cleanup/*` package scope have not been renamed yet. Rule 3 of the naming bible flags a risk: the new title shares "Moon" and "Clean" with banned titles. See §11.
+Title note: **Clean The Moon!** is the owner-selected game title; use exact capitalization and punctuation. Keep package/save IDs stable.
 Decision record: [ADR-0011](../adr/0011-animation-pipeline.md) (pipeline), [ADR-0027](../adr/0027-3d-art-production-path.md) (production path). Inputs: [art-direction §4–§6, §9–§13](art-direction.md), [naming-bible](naming-bible.md), [GDD §9](GDD.md#9-controls), [progression-and-economy §3–§4, §7](progression-and-economy.md), [scope-tiers](scope-tiers.md), [performance-budgets](../architecture/performance-budgets.md), [rendering-pipeline §3, §10, §14](../architecture/rendering-pipeline.md), [netcode §4.5, §5, §6](../architecture/netcode.md), [world-and-dust-simulation §4.4](../architecture/world-and-dust-simulation.md), [module-boundaries](../architecture/module-boundaries.md), [visual-target](visual-target.md).
 
 Scope: this file covers everything that moves in `apps/client/src/animation/**`. That means the custodian, the vehicles, the robots, the machines and the world motion, plus the clip data in `assets/animations/**`. Animation is a **pure consumer**. It reads sim state and events and never mutates sim state. It emits only presentation events (§3.6).
 
-Names: every player-facing name comes from the naming bible. Clip, bone and state IDs are internal, but where an ID names a game thing it uses the bible word (`lope`, `hop_pack`, `ballast`, `bristle_broom`), never a reference-game word. The animation names added for this spec are in naming-bible §A9.
+Names: use the editable naming catalog. Ordinary descriptive labels are allowed; preserve clip/bone/event IDs unless a contract migration requires a change. §A9 supplies current defaults.
 
 ---
 
@@ -674,7 +676,7 @@ visual-qa-reviewer judges the "reads" items (AN-M1-05/08, VT links) at native re
 
 ---
 
-## 10. Contract proposals (for contracts-architect, batched between waves)
+## 10. Contract proposals (for contracts-architect, coordinated when technically needed)
 
 | # | Proposal | Contract file |
 | --- | --- | --- |
@@ -691,7 +693,7 @@ visual-qa-reviewer judges the "reads" items (AN-M1-05/08, VT links) at native re
 
 ## 11. Open issues and doc drift found
 
-1. **Title.** *(Resolved 2026-11-12)* the owner chose "Moon Cleanup" and the naming bible records the title exception.
+1. **Title.** Current game title is Clean The Moon!; the naming catalog is editable. Older title-exception/risk rules are retired.
 2. **Skiff in MVP.** *(Resolved 2026-11-12)* scope-tiers is canonical: the Skiff is v1.0 (built in M2-W3-T01/T02). Skiff clips stay marked v1; M1 builds the Trundle only.
 3. **Stale names** to fix in their owners' docs: art-direction §4.2/§5.3/§6.3/§7.2/§13.1 still use Ballast Soles, Crescent Squeegee, Spot Ring/Wide Halo, the 11 old robot states, Tile Sinterer, Dust Vault and Running Lamps. netcode §4.1/§4.5 uses `anchorBoots`, `plotScan`, "hopper level" and "11 UI states" (the bible now has 9). M1-W7-T01 uses Cargo Expander and Pilot Review.
 4. **Animation CPU budget:** *(Resolved 2026-11-12)* Tier B is 2.0 ms everywhere (performance-budgets §2, rendering-pipeline §3.1, ADR-0011). The M1-W5-T04 target of 0.3 ms for 16 avatars is tight (≈ 18 µs per avatar). If measured above it, the fallback is bucket caps (§8.1), not cutting IK on the local avatar.

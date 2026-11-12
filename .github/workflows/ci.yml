@@ -15,7 +15,7 @@ name: CI
 
 on:
   push:
-    branches: [main, release, "hotfix/**"]
+    branches: [main]
   pull_request:
 
 # Cancel superseded runs of the same ref (saves free Actions minutes).
@@ -67,12 +67,7 @@ jobs:
             echo "::notice title=CI gated::Scaffold repo (no lockfile or no TypeScript sources yet): install/lint/typecheck/test/build are skipped."
           fi
 
-      # security.md section 10 requires third-party actions pinned by full commit SHA. The actions in
-      # ci.yml and .github/actions/setup-workspace are pinned (verified against the GitHub API, with a
-      # `# vX.Y.Z` comment per line). asset-validation.yml and release-client.yml still use
-      # `actions/checkout@v7`; until their owner (devops-engineer) pins them to
-      # actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 (v7.0.1) this step only WARNS.
-      # Then flip PIN_ENFORCE to "true" so regressions fail.
+      # Pin every third-party action to a full commit SHA.
       - name: Check action pins (SHA)
         shell: bash
         env:
@@ -95,7 +90,7 @@ jobs:
 
       # vercel.json must implement the documented contract (security.md section 4.4,
       # environments.md section 4.2): CSP, COOP, /hub headers, extension-less SPA rewrite only,
-      # build version from the commit SHA, no automatic production deploys.
+      # build version from the commit SHA, normal Git deployment from main (ADR-0029).
       - name: Check vercel.json contract
         shell: bash
         run: |
@@ -113,7 +108,7 @@ jobs:
             const rw = (v.rewrites || []).map(r => r.source);
             if (rw.some(s => s === "/(.*)")) errs.push("catch-all rewrite would serve index.html for missing assets");
             if (!/VITE_BUILD_VERSION=\$VERCEL_GIT_COMMIT_SHA/.test(v.buildCommand || "")) errs.push("buildCommand must set VITE_BUILD_VERSION");
-            if (!(v.git && v.git.deploymentEnabled && v.git.deploymentEnabled.release === false)) errs.push("release must not auto-deploy (release gate)");
+            if (v.git?.deploymentEnabled !== undefined) errs.push("obsolete branch deployment overrides; use main Git integration (ADR-0029)");
             if (errs.length) { for (const e of errs) console.log("::error file=vercel.json::" + e); process.exit(1); }
             console.log("vercel.json contract OK");
           '
@@ -256,7 +251,7 @@ jobs:
         run: pnpm --filter @moon-cleanup/client run --if-present size:check
 
   # ---------------------------------------------------------------------------------------
-  # ci-gate: single required status check for branch protection (main and release).
+  # ci-gate: single required status check for branch protection (main).
   # Always runs. Passes when every gated job succeeded OR was skipped by the empty-repo gating;
   # fails if any job failed or was cancelled.
   # ---------------------------------------------------------------------------------------

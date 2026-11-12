@@ -1,4 +1,6 @@
-# World and dust simulation — Moon Cleanup
+# World and dust simulation — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Draft for implementation (planning session 2026-11-12)** · Owner: lead (authored via brief) · Implementers: `terrain-dust-engineer` (primary), `gameplay-systems-engineer`, `netcode-engineer`, `backend-data-engineer`, `rendering-engineer`.
 Canonical inputs (this doc never overrides them): [tech-stack.md](tech-stack.md), [module-boundaries.md](module-boundaries.md), [naming-bible.md](../design/naming-bible.md).

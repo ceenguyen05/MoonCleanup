@@ -5,9 +5,14 @@
   "description": "Shared tooling presets: ESLint flat config (import + ban-list rules), Vitest presets, Prettier config.",
   "license": "UNLICENSED",
   "type": "module",
+  "exports": {
+    "./eslint": "./eslint/index.ts",
+    "./vitest": "./vitest/index.ts",
+    "./prettier": "./prettier/index.ts"
+  },
   "scripts": {
-    "lint": "echo config lint: placeholder until sources land - see README",
-    "typecheck": "echo config typecheck: placeholder until sources land - see README",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
@@ -16,5 +21,11 @@
     "globals": "17.14.0",
     "typescript-eslint": "8.72.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "eslint": "9.39.5",
+    "prettier": "3.10.1",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
 }

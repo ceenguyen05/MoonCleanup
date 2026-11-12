@@ -1,6 +1,6 @@
 # ADR-0002: Free-tier hosting topology ($0 forever)
 
-- **Status:** Accepted (2026-11-12)
+- **Status:** Accepted (2026-11-12); branch and staging topology ("Render Free web service x2", "Release order") **superseded by [ADR-0029](0029-single-deploy-branch-main.md) (2026-11-12)**
 - **Deciders:** owner (budget), lead/orchestrator
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) sections 1 and 4 (Hosting row)
 

@@ -2,7 +2,7 @@
   "name": "@moon-cleanup/client",
   "version": "0.0.0",
   "private": true,
-  "description": "Moon Cleanup browser client: Vite + three.js WebGPURenderer + React HUD (static, deployed to Vercel).",
+  "description": "Clean The Moon! browser client: Vite + three.js WebGPURenderer + React HUD (static, deployed to Vercel).",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {

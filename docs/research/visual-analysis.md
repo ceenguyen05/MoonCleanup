@@ -54,7 +54,7 @@
 ### 1.2 Roblox games (official pages; thumbnails not inspected)
 
 - **Sweep The Moon** (DomBlox Games, per search snippet): https://www.roblox.com/games/109576450376407/Sweep-The-Moon [S]
-- **Clean the Moon!**. Two similarly named experiences exist, and it is unclear which one the brief means:
+- **Clean The Moon!**. Two similarly named experiences exist, and it is unclear which one the brief means:
   - Lunarlit Works: https://www.roblox.com/games/76678170614451/Clean-the-Moon [S]
   - StaticStudios6: https://www.roblox.com/games/78086118798161/Clean-the-Moon [S]
   - A third, "Clean THE Moon": https://www.roblox.com/games/73695758197534/Clean-THE-Moon [S]
@@ -121,7 +121,7 @@ Reported technical issues: the developer acknowledged post-launch technical prob
 The thumbnail check was cut for budget. All claims come from search snippets of the official Roblox pages [S] (Low–Med).
 
 - **Sweep The Moon** (DomBlox Games) is described as tile-by-tile sweeping "inspired by Moon Sweepers": toothbrush start, sell dust, robots, bigger sweepers, up to 4 players.
-- **Clean the Moon!** (Lunarlit Works) is an incremental game: sweep dust and debris, sell, automate with robots. Another **Clean the Moon!** (StaticStudios6) adds vehicles, pets, rebirths and digging.
+- **Clean The Moon!** (Lunarlit Works) is an incremental game: sweep dust and debris, sell, automate with robots. Another **Clean The Moon!** (StaticStudios6) adds vehicles, pets, rebirths and digging.
 - Expect Roblox-engine visuals (simple materials, platform lighting). "Tile-by-tile" implies **coarse, cell-quantised cleaning**. Our continuous high-resolution dust mask is an easy differentiator. Verify by viewing the official thumbnails at the URLs above.
 
 ---
@@ -199,7 +199,7 @@ These are our proposed targets. They are engineering proposals, not sourced fact
 - **Opposition surge mechanism:** Buratti 1996 and Hillier 1999 say shadow-hiding dominates. Hapke 1998 says both mechanisms contribute significantly [8][9].
 - **Luminous solar constant:** 133.8 klx comes from Kittler & Darula's later paper. The exact table in the 2005 paper was not verified [12].
 - **Babylon CSM cascade range** (2–4) comes from an older docs mirror. Newer typings clamp to constants that may differ [24].
-- **Roblox "Clean the Moon!":** several experiences share this name, and visit counts differ between aggregators. The thumbnails were not viewed.
+- **Roblox "Clean The Moon!":** several experiences share this name, and visit counts differ between aggregators. The thumbnails were not viewed.
 - **Not verified this session:** Moon Sweepers trailers and HUD; numeric maria/highlands albedo; the "dark tracks" sign; LRV rooster-tail and fender footage; [K] URLs; the best-in-class game list beyond NVIDIA; Moon Sweepers' engine; the "two-person Finnish studio" claim (search summary only).
 
 ## Implications for our game
@@ -238,4 +238,4 @@ These are our proposed targets. They are engineering proposals, not sourced fact
 24. Babylon.js docs (mirror), Cascaded Shadow Maps — https://documentation-17aey64q4-babylonjs.vercel.app/divingDeeper/lights/shadows_csm — accessed 2026-11-11 — official docs mirror [S]
 25. NASA/JPL Photojournal PIA00302, Clementine near-side albedo — https://photojournal.jpl.nasa.gov/catalog/PIA00302 — accessed 2026-11-11 — NASA [S]
 26. Gaier, J.R., "The Effects of Lunar Dust on EVA Systems During the Apollo Missions", NASA/TM-2005-213610 (REV1 2007) — https://ntrs.nasa.gov/citations/20050160460 ; https://ntrs.nasa.gov/citations/20070021819 — accessed 2026-11-11 — NASA technical memo [S]
-27. Roblox experience pages (Sweep The Moon; Clean the Moon! ×2; Clean THE Moon) — URLs in §1.2 — accessed 2026-11-11 — official platform [S]
+27. Roblox experience pages (Sweep The Moon; Clean The Moon! ×2; Clean THE Moon) — URLs in §1.2 — accessed 2026-11-11 — official platform [S]

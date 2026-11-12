@@ -1,4 +1,10 @@
-# Security — Moon Cleanup
+# Security — Clean The Moon!
+
+> **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
+> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
+> Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
+> [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
+
 
 Status: **Planning baseline (2026-11-12)** · Owners: backend-data-engineer (auth, API, DB), netcode-engineer (room edge), devops-engineer (headers, env, CI), gameplay-systems-engineer (sim-side validation).
 Canonical: [tech-stack.md](tech-stack.md) (guest-first auth: opaque hashed refresh token + 15-min `jose` JWT, Bearer, token in Colyseus join options; zod 4; rate-limiter-flexible). Evidence: [data-auth-observability.md §5, §7](../research/tech/data-auth-observability.md), [platform-limits.md](../research/tech/platform-limits.md), [moon-sweepers-reception.md §4 C6, §8](../research/moon-sweepers-reception.md).
@@ -179,7 +185,7 @@ Lessons: griefing, kicks and public-lobby surprises were top multiplayer complai
 | Dependabot | Weekly, grouped minor/patch per area; engine-level majors ignored (ADR required, [tech-stack.md §4](tech-stack.md)) |
 | Audit | `pnpm audit --prod` in CI (high/critical fail on server deps) |
 | GitHub Actions | Third-party actions pinned by commit SHA; `GITHUB_TOKEN` least privilege; no secrets for PRs from forks |
-| New dependency | Needs an ADR and installation between waves by devops-engineer ([module-boundaries.md §3](module-boundaries.md)) |
+| New dependency | One designated installer when needed; review license, lockfile and lifecycle scripts; ADR only for major architecture/toolchain decisions ([module-boundaries.md §3](module-boundaries.md)) |
 | Assets | Licence ledger per asset (ASSET_LICENSES); no runtime CDN scripts |
 
 ## 11. Threat model

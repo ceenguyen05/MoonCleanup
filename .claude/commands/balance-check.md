@@ -2,9 +2,12 @@
 description: Run tools/balance-sim and have balance-reviewer compare pacing with the targets in docs/design/progression-and-economy.md and hunt economy exploits.
 argument-hint: "[M#-W#, optional]"
 allowed-tools: Read, Write, Glob, Grep, Agent, SendMessage
+effort: medium
 ---
 
 # /balance-check
+
+Follow MODEL_POLICY; reuse applicable evidence.
 
 Pacing and economy gate for `$ARGUMENTS` (default: the current wave in `docs/STATUS.md`). You are the lead. Never run git.
 
@@ -20,7 +23,7 @@ Pacing and economy gate for `$ARGUMENTS` (default: the current wave in `docs/STA
 2. **Launch `balance-reviewer`** (`subagent_type: balance-reviewer`, no isolation) with: the changed tables, the simulator command and seed from its README, the archetypes in progression-and-economy.md, a baseline report path if one exists, and the review file to write.
 3. It runs the simulator, tabulates time-to-unlock per tier and archetype (and with 1, 4 and 16 players on the shared shift wallet), and compares with the target bands.
 4. It hunts exploits: Assay Counter vs Receiving Gate arbitrage, Relay Pad fee loops, robot scaling, sell/buy loops, Commendations/Tenure farming, negative or overflowing values.
-5. Wait for the notification; rerun the simulator once yourself (same seed) to confirm the reported table matches.
+5. Wait for the notification; inspect the evidence and table. Reproduce only a contested/suspect result or changed input; no automatic duplicate simulator run.
 
 ## Output
 
@@ -28,5 +31,5 @@ Pacing and economy gate for `$ARGUMENTS` (default: the current wave in `docs/STA
 
 ## Pass / fail criteria
 
-- PASS: every tier inside its target band (within the tolerance stated in progression-and-economy.md) for every archetype; no Lumens-minting loop; tables validate against the schemas; names are in naming-bible form.
+- PASS: every tier inside its target band (within the tolerance stated in progression-and-economy.md) for every archetype; no Lumens-minting loop; tables validate against the schemas; display labels are consistent with the editable catalog (generic terms allowed).
 - FAIL: any tier out of band, any exploit, schema or naming violation. Return findings to `game-designer` (tables, sim) or `gameplay-systems-engineer` (rules) for the normal fix cycle; re-run the simulator after the fix.

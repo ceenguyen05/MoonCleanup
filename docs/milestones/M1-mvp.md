@@ -1,6 +1,10 @@
 # M1 — MVP "Boreal Pilot Area" (`v0.2.0`)
 
-Owner: lead (structure) · Agents edit only their own status row ([README §5](README.md#5-how-an-agent-updates-its-own-row)).
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
+
+Execution: `docs/handoff/MODEL_POLICY.md`; stages are checkpoints, not usage-window promises.
+
+Owner: lead (structure) · Lead alone maintains task rows from actual progress ([backlog rules](README.md)).
 Scope: [scope-tiers.md §1](../design/scope-tiers.md#1-mvp-v020--boreal-pilot-area) (canonical) · Visual bar: [visual-target.md §3, §4.2](../design/visual-target.md#42-m1-mvp-v020) · Dust: [world-and-dust-simulation.md](../architecture/world-and-dust-simulation.md) · Netcode: [netcode.md](../architecture/netcode.md).
 
 ## 1. Goal
@@ -35,46 +39,43 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | D3 | *(resolved)* Earth apparent size is 2.4° (visual-target and rendering-pipeline §20 item 11 agree) | — | — |
 | D4 | Vehicles are in MVP scope (scope-tiers says yes) → VM-09 and CMP-03/04/09 judged at M1 for the Trundle (the Skiff is v1.0, scope-tiers §1) | M1-S16 | Yes (VM-09 at M1) |
 | D5 | **3D art production path** (OPEN_QUESTIONS Q23): how original custodian, hand tools, outpost kit, Trundle is modelled, rigged, LODed and textured (technical-artist has no DCC tool); ADR + a "placeholder quality bar" (blockout assets still meet art-direction §13.4: final proportions, final shader and player-colour slots, not merely a 32 px silhouette (VT-M1-18); see ADR-0027 for the path and ADR-0028 for the dependency policy) | M1-S9 | Scripted, licence-clean procedural modelling in `tools/asset-pipeline` (bevelled primitives, baked AO, glTF-Transform, KTX2) for hard-surface assets; a modular, bevelled custodian suit with 16 colour slots; CC0/commercial base meshes only if Cee approves the licence and budget; headless Blender is the preferred source when Cee has installed it (Q23 default: Cee installs Blender LTS when the M0 asset-pipeline proof starts, M0-W0-T06; the Node path otherwise) |
-| D6 | **Dependency ADRs**: the lead writes an ADR for every dependency requested in M0 reports before M1-S1; M1-W0-T04 then installs once. Later waves that need a dependency queue it for a between-waves install by `devops-engineer` (or the next milestone's W0) | M1-S1 | — |
+| D6 | Project-local dependencies: designated devops writer installs sequentially when needed; review scripts/licenses/pins | Before affected work | No per-package ADR or between-wave wait; major architecture/toolchain changes still need a concise decision |
 
 ## 4. Stage plan
 
-| Stage | Wave | Tasks | Gate after |
+| Stage | Wave | Tasks | Technical check / Next |
 | --- | --- | --- | --- |
-| **M1-S1** | W0 | T04 (installs) **first**; T01 and T03 launch when T04 reports | Lead writes the D6 ADRs and `docs/handoff/waves/M1-W0.md` beforehand; no contracts agent runs while the install is in progress |
-| **M1-S2** | W0 | T02, then T05 (integrator) | commit |
+| **M1-S1** | W0 | T04 (installs) **first**; T01 and T03 launch when T04 reports | One installer; consumers wait only for the dependency/config changes they need |
+| **M1-S2** | W0 | T02, then T05 (integrator) | Verify affected checks; continue |
 | **M1-S3** | W1 | T01, T02 | |
 | **M1-S4** | W1 | T03, T04, T05 (P1/P2/P3 in parallel) | |
-| **M1-S5** | W1 | T06 (integrator: benchmark runs) + BENCHMARK.md reviewers | D2 ADR, commit |
+| **M1-S5** | W1 | T06 (integrator: benchmark runs) + BENCHMARK.md reviewers | D2 technical verdict; continue |
 | **M1-S6** | W2 | T01, T02, T03 | |
-| **M1-S7** | W2 | T04, T05, then T06 (integrator) | **Visual gate V-M1a**, commit |
+| **M1-S7** | W2 | T04, T05, then T06 (integrator) | **Visual gate V-M1a** |
 | **M1-S8** | W3 | T01, T02, T03 | |
-| **M1-S9** | W3 | T04 and T07 in parallel, then T05 (integrator: local sandbox) | **Visual gate V-M1b** (first playable, looks good), commit |
+| **M1-S9** | W3 | T04 and T07 in parallel, then T05 (integrator: local sandbox) | **Visual gate V-M1b** (first playable, looks good) |
 | **M1-S10** | W4 | T01, T03, T05 | |
-| **M1-S11** | W4 | T02, T04, T07 (3D art), then T06 (integrator) | commit |
+| **M1-S11** | W4 | T02, T04, T07 (3D art), then T06 (integrator) | Verify affected checks; continue |
 | **M1-S12** | W5 | T01, T02, T03 | |
-| **M1-S13** | W5 | T04, T05, then T06 (integrator) | commit, **G-M1-1** staging bot-test |
+| **M1-S13** | W5 | T04, T05, then T06 (integrator) | **G-M1-1** staging bot-test |
 | **M1-S14** | W6 | T01, T02, T03 | |
-| **M1-S15** | W6 | T04, T05, then T06 (integrator) | **Visual gate V-M1c**, **P1** playtest, commit |
+| **M1-S15** | W6 | T04, T05, then T06 (integrator) | **Visual gate V-M1c**, **P1** playtest |
 | **M1-S16** | W7 | T01, T02, T03 | |
-| **M1-S17** | W7 | T05, then T06 (integrator) | commit |
+| **M1-S17** | W7 | T05, then T06 (integrator) | Verify affected checks; continue |
 | **M1-S18** | W8 | T01, T02, T03 | |
-| **M1-S19** | W8 | T04, T05, then T06 (integrator) | **P2** playtest, **G-M1-2** staging soak, commit |
+| **M1-S19** | W8 | T04, T05, then T06 (integrator) | **P2** playtest, **G-M1-2** staging soak |
 | **M1-S20** | W9 | T01, T02, T03 | |
-| **M1-S21** | W9 | T04, T05, then T06 (integrator, milestone close) | **Final visual gate**, tag `v0.2.0` |
+| **M1-S21** | W9 | T04, T05, then T06 (integrator, milestone close) | **Final visual gate**, technical candidate check; Cee commits later |
 
-**Estimate:** 21 usage windows (+3–4 for fix cycles and a possible P1/P3 re-plan).
+Stage labels express dependencies, not token budgets, usage windows or stopping points.
 
-## 5. Owner gates (Cee)
+## 5. External playtest inputs
 
-| Gate | After | Cee does |
-| --- | --- | --- |
-| Commit | every wave | Commit per `docs/handoff/commit-plans/M1-W#.md`, merge to `main` (staging deploys) |
-| G-M1-1 | M1-S13 | Confirm staging deployed; leave it awake for the `/bot-test` run against Render Free |
-| P1 | M1-S15 | Internal sweeping playtest (Cee + ≥ 2 friends), score 1–5, notes into `docs/agent-reports/M1-playtest-P1.md` via the lead |
-| G-M1-2 | M1-S19 | Staging 1 h soak window; restart test (manual redeploy during play) |
-| P2 | M1-S19 | One new tester, unaided, timed to Crescent Squeegee purchase |
-| Release | M1-S21 | Fast-forward `release`, tag `v0.2.0` |
+No per-wave commit or stage approval. Continue building through M1–M3 when technical inputs are ready.
+P1: request Cee/friends' sweeping feedback (score 1–5, concise notes) when a playable loop exists.
+P2: observe a new tester's unaided first upgrade; use findings to fix onboarding/pacing.
+Run long soaks/restart checks locally. Arrange isolated hosted checks only with actual access and an agreed test window.
+Unavailable testers/cloud checks remain pending; continue independent work and report the limitation honestly.
 
 ## 6. Status table
 
@@ -83,7 +84,7 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | M1-W0-T01 | M1-S1 | contracts-architect | World/dust/stroke/save contracts v1 | M1-W0-T04 | 0 | todo |
 | M1-W0-T02 | M1-S2 | contracts-architect | Protocol/input/sim/REST contracts v1 | M1-W0-T01 | 0 | todo |
 | M1-W0-T03 | M1-S1 | contracts-architect | Events/UI/audio/render/config contracts v1 + root barrel | M1-W0-T04 | 0 | todo |
-| M1-W0-T04 | M1-S1 | devops-engineer | Installs from M0 requests (ADR-backed, incl. prototype folders), CI determinism + size lanes | M0 done, D6 ADRs | 1 | todo |
+| M1-W0-T04 | M1-S1 | devops-engineer | Installs from actual dependency needs (sequential install), CI determinism + size lanes | required M0 tooling and actual dependency needs | 1 | todo |
 | M1-W0-T05 | M1-S2 | integrator | M1-W0 integration: compile fixes in app roots, consumer list | M1-W0-T01, M1-W0-T02, M1-W0-T03, M1-W0-T04 | 9 | todo |
 | M1-W1-T01 | M1-S3 | terrain-dust-engineer | packages/world plot grid GP(128,0) + height function | M1-W0-T05 | 1 | todo |
 | M1-W1-T02 | M1-S3 | qa-test-engineer | Dust contest harness (scenes, seeds, paths, bot scenarios) | M1-W0-T05 | 2 | todo |
@@ -232,7 +233,7 @@ flowchart TB
   - [ ] `save/format.ts`: save layout v1 (§6), `SAVE_FORMAT_VERSION = 1`, `bakeHash`, migration note from v0.
   - [ ] zod schemas + round-trip tests; version headers bumped; consumers listed.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`.
 - **Definition of done:** Standard DoD + module-boundaries §2 table updated via the lead.
 
 #### M1-W0-T02 — Protocol, input, sim and REST contracts v1
@@ -249,7 +250,7 @@ flowchart TB
   - [ ] Close codes from netcode §12 verified against Colyseus 0.18 (netcode §18 item 2).
   - [ ] zod validation schemas for every client→server payload; tests.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W0-T03 — Events, UI store, audio cues, quality, config schemas v1 + root barrel
@@ -266,14 +267,14 @@ flowchart TB
   - [ ] `config/*.schema.ts` for MVP tables: tools + traits, Dust Cells, terrain classes, dust levels, prices, Promotions nodes, suit gear, vehicles + lines, reviews, achievements, cargo placements, onboarding steps, day/night.
   - [ ] Tests; consumers listed.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer` (contracts), `balance-reviewer` (**schema coverage only**: every MVP table has a schema; no simulator run — `tools/balance-sim` is not built until M1-W2-T05).
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer` (contracts), `balance-reviewer` (**schema coverage only**: every MVP table has a schema; no simulator run — `tools/balance-sim` is not built until M1-W2-T05).
 - **Definition of done:** Standard DoD.
 
 #### M1-W0-T04 — Installs + CI determinism and size lanes
 - **Stage** M1-S1 · **Role** `devops-engineer` · **Port** 1 · **Status** `todo`
 - **Goal:** every M1 dependency installed once (this is M1's install task: it runs **alone first** in M1-S1, so no contracts agent typechecks while `node_modules` and the lockfile change), and CI guards that M1 relies on.
-- **Owned files:** root `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`, root `eslint.config.*`, root `vitest.config.*`, `.github/**`, `packages/config/**`, the `dependencies`/`devDependencies` fields of every workspace `package.json` (lead-delegated, between waves), and `prototypes/dust-sim/*/package.json` + their local lockfiles (see "Prototype installs" in W1).
-- **Installer: yes** (the between-waves install for M1).
+- **Owned files:** root `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`, root `eslint.config.*`, root `vitest.config.*`, `.github/**`, `packages/config/**`, the `dependencies`/`devDependencies` fields of every workspace `package.json` (lead-delegated, sequentially), and `prototypes/dust-sim/*/package.json` + their local lockfiles (see "Prototype installs" in W1).
+- **Installer: yes** (sequential install only if actual dependency changes are needed).
 - **Read first:** M0 reports "Dependencies requested"; the D6 dependency ADRs (written by the lead before this stage); netcode §17 (determinism); performance-budgets §5, §8.
 - **Input contracts:** none.
 - **Depends on:** M0 done; D6 ADRs written.
@@ -283,7 +284,7 @@ flowchart TB
   - [ ] First-load size check enforced; Playwright software lane runs `tests/e2e` on PRs.
   - [ ] `/verify` green.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer` (supply chain).
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer` (supply chain).
 - **Definition of done:** Standard DoD.
 
 #### M1-W0-T05 — M1-W0 integration
@@ -295,8 +296,8 @@ flowchart TB
 - **Depends on:** M1-W0-T01 … T04.
 - **Acceptance criteria:** [ ] `/verify` PASS; [ ] report lists every module that must adopt v1 and in which wave.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W0`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W1 — Dust prototype contest (competing-approach rule)
 
@@ -317,7 +318,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Benchmarks: point→plot and height sample costs recorded; no allocations in hot calls.
   - [ ] Environment-agnostic (no DOM/Node/three imports).
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W1-T02 — Dust contest harness
@@ -332,7 +333,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Blind A/B screenshot pair generator for the visual judgement.
   - [ ] Dry run against a stub adapter.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W1-T03 — P1 scalar + procedural
@@ -344,7 +345,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W1-T01, M1-W1-T02.
 - **Acceptance criteria:** [ ] runs S1, S4, S6, S7, S8 (S2/S3 best effort, synthetic S5) through the harness adapter; [ ] dev-run results kept in its own folder (official runs are M1-W1-T06); [ ] README with hypothesis, how to run, numbers.
 - **Visual acceptance:** VT-M1-03, 04, 05 judged in BENCHMARK (not gating the task).
-- **Required reviewers:** `performance-reviewer`, `visual-qa-reviewer` (via BENCHMARK.md).
+- **Applicable review lenses (lead selects for risk/final review):** `performance-reviewer`, `visual-qa-reviewer` (via BENCHMARK.md).
 - **Definition of done:** Standard DoD (prototype quality allowed; no production paths touched).
 
 #### M1-W1-T04 — P2 strokes + atlas + ledger (preferred)
@@ -356,7 +357,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W1-T01, M1-W1-T02.
 - **Acceptance criteria:** [ ] S1, S4, S6, S7, S8 run (S2/S3 best effort, synthetic S5); [ ] client/server ledger hash match 100 % in S4; [ ] compute and fragment replay both measured on WebGPU (§12 item 5); [ ] README + numbers.
 - **Visual acceptance:** VT-M1-03, 04, 05 judged in BENCHMARK.
-- **Required reviewers:** `performance-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `performance-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD (prototype quality).
 
 #### M1-W1-T05 — P3 client-painted, min-merge
@@ -368,7 +369,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W1-T01, M1-W1-T02.
 - **Acceptance criteria:** [ ] S1, S4, S6, S7, S8 run; [ ] tile-delta bandwidth and persistence size measured; [ ] cheating surface documented; [ ] README + numbers.
 - **Visual acceptance:** VT-M1-03, 04, 05 judged in BENCHMARK.
-- **Required reviewers:** `performance-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `performance-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD (prototype quality).
 
 #### M1-W1-T06 — Contest benchmark run + world verification
@@ -380,7 +381,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W1-T03, T04, T05.
 - **Acceptance criteria:** [ ] all scenarios run on Tier A and Tier B (WebGPU + WebGL2 for S8); [ ] `/verify` PASS for `packages/world`; [ ] results handed to `performance-reviewer` + `visual-qa-reviewer`, who write `prototypes/dust-sim/BENCHMARK.md`; [ ] lead records the D2 ADR.
 - **Visual acceptance:** blind A/B pairs produced.
-- **Required reviewers:** `performance-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `performance-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD + ADR + loser folders archived/deleted per prototypes/README.
 
 ### M1-W2 — Visual bar I: terrain, light, regolith at Boreal
@@ -398,7 +399,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Pilot Fence at 900 m from Boreal: visible marker ring + hook for the DOT message.
   - [ ] Terrain GPU ≤ 3.0 ms A / ≤ 7.0 ms B (main pass, pre-dust); CPU select ≤ 0.8/1.5 ms.
 - **Visual acceptance:** VT-M1-26 (P2, P4), VT-M1-14 (craters from terrain relief).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W2-T02 — Production light + sky
@@ -413,7 +414,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Exposure adaptation (P5), stars gated by exposure, Earth phase from geometry, earthshine fill; Crown Lamp light hooks (L1 Clip Light, L2 Spot Ring) for W6.
   - [ ] Bloom discipline holds.
 - **Visual acceptance:** VT-M1-08, 09, 10, 11, 12, 29; VM-01, VM-06 (lighting part).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W2-T03 — Render infra: dynamic res, presets, culling/LOD, warm-up, memory
@@ -429,7 +430,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Pipeline warm-up behind Clock In (≤ 4 s A / ≤ 8 s B), zero runtime pipeline creation.
   - [ ] GPU memory ledger per allocation; device-loss rebuild drops a preset after 2 losses.
 - **Visual acceptance:** VT-M1-28, VT-M1-31 (infra side).
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W2-T04 — Production regolith, rocks and craters, asset pipeline
@@ -444,7 +445,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Instanced rock + crater-rim scatter (seeded by plot) within draw budget.
   - [ ] glTF-Transform/KTX2 pipeline with per-group size budgets and a CI check script.
 - **Visual acceptance:** VT-M1-13, 14, 03 (material side).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W2-T05 — MVP game-data tables + balance-sim v0
@@ -459,7 +460,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Gameplay sun path for Boreal (D1).
   - [ ] balance-sim v0 outputs time-to-unlock curves: Crescent Squeegee 5–10 min; Pilot Review solo 2.3–2.8 h; 4 players < 1 h.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `balance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W2-T06 — M1-W2 integration: hero scene at Boreal, visual gate V-M1a
@@ -471,12 +472,12 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W2-T01 … T05.
 - **Acceptance criteria:** [ ] free-camera hero scene at Boreal with blockout outpost; [ ] `/verify`, `/visual-check` (S01, S05, S06 + P2/P4/P5), `/perf-check` PASS; [ ] **V-M1a**: VT-M1-08…14, 26, 29 V1 items pass.
 - **Visual acceptance:** listed above.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W2`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W3 — Production dust + sim core
 
-(Cards assume D2 = P2. If P1 or P3 wins, the lead re-plans W3 with `/plan-wave`, keeping IDs and paths.)
+(Cards assume D2 = P2. If P1 or P3 wins, the lead adjusts ready tasks, keeping IDs and coordinated ownership.)
 
 #### M1-W3-T01 — World dust ledger, rasterisation, thresholds, stamp
 - **Stage** M1-S8 · **Role** `terrain-dust-engineer` · **Port** 1 · **Status** `todo`
@@ -487,7 +488,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W2-T06.
 - **Acceptance criteria:** [ ] coarse ledger in 1/16-level units per world-and-dust §4.4–§4.5b (ADR-0026), exact integer rasterisation, stroke quantisation, coverage math, integer thresholds + recount, Inspector's Stamp rule (≤ 1 %); [ ] **ledger test vectors V1–V5** (golden 4-engine, permutations, per-tool reachability ±20 %, over-collection, client two-view convergence; WDS §10); [ ] golden vectors identical Node/browser; [ ] p99 stroke ≤ 0.2 ms server-side benchmark.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`, `balance-reviewer` (thresholds/stamp economy).
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`, `balance-reviewer` (thresholds/stamp economy).
 - **Definition of done:** Standard DoD.
 
 #### M1-W3-T02 — Client GPU stroke replay, tile atlas, detail ring
@@ -499,7 +500,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W2-T06.
 - **Acceptance criteria:** [ ] compute replay (WebGPU) + fragment twin (WebGL2); [ ] atlas alloc/eviction/rebuild; [ ] detail ring; [ ] dust GPU ≤ 0.5 ms A / ≤ 1.0 ms B; [ ] device-loss rebuild from CPU state; [ ] stroke-direction R8 textures beside the atlas (Medium+) and the ring; [ ] sub-texel strokes as an area-correct lighter line; partial removal thins smoothly.
 - **Visual acceptance:** VT-M1-03, 04, 05, **05b** (ring ↔ atlas handoff and sub-texel strokes), 06, 28, **34** (dust thins smoothly: monotonic, step ≥ 8 luma, ledger ±10 points, no island > 0.5 m²); VM-02 (dust part), VM-05.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W3-T03 — `packages/sim` RoomSim core
@@ -511,7 +512,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W2-T06.
 - **Acceptance criteria:** [ ] 20 Hz fixed step; low-g kinematics on the analytic height (capsule); input apply with seq; Desk Duster + Crescent Squeegee head motion → strokes; Dust Cell fill + full-cell stop; sun/time clock; [ ] 10,000-tick determinism Node vs browser; [ ] avatar step ≤ 10 µs.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`, `balance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W3-T04 — Server authoritative dust state
@@ -523,7 +524,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W3-T01.
 - **Acceptance criteria:** [ ] L0 + hot/cold ledgers + capped logs; plot completion + stamp events; interest radii §5.2; snapshot cache; serialise/restore to save layout v1; [ ] server dust CPU ≤ 8 ms/s at 16 cleaning players (synthetic); RAM ≈ 25 MB typical.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W3-T07 — First-playable art: blockout custodian, Desk Duster v0, grains v0
@@ -539,7 +540,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Grains v0: grime-tinted grains 1–3 cm world (≈ 3–8 px at 3–4 m), rounded quads, 15 % glints, **never faceted mesh pebbles** (art-direction §1.3, §3.6), on 1.62 m/s² parabolas, vanish on landing, composited after AA; reads in a cropped screenshot and GIF (Pillar P3); VT-M1-16b bar (≥ 20 grains ≥ 2 px visible within 0.5 s, ≥ 50 % at ≥ 15 luma contrast).
   - [ ] All assets pass the pipeline size budgets; licence rows added (own work: "generated").
 - **Visual acceptance:** VT-M1-18 (silhouette), VT-M1-16/16b/17 (grain read, preview), VT-M1-35 turntable of the blockout custodian; judged in V-M1b against the art-direction §13.4 placeholder bar (D5).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD; report lists what W4-T07 must replace.
 
 #### M1-W3-T05 — M1-W3 integration: local sandbox, visual gate V-M1b
@@ -551,8 +552,8 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W3-T01 … T04, M1-W3-T07.
 - **Acceptance criteria:** [ ] `?local=1` sandbox with placeholder input (W4 replaces) and the blockout custodian visible; [ ] `/verify`, `/visual-check` (S02, S03, S04, plus a custodian-in-frame crop), `/perf-check` PASS on Tier A High **and Tier B Medium**; [ ] **V-M1b**: VT-M1-03, 04, 05, 06, 28 pass; [ ] **interim comparator** CMP-02 and CMP-05 scored on Tier A High, Tier B Medium and Tier C Low (recorded, not yet gating; the final comparator stays in W9); [ ] **VT-M1-30** (`webgl2` parity: VM-01, 02, 06 on Tier C meet the Low thresholds) run now, not only at the final gate.
 - **Visual acceptance:** listed above; VM-02 preview.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W3`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W4 — Netcode, controls and accounts
 
@@ -565,7 +566,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W3-T05.
 - **Acceptance criteria:** [ ] FRAME, input bundle, dust chains/deltas/`DUST_SNAPSHOT`/`DUST_LEDGER`/`DUST_REQUEST`, stroke echo, join snapshot codecs; [ ] property round-trip + fuzz (truncated/oversized never throws past the boundary); [ ] checked-in vectors; [ ] client session state machine + adaptive interpolation buffer (150–250 ms); [ ] FRAME decode ≤ 0.2 ms A.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W4-T02 — Server `ShiftRoom`
@@ -577,7 +578,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T01.
 - **Acceptance criteria:** [ ] join via `onAuth` (token injected), `ShiftState` Schema encode-once without StateView, bytes channel with interest filtering, seat hold, admission control, per-connection rate limits, close codes; [ ] room tick p95 ≤ 3.5 ms with 16 synthetic clients locally.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W4-T03 — Server sim driver + client input, camera, aiming
@@ -589,7 +590,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W3-T05.
 - **Acceptance criteria:** [ ] drift-free 20 Hz driver, input validation vs sim rules, neutral input after 3 ticks; [ ] KBM + gamepad mapping with remap API, third/first-person camera rig (easing, FOV kick), tool aiming on terrain; [ ] tests.
 - **Visual acceptance:** VT-M1-07 (no peter-panning in camera framing) — checked at W5.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer` (server validation), `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer` (server validation), `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W4-T04 — Client net: prediction, reconciliation, interpolation, dust ingest
@@ -601,7 +602,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T01.
 - **Acceptance criteria:** [ ] prediction + replay ≤ 16 inputs (≤ 0.5 ms A); [ ] own-avatar correction p95 ≤ 5 cm under netsim typical; [ ] `DUST_SNAPSHOT` / `DUST_LEDGER` inflate in a worker; [ ] wake-up flow + reconnect overlay states.
 - **Visual acceptance:** n/a (feel checked in W5 bot/manual runs).
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W4-T05 — DB schema v1, guest auth, contracts/profile REST
@@ -613,7 +614,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W3-T05.
 - **Acceptance criteria:** [ ] tables players, identities, refresh_tokens, profiles, contracts, contract_members, contract_saves (+ existing ops_usage_daily) with generated migrations; [ ] guest create/refresh (opaque refresh hashed with pepper, 15-min `jose` JWT), `verifyToken` export for the room; [ ] contracts create/list/join-code, profile; REST rate limits; [ ] tests against schema `_a5`.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W4-T07 — Custodian suit production model + hand tools T1–T4
@@ -628,7 +629,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
   - [ ] Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom models (Desk Duster comically tiny), within asset budgets, readable at 32 px silhouette.
   - [ ] Turntable captures at 1080p (custodian + each tool) for the asset-quality review; replaces the W3-T07 blockout in the online loop; each asset meets the art-direction §13.3 turntable bar (**VT-M1-35**: 8 views, noon + night-near).
 - **Visual acceptance:** VT-M1-18, 19, 20, 21 (turntable form), **35**.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W4-T06 — M1-W4 integration: online loop
@@ -640,8 +641,8 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T01 … T05, M1-W4-T07.
 - **Acceptance criteria:** [ ] server wires auth → room (`verifyToken` injection), sim driver, world, ops stats; client replaces sandbox input with gameplay + net; [ ] `/verify`, Playwright 2-client e2e, local `/bot-test` (spike bots on ShiftRoom where possible) PASS.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W4`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W5 — Persistence, bots, characters
 
@@ -654,7 +655,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T06.
 - **Acceptance criteria:** [ ] save blob build + compress, coalesced writes ≤ 30 s when dirty, on room empty, on SIGTERM (≤ 25 s drain, ≤ 1.5 ms CPU slice/tick); [ ] lease renewal 10 s, restore on room create, `bakeHash` check; [ ] DB powered off → rooms keep running, retries 1 → 30 s, new rooms refused (4108); [ ] month-to-date egress persisted to `ops_usage_daily`.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W5-T02 — Real-protocol bots, `/bot-test` scenarios, restart + cold-start e2e
@@ -666,7 +667,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T06.
 - **Acceptance criteria:** [ ] bots on the real session: guest auth, join, walk, clean (tool strokes), desync checks (ledger hash); [ ] `/bot-test` 16 × 10 min netsim 120 ± 30, 1 %; restart scenario (SIGTERM → 100 % rejoin, positions match checkpoint); late-join S7; [ ] e2e: cold start → waking → join; protocol mismatch flow.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W5-T03 — Outpost Boreal hero hardware v1 + custodian polish
@@ -678,7 +679,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T06.
 - **Acceptance criteria:** [ ] Assay Counter, Receiving Gate, Dump Plate and floods as glTF/KTX2 within budgets, palette rule (safety-yellow ≤ 10 %); [ ] placed at the Boreal pad per D1 layout data; [ ] custodian fixes listed in the W4-T07 follow-up list closed.
 - **Visual acceptance:** VT-M1-21; **VT-M1-35** turntables (Assay Counter, Receiving Gate, Dump Plate, floods, custodian polish); VM-04 (Assay Counter, preview).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W5-T04 — Animation: skeleton pipeline, locomotion, low-g bounce, foot IK, tool layer
@@ -690,7 +691,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T07.
 - **Acceptance criteria:** [ ] clip loading + `AnimationMixer` layers: 1D/2D locomotion blend, additive tool layer per T1–T4, low-g bounce, procedural foot IK on terrain; [ ] remote avatars from interpolated state; [ ] ≤ 0.3 ms CPU for 16 avatars on A.
 - **Visual acceptance:** VT-M1-07 (no peter-panning), VT-M1-18 (silhouette in motion).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W5-T05 — Footprints and tracks ring
@@ -702,7 +703,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W4-T06.
 - **Acceptance criteria:** [ ] ring-based (not decals) prints + wheel-track hook for W7; [ ] fade ≤ 30 s on clean ground; [ ] within the dust GPU budget.
 - **Visual acceptance:** VT-M1-15; VM-02 (boot prints).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W5-T06 — M1-W5 integration: persistence + characters, first 16-bot run
@@ -711,11 +712,11 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Owned files:** `apps/client/src/app/**`, `apps/server/src/app/**`, `docs/agent-reports/M1-W5-integration.md`.
 - **Depends on:** M1-W5-T01 … T05.
 - **Input contracts:** W5 exports.
-- **Read first:** AGENT_ORCHESTRATION §8.
+- **Read first:** WORKFLOW.
 - **Acceptance criteria:** [ ] persistence wired to room lifecycle + SIGTERM; animation + marks registered; [ ] `/verify`, `/bot-test` (local; staging after G-M1-1), restart scenario, `/visual-check` (S02, S05, S10 partial), `/perf-check` PASS.
 - **Visual acceptance:** VT-M1-07, 15, 18.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W5`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W6 — Core loop: tools, cargo, economy, VFX, HUD, outpost
 
@@ -728,7 +729,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W5-T06.
 - **Acceptance criteria:** [ ] Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom with Detailing, Flick, Sure Footing, Lane Lock; [ ] Dust Cells I–III, full-cell stop; [ ] Pucks: form (F), carry, drop, throw (Q), pour back; [ ] Plot Card (G) data; [ ] deterministic tests.
 - **Visual acceptance:** n/a (VFX in T03).
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`, `balance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W6-T02 — Economy: selling, wallet, Promotions subset, suit gear, Stamp, Pilot Review, cargo, achievements
@@ -740,7 +741,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W5-T06.
 - **Acceptance criteria:** [ ] Assay Counter hold-to-pour, Receiving Gate + Dump Plate intake, Railshot shipment every 2 t (event only), shared wallet; [ ] 10 Promotions nodes with server-side race resolution; Holster Rig L1–3, Crown Lamp L1–2; [ ] Stamp 50 LM, Pilot Review at 25 Polished (2,500 LM; unlocks the Skiff in v1.0); 12 Stray Cargo Parcels; 10 achievement triggers → events; [ ] no client outcome trusted.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `balance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W6-T03 — VFX: ballistic dust, Inspector's Stamp, Assay pour, Railshot, lamp pools
@@ -752,7 +753,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W5-T06.
 - **Acceptance criteria:** [ ] compute particle pool + CPU fallback (WebGL2), 1.62 m/s² parabolas, no drag, vanish ≤ 0.15 s on landing, composited after AA; [ ] Stamp outline 0.6–1.0 s + emblem overshoot; [ ] Assay pour arcs + lumen-gold flash; [ ] simple Railshot launch visual; [ ] Crown Lamp L1/L2 pools.
 - **Visual acceptance:** VT-M1-16, 16b, 17, 22; VM-03, VM-04.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W6-T04 — HUD, toasts, Requisitions Desk, Ops Console, settings
@@ -764,7 +765,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W6-T01, M1-W6-T02 (data shapes).
 - **Acceptance criteria:** [ ] HUD: wallet, Shine, Cell gauges, compass, suit icons, Docket placeholder, Plot Card overlay; tick-ups and toasts; [ ] Requisitions Desk, Ops Console (board subset), settings (remap, accessibility basics, quality preset, volume placeholder); [ ] reduced-motion; KBM + gamepad focus navigation.
 - **Visual acceptance:** VT-M1-24, 25.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W6-T05 — Outpost Boreal hardware kit part 2
@@ -776,7 +777,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W5-T06.
 - **Acceptance criteria:** [ ] all listed pieces as glTF/KTX2 within budgets; palette rule (safety-yellow ≤ 10 %); [ ] placed at Boreal pad per D1 layout data; [ ] kit part 1 + part 2 judged together in V-M1c (VT-M1-21).
 - **Visual acceptance:** VT-M1-21; **VT-M1-35** turntables for every new piece (Requisitions Desk, Ops Console, Motor Pool); VM-04 (Assay Counter); VM-07 backdrop.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W6-T06 — M1-W6 integration: core loop, visual gate V-M1c
@@ -788,8 +789,8 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Read first:** scope-tiers §1.
 - **Acceptance criteria:** [ ] `/verify`, `/bot-test`, `/visual-check` (S02, S08, S12, S13, S14), `/perf-check`, `/balance-check` PASS; [ ] **V-M1c**: VT-M1-16, **16b**, 17, 18, 20, 21, 22, 24, 25, **35** (turntables for everything landed since V-M1b); [ ] **interim comparator** CMP-07 plus a custodian crop scored on Tier A High, Tier B Medium and Tier C Low (recorded, not yet gating); [ ] build ready for playtest P1.
 - **Visual acceptance:** listed.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`, `balance-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W6`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`, `balance-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W7 — Trundle, onboarding, audio
 
@@ -804,7 +805,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W6-T06.
 - **Acceptance criteria:** [ ] raycast-suspension kinematics for the Trundle; Motor Pool spawn/return, Repeat Requisition; Gear Ratio + Cargo Expander lines; vehicle strokes + hopper → Dump Plate; [ ] vehicle step ≤ 10 µs; deterministic tests; vehicle camera.
 - **Visual acceptance:** n/a (T02, W8-T02).
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`, `balance-reviewer`, `netcode-security-reviewer` (input validation).
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`, `balance-reviewer`, `netcode-security-reviewer` (input validation).
 - **Definition of done:** Standard DoD.
 
 #### M1-W7-T02 — Trundle model, brush-drum VFX
@@ -816,7 +817,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W6-T06.
 - **Acceptance criteria:** [ ] glTF/KTX2 within budgets; [ ] brush-drum parabolas on the particle pool; [ ] wheel-track hook to `terrain/marks`.
 - **Visual acceptance:** VM-09 (VT-M2-03/04 previewed); **VT-M1-35** turntable for the Trundle.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W7-T03 — Compass, onboarding, invite UI
@@ -828,7 +829,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W6-T06.
 - **Acceptance criteria:** [ ] compass (Outpost and Plot Card markers; no Flare Beacons in MVP); [ ] Induction Checklist (8 steps), DOT text tips, DOT Handbook (H); [ ] invite code/link screens, waking screen final; achievement toasts.
 - **Visual acceptance:** VT-M1-24 (new screens).
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W7-T05 — Audio graph, helmet muffle, MVP SFX, ambient beds, DOT chime
@@ -840,7 +841,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W6-T06.
 - **Acceptance criteria:** [ ] Web Audio graph with buses + helmet-muffle filter; [ ] SFX: sweep per tool, pour, stamp, Trundle, UI; day/night ambient beds; DOT chime; [ ] Opus/WebM + AAC fallback; volume settings hook; ≤ 0.3 ms CPU.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer` (download size).
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer` (download size).
 - **Definition of done:** Standard DoD.
 
 #### M1-W7-T06 — M1-W7 integration
@@ -849,11 +850,11 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Owned files:** `apps/client/src/app/**`, `apps/server/src/app/**`, `docs/agent-reports/M1-W7-integration.md`.
 - **Depends on:** M1-W7-T01 … T03, T05.
 - **Input contracts:** W7 exports.
-- **Read first:** AGENT_ORCHESTRATION §8.
+- **Read first:** WORKFLOW.
 - **Acceptance criteria:** [ ] `/verify`, `/bot-test` (incl. driving bots if available), `/visual-check` (S09, S12), `/perf-check`, `/balance-check` PASS.
 - **Visual acceptance:** VM-09.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W7`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W8 — Co-op complete + hardening
 
@@ -866,7 +867,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W7-T06.
 - **Acceptance criteria:** [ ] Solo and Private rooms; join by code/link (≤ 16); join-in-progress with Standard Issue; reconnect grace; Holder kick/ban (session-scoped); [ ] 16-vehicle sync without rubber-banding at 120 ± 30 ms (netsim).
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W8-T02 — Vehicle suspension + machine motion
@@ -878,7 +879,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W7-T06.
 - **Acceptance criteria:** [ ] suspension compression/rebound, drum spin, enter/exit; Assay Counter, Receiving Gate, Railshot motions; [ ] CPU within animation budget.
 - **Visual acceptance:** VM-09.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W8-T03 — MVP pacing pass, DOT copy, onboarding text, achievements wording
@@ -890,7 +891,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W7-T06.
 - **Acceptance criteria:** [ ] balance-sim: Crescent Squeegee 5–10 min, Pilot Review solo 2.3–2.8 h, 4 players < 1 h; [ ] DOT tips, Handbook, Induction, achievements text in data.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `balance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `balance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W8-T04 — MVP e2e flows, 16-bot drive scenario, 8 × 30 min soak
@@ -902,7 +903,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W8-T01.
 - **Acceptance criteria:** [ ] e2e: new guest → Induction → first sale → Crescent Squeegee (scripted); invite join; cold-start resume; [ ] bots: drive + puck scenarios; purchase races; 8 × 30 min soak with zero stuck plots and Shine agreement.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W8-T05 — MVP capture suite + budget tracker
@@ -914,7 +915,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W7-T06.
 - **Acceptance criteria:** [ ] S10 with 16 bot players P1 60 s, P2, P4 on Tier A High, Tier B Medium, Tier B Low, Tier C Low (`webgl2`); [ ] per-subsystem CPU and per-pass GPU vs budget table; pipelines-after-warm-up = 0; [ ] results in `tools/perf/results/M1/`.
 - **Visual acceptance:** VT-M1-27.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W8-T06 — M1-W8 integration: full MVP on staging
@@ -926,8 +927,8 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Read first:** §2.
 - **Acceptance criteria:** [ ] all gates PASS; staging `/bot-test` (G-M1-2) numbers recorded; build handed to P2 playtest.
 - **Visual acceptance:** VT-M1-01 progress list.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W8`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
 
 ### M1-W9 — MVP release gate
 
@@ -940,7 +941,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W8-T06.
 - **Acceptance criteria:** [ ] zero open V1; ≤ 3 V2 with tickets; [ ] CMP-02/05/07/15 rubric pass.
 - **Visual acceptance:** VT-M1-01, 02.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W9-T02 — Perf fixes, Low preset dignity, WebGL2 MVP parity
@@ -952,7 +953,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W8-T06.
 - **Acceptance criteria:** [ ] VT-M1-27 on A-High and B-Medium; [ ] draw/memory budgets; [ ] fixes for other owners' hot spots reported to them, not edited.
 - **Visual acceptance:** VT-M1-27, 30, 31.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W9-T03 — Sentry, source maps, release config, usage logging, size gate
@@ -964,7 +965,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W8-T06.
 - **Acceptance criteria:** [ ] Sentry browser + node with environment/release tags and uploaded source maps (no secrets in repo); [ ] room-stats + monthly egress visible in logs; [ ] CI first-load size gate green; root-file changes requested for the between-wave slot.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `netcode-security-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W9-T04 — UI polish, KBM + gamepad completeness
@@ -976,7 +977,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W8-T06.
 - **Acceptance criteria:** [ ] gamepad focus on every screen; remap persists; [ ] VT-M1-24/25 clean.
 - **Visual acceptance:** VT-M1-24, 25.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W9-T05 — MVP exit-criteria test pass
@@ -988,7 +989,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Depends on:** M1-W9-T01, T02, T03.
 - **Acceptance criteria:** [ ] every E row has a run, number or link; failures assigned to owners.
 - **Visual acceptance:** n/a.
-- **Required reviewers:** `code-reviewer`, `performance-reviewer`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
 #### M1-W9-T06 — M1 closing integration
@@ -1000,5 +1001,5 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Read first:** `.claude/commands/release-checklist.md`.
 - **Acceptance criteria:** [ ] `/verify`, `/bot-test` (staging), `/visual-check M1` (full matrix §6.5), `/perf-check`, `/balance-check` PASS; [ ] `/release-checklist` go.
 - **Visual acceptance:** VT-M1-01…31.
-- **Required reviewers:** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`, `netcode-security-reviewer`, `balance-reviewer`.
-- **Definition of done:** Standard DoD + `/commit-plan M1-W9` proposing tag `v0.2.0`.
+- **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`, `netcode-security-reviewer`, `balance-reviewer`.
+- **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.

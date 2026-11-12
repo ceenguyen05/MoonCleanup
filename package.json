@@ -2,7 +2,7 @@
   "name": "moon-cleanup",
   "version": "0.0.0",
   "private": true,
-  "description": "Moon Cleanup - browser co-op moon-cleaning game (monorepo root).",
+  "description": "Clean The Moon! - browser co-op moon-cleaning game (monorepo root).",
   "license": "UNLICENSED",
   "type": "module",
   "packageManager": "pnpm@11.28.9",

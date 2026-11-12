@@ -1,7 +1,9 @@
-# Game feel, movement, camera and controls — Moon Cleanup
+# Game feel, movement, camera and controls — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Draft v1 for build (2026-11-12).** Owner: game-designer (numbers) · implemented by gameplay-systems-engineer (`packages/sim`, `apps/client/src/gameplay`, `apps/server/src/sim`) and ui-ux-motion-designer (settings, prompts, reticle and HUD feedback). Cee (owner) may override anything.
-Title: the game is titled **Moon Cleanup** (owner choice).
+Title: the game is titled **Clean The Moon!** (owner choice).
 Canonical sources this doc must not contradict: [progression-and-economy.md](progression-and-economy.md) ("E", every balance number) · [GDD.md](GDD.md) §9, §13 (controls, accessibility) · [naming-bible.md](naming-bible.md) (every name) · [ADR-0010](../adr/0010-movement-kinematic-sim-no-server-physics.md) (kinematic sim, no server physics) · [netcode.md](../architecture/netcode.md) §2, §4.1, §5, §6 (input format, prediction, interpolation) · [world-and-dust-simulation.md](../architecture/world-and-dust-simulation.md) ("WDS": height function, strokes, R = 2,000 m) · [audio-direction.md](audio-direction.md), [art-direction.md](art-direction.md) §3.6, §4.6, §8.7 (cues, VFX, springs) · [visual-target.md](visual-target.md) (camera defaults) · [module-boundaries.md](../architecture/module-boundaries.md) §2 (event catalog).
 
 **Reading key.** ★ = deliberately better than the reference genre game, with a one-line reason. **[tunable]** values live in `packages/game-data` (§10); code never hard-codes them. "Tick" = one `SIM_TICK_HZ` step (50 ms at the default 20 Hz). All timers in the sim are **integer tick counts** derived as `round(seconds × SIM_TICK_HZ)`, so 0.15 s = 3 ticks at 20 Hz and 5 ticks at 30 Hz.

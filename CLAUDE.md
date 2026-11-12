@@ -1,88 +1,47 @@
-# CLAUDE.md — Moon Cleanup
+# Clean The Moon!
 
-Browser real-time co-op (1–16 players) moon-cleaning game. Start with a comically tiny Desk Duster, clean a whole
-2 km-radius moon (163,842 hex **plots**) with better tools, vehicles, robots and rail automation, solo or with friends.
-Employer: **Brightside Facilities Co.**; dispatcher AI: **DOT**; currency: **Lumens (LM)**.
-Owner: Cee (does ALL git). Builder: a Claude Fable lead + specialist subagents.
+Browser co-op lunar-cleaning game, 1–16 players. Exact game title: **Clean The Moon!**
+Keep existing `@moon-cleanup/*`, save IDs and service/repo identifiers stable. Item names are flexible.
 
-## Where things are decided (read the one you need, not all)
-- Status right now → `docs/STATUS.md` (single source of truth; resume here)
-- How the team works → `docs/handoff/AGENT_ORCHESTRATION.md` · git hand-off → `docs/handoff/WORKFLOW.md`
-- Stack & versions → `docs/architecture/tech-stack.md` · ADRs → `docs/adr/`
-- **Who owns which path** + contracts → `docs/architecture/module-boundaries.md`
-- Game design → `docs/design/GDD.md`, `progression-and-economy.md`, `scope-tiers.md`
-- Feel, motion, UI → `docs/design/game-feel-and-controls.md`, `animation-spec.md`, `ui-screens-and-flows.md`
-- **Names** → `docs/design/naming-bible.md` (the only source of player-facing names)
-- Visual bar → `docs/design/visual-target.md`, `art-direction.md` · budgets → `docs/architecture/performance-budgets.md`
-- Netcode / data / security / envs → `docs/architecture/netcode.md`, `data-model.md`, `security.md`, `environments.md`
-- World & dust (hardest system) → `docs/architecture/world-and-dust-simulation.md`; rendering → `rendering-pipeline.md`
-- Roadmap & tasks → `docs/ROADMAP.md`, `docs/milestones/` · Questions for Cee → `docs/OPEN_QUESTIONS.md`
+## Resume and read narrowly
 
-## Mechanics parity, original identity (non-negotiable)
-- Systems, unlock order, progression structure and pacing deliberately mirror the genre reference (research in
-  `docs/research/`). Every player-facing **name, model, texture, sound, UI layout, line of text and number table is ours**.
-- Never use names from the "DO NOT USE" lists in `docs/research/moon-sweepers-mechanics.md` §8 and
-  `docs/research/roblox-references.md` §9. Never download, trace or commit reference-game assets; link only.
-- Look: "bright, readable stylized realism" — our own designs and palette, real lunar lighting cues.
+Read `docs/STATUS.md`, then the active task card and existing recovery notes/findings. No new wave document is required.
+Read `docs/handoff/MODEL_POLICY.md` once per session/revision. Before design/visual/gameplay work read
+`docs/design/REFERENCE_TARGET.md`. Other specs: only the exact sections needed for the current task.
+Use `rg` on named paths first; no repository-wide dumps, repeated transcript reading or research/ADRs/vendor scans by default.
+Continue M0 from disk; never restart the scaffold, reinstall unnecessarily or duplicate a live writer.
 
-## Visual quality bar (short)
-Looking like a cheap browser game = failed task. PBR + HDR + AgX, single hard sun with filtered cascaded shadows, AO,
-subtle bloom, starfield + Earth, convincing night (Crown Lamp / Lowlight Visor), regolith with visible grime that thins
-as you clean, crisp sweep trails with raised berms, footprints/tracks, low-g ballistic dust. Locked 60 FPS Tier A
-(RTX 4060 Laptop-class), 30+ FPS Tier B (iGPU), WebGL2 fallback works. UI crisp at DPR 1/1.5/2/3. Every visible change
-gets native-resolution screenshots checked against `visual-target.md` IDs.
+## Build the requested experience
 
-## Architecture in brief
-- pnpm workspaces + Turborepo; TypeScript 6; Node 26 LTS; Vite 8. Packages `@moon-cleanup/*`:
-  `shared` (contracts) · `protocol` (codecs, client session) · `sim` (pure-TS room simulation) · `world` (plot grid,
-  terrain sampling, dust ledger) · `game-data` (balance tables) · `db` (Drizzle/Postgres) · `config` (tooling).
-- `apps/client`: three.js **r187 WebGPURenderer + TSL** (auto WebGL2), React 19 + Motion DOM UI.
-- `apps/server`: Colyseus 0.18 on uWebSockets; Schema for entities (encode-once), custom bytes for dust/strokes;
-  **server is authoritative**, runs the shared kinematic sim (no physics engine), 20 Hz sim / 10 Hz snapshots on the
-  free tier; checkpoints to Aiven PostgreSQL ≤ every 30 s and on SIGTERM.
-- Hosting ($0): Vercel Hobby (static client) · Render Free (prod tracks `release`, staging tracks `main`) · Aiven PG Free.
+Closely recreate Moon Sweepers' gameplay, graphics, animation, equipment, automation and world/map progression.
+Author our own code/assets/text/branding. Common names/styles are allowed; no forced visual divergence.
+REFERENCE_TARGET governs RF/VT acceptance and optional custom progression. Protect playable feel and world detail.
+Deadline: **November 17, 2026, America/Chicago**; report risk honestly, never silently reduce core scope.
 
-## Coding standards
-- Strict TS (`noUncheckedIndexedAccess`), ESM only, no `any` without a comment, no default exports in packages.
-- `packages/sim|world|protocol|shared`: no DOM, no Node APIs, no three.js, no Colyseus; deterministic where possible.
-- Import other packages only through their `index.ts`; respect the dependency direction in module-boundaries §1.
-- three.js: only WebGPURenderer/TSL/node post (`RenderPipeline`); banned: `WebGLRenderer`, `EffectComposer`,
-  GLSL `ShaderMaterial`, `renderAsync`. Keep draw calls within budget (BatchedMesh/instancing).
-- Balance numbers live in `packages/game-data` (validated by zod schemas in `packages/shared/src/config`), never in code.
-- Hot paths: no per-frame/per-tick allocations; reuse buffers.
-- Comments explain *why*. Public functions get TSDoc.
+## Continuous build
 
-## Commands
-`pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm test:e2e` · `pnpm verify` (all gates)
-Wave brief file `docs/handoff/waves/<M#-W#>.md` is written by `/plan-wave` before any launch.
-Slash commands: `/plan-wave` `/launch-wave` `/integrate` `/review <taskID>` `/verify` `/visual-check` `/perf-check`
-`/balance-check` `/bot-test` `/status` `/update-docs` `/release-checklist` `/commit-plan`.
+Build through M0→M1→M2→M3 without intermediate commit/permission gates; Cee decides when satisfied and ready to commit.
+No commit plans, mandatory wave-planning files, per-task review swarm or stop-at-stage behavior. Follow `docs/handoff/WORKFLOW.md`.
 
-## Testing rules
-- Every package change ships unit tests (Vitest) next to the code. Sim/world/protocol need deterministic tests
-  (fixed seeds, golden vectors). Netcode changes run under the network conditioner (latency/jitter/loss).
-- Multiplayer changes must pass `/bot-test` (16 bots). Visual changes must pass `/visual-check`.
-- CI gates are designed to pass on an empty repo; once code exists, red CI blocks the wave.
+## Execution
 
-## Staged sessions (usage limits)
-Work in **stages** sized to one 5-hour usage window (≤ 3 implementation agents + reviewers). Checkpoint after every
-task (STATUS.md log line, incremental agent reports); resume cut-off agents with `SendMessage`; `/commit-plan` after
-every wave. Full protocol: `docs/handoff/AGENT_ORCHESTRATION.md` §14.
+Sonnet 5.5 leads. Pinned role defaults: `.claude/agents/`; task model/effort choices: MODEL_POLICY.
+Default one implementer, max two workers total, one Opus/Fable worker combined. No nested delegation or reviewer swarm.
+One writer per path; brief narrows `docs/architecture/module-boundaries.md` ownership. Lead alone edits task rows/STATUS.
+Contracts via contracts-architect; root configs/installs via designated devops writer, sequentially when needed.
+Routine project-local dependencies do not each need an ADR; review lifecycle scripts and record changes.
+Checkpoint compactly at coherent deliverables/interruptions; continue across milestones. Ask only for actual decisions/access.
+Missing cloud/tool/hardware inputs block that check, not all independent local development.
 
-## When decisions change
-Write a new ADR (never edit an accepted one; supersede it), update `tech-stack.md`/the affected doc, log it in
-`docs/STATUS.md`, and if it's Cee's call add it to `docs/OPEN_QUESTIONS.md` with a recommended default.
+## Non-negotiables and checks
 
-## NEVER
-- Run git that changes state: commit, add/stage, branch, checkout/switch, stash, reset, rebase, merge, tag, init,
-  remote, push/pull, worktree — or use `isolation: worktree`, `EnterWorktree`, `/batch`, agent teams. **Cee handles all git.**
-- Commit or write secrets anywhere (only `.env.example` placeholders).
-- Edit files owned by another agent in the same wave, or shared root files during a wave.
-- Change shared contracts (`packages/shared`) outside the contracts process (only `contracts-architect` edits it).
-- Bypass server authority (clients send inputs/intents, never outcomes).
-- Add a dependency without an ADR, or install during a parallel wave. Only exception: M0-W0-T02
-  (`devops-engineer`) performs the FIRST install; after that, installs happen only between waves by `devops-engineer`.
-- Run git to test a git hook (never `git commit` as a test; use piped hook JSON).
-- Reuse reference-game names, art, audio, text or assets.
-- Mark a task done without reviewer sign-off (and Cee's commit).
-- Ship blurry UI (no CSS-scaled canvases for text, no raster icons upscaled, respect devicePixelRatio).
+- Cee handles all git mutations; no worktrees, `/batch` or agent teams. Read-only status/diff/log allowed. No secrets or paid actions.
+- Strict TS/ESM, public barrels, data-driven balance. `shared|sim|world|protocol|game-data`: no DOM/Node/three/Colyseus.
+- Deterministic authoritative sim; clients send inputs/intents; render/audio/UI consume state/events. Reuse hot-path buffers.
+- three r187 WebGPURenderer + TSL + RenderPipeline; no legacy WebGLRenderer/EffectComposer/GLSL ShaderMaterial/renderAsync.
+- Focused meaningful tests during work; one final `pnpm verify` per coherent integration state. Reuse same-state evidence.
+- Focused independent review for high-risk work and final integrated review; applicable visual/motion/perf/network/balance checks. No PASS from placeholders or reasoning.
+- Source/test defects, authority, backend compatibility and budgets block claiming affected features complete. RF/VT style mapping governs look checks.
+- Deployment: main only, one Render service (ADR-0029). `done` means implemented and verified; no commit requirement. Cee alone chooses commit/publication timing.
+
+Need a spec? `docs/README.md` routes by task. Procedure: `docs/handoff/WORKFLOW.md`.

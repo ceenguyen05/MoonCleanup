@@ -1,8 +1,14 @@
 {
+  // Typechecks this package only (`tsc -p packages/config/tsconfig.json`). The shared compiler options stay in the
+  // single repo-root tsconfig.base.json; there are no project references in M0.
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2024"],
-    "types": ["node"]
+    "types": ["node"],
+    // The sources are loaded directly by Node 26 (native type stripping), Vite and ESLint: relative imports carry
+    // ".ts" extensions and only erasable TypeScript syntax is allowed (no enums, namespaces, parameter properties).
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true
   },
   "include": ["."]
 }

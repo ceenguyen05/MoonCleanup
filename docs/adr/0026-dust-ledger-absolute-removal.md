@@ -39,6 +39,6 @@ ADR-0009's ledger removed `floor(d·E/A)` of what was left in a 0.8 m texel and 
 
 ## Evidence
 
-- [planning-review-principal-engineer.md](../agent-reports/planning-review-principal-engineer.md) (B2)
+- [current authority; obsolete report removed](../REVIEW_LOG.md) (B2)
 - [progression-and-economy.md](../design/progression-and-economy.md) §1.1, §4
 - [terrain-and-dust-techniques.md](../research/tech/terrain-and-dust-techniques.md) §4-§5

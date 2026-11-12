@@ -1,4 +1,10 @@
-# System overview — Moon Cleanup
+# System overview — Clean The Moon!
+
+> **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
+> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
+> Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
+> [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
+
 
 Status: **Planning baseline (2026-11-12)** · Owner: lead · Canonical inputs: [tech-stack.md](tech-stack.md), [module-boundaries.md](module-boundaries.md), [naming-bible.md](../design/naming-bible.md).
 Companion docs: [netcode.md](netcode.md) · [data-model.md](data-model.md) · [security.md](security.md) · [performance-budgets.md](performance-budgets.md) · [environments.md](environments.md).
@@ -195,7 +201,7 @@ Owner: devops-engineer (per [module-boundaries.md §3](module-boundaries.md)). P
 | --- | --- | --- |
 | `schemaVersion` | integer | `1` |
 | `slug` | string | `moon-cleanup` |
-| `title` | string | `Moon Cleanup` |
+| `title` | string | `Clean The Moon!` |
 | `tagline` | string, ≤ 80 chars | Written by game-designer; Brightside voice |
 | `descriptionShort` | string, ≤ 160 chars | For cards |
 | `descriptionLong` | string, ≤ 1,200 chars, plain text | For the detail page |

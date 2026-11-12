@@ -1,4 +1,10 @@
-# Netcode — Moon Cleanup
+# Netcode — Clean The Moon!
+
+> **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
+> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
+> Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
+> [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
+
 
 Status: **Planning baseline (2026-11-12, revised after the principal-engineer review)** · Owner: netcode-engineer (`packages/protocol`, `apps/*/src/net`) · Contracts: `packages/shared/src/protocol/*`, `sim/input.ts`, `world/stroke.ts` (contracts-architect).
 Canonical: [tech-stack.md §3](tech-stack.md) (Colyseus 0.18 + uWS + custom bytes, Schema without StateView), [module-boundaries.md](module-boundaries.md), [ADR-0025](../adr/0025-netcode-model-revision.md) (supersedes ADR-0015). **Dust semantics** (chunking, plot ids, stroke records, ledger, robots, dust interest radii, echo/reconcile, drift check, join-snapshot contents) are canonical in [world-and-dust-simulation.md](world-and-dust-simulation.md) ("WDS"); this doc only frames them on the wire and never restates their numbers.

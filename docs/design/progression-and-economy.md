@@ -1,8 +1,10 @@
-# Progression & Economy — Moon Cleanup
+# Progression & Economy — Clean The Moon!
 
-Status: **Draft v2 for build (2026-11-12, after the independent game-design review).** Owner: game-designer. These are **our own numbers**, designed to hit the owner's pacing targets. They are not copied from any reference table. Structure (tier counts, level counts, unlock order) mirrors the reference on purpose, and every intentional deviation is marked ★.
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
+
+Status: **Draft v2 for build (2026-11-12, after the independent game-design review).** Owner: game-designer. These are **candidate tuning tables**, not verified reference-game parity. Apply REFERENCE_TARGET before implementation: matching equipment roles/progression matters; no arbitrary number/name difference is required. Recompute the baseline after removing optional custom gates/multipliers.
 **Source of truth for pacing.** The v1 numbers came from a scratch prototype that is not in the repo. v2 keeps that prototype's rows from 3 h onward and re-derives everything else by hand in this file (§17, §18, Appendix B). §17 and §18 are therefore the **golden targets**: the first `tools/balance-sim` PR serialises them to `tools/balance-sim/golden/v2-targets.csv`, publishes its own diff against them, and the designer reconciles §17/§18 to the sim in the same PR (§22 Acceptance).
-Names: [naming-bible.md](naming-bible.md) only. Systems overview: [GDD.md](GDD.md).
+Names: editable [naming catalog](naming-bible.md); ordinary descriptive terms are allowed. Systems overview: [GDD.md](GDD.md).
 
 **Units used everywhere:** LM (Lumens, integer), m, m², m/s, s, h, kg, t, kW, kWh. "Shine" = fraction of plots Polished. "Review n" = Performance Review n (§13). "Stage base income" = the §17 income column (no Docket, Review, collectible or trick income). Percentages in tables are of the stated base.
 
@@ -247,42 +249,14 @@ Counts stay small for performance (simulated at plot level on a 0.1-CPU server, 
 
 Hard ceiling per contract: **48 robots + 14 machines**, versus hundreds in the reference.
 
-### 9.3 ★ On-Shift Bonus, Effort and Unattended robots (reviews B1, B2, M8)
+### 9.3 Reference baseline: robot activity
 
-Robots' clean rate is multiplied by the **On-Shift Bonus**:
+Default clean-rate multiplier = **1.0** independent of manual-cleaning Effort, player count, shared IP/subnet or
+distance to a player. Robot work remains server-authoritative with the same measured budgets. Empty-room
+checkpoint/suspension remains a hosting lifecycle rule; it is not a penalty for a connected player who stops sweeping.
+The previous On-Shift/Unattended bonus curve is retired from the baseline; no household/subnet activity eligibility gate.
+Custom fleet-upgrade/pacing variants may be revisited only as optional additions after reference fidelity.
 
-| Situation | Multiplier |
-| --- | --- |
-| No eligible Custodian has Effort > 0 (**Unattended**) | **×0.5** |
-| Partial activity, 0 < A_eff < 1 | ×(0.5 + 0.5·A_eff) |
-| A_eff ≥ 1 | **×(1 + 0.6·√(A_eff − 1))** |
-
-| A_eff | 0 | 0.5 | 1 | 2 | 3 | 4 | 6 | 8 | 12 | 16 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Multiplier | ×0.50 | ×0.75 | ×1.00 | ×1.60 | ×1.85 | ×2.04 | ×2.34 | ×2.59 | ×2.99 | ×3.32 |
-
-**A_eff = Σ Effort_i** over eligible Custodians, after the anti-farm rules, capped at 16.
-- **Effort_i** = min(1, area of dust *you* removed in the last 300 s ÷ (0.4 × your best owned mode's expected area rate × 300 s)). "Dust removed" counts only texels whose level fell, so driving over Polished ground earns nothing. Robot dust never counts.
-- **Active** also requires input within the last 30 s and ≥10 m of movement within the last 60 s. Otherwise Effort decays to 0 over 60 s. On Break players count 0.
-- **Eligible accounts:** one counted session per account (extra tabs of the same account count 0); account Tenure ≥3 (≈30–40 min of real play, so fresh guest alts don't count); **accounts sharing an IP subnet (/24 IPv4, /56 IPv6) contribute at most 1.0 in total**. The last rule costs households on one connection their co-op robot bonus; they keep every other co-op benefit. It is the owner-directed anti-farm rule.
-- **Unattended cap:** the room stays open only while someone has had Effort > 0 within the last 30 min (all room types; aligns with the netcode AFK close). So an idle tab gives at most 30 min of robots at ×0.5, then the contract sleeps.
-- **Why this is the solo agency fix:** the sim's baseline (an active solo player) is ×1.00, so every v1 robot number stands. A player who stops cleaning halves the fleet. At every stage solo, ≥50% of Shine progress is player-attributable (own cleaning + the active-vs-Unattended half of robot output; §18.1).
-- HUD chip: "Flock ×1.00 · Effort 100%".
-
-### 9.4 ★ Flight Plan (shared robot upgrades; Ops Console)
-
-| Line | Effect per level | Costs (LM) per level | Review gate per level |
-| --- | --- | --- | --- |
-| **Keen Beak** (5) | Albatross rate +30%; Sandpiper and Plover +15% | 0.8M · 3M · 7M · 11M · 16M | — · R1 · R2 · R3 · R4 |
-| **Deep Crop** (3) | Bins and stores +50%; uptime +2% | 0.8M · 2.5M · 5M | — · R2 · R3 |
-| **Tailwind** (3) | Albatross hop speed, rate +20% | 2.5M · 7M · 12M | R1 · R3 · R4 (needs ≥1 Albatross) |
-| **Wide Wing** (2) | I: Roost +1 ring; II: +1 more ring and Auto-Relocate range 600 m; local uptime +8% each | 1.5M · 4M | R2 · R4 |
-| **Homing** (2) | I: **Straggler Priority** (Opened and isolated plots first); II: **Punch List Sweep** (no travel penalty to lone plots; plots finish to ≤0.5%) | 2M · 4M | R5 · R6 |
-| **Auto-Relocate** (one-time item) | An idle Roost re-sites itself to the nearest Grimy patch within 300 m of its rail and extends the rail (2 LM/m) | 15,000 | Start ★ (review M6) |
-
-- Full Flight Plan: **79.1M LM** (79,115,000 with Auto-Relocate). 5 lines, 15 levels, plus the one-time Auto-Relocate.
-- A maxed Albatross: 11 × 2.5 × 1.6 = **44 m²/s** (about 7 s per plot); ×3.32 with 16 active players.
-- A maxed Plover: 4.5 × 1.75 = 7.9 m²/s.
 
 ## 10. Logistics
 
@@ -553,7 +527,7 @@ Net effect: 1 → 31.1 h, 2 → 19.8 h, 4 → 15.1 h, 8 → 11.7 h, 16 → 9.0 h
 - All tables are JSON in `packages/game-data/data/*.json`. Each is validated by a zod schema in `packages/shared/src/config/<name>.schema.ts` (exported as `<Name>Schema` + inferred type).
 - `packages/game-data/src/index.ts` loads, validates and freezes them, and exposes typed accessors. The sim, server, client and balance-sim read only through it.
 - IDs are dot-namespaced (`tool.lane_broom`).
-- `displayName` is copied verbatim from [naming-bible.md](naming-bible.md); a CI check fails on banned names **and** on fuzzy matches (token overlap within the same slot, naming-bible rule 3).
+- `displayName` is an editable label tracked in the [naming catalog](naming-bible.md). Validate missing/duplicate IDs and label consistency; no generic-word, fuzzy token-overlap or same-slot ban.
 - Field names carry their unit as a suffix (`priceLm`, `widthM`, `speedMps`, `capacityKg`, `durationS`, `powerKw`, `energyKwh`, `rateM2ps`, `frac` for 0–1 fractions, `mult` for multipliers).
 - Every file has `"schemaVersion": 1`.
 - ★ **Effects** are `{stat, op: "add" | "mul" | "set", value}` for numbers, or `{op: "flag", featureId}` for qualitative behaviour (review M18). `featureId` must exist in `features.json`; each id names the sim/server rule that implements it.
@@ -615,6 +589,11 @@ Net effect: 1 → 31.1 h, 2 → 19.8 h, 4 → 15.1 h, 8 → 11.7 h, 16 → 9.0 h
 - **Review Briefs:** in each Review interval the player spends 20 min in the best hand tool on Steep (sweep ×0.6 unless Sure Footing/Charge) before the threshold.
 
 ### 22.3 Robots
+
+**Baseline override:** use fixed activity multiplier 1.0; ordinary material-value sale rules; no Review/Brief gates for
+core purchases. Ignore conflicting Effort/On-Shift/Bulk Rate formulas below in reference baseline. Implement and validate
+the revised balance policy before treating any old completion-time estimate as acceptance evidence.
+
 
 - **Roost** output = Σ unit rate × uptime × (1 + 0.15·Keen Beak). Uptime = 0.64 (manual Re-site) or 0.70 (Auto-Relocate) + 0.08·Wide Wing + 0.02·Deep Crop, max 0.95. Each Re-site costs rail at 2 LM/m × 100 m average.
 - **Albatross** output = count × 11 × (1 + 0.3·Keen Beak) × (1 + 0.2·Tailwind) × (0.90 + 0.02·Deep Crop, max 0.98).

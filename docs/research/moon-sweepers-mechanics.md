@@ -473,37 +473,9 @@ Here, "**Pre-1.0.4**" means before 25 Oct 2026, when the global robot was slower
 
 ## 8. REFERENCE PROPER NOUNS — DO NOT USE IN OUR GAME
 
-These names are recorded **only so that our naming team can avoid them**. The list includes generic-sounding terms when the game uses them as named features. Sources are [S1]–[S49] as cited above.
+Retired naming restriction removed. Common descriptive terms are allowed; use the editable naming catalog and REFERENCE_TARGET.
+Do not ship copied distinctive branding or extracted assets. This research is evidence, not a name ban list.
 
-- **Titles, studio and related products:** Moon Sweepers · DragDrop Games / DragDropGames · Totally Safe Moon Project (bundle partner) · Brick by Brick: Tidy Up the Small Town! (bundle partner) · Genre peers: Sweep The Moon, Clean the Moon! (Roblox)
-- **Organization and lore:** Lunar Surface Department (LSD, the store's name) · Lunar Surface Division / "the Division" (in-game name, per the wiki) · Field Manual · Employee Breathing Plan · "disposable-grade cleaning associate" · the employment agreement framing · YOUR ASTRONAUT (locker editor)
-- **Currency and economy terms:** dollars as the in-game currency · payout multiplier · Region Bounty · launch / launches · tray · deposit intake
-- **Places and structures:** North Station, East Station, West Station, South Station · DUST STATION (compass label) · the Collector · supply wall · upgrade hologram · service table · launcher · collector pad · silo · garage hall
-- **Hand tools:** Toothbrush · Nail brush · Hand brush · Household broom · Wide broom · Extra wide broom · Building tool (modders call it the "hammer")
-- **Upgrade matrix nodes:**
-  - Hub: Collector Uplink
-  - Containers branch: Toothbrush container, Nail brush container and the other per-tool container nodes · Dust Compactor · Auto-Packer
-  - Cleaning branch: Wide Heads · Deep Heads · Long Reach · Surge Heads
-  - Suit branch: Servo Stride · Lunar Leap · Exo Frame
-  - Logistics branch: Rapid Transfer · Capsule Tether · Throw Assist · Express Dock
-  - Economy branch: Market Contracts · Supplier Network · Region Bounty · Lunar Exchange
-- **Suit gear:** Tool Belt · Forward Jetpack · Gravity Boots · Helmet Lamp (with its level names work lamp, LED lamp, floodlamp and lunar beacon) · Night Vision Goggles
-- **Vehicles:** Push sweeper · Ride-on sweeper · Crew transport · Lunar sweeper · Mega vacuum rover
-- **Vehicle upgrades:** Tuned Motors · Big Hopper · Turbo Kit · Cruise Control · Suction Control · Quick Release · Floodlights
-- **Robots:** J.O.O.N.A.S. ("Just One Overpriced Nonessential Automated Sweeper"; players write "Jonas") · Robot vacuum Mk I · Robot vacuum Mk II · robot dock · robot panel
-  - Robot states: Cleaning, On the move, Heading home, Docking, Unloading, Scanning the area, All clean, Dock full, Bin full, Switched off, Waiting
-- **Logistics, production and power:** Conveyor belt · Splitter · Merger · Packager · Capsule catcher · Pressure chamber · Stone press · Solar post (S) · Solar twin (M) · Solar tracker (L)
-- **Materials and items:** moon dust · moon sand · moon stone · moon stone block · dust capsule · sand capsule · J.O.O.N.A.S. capsule
-- **Building:** move mode · remove mode
-  - Wall pieces: railing, full edge · wall (full/half/third) · window wall · sliding door wall
-  - Surface styles: Concrete, Diamond plate, Grating, Lit, Hazard stripes
-- **World and UI terms:** sectors / regions / hexes (as the moon grid) · region scan · Moon map with orange/blue/green states · "Waypoints full (12)" · teleport panel · Your Crew (menu) · Friends only / Public / Invite only · Join game · Back to base · dust gauge · Chat Voice · "Vehicle camera follows behind" · flags (untangle and raise) · lunar sites (survey)
-- **Trick callouts:** WIPEOUT! · BIG AIR · HUGE AIR · 180/360/540 SPIN · DOUBLE / TRIPLE
-- **Station amenities and radio:** coffee machine, chess, air hockey, bunks, whiteboard (WIPE), lockers, lounge · Radio settings and labels: CHILL / NOT CHILL, JUST FOR YOU, COLLECTOR, crew mixes · Radio tracks: The Lunar Shore · The Pale Horizon · Beneath A Silver Horizon · Beneath A Starlit Canopy
-- **Achievement titles (all 33):** One Small Sweep · Get A Better Brush · Dust Bunny · Return to Sender · Dust Delivery · That's Going to Take a While · Pocket Full of Moon · Making a Dent · Frequent Flyer Dust · Let the Belt Do It · Moon Improvement Project · A Literal Ton of Dust · Finally, Wheels · Dust Pays the Bills · A Good Start · Reinvesting in Dust · Filthy Rich · Moon Dust Removal Specialist · OH You Have Friends? · Regular Customer · A Very Expensive Hobby · Patchwork Moon · You Missed a Spot · It'll Get There Eventually · Lunar Payday · Small loan of $1 million · The Moon Is a Gold Mine · Hex Appeal · Visible From Space · Half Way There · Time To Go Sleep... · Depot Resident · Do You Live Here?
-- **Real-world content the game uses (not their IP, but avoid copying the concept 1:1):** all 195 national flags as collectibles · 26 real lunar mission sites, for example Apollo 11, Luna 2, Lunokhod 1, LCROSS and Blue Ghost Mission 1
-
----
 
 ## Contradictions & uncertainty
 

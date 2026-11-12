@@ -1,7 +1,9 @@
 # Module boundaries, contracts and file ownership
 
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
+
 Status: **Canonical.** This file is the single source of truth for *which agent role owns which path* and *how modules talk to each other*.
-Changes: only by the lead, between waves, recorded in `docs/STATUS.md`. Role definitions: [`.claude/agents/`](../../.claude/agents/).
+Changes: coordinated by the lead when technically needed; record changed contracts/owners compactly in STATUS. Role definitions: [`.claude/agents/`](../../.claude/agents/).
 Package scope: `@moon-cleanup/*` (workspace-only, never published).
 
 ## 1. Package map and dependency direction
@@ -35,7 +37,7 @@ Rules (enforced by ESLint `no-restricted-imports` + TS project references, set u
 5. Cross-module communication inside an app goes through the **typed event bus** or the **service registry** defined in `packages/shared` — never by reaching into another module's internals.
 6. Deep imports (`@moon-cleanup/x/src/...`) are banned; each package exposes an `index.ts` barrel.
 
-## 2. Contracts (owned by `contracts-architect`, changed only between waves)
+## 2. Contracts (owned by `contracts-architect`, changed sequentially with affected consumers coordinated)
 
 All live in `packages/shared/src/` (one folder per row group: `ids`, `units`, `protocol`, `sim`, `world`, `events`, `client`, `ui`, `audio`, `render`, `config`, `api`, `save`; the `units/` folder is created by M0-W0-T01). Each contract file starts with a header comment stating its version.
 
@@ -57,11 +59,11 @@ All live in `packages/shared/src/` (one folder per row group: `ids`, `units`, `p
 | REST DTOs (guest auth, contracts list, profile, save metadata) | `api/rest.ts` | server/api, client/net |
 | Save format (world blob layout + `SAVE_FORMAT_VERSION`) | `save/format.ts` | server/persistence, sim, world |
 
-**Contract change process:** an agent that needs a change writes a *proposal* in its report (never edits `shared`). Between waves the lead batches proposals into a Wave-0-style task for `contracts-architect`, who applies them, bumps versions, updates this table and lists affected consumers. Breaking protocol/save changes bump `PROTOCOL_VERSION` / `SAVE_FORMAT_VERSION` and require a migration note.
+**Contract change process:** an agent asks the lead for the needed interface change in a short message (never races another shared writer). The lead assigns `contracts-architect` to apply it when needed, update versions and coordinate affected consumers; no new wave/report is required. Breaking protocol/save changes bump `PROTOCOL_VERSION` / `SAVE_FORMAT_VERSION` and require a migration note.
 
 ## 3. File ownership map
 
-One owner per path. Unit tests live next to the code they test and belong to the same owner. "Shared root files" may only be changed by their owner **between waves**.
+One owner per path. Unit tests live next to the code they test and belong to the same owner. "Shared root files" have one designated writer; coordinate affected consumers before changing them.
 
 | Path | Owner role | Notes |
 | --- | --- | --- |
@@ -104,7 +106,7 @@ One owner per path. Unit tests live next to the code they test and belong to the
 | `assets/ui/**` | ui-ux-motion-designer | SVG icons, OFL fonts |
 | `assets/terrain/**` | terrain-dust-engineer | Baked derivatives + manifest (`raw/` is git-ignored) |
 | `prototypes/<topic>/<approach>/**` | assigned per contest by the lead | See `prototypes/README.md` |
-| `.github/**`, `vercel.json`, `render.yaml`, `turbo.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tsconfig.base.json`, root `tsconfig.json`, root `eslint.config.*`, root `vitest.config.*`, root Prettier files, `.prettierignore`, `.editorconfig`, `.gitignore`, `.gitattributes`, `.nvmrc`, root `package.json`, `**/.env.example` | devops-engineer | Shared root files: change between waves only. The lockfile has one writer at a time (M0-W0-T02 creates it) |
+| `.github/**`, `vercel.json`, `render.yaml`, `turbo.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tsconfig.base.json`, root `tsconfig.json`, root `eslint.config.*`, root `vitest.config.*`, root Prettier files, `.prettierignore`, `.editorconfig`, `.gitignore`, `.gitattributes`, `.nvmrc`, root `package.json`, `**/.env.example` | devops-engineer | Shared root files: one writer; coordinate consumers. The lockfile has one writer at a time (M0-W0-T02 creates it) |
 | App build files: `apps/*/vite.config.ts`, `apps/client/index.html`, `apps/client/src/main.ts` (one-line import of `./app/boot`), `apps/server/build.config.*`; `scripts` fields of every workspace `package.json` (except `packages/config`) | devops-engineer (lead-delegated) | M0-W0-T03; no logic |
 | `.claude/**`, `CLAUDE.md` | lead (via docs-keeper for wording) | Agent definitions and commands |
 | `.claude/hooks/**` + the `hooks` block of `.claude/settings.json` | devops-engineer (lead-delegated) | Git-blocking PreToolUse hook; never touch `permissions` |
@@ -113,12 +115,12 @@ One owner per path. Unit tests live next to the code they test and belong to the
 | `docs/design/visual-target.md`, `art-direction.md` | technical-artist | Reviewed by visual-qa-reviewer |
 | `docs/design/audio-direction.md` | audio-engineer | |
 | `docs/architecture/**`, `docs/adr/**` | lead (authors may draft via brief) | ADRs are append-only |
-| `docs/STATUS.md`, `docs/ROADMAP.md`, `docs/OPEN_QUESTIONS.md`, `docs/milestones/**` (structure) | lead | Agents edit only their own task row |
+| `docs/STATUS.md`, `docs/ROADMAP.md`, `docs/OPEN_QUESTIONS.md`, `docs/milestones/**` (structure) | lead | Lead alone edits task rows from worker reports |
 | `docs/agent-reports/**` | each agent writes its own files | |
 | `docs/visual-reviews/**` | visual-qa-reviewer | Milestone screenshots (PNG, native resolution) |
 | `docs/research/**`, `README.md`, `docs/README.md`, `docs/ASSET_LICENSES.md`, `docs/SETUP_CHECKLIST.md`, `docs/REVIEW_LOG.md` | docs-keeper | Asset ledger rows are appended by the agent adding an asset |
 
-**Dependencies (`package.json` `dependencies`)**: owned by the package owner, but **installs happen only between waves** by `devops-engineer` (one lockfile writer at a time). A new dependency needs an ADR ([ADR-0028](../adr/0028-dependency-policy.md)).
+**Dependencies (`package.json` `dependencies`)**: owned by the package owner, but **installs happen sequentially when needed** by the designated `devops-engineer` lockfile writer. Routine dependencies need a rationale/license/script review; major architecture/toolchain changes need a concise ADR ([ADR-0028](../adr/0028-dependency-policy.md)).
 
 ## 4. Runtime interfaces inside the client
 

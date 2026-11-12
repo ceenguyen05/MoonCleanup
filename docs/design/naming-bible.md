@@ -1,24 +1,32 @@
-# Naming bible — Moon Cleanup
+# Naming bible — Clean The Moon!
 
-Status: **Editable.** Owner: game-designer (Cee may rename anything at any time). v2 (2026-11-12): names flagged by the independent game-design review as close variants of the do-not-use lists were replaced; see §A8 for the rename log.
-Rule: every player-facing name in code, data, UI, audio and marketing comes from this file. `packages/game-data` stores **IDs** (`tool.desk_duster`) plus display names copied from here, so a rename is a one-row change here + one string change in game-data.
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
-**Banned names.**
-1. Every name in the "REFERENCE PROPER NOUNS — DO NOT USE" sections of [`moon-sweepers-mechanics.md` §8](../research/moon-sweepers-mechanics.md#8-reference-proper-nouns--do-not-use-in-our-game) and [`roblox-references.md` §9](../research/roblox-references.md), plus close variants.
-2. Generic words the reference games use as exact item names (toothbrush, sweeper, rover, vacuum, canister, conveyor, intake, bay, crew, class, zone, hatch, shards, gems, cash, tank, backpack, hopper, bucket, sack, pan, roller, silo, tray) are not used as our item names or as the head word of one.
-3. **Close-variant test (CI + review).** A name fails if, in the **same slot** (e.g. vehicle upgrade, achievement, robot state, suit level), it shares a content word with a banned name, is a near-homophone of one (Auto-Puck / Auto-Packer), or follows the same "[modifier] + [head word]" construction with a synonym (Long Arm / Long Reach). The CI check runs exact match plus token overlap within slot; anything it flags needs a designer note here.
-4. **Avoid one-to-one semantic clones** of a reference *set* (e.g. the same five surface finishes or the same amenity list): change the set size and at least half the concepts.
-5. **One meaning per word.** Don't reuse a distinctive word across two systems (v1 had "Shift", "Survey", "Haulage", "Motor Pool", "Bulk", "Rail" and "Inspection" doing double duty; v2 fixes them, §A8).
+Status: **Editable catalog, 2026-11-12.** Owner: game-designer; Cee and the Sonnet lead may refine display names.
+Follow [REFERENCE_TARGET](REFERENCE_TARGET.md). This catalog keeps terminology consistent; it is **not a hard naming lock**.
 
-**Title exception:** the title 'Moon Cleanup' was chosen by the owner (2026-11-12); it is descriptive and not an existing game's title. The close-variant rule applies to all other names.
+## Naming policy
 
-Structure note: the *systems* below deliberately mirror the genre structure documented in the research (tier counts, branches, roles). The *names, look, lore and numbers* are ours.
+- Game title: **Clean The Moon!** — exact capitalization and exclamation mark, selected by Cee.
+  Use this name in UI, metadata, documentation and future assets. Only Cee changes the game title; item/feature display labels remain flexible.
+  Keep technical slug `moon-cleanup`, package scope and save IDs stable; these are implementation identifiers, not display titles.
+- Prefer clear familiar labels: toothbrush, brush, broom, sweeper, rover, vacuum, canister, container, capsule, conveyor,
+  intake, garage, silo, robot, crew, sector, backpack, bucket, cash, lamp and night vision are allowed.
+- No token-overlap, same-slot, synonym, near-homophone, set-size or "different concept" rejection rule. Do not rename a
+  useful common term solely because the reference uses it. Do not force awkward corporate/bird terminology on players.
+- Employer, dispatcher, currency and item names below are editable defaults. The lead may add/refine a display label and
+  update its catalog/data string in the same task; routine naming needs no owner permission, extra reviewer or standalone ADR.
+- One display-label source in game-data/UI strings. Existing IDs are stable keys, not a requirement to display their spelling.
+  Renaming an ID/save key follows the normal contract/migration process; a display rename alone does not.
+- Keep authored assets/text/logos and distinct fictional branding; use reference names freely in research/review discussion.
+  Do not ship the reference's distinctive studio/organization/character branding or present this as its official game.
+- Historical rename log §A8 explains old edits; its bans/reasons are retired and cannot block a task.
 
 ## 1. Identity
 
 | Thing | Name | Description / visual concept |
 | --- | --- | --- |
-| Game title | **Moon Cleanup** | Slug `moon-cleanup`. Logo: clean geometric wordmark; the "O"s are a half-cleaned moon (dark grime / bright polished split). Owner decision; the review's title-proximity risk is accepted with mitigations (GDD §1): the **Brightside** mark sits prominently in key art, logo lock-up and store capsule |
+| Game title | **Clean The Moon!** | Owner-selected exact title; keep technical slug `moon-cleanup`. Logo/key art use the same title. |
 | Employer | **Brightside Facilities Co.** ("Brightside") | Cheerful private facilities contractor that won the Moon tender on a very confident slide deck. Motto: *"We keep the bright side bright."* PR-voiced and wildly overconfident (not cheap: that beat belongs to the reference). Logo: a crescent squeegee |
 | Dispatcher AI | **DOT** (Dispatch Operations Terminal) | Voice of tutorials, tips and contract reports. Dry corporate politeness. Appears as a small amber status light on HUD panels |
 | Player job title | **Custodian** | Ranks shown on profile: Trainee → Custodian → Senior Custodian → Lead Custodian → Head Custodian |
@@ -150,7 +158,7 @@ Tutorial voice: DOT. Notifications: "Requisition approved", "Plot stamped", "Rai
 
 ## Additions (game-designer, 2026-11-12)
 
-Added with the GDD and the progression and economy docs. Each name was checked against the banned lists in `moon-sweepers-mechanics.md` §8 and `roblox-references.md` §9, including close variants (rule 3). IDs follow the `category.snake_case` pattern.
+Catalog additions from the earlier GDD/economy pass. Labels remain editable; IDs follow `category.snake_case`. Old generic-name bans no longer apply.
 
 ### A1. Progression systems
 
@@ -223,7 +231,7 @@ Added with the GDD and the progression and economy docs. Each name was checked a
 
 ### A6. Liveries and player colors (docs-keeper pass, 2026-11-12, for art-direction §4.4 and §4.5)
 
-Checked against the DO NOT USE lists in moon-sweepers-mechanics.md §8 and roblox-references.md §9; no collisions or close variants. IDs follow category.snake_case.
+Editable defaults; IDs follow category.snake_case. Research vocabulary is not a generic-name ban list.
 
 | Rank livery ID | Name |
 | --- | --- |
@@ -252,57 +260,11 @@ Checked against the DO NOT USE lists in moon-sweepers-mechanics.md §8 and roblo
 
 ### A8. Rename log v2 (game-designer, 2026-11-12; from the independent game-design review M15, M16, m6, m7, M17)
 
-Display names and IDs change together (`old_id` → `new_id`). Each new name was checked against `moon-sweepers-mechanics.md` §8 and `roblox-references.md` §9 with rules 1–5.
-
-| Old | New | Slot | Why |
-| --- | --- | --- | --- |
-| Whisk Brush (`tool.whisk_brush`) | **Crescent Squeegee** (`tool.crescent_squeegee`) | T2 tool | ≈ "Hand brush"; new name also avoids "Pocket" (Pocket Money / Pocket Full of Moon) |
-| Auto-Puck | **Overflow Former** | Storage capstone | Near-homophone of Auto-Packer |
-| Express Lane | **Smooth Handoff** | Haulage capstone | Same head word as Express Dock / Express Delivery |
-| Long Arm | **Telescoping Pole** | Reach node | Same construction as Long Reach |
-| Deep Clean | **Scour** | Depth node | ≈ Deep Heads |
-| Spring Step | **Cadence** | Speed root | ≈ Servo Stride |
-| Moon Hop | **Loft** | Jump node | ≈ Lunar Leap |
-| Bulk Buyer | **Rebate** | Discount node | "Bulk" reused (Bulk Rate) |
-| Plot Bonus | **Stamp Premium** | Stamp payout node | ≈ Region Bounty |
-| Anchor Boots | **Ballast Soles** | Gravity toggle | ≈ Gravity Boots, CTM "Boots" |
-| Work Beam / Flood Crown | **Spot Ring** / **Wide Halo** | Crown Lamp levels | ≈ work lamp / floodlamp |
-| Cruise Hold | **Throttle Lock** | Vehicle upgrade | ≈ Cruise Control |
-| Deep Hopper | **Cargo Expander** | Vehicle upgrade | ≈ Big Hopper; "Hopper" is a banned CTM vehicle |
-| Work Lights (vehicle line) | **Running Lamps** | Vehicle upgrade | ≈ Floodlights / work lamp |
-| Hopper Bin | **Dust Vault** | Garage buffer | Exact banned word "Hopper" |
-| Work Light Mast | **Lamp Pylon** | Services piece | ≈ work lamp |
-| Sinter Press (`machine.sinter_press`) | **Tile Sinterer** (`machine.tile_sinterer`) | Production 2 | "[material] Press" = Stone press / Block Press |
-| Plot Scan (key G) | **Plot Card** (key C) | Plot info | ≈ region scan, same key |
-| Shift (build mode) | **Reposition** | Build mode | "Shift" overloaded |
-| Rails & Railings (tab) | **Handrails** | Structures sub-tab | "Rail" overloaded; "railing" is a banned wall piece |
-| Panels: wall / window / door × full / half / third | **Panels: solid / porthole / archway / louvre × 2 m / 4 m + Shine display panel** | Structures set | One-to-one clone of the reference's wall set |
-| Finishes: Brushed, Tread, Mesh, Glow, Chevron | **Brushed, Regolith Cast, Anodised, Enamel, Patina, Chrome** | Surface finishes | One-to-one clone of Concrete / Diamond plate / Grating / Lit / Hazard stripes |
-| Puck Toss · Notice Board · Brightside FM | **Rock Garden · Postcard Rack · Hold Music** | Break Room | ≈ air hockey · whiteboard · radio |
-| Survey Fence · Boreal Survey Area · Survey Review | **Pilot Fence · Boreal Pilot Area · Pilot Review** | MVP | "Survey" overloaded |
-| Certification Haulage | **Railhand** | Certification | ≈ CTM class "Hauler"; "Haulage" overloaded |
-| Certification Motor Pool | **Driver** | Certification | "Motor Pool" overloaded |
-| Certification Inspection | **Finisher** | Certification | "Inspection" overloaded with Inspector's Stamp |
-| Petty Cash | **Loaner Kit** | Temp allowance | System replaced (review M10) |
-| Robot states: Sweeping · Travelling · Returning · Docking · Emptying · Scanning · Plot Done · Roost Full · Bin Full · Paused · Idle | **Foraging · Flying · Inbound · Molting · Patch Picked Clean · Roost Brimming · Crop Full · Grounded · Resting** | Robot states | Docking and Bin Full exact matches; 11-for-11 clone of the reference list |
-| Brush Up | **New Equipment Smell** | Achievement | ≈ Get A Better Brush |
-| Pocket Lint | **Lint Trap** | Achievement | ≈ Pocket Full of Moon |
-| Bucket List | **Century Mark** | Achievement | "Bucket" is a banned CTM container |
-| Tonnage | **Forklift Certified** | Achievement | ≈ A Literal Ton of Dust |
-| Ten Plots | **Plot Twist** | Achievement | Placeholder |
-| Rail Regular | **Salvo** | Achievement | ≈ Regular Customer |
-| Wheels Down | **Tire Tracks** | Achievement | ≈ Finally, Wheels |
-| Pocket Change | **Tip Jar** | Achievement | ≈ Pocket Money (CTM lobby upgrade) |
-| Payroll | **Five Figures** | Achievement | ≈ Payday / Lunar Payday |
-| Regular at the Desk | **Known by Name** | Achievement | ≈ Regular Customer |
-| Shine 1% | **Glimmer** | Achievement | Placeholder |
-| Shine 10% | **Gleam** | Achievement | Placeholder |
-| Halfway Bright | **Equinox** | Achievement | ≈ Half Way There |
-| Desk Duster concept "comically tiny complimentary desk brush" | "ceremonial desk brush from the winning tender pitch" | Lore | Review M17: drop the cheap-employer / tiny-tool beat |
+Retired planning rename history removed. Current naming policy above controls labels; keep existing IDs stable.
 
 ### A9. Animation-related names (animation-engineer, 2026-11-12, for [animation-spec.md](animation-spec.md))
 
-Numbered A9 because A8 is the rename log. Each name was checked against `moon-sweepers-mechanics.md` §8 and `roblox-references.md` §9 with rules 1–5. No exact matches or same-slot close variants were found (the reference games have no emote slot). "Polish" and "Shine" are avoided because of rule 5 (Polished, Shine Index). Clip and bone IDs are internal and follow animation-spec §1.6. Where an ID names a game thing, it reuses the words in this file (`lope`, `hop_pack`, `ballast`, `bristle_broom`, `on_break`, `faceplant`).
+Animation/emote defaults; names are editable. Preserve clip/bone IDs and use aliases for display changes. The old rules 1–5 are retired.
 
 | Thing | ID | Name | Tier | Gesture |
 | --- | --- | --- | --- | --- |
@@ -317,17 +279,17 @@ Numbered A9 because A8 is the rename log. Each name was checked against `moon-sw
 | Emote | `emote.visor_buff` | **Visor Buff** | v1.0 | Buffs the visor with a glove |
 | On-foot wipeout from a fall over 19.7 m (impact > 8.0 m/s) | — | **Faceplant** (existing name, same meaning as the vehicle callout) | MVP | — |
 
-Resolved 2026-11-12: the title **Moon Cleanup** is an owner decision; see the Title exception under the naming rules.
+Resolved 2026-11-12: **Clean The Moon!** is the owner-selected exact game title; see Naming policy above.
 
 ### A10. UI names (ui-ux-motion-designer, 2026-11-12, for [ui-screens-and-flows.md](ui-screens-and-flows.md))
 
-Each name was checked against `moon-sweepers-mechanics.md` §8 and `roblox-references.md` §9 with rules 1–5. No exact matches or same-slot close variants were found. **Equipment Card** replaces the GDD's prose "robot and machine panels", because "robot panel" is a banned reference term. "Card" keeps the one meaning it already has in **Plot Card** (an info panel). "Service" and "Board" were avoided (rule 5: Services tab, Brightside Service Call, Promotions Board, Shift Board). The UI spec displays the title as **Moon Cleanup** (owner rename); the §1 title row and the title-risk note at the end of A9 are the game-designer's and Cee's to update.
+Editable UI vocabulary; generic labels such as robot panel are permitted. Current game title is Clean The Moon!; old title-risk/name-exclusion notes do not apply.
 
 | Thing | ID | Name | Tier | Notes |
 | --- | --- | --- | --- | --- |
 | Pause menu (Esc / Menu; the world keeps running) | `ui.time_card` | **Time Card** | MVP | Fits Clock In / Clock Out. Shows this session's time, Lumens earned, plots stamped, Effort |
 | Leave the shift (counterpart of Clock In) | `ui.clock_out` | **Clock Out** | MVP | Already GDD §8 prose; now a UI label. Leads to the Shift Report (v1.0) |
-| Info and actions panel for a Roost, Nest, machine, Gate or power piece, with the "Why isn't this working?" status line | `ui.equipment_card` | **Equipment Card** | MVP (Roost) | Replaces "robot panel" (banned) |
+| Info and actions panel for a Roost, Nest, machine, Gate or power piece, with the "Why isn't this working?" status line | `ui.equipment_card` | **Equipment Card** | MVP (Roost) | Robot/equipment panel; editable label |
 | Assembly Gun build menu (5 tabs) | `ui.parts_catalog` | **Parts Catalog** | v1.0 | Not "build menu", "lobby shop" or "supply wall" |
 | Assay Counter pour readout (weighed kg, rate, Lumens paid, Railshot progress) | `ui.assay_slip` | **Assay Slip** | MVP | Prints "APPROVED" with a stamp glyph on completion |
 | Profile page in the Locker (name, rank, Tenure, Commendations, Certifications, Benefits Package) | `ui.personnel_file` | **Personnel File** | MVP (stub) | Not "YOUR ASTRONAUT" |
@@ -336,7 +298,7 @@ Each name was checked against `moon-sweepers-mechanics.md` §8 and `roblox-refer
 
 ### A11. Feel & controls names (game-designer brief, 2026-11-12, for [game-feel-and-controls.md](game-feel-and-controls.md))
 
-Requested as "A9"; numbered A11 because A9 (animation) and A10 (UI) were added in parallel. Each name was checked against `moon-sweepers-mechanics.md` §8 and `roblox-references.md` §9 with rules 1–5. No exact matches or same-slot close variants. Notes: **Chase** avoids the banned reference UI phrase "Vehicle camera follows behind" (so the Settings label should not be "Follow"); **Auto-Level** was chosen over "Air Assist", which shares a head word with the banned logistics node "Throw Assist"; **Auto-Sweep** shares "Sweep" only with a Roblox pass in another slot ("Sell As You Sweep") and is already GDD §13 prose. "Quick" was avoided for the fast-fall action ("Quick Feet", "Quick Release" are banned; Quick Pour and Quick Clip already use it, rule 5).
+Control-label defaults. Familiar labels such as Follow Camera, Auto-Level, Auto-Sweep and Quick Fall are allowed. Keep remapping/action IDs stable.
 
 | Thing | ID | Name | Tier | Notes |
 | --- | --- | --- | --- | --- |
@@ -348,3 +310,22 @@ Requested as "A9"; numbered A11 because A9 (animation) and A10 (UI) were added i
 | Longer coyote, buffer and hold windows | `setting.relaxed_timing` | **Relaxed Timing** | MVP | Accessibility |
 | Vehicle camera modes | `setting.vehicle_cam_chase` / `setting.vehicle_cam_free` | **Chase** / **Free Look** | MVP | Replaces "Follow / Free-look" |
 | RMB / LT aim mode for tools without an active trait | `action.precision_aim` | **Precision Aim** | MVP | Twin Pass aim is its Ion Curtain variant |
+
+## Current familiar-label aliases
+
+Use natural labels when they communicate the reference role better; these mappings do not rename code/save IDs.
+
+| Existing catalog label / ID vocabulary | Allowed preferred display vocabulary | Meaning |
+| --- | --- | --- |
+| Desk Duster / `tool.desk_duster` | Toothbrush / Starter Brush | Tiny handled starter brush; authored model/animation |
+| Dust Cell | Canister / Tool Container | Limited carrying capacity, with levels |
+| Dust Puck / Puck Stack | Dust Capsule / Capsule Bundle | Pack/carry/throw/transport dust |
+| Glide Rail / Rail Fork / Rail Join | Conveyor / Splitter / Merger | Visible material logistics |
+| Assay Counter / Receiving Gate | Sell Tray / Deposit Intake | Manual or automated sale |
+| Motor Pool / Dust Vault | Garage / Silo | Vehicle access and storage |
+| Plot / Survey Globe | Sector / Moon Map | Surface progress and navigation |
+| Sandpiper / Plover / Albatross | Local Robot Mk I / Mk II / Global Cleaning Robot | Functional robot tiers; bird names/shapes optional |
+| Promotions Board / Crown Lamp / Lowlight Visor | Upgrade Tree / Helmet Lamp / Night Vision | Familiar functional labels |
+
+Pick one clear visible label per UI flow. Other legacy labels can remain in docs until their implementation task touches them.
+Do not spend the M0 budget mass-renaming prose, packages, contracts or data keys.

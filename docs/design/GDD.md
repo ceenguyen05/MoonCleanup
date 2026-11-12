@@ -1,30 +1,27 @@
-# Moon Cleanup — Game Design Document
+# Clean The Moon! — Game Design Document
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Draft v2 for build (2026-11-12, after the independent game-design review).** Owner: game-designer. Cee (owner) may override anything.
 Companion docs: [progression-and-economy.md](progression-and-economy.md) (every number) · [scope-tiers.md](scope-tiers.md) (what ships when) · [naming-bible.md](naming-bible.md) (every name) · [../research/mechanics-parity-matrix.md](../research/mechanics-parity-matrix.md) (mechanic-by-mechanic parity).
 Constraints: [../architecture/tech-stack.md](../architecture/tech-stack.md): $0 hosting, browser client, Render Free 0.1 CPU server, no server physics, desktop KBM and gamepad first.
 
-**Reading key.** ★ marks a deliberate improvement over the reference game, with a one-line reason. Anything not marked ★ is intended mechanics parity: the same system, unlock order and pacing structure as the Steam reference, with our own names, numbers, look and lore. Research shorthand: **[M§x]** = `moon-sweepers-mechanics.md` section x, **[R C#]** = `moon-sweepers-reception.md` complaint row, **[RB§x]** = `roblox-references.md` section x.
+**Reading key.** ★ marks an authored proposal, not automatic baseline scope or proven improvement. REFERENCE_TARGET classifies default versus optional behavior. Follow the reference's recognizable mechanics and presentation with independently authored implementation/assets; names and tuning are flexible. Research shorthand: **[M§x]** = `moon-sweepers-mechanics.md` section x, **[R C#]** = `moon-sweepers-reception.md` complaint row, Legacy RB citations refer to retired secondary comparisons, not baseline requirements.
 
 ---
 
 ## 1. Title
 
-| Option considered | Verdict |
-| --- | --- |
-| **Moon Cleanup** | **Chosen by owner.** Says the job (custodian: someone who looks after a place) and the scale (the Moon) in two words. It also gives us a job title and ranks (Trainee → Head Custodian). |
-| Lunar Janitorial Inc. | Funny, but it reads as a parody brand and is long in a browser tab. The corporate joke already lives in Brightside. |
-| Brightwork | Elegant (nautical term for polished metal), but doesn't say "Moon" or "co-op". Kept as a possible update or post-launch event name. |
-| Full Moon Crew | Rejected: "crew" is a reference-game term we avoid as a name ([naming-bible](naming-bible.md) banned list), and it reads like a band. |
-| High Albedo | Clever (albedo = how much light a surface reflects, which is what we raise), but too technical for a title. Kept as flavor: the Shine Index shows albedo as a secondary readout. |
-
-**Known risk, owner decision (review M17).** "Moon Cleanup" has the same shape as two banned titles (Moon + a plural cleaning job), which is a store-search and press confusion risk. The owner keeps the title. Mitigations we commit to: **Brightside** is prominent in key art, the logo lock-up and the store capsule; the premise drops the reference's "cheap employer hands you a tiny tool" beat (§2); and the game never shows an employment-agreement screen.
+**Clean The Moon!** is the owner-selected game title. Use this exact spelling and punctuation everywhere the game name is displayed.
+Technical slug/package scope stays `moon-cleanup`. The [naming catalog](naming-bible.md) is flexible;
+normal descriptive item names are allowed. Product priority is a close Moon Sweepers-like experience per
+[REFERENCE_TARGET](REFERENCE_TARGET.md), using our own implementation, assets and branding.
 
 ## 2. Premise
 
 Brightside Facilities Co. has just won the public tender to clean the Moon. The whole Moon. They won it mostly on the strength of a very confident slide deck. As the first **Custodian** on site, you are presented with the **Desk Duster** — the ceremonial brush Brightside used to dust the model Moon during the winning pitch ("It worked in the presentation") — and the cheerful support of **DOT**, the Dispatch Operations Terminal. Clean regolith dust off **163,842 hexagonal plots**, sell it by the kilogram for **Lumens (LM)**, reinvest in better tools, vehicles, rails, kilns and a flock of bird-like cleaning robots, and raise the **Shine Index** from 0% to 100% before anyone checks the deck against reality. Up to 16 Custodians can work one **Contract** together, in real time, in a browser.
 
-The fantasy is the genre's proven one: **a ridiculously small tool against an absurdly large job**, with visible, permanent, shared progress [M§2][R§3]. Our twist is that the job is a *contract with milestones*. Brightside's **Performance Reviews** at Shine 1/5/10/25/50/75% keep new things arriving across the whole Moon, not just the first few hours ★ (fixes [R C1]).
+The fantasy is the genre's proven one: **a ridiculously small tool against an absurdly large job**, with visible, permanent, shared progress [M§2][R§3]. The default is the reference-like equipment/income/discovery progression. Brightside lore and Performance Reviews below are optional authored extensions; they must not block ordinary core purchases.
 
 ## 3. Tone
 
@@ -40,7 +37,7 @@ The fantasy is the genre's proven one: **a ridiculously small tool against an ab
 Sweep (hold LMB/RT) → tool's Dust Cell fills → pour at Assay Counter (or band it into Puck Stacks onto a Glide Rail)
    → Lumens land in the shared shift wallet → buy tools, Cells, Promotions, suit gear, vehicles, buildings, robots
    → bigger, faster, automated cleaning → plots reach Polished → Inspector's Stamp → Shine Index rises
-   → Performance Review (Shine threshold + a short Brief) unlocks the next tier of content → repeat at a larger scale
+   → money, equipment prerequisites and discovered locations expand the operation → repeat at a larger scale
 ```
 
 Over the contract the loop climbs five layers, as in the reference [M§2.6][M§3j]:
@@ -50,13 +47,11 @@ Over the contract the loop climbs five layers, as in the reference [M§2.6][M§3
 4. **Flock:** local Roost robots (Sandpiper, Plover), then the global Albatross.
 5. **Plant:** Bead Kiln and Tile Sinterer add value, powered by solar and Night Cells.
 
-★ **Automation multiplies active play instead of replacing it** (review B1). How, concretely:
-- **Effort drives the flock.** Robots run at full speed only while someone is actually cleaning (the **On-Shift Bonus** with **Effort**). With nobody cleaning they run **Unattended at ×0.5**, and the room sleeps after 30 min. So at every stage at least half of solo Shine progress depends on the player being active ([economy §9.3](progression-and-economy.md#93--on-shift-bonus-effort-and-unattended-robots-reviews-b1-b2-m8)).
-- **The flock follows you.** From Review 1 the Albatross work your **Work Front** (where you are cleaning, or a Flare Beacon you tag), and from Review 4 you choose a **Flock Formation**. You decide where the Moon gets cleaned.
-- **Reviews need you.** Each Review fires only when its **Brief** (two hands-on tasks: Steep plots by hand, Core Samples, a Beacon Run…) is done.
-- **Your own machine keeps growing.** **Refit I–III** (Reviews 3–5) keep raising the player's own area rate late (Behemoth ≈63 m²/s at the end).
-- **Money stays meaningful.** Albatross Bales sell raw at the **Bulk Rate** (25%), so the late game stays money-paced rather than an idle snowball; Kilns and Tile Sinterers add value on top.
-- Reason: the reference's late game became an "idle waiting simulator" [R C1, C9]. Robots still work with nobody nearby ★ (the reference's top launch bug [M§3d]), just at the Unattended rate.
+**Reference-first automation:** robots work at their calibrated base rate in an active room, including away from
+players. No manual-cleaning Effort requirement, player-count rate bonus or 25% robot-origin payout penalty by default.
+Automation should change what the player does; activity-gated custom progression is not required to make it "ours".
+The custom Review/Flight Plan/Refit/Docket/Benefits design later in this file is optional backlog, governed by
+REFERENCE_TARGET's baseline table; keep genuine reference equipment/logistics/production in scope.
 
 ## 5. Progression layers (overview; all numbers in [progression-and-economy.md](progression-and-economy.md))
 

@@ -1,4 +1,10 @@
-# Data model — Moon Cleanup
+# Data model — Clean The Moon!
+
+> **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
+> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
+> Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
+> [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
+
 
 Status: **Planning baseline (2026-11-12)** · Owner: backend-data-engineer (`packages/db`, `apps/server/src/persistence`, `apps/server/src/api`) · Save layout contract: `packages/shared/src/save/format.ts` (contracts-architect).
 Canonical: [tech-stack.md](tech-stack.md) (Aiven PostgreSQL Free, Drizzle ORM 0.45.x, drizzle-kit 0.31.x, `postgres` driver, migrations in the Render build command, two logical DBs). Evidence: [data-auth-observability.md §4–5](../research/tech/data-auth-observability.md), [platform-limits.md §C](../research/tech/platform-limits.md), [terrain-and-dust-techniques.md §7](../research/tech/terrain-and-dust-techniques.md), [moon-sweepers-reception.md §8](../research/moon-sweepers-reception.md) (save-loss lessons).

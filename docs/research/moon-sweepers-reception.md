@@ -19,7 +19,7 @@
 9. **The viral hook is the absurd scale contrast: "clean the entire Moon with a toothbrush."** Almost every top video title uses it. The top 15 YouTube videos have about **18M combined views**. The biggest are Jazzghost (3.67M, BR), Floydsonson (2.68M, "I Played 100%"), Elraenn (2.49M + 1.61M, TR), sleeprilich (1.27M, sleep-stream) and Blitz (1.13M) [21]. *High.*
 10. **The audience was international from day one.** Brazilian, Turkish, Japanese, Russian and Spanish-language creators all appear in the top 15. The game shipped in 19 languages, translated with AI [1][21]. *High.*
 11. **"Sleep stream" and "100%" formats suit the long, slow, ambient pacing.** "I clean the moon while you sleep" videos passed 1.2M and 0.6M views. The same pacing that annoys reviewers works well as background video content [21]. *Medium* (interpretation).
-12. **Roblox clones showed up fast.** Several "Clean the Moon!" experiences were **created 2026-10-11/12**, after Moon Sweepers' trailer and press release on 2026-10-08 but before its launch. "Sweep The Moon" (DomBlox Games) was created **on launch day, 2026-10-23**, and a fan wiki calls it inspired by Moon Sweepers. Sweep The Moon had **32,187 concurrent players** on 2026-11-11, roughly equal to Moon Sweepers on Steam [13][14][15]. *High* on dates; *Medium* on who copied whom.
+12. **Roblox clones showed up fast.** Several "Clean The Moon!" experiences were **created 2026-10-11/12**, after Moon Sweepers' trailer and press release on 2026-10-08 but before its launch. "Sweep The Moon" (DomBlox Games) was created **on launch day, 2026-10-23**, and a fan wiki calls it inspired by Moon Sweepers. Sweep The Moon had **32,187 concurrent players** on 2026-11-11, roughly equal to Moon Sweepers on Steam [13][14][15]. *High* on dates; *Medium* on who copied whom.
 13. **What players love:** the first 2–6 hours of "cathartic" cleaning with visible progress, chaotic co-op with friends, a relaxing tone (no stamina or oxygen), the cheap price, fast-responding developers, and the ending ("the ending was a movie") [S-reviews]. *High.*
 14. **Promised updates:** Update 1.1 is planned for **December 2026**. It covers production chains, new materials, tools, automation, building, late-game progression and performance. "After the Moon" content is teased as "more work" [12][6]. *High* that it is promised; delivery is unknown.
 15. **Our biggest lessons:** pace the upgrade curve across the whole Moon, add mid- and late-game goals, keep server-side robot simulation cheap and aggregate, ship shared crew progression and moderation on day one, make finding the last 1% trivial, and be transparent about how assets are made.
@@ -32,9 +32,9 @@
 |---|---|---|---|
 | 2026-10-08 | Moon Sweepers press release ("Launches on Steam This October… up to 16 players… toothbrush") | [7] | High (the date is shown as "08/10/2026"; read as 8 Oct because the release is 23 Oct) |
 | 2026-10-08 | Official trailer "Moon Sweepers Trailer – Wishlist on Steam Now" uploaded (36,103 views at access) | [20] | High |
-| 2026-10-11 10:22 | Roblox "[🌕EVENTS] Clean the Moon!" (StaticStudios6) created (569,520 visits) | [13] | High |
+| 2026-10-11 10:22 | Roblox "[🌕EVENTS] Clean The Moon!" (StaticStudios6) created (569,520 visits) | [13] | High |
 | 2026-10-11 20:45 | Roblox "Clean The Moon!" (GAME ZILLA) created (14,917 visits) | [13] | High |
-| 2026-10-12 01:44 | Roblox "[MARS] Clean the Moon!" (Lunarlit Works) created; the largest "Clean the Moon!" (9,887,066 visits, 198,472 favourites, 20-player servers) | [13] | High |
+| 2026-10-12 01:44 | Roblox "[MARS] Clean The Moon!" (Lunarlit Works) created; the largest "Clean The Moon!" (9,887,066 visits, 198,472 favourites, 20-player servers) | [13] | High |
 | 2026-10-12 13:03 | Roblox "Clean THE Moon" (thealiencomes) created (597,882 visits, 16-player servers) | [13] | High |
 | **2026-10-23** | **Moon Sweepers released on Steam (Windows only)** | [1][7] | High |
 | 2026-10-23 11:46 | Roblox "Sweep The Moon 🌕" (DomBlox Games) created (7,758,952 visits; **32,187 playing** at access; 20-player servers) | [13] | High |
@@ -43,7 +43,7 @@
 **Who inspired whom.**
 - Moon Sweepers came first in public. Its Steam page, trailer and press release (8 Oct) predate every Roblox experience (11 Oct onward). *High* on ordering.
 - A fan wiki says Sweep The Moon "is inspired by Moon Sweepers on Steam" [14]. That is a community source, but it fits Sweep The Moon's launch-day creation and its toothbrush → vehicles → robots structure. *Medium.*
-- The "Clean the Moon!" games' toothbrush start, sell pad and vehicles [15][16] match Moon Sweepers' marketed loop. No source states they copied it, so treat derivation as **likely but unverified**. *Low-Medium.*
+- The "Clean The Moon!" games' toothbrush start, sell pad and vehicles [15][16] match Moon Sweepers' marketed loop. No source states they copied it, so treat derivation as **likely but unverified**. *Low-Medium.*
 - One source notes players also call Moon Sweepers "Clean the Moon," which adds to the naming confusion [16].
 - Unofficial SEO "wiki" sites are widespread (moonsweepers.com/.org/.xyz, mooncleaning.net, sweepthemoon.wiki, etc.). The Steam store page links to **no official website**, only Discord, Instagram, TikTok and X [1]. Treat those sites as unofficial. *High.*
 
@@ -257,7 +257,7 @@ Our architecture: authoritative Node.js server on a **free Render instance** (We
    - https://www.roblox.com/games/73695758197534/Clean-THE-Moon
 14. Sweep The Moon Wiki (fan site; "inspired by Moon Sweepers") — https://sweepthemoon.wiki/ and https://lootwiki.com/sweep-the-moon/ — accessed 2026-11-11 — community/unofficial
 15. allthings.how, "Clean the Moon Starter Guide" — https://allthings.how/clean-the-moon-starter-guide-how-to-play-in-roblox/ — accessed 2026-11-11 — blog
-16. Robloxden, "Clean the Moon! Codes" — https://robloxden.com/game-codes/clean-the-moon — accessed 2026-11-11 — community/blog
+16. Robloxden, "Clean The Moon! Codes" — https://robloxden.com/game-codes/clean-the-moon — accessed 2026-11-11 — community/blog
 17. Discord invite API for the official invite linked from the Steam page — https://discord.com/api/v9/invites/5ATRkXkAAe?with_counts=true — accessed 2026-11-11 — official platform data
 18. (reserved: Gamalytic — https://gamalytic.com/game/5335510 — accessed 2026-11-11 — HTTP 429, no data)
 19. (reserved: SteamDB charts — https://steamdb.info/app/5335510/charts/ — accessed 2026-11-11 — HTTP 403, no data)

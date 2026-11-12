@@ -41,5 +41,5 @@ The M1-W3-T07 blockout or M1-W4-T07 production custodian fails the art-direction
 ## Evidence
 
 - [art-direction.md §13](../design/art-direction.md), [visual-target.md](../design/visual-target.md) (VT-M1-18, VT-M1-35)
-- [planning-fix-art.md](../agent-reports/planning-fix-art.md) (F4), [planning-fix-handoff.md](../agent-reports/planning-fix-handoff.md) (D5)
+- [current authority; obsolete report removed](../REVIEW_LOG.md) (F4), [current authority; obsolete report removed](../REVIEW_LOG.md) (D5)
 - [asset-and-data-licensing.md](../research/asset-and-data-licensing.md)

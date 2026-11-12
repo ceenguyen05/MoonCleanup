@@ -1,22 +1,10 @@
-# ─────────────────────────────────────────────────────────────
-# Moon Cleanup - .gitattributes
-# ─────────────────────────────────────────────────────────────
-
-# Normalize line endings: LF in the repository and in the working tree on every OS.
+# LF source files; Windows scripts use CRLF. Binary assets never receive text conversion.
+# Git LFS is disabled (ADR-0017); source-art manifests and budgeted derivatives stay in the repo.
 * text=auto eol=lf
-
-# Windows-only scripts keep CRLF (matches .editorconfig).
 *.bat  text eol=crlf
 *.cmd  text eol=crlf
 *.ps1  text eol=crlf
-
-# Lockfile: never hand-merged, collapse in diffs.
 pnpm-lock.yaml text eol=lf -diff linguist-generated
-
-# ─────────────────────────────────────────────────────────────
-# Binary assets: never line-ending converted, never diffed as text.
-# ─────────────────────────────────────────────────────────────
-# Images
 *.png   binary
 *.jpg   binary
 *.jpeg  binary
@@ -27,44 +15,18 @@ pnpm-lock.yaml text eol=lf -diff linguist-generated
 *.tif   binary
 *.tiff  binary
 *.psd   binary
-# GPU textures
 *.ktx2  binary
-# 3D (glb is binary glTF; .bin is the external buffer of a .gltf)
 *.glb   binary
 *.bin   binary
-# .gltf is JSON text: keep LF normalization but do not show it in diffs (can be huge / base64).
 *.gltf  text eol=lf -diff
-# Audio / video
 *.ogg   binary
 *.opus  binary
 *.webm  binary
 *.mp3   binary
 *.wav   binary
-# Fonts
 *.woff2 binary
 *.ttf   binary
-# Source art / misc binaries
 *.blend binary
 *.wasm  binary
 *.zip   binary
 *.pdf   binary
-
-# ─────────────────────────────────────────────────────────────
-# Git LFS: DISABLED ON PURPOSE (ADR-0017, "Asset storage").
-# ─────────────────────────────────────────────────────────────
-# We do NOT use Git LFS: LFS bandwidth (10 GiB/month on GitHub Free) would be shared with every
-# Vercel build/clone, and the repo only ever holds compressed, budgeted, game-ready derivatives.
-# Raw/source art lives outside git with a manifest (see assets/*/README.md).
-#
-# If a future ADR enables LFS, uncomment ONLY the patterns that ADR approves, run
-# `git lfs install` once per machine BEFORE the first commit that contains those files, and
-# update docs/SETUP_CHECKLIST.md. Do not enable LFS ad hoc: Vercel clones would start
-# consuming LFS bandwidth.
-#
-# *.glb   filter=lfs diff=lfs merge=lfs -text
-# *.ktx2  filter=lfs diff=lfs merge=lfs -text
-# *.exr   filter=lfs diff=lfs merge=lfs -text
-# *.hdr   filter=lfs diff=lfs merge=lfs -text
-# *.psd   filter=lfs diff=lfs merge=lfs -text
-# *.blend filter=lfs diff=lfs merge=lfs -text
-# *.wav   filter=lfs diff=lfs merge=lfs -text

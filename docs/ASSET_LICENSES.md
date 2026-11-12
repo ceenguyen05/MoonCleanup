@@ -54,7 +54,7 @@ Use these exact lines (or stricter ones from the source) in the in-game credits 
 | LRO LOLA elevation (PDS Geosciences Node, LDEM) | "Elevation: NASA LRO Lunar Orbiter Laser Altimeter (LOLA) Science Team, NASA/GSFC; data via NASA Planetary Data System." | Our wording; no official LOLA wording exists |
 | LROC imagery (if used) | "NASA/GSFC/Arizona State University" | Short form: NASA/GSFC/ASU |
 | NASA Blue Marble / Visible Earth | "NASA Earth Observatory / NASA Visible Earth" | The only mandatory credit is NASA |
-| HYG Database v4.x (star data) | "Star data: HYG Database (astronexus.com), CC BY-SA 4.0; derived starfield (c) Moon Cleanup contributors, CC BY-SA 4.0." | ShareAlike applies to the derived star file(s) only |
+| HYG Database v4.x (star data) | "Star data: HYG Database (astronexus.com), CC BY-SA 4.0; derived starfield (c) Clean The Moon! contributors, CC BY-SA 4.0." | ShareAlike applies to the derived star file(s) only |
 
 ## 3. Ledger
 

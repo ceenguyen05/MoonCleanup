@@ -2,7 +2,7 @@
   "name": "@moon-cleanup/server",
   "version": "0.0.0",
   "private": true,
-  "description": "Moon Cleanup game server: Colyseus 0.18 rooms on uWebSockets.js + REST API (deployed to Render Free).",
+  "description": "Clean The Moon! game server: Colyseus 0.18 rooms on uWebSockets.js + REST API (deployed to Render Free).",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {

@@ -1,4 +1,10 @@
-# Tech stack — Moon Cleanup
+# Tech stack — Clean The Moon!
+
+> **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
+> Older `release`-branch, branch-promotion and separate-staging setup instructions below are superseded; do not execute them.
+> Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
+> [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
+
 
 Status: **Accepted (planning session 2026-11-11/12)** · Owner: lead/orchestrator · Changes only via a new ADR.
 Evidence: [`docs/research/tech/`](../research/tech/) (advocate reports, platform limits, tooling versions).

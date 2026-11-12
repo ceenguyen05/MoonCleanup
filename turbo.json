@@ -32,7 +32,9 @@
     "test": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
-      "outputs": ["coverage/**"],
+      // No outputs while no package writes coverage: a non-empty list makes turbo warn "no output files found"
+      // for every package. Re-add "coverage/**" in the PR that enables coverage (needs @vitest/coverage-v8 + ADR).
+      "outputs": [],
       "passThroughEnv": ["DATABASE_URL", "DATABASE_CA_CERT", "PERSISTENCE_DRIVER", "TEST_DB_SCHEMA", "ENV_NAME"]
     },
     "test:e2e": {

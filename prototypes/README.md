@@ -1,7 +1,7 @@
 # prototypes/
 
 **Owner:** the lead/orchestrator assigns each subfolder to exactly one agent for the duration of a prototype contest.
-**Purpose:** scratch space for the *competing-approach rule* (see `docs/handoff/AGENT_ORCHESTRATION.md` §10).
+**Purpose:** bounded experiments only when a measured production-approach failure justifies one. No automatic competing-agent contest.
 
 For the riskiest problems — dust simulation, terrain LOD, netcode sync and cleaning visuals — the lead may launch two or
 three agents to build alternative prototypes side by side. A reviewer (usually `performance-reviewer` plus
@@ -22,7 +22,7 @@ prototypes/
 ## Rules
 
 1. Prototype code never gets imported by `apps/` or `packages/`. Production code is rebuilt from the winning idea.
-   **Prototypes are not workspace packages** (`pnpm-workspace.yaml` does not list `prototypes/*`). A prototype may have its own throwaway `package.json` and lockfile, installed **only inside its own folder** with `pnpm install --ignore-workspace`, and only by `devops-engineer` in the milestone's W0 install task (or a between-waves install the card names, for example Babylon in M0-W4-T01). Prototype agents never run installs. Prototypes consume production code read-only by **relative import of the source barrels** (for example `../../../packages/world/src/index.ts`) and run with their own `tsx` / `vitest` / `vite`.
+   **Prototypes are not workspace packages** (`pnpm-workspace.yaml` does not list `prototypes/*`). A prototype may have its own throwaway `package.json` and lockfile, installed **only inside its own folder** with `pnpm install --ignore-workspace`, and only by `devops-engineer` sequentially when the lead requests the justified experiment. Prototype agents never run installs. Prototypes consume production code read-only by **relative import of the source barrels** (for example `../../../packages/world/src/index.ts`) and run with their own `tsx` / `vitest` / `vite`.
 2. Each approach folder has exactly one owning agent; competitors do not read or edit each other's folders until the
    benchmark is published.
 3. Use the same benchmark harness, scene, seed and camera path for every approach (defined by the lead in the brief).

@@ -1,12 +1,14 @@
-# Scope tiers — Moon Cleanup
+# Scope tiers — Clean The Moon!
+
+Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 Status: **Draft v2 (2026-11-12, after the independent game-design review).** Owner: game-designer; tier boundaries are approved by Cee.
-Versions follow [WORKFLOW.md §6](../handoff/WORKFLOW.md#6-releases-and-versions): `v0.2.0` = MVP, `v1.0.0` = mechanics parity.
+Versions follow [WORKFLOW.md §6](../handoff/WORKFLOW.md): `v0.2.0` = MVP, `v1.0.0` = mechanics parity.
 Every mechanic's tier is also listed in [mechanics-parity-matrix.md](../research/mechanics-parity-matrix.md). Numbers live in [progression-and-economy.md](progression-and-economy.md).
 
 **Tier rules.**
 - **MVP** = the smallest *fun, multiplayer* vertical slice that meets the visual bar in a small area. It must prove the risky things: the dust feel, the shared world over the network, persistence, **server-side robot simulation and sync**, and the first two hours of pacing — and it must show the genre's arc **tool → vehicle → robot**.
-- **v1.0** = full parity with the reference's systems plus our ★ improvements.
+- **v1.0** = full reference-system parity; custom ★ additions are optional unless explicitly retained under REFERENCE_TARGET.
 - **Polish** = no new systems, only quality.
 - **Post-launch** = backlog, not promised.
 
