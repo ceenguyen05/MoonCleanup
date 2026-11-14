@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "achievements": [
+    {
+      "id": "achievement.first_light",
+      "displayName": "First Light",
+      "stat": "strokes",
+      "threshold": 1,
+      "hidden": false
+    },
+    {
+      "id": "achievement.new_equipment_smell",
+      "displayName": "New Equipment Smell",
+      "stat": "toolsBought",
+      "threshold": 1,
+      "hidden": false
+    },
+    {
+      "id": "achievement.assay_approved",
+      "displayName": "Assay Approved",
+      "stat": "sales",
+      "threshold": 1,
+      "hidden": false
+    },
+    {
+      "id": "achievement.grime_time",
+      "displayName": "Grime Time",
+      "stat": "plotsOpened",
+      "threshold": 1,
+      "hidden": false
+    },
+    { "id": "achievement.stamped", "displayName": "Stamped", "stat": "plotsPolished", "threshold": 1, "hidden": false },
+    {
+      "id": "achievement.lint_trap",
+      "displayName": "Lint Trap",
+      "stat": "dustKgCleaned",
+      "threshold": 10,
+      "hidden": false
+    },
+    {
+      "id": "achievement.century_mark",
+      "displayName": "Century Mark",
+      "stat": "dustKgCleaned",
+      "threshold": 100,
+      "hidden": false
+    },
+    {
+      "id": "achievement.forklift_certified",
+      "displayName": "Forklift Certified",
+      "stat": "dustKgCleaned",
+      "threshold": 1000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.heavy_industry",
+      "displayName": "Heavy Industry",
+      "stat": "dustKgCleaned",
+      "threshold": 10000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.plot_twist",
+      "displayName": "Plot Twist",
+      "stat": "plotsPolished",
+      "threshold": 10,
+      "hidden": false
+    },
+    {
+      "id": "achievement.neighborhood_watch",
+      "displayName": "Neighborhood Watch",
+      "stat": "plotsPolished",
+      "threshold": 100,
+      "hidden": false
+    },
+    {
+      "id": "achievement.district_manager",
+      "displayName": "District Manager",
+      "stat": "plotsPolished",
+      "threshold": 1000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.hemisphere_hero",
+      "displayName": "Hemisphere Hero",
+      "stat": "plotsPolished",
+      "threshold": 10000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.first_railshot",
+      "displayName": "First Railshot",
+      "stat": "railshots",
+      "threshold": 1,
+      "hidden": false
+    },
+    { "id": "achievement.salvo", "displayName": "Salvo", "stat": "railshots", "threshold": 10, "hidden": false },
+    {
+      "id": "achievement.rail_riders",
+      "displayName": "Rail Riders",
+      "stat": "railDeliveries",
+      "threshold": 1,
+      "hidden": false
+    },
+    {
+      "id": "achievement.hard_hat",
+      "displayName": "Hard Hat",
+      "stat": "piecesPlaced",
+      "threshold": 1,
+      "hidden": false
+    },
+    {
+      "id": "achievement.tire_tracks",
+      "displayName": "Tire Tracks",
+      "stat": "vehicleAreaCleanedM2",
+      "threshold": 1,
+      "hidden": false
+    },
+    {
+      "id": "achievement.loop_de_loop",
+      "displayName": "Loop de Loop",
+      "stat": "puckLoops",
+      "threshold": 1,
+      "hidden": true
+    },
+    {
+      "id": "achievement.tip_jar",
+      "displayName": "Tip Jar",
+      "stat": "lumensEarned",
+      "threshold": 1000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.five_figures",
+      "displayName": "Five Figures",
+      "stat": "lumensEarned",
+      "threshold": 10000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.bonus_season",
+      "displayName": "Bonus Season",
+      "stat": "lumensEarned",
+      "threshold": 100000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.lumen_magnate",
+      "displayName": "Lumen Magnate",
+      "stat": "lumensEarned",
+      "threshold": 1000000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.big_spender",
+      "displayName": "Big Spender",
+      "stat": "lumensSpent",
+      "threshold": 10000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.capital_projects",
+      "displayName": "Capital Projects",
+      "stat": "lumensSpent",
+      "threshold": 100000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.megaproject",
+      "displayName": "Megaproject",
+      "stat": "lumensSpent",
+      "threshold": 1000000,
+      "hidden": false
+    },
+    {
+      "id": "achievement.counter_culture",
+      "displayName": "Counter Culture",
+      "stat": "manualPours",
+      "threshold": 100,
+      "hidden": false
+    },
+    {
+      "id": "achievement.known_by_name",
+      "displayName": "Known by Name",
+      "stat": "manualPours",
+      "threshold": 1000,
+      "hidden": true
+    },
+    { "id": "achievement.glimmer", "displayName": "Glimmer", "stat": "shineFrac", "threshold": 0.01, "hidden": false },
+    { "id": "achievement.gleam", "displayName": "Gleam", "stat": "shineFrac", "threshold": 0.1, "hidden": false },
+    { "id": "achievement.equinox", "displayName": "Equinox", "stat": "shineFrac", "threshold": 0.5, "hidden": false },
+    {
+      "id": "achievement.contract_fulfilled",
+      "displayName": "Contract Fulfilled",
+      "stat": "shineFrac",
+      "threshold": 1,
+      "hidden": false
+    },
+    {
+      "id": "achievement.shift_work",
+      "displayName": "Shift Work",
+      "stat": "shiftPlayers",
+      "threshold": 2,
+      "hidden": false
+    }
+  ]
+}

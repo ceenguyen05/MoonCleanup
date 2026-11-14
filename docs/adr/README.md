@@ -38,6 +38,7 @@ Evidence lives in [`docs/research/`](../research/) (see each ADR's Evidence sect
 | [0028](0028-dependency-policy.md) | Dependency policy | Accepted | 2026-11-12 |
 | [0029](0029-single-deploy-branch-main.md) | Single deploy branch (`main` only) and one Render service | Accepted (supersedes the branch/staging topology of 0002) | 2026-11-12 |
 | [0030](0030-reference-first-design.md) | Reference-first recreation and flexible display naming | Accepted | 2026-11-12 |
+| [0031](0031-local-first-solo.md) | Local-first Solo Shift (sim in a Web Worker); server for auth, saves and multiplayer rooms | Accepted (amends 0025 for Solo only) | 2026-11-13 |
 
 ## Template
 

@@ -2,6 +2,9 @@
 
 Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
+> **Priority note (owner 2026-11-13): solo first.** The polish pass targets solo feel, fps stability and animation.
+> Multiplayer quality is best-effort on Render free; no multiplayer-only gate blocks release.
+
 Execution: `docs/handoff/MODEL_POLICY.md`; stages are checkpoints, not usage-window promises.
 
 Owner: lead (structure) · Lead alone maintains task rows from actual progress ([backlog rules](README.md)).
@@ -20,7 +23,7 @@ Retention and readiness for wider sharing: pacing tuned from real playtests, the
 | E1 | Pacing at P50 inside target bands; P10–P90 within ± 20 % (playtest telemetry + balance-sim) | `/balance-check` + playtest report |
 | E2 | No achievement requires AFK grinding | balance-reviewer |
 | E3 | VT-M3-01…13: V2 items pass (≤ 3 open), V3 best effort | `/visual-check M3` (A-High, B-Medium) |
-| E4 | Tier A/B budgets with max permits, 16 players and a full solar farm; 2 h long-session stable | `/perf-check` |
+| E4 | Tier A/B budgets with max permits, 6 players and a full solar farm; 2 h long-session stable (6-player part best-effort on Render free; solo feel has priority) | `/perf-check` |
 | E5 | Localization pipeline: every player-facing string in tables; English complete; no machine-translated shipping text | ui + game-designer |
 | E6 | Launch checklist: production on `main` (ADR-0029), Sentry alerts, usage logging, uptime policy (Q11) decided, credits/licences complete | `/release-checklist` |
 | E7 | Launch-week stability: no unrecovered P1 incident open | M3-W5 report |
@@ -55,7 +58,7 @@ Stage labels express dependencies, not token budgets, usage windows or stopping 
 | M3-W2-T02 | M3-S4 | rendering-engineer | Photo mode camera + native-DPR capture, Cinematic preset | M3-W1-T06 | 2 | todo |
 | M3-W2-T03 | M3-S5 | ui-ux-motion-designer | Photo mode UI, HUD scale 80-150%, colour-blind modes, menus polish | M3-W2-T02 | 3 | todo |
 | M3-W2-T04 | M3-S4 | terrain-dust-engineer | Footprint persistence bake, shift-graffiti readability | M3-W1-T06 | 4 | todo |
-| M3-W2-T05 | M3-S5 | performance-profiler | Perf pass: max permits + 16 players + full farm; 2 h session capture | M3-W1-T06 | 5 | todo |
+| M3-W2-T05 | M3-S5 | performance-profiler | Perf pass: max permits + 6 players + full farm; 2 h session capture | M3-W1-T06 | 5 | todo |
 | M3-W2-T06 | M3-S5 | integrator | M3-W2 integration | M3-W2-T01, M3-W2-T02, M3-W2-T03, M3-W2-T04, M3-W2-T05 | 9 | todo |
 | M3-W3-T01 | M3-S6 | audio-engineer | Full music layers, Brightside FM tracks, mix pass | M3-W2-T06 | 1 | todo |
 | M3-W3-T02 | M3-S6 | ui-ux-motion-designer | Localization pipeline: string extraction, runtime tables, pseudo-locale | M3-W2-T06 | 2 | todo |

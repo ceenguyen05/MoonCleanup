@@ -6,7 +6,7 @@
 
 ## Context
 
-Cleaning dust is the core loop: it must look like dust visibly thins where you actually swept, stay consistent for 16 players, count exactly once for the economy, survive Render Free restarts and cost almost nothing on a 0.1-CPU server with a 5 GB/month egress cap. GPU readback (`mapAsync`) has variable latency and can never be authoritative. Sizes (computed): full snapshot at 1 byte/plot is 160 KiB; one plot update ~4 B; one stroke ~16 B; worst case 16 hand-cleaning players ~2.4 KB/s of strokes per client.
+Cleaning dust is the core loop: it must look like dust visibly thins where you actually swept, stay consistent for 6 players, count exactly once for the economy, survive Render Free restarts and cost almost nothing on a 0.1-CPU server with a 5 GB/month egress cap. GPU readback (`mapAsync`) has variable latency and can never be authoritative. Sizes (computed): full snapshot at 1 byte/plot is 160 KiB; one plot update ~4 B; one stroke ~16 B; worst case 16 hand-cleaning players ~2.4 KB/s of strokes per client.
 
 ## Options considered
 
@@ -45,7 +45,7 @@ Adopt the P2 layered design as the baseline and **keep P1 and P3 as competing pr
 
 ## Revisit trigger
 
-- P2 server CPU > 30% of the 0.1-core budget with 16 bots, or stroke logs exceed memory caps: fall back to P1 plus visual-only trails.
+- P2 server CPU > 30% of the 0.1-core budget with 6 bots, or stroke logs exceed memory caps: fall back to P1 plus visual-only trails.
 - Tool variety (spray, particle cleaning) outgrows strokes: adopt P3 for those tools.
 
 ## Evidence

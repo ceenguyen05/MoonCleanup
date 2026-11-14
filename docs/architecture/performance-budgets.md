@@ -100,17 +100,17 @@ Delivery: Vercel Brotli/gzip for JS/JSON/WGSL; KTX2 (UASTC normals/hero, ETC1S b
 | Budget | Value | Derivation |
 | --- | --- | --- |
 | Process CPU per tick at 20 Hz (all rooms) | 5 ms | 100 ms CPU per s ÷ 20 |
-| One 16-player room, tick p50 / p95 / max | ≤ 2.3 / ≤ 3.5 / ≤ 8 ms (max excludes traced major GC) | [netcode.md §15](netcode.md#15-server-cpu-budget-01-cpu) |
-| One full room share of CPU | ≤ 50 % (tech-stack revisit trigger), target ≈ 45 % (incl. robot ledger ops and dust interest) | |
-| Max process stall with GC traced | ≤ 50 ms (10-min 16-bot run) | M0 evaluates heap cap 192–256 MB, semi-space size, `--single-threaded-gc` |
+| One 6-player room, tick p50 / p95 / max | ≈ 1.4 (est.) / ≤ 3.5 / ≤ 8 ms (max excludes traced major GC); the old 2.3 ms p50 was the 16-player value | [netcode.md §15](netcode.md#15-server-cpu-budget-01-cpu) |
+| One full room share of CPU | ≤ 50 % (tech-stack revisit trigger), target ≈ 27 % est. (6 players; was ≈ 45 % at 16, superseded; re-measure in M0-W2) | |
+| Max process stall with GC traced | ≤ 50 ms (10-min 6-bot run) | M0 evaluates heap cap 192–256 MB, semi-space size, `--single-threaded-gc` |
 | Solo Shift room, tick p95 | ≤ 0.4 ms | |
 | Event-loop delay p99 | ≤ 20 ms | |
 | Process static (shared by all rooms) | ≈ 21 MB | Precomputed grid, neighbours, class/area arrays, height map ([WDS §4.3](world-and-dust-simulation.md)) |
-| Memory per 16-player room | typical ≈ 12 MB, heavy ≤ 48 MB | Dust per WDS §4.3 (Uint8 states + Uint8 L0 cache 320 KB, ledgers 1.1 KB each: typ. 4–8 MB, heavy ≤ 40 MB incl. log share) + entities/structures ≤ 4 MB + client buffers ≈ 1.2 MB + save build ≤ 2 MB + snapshot cache ≈ 0.4 MB |
+| Memory per 6-player room | typical ≈ 11 MB, heavy ≤ 47 MB (est. (derived from 4/8-player rows, re-measure locally in M0-W2): only client buffers scale, 1.2 MB × 6/16 ≈ 0.45 MB; dust dominates and is not player-linear; the old 16-player 12 / 48 MB figures are superseded) | Dust per WDS §4.3 (Uint8 states + Uint8 L0 cache 320 KB, ledgers 1.1 KB each: typ. 4–8 MB, heavy ≤ 40 MB incl. log share) + entities/structures ≤ 4 MB + client buffers ≈ 1.2 MB + save build ≤ 2 MB + snapshot cache ≈ 0.4 MB |
 | Process RSS | ≤ 300 MB (baseline 50–80 MB + static 21 MB + ≤ 3 rooms); V8 heap cap 384 MB until the M0 GC evaluation | `NODE_OPTIONS=--max-old-space-size=384` |
-| Rooms per instance | Admission by measured tick budget (`TICK_BUDGET_MS` 3.5) with **`MAX_ROOMS` = 3 as a hard ceiling**; `MAX_CLIENTS` 24. The free tier hosts only a few live Contracts at once; Open Shifts share rooms | [netcode.md §15](netcode.md#15-server-cpu-budget-01-cpu) |
+| Rooms per instance | Admission by measured tick budget (`TICK_BUDGET_MS` 3.5) with **`MAX_ROOMS` = 3 as a hard ceiling**; `MAX_CLIENTS` 12 (room cap 6 players). The free tier hosts only a few live Contracts at once; Open Shifts share rooms | [netcode.md §15](netcode.md#15-server-cpu-budget-01-cpu) |
 | Checkpoint slice | ≤ 1.5 ms CPU per tick | Avoids CFS quota stalls |
-| Bandwidth per client | ≤ 6.0 KB/s busy, ≤ 3 KB/s typical (20/10); hidden tab ≈ 0.3 KB/s | [netcode.md §14](netcode.md#14-bandwidth-budget-server--client) |
+| Bandwidth per client | busy ≈ 4.6 KB/s est. at 6 players; **budget ceiling ≤ 5.0 KB/s busy** (set by lead 2026-11-12: est. + ~9% margin; the old ≤ 6.0 KB/s was the 16-player value). Local play is unaffected; tighten or loosen only from the M0-W2 local bot measurement, ≤ 3 KB/s typical (20/10); hidden tab ≈ 0.3 KB/s | [netcode.md §14](netcode.md#14-bandwidth-budget-server--client) |
 | Join snapshot | Blocking part typ. 20–35 KB, ≤ 150 KB; streamed ledgers afterwards at ≤ 8 KB/s | [WDS §5.4](world-and-dust-simulation.md), [netcode.md §9.1](netcode.md) |
 | Boot to listening (cold) | ≤ 5 s of our code **measured at 0.1 CPU** (Render adds the rest of the ~1 min wake) | Lazy DB connect, no migrations at boot, precomputed grid binaries (no table generation at boot or in `onCreate`) |
 | Room creation | Save decode sliced ≤ 1.5 ms per tick; no live room's tick p95 rises > 0.5 ms meanwhile | [netcode.md §9.4](netcode.md) |
@@ -122,24 +122,44 @@ Delivery: Vercel Brotli/gzip for JS/JSON/WGSL; KTX2 (UASTC normals/hero, ETC1S b
 | --- | --- | --- |
 | Checkpoints (≤ every 30 s when dirty: header ≈ 0.1 MB + dirty chunks ≈ 0.15 MB, one transaction) | 120 transactions, ≈ 30 MB | 1,200, ≈ 0.3 GB |
 | Lease renewals (10 s, CAS) | 360 tiny | 3,600 |
-| Profile flushes (60 s per active player) | ≤ 960 tiny (16 players) | ≤ 9,600 |
+| Profile flushes (60 s per active player) | ≤ 360 tiny (6 players, est. (derived from 4/8-player rows, re-measure locally in M0-W2): 6 × 60) | ≤ 3,600 est. |
 | Usage / achievements / audit | < 50 | < 500 |
+
+> Superseded 2026-11-12: cap is 6. The previous 16-player flush figures (≤ 960 per room-hour, ≤ 9,600 per 10 room-hours) are superseded. Checkpoint and lease rows do not depend on player count.
 
 ### 6.2 5 GB/month egress → playable hours
 
 | Session shape (20/10 Hz) | Egress per room-hour | Room-hours per month | Player-hours per month |
 | --- | --- | --- | --- |
-| 16 players, busy | ≈ 337 MB | ≈ 15 | ≈ 240 |
+| **6 players, busy (cap) — est. (derived from 4/8-player rows, re-measure locally in M0-W2)** | ≈ 100 MB | ≈ 50 | ≈ 300 |
 | 8 players, mixed | ≈ 115 MB | ≈ 43 | ≈ 345 |
 | 4 players, typical | ≈ 36 MB | ≈ 140 | ≈ 560 |
 | Solo Shift | ≈ 5.8 MB | ≈ 860 | ≈ 860 |
-| 16 players at 30/15 Hz | ≈ 477 MB | ≈ 10 | ≈ 170 |
+| ~~16 players, busy~~ superseded | ~~≈ 337 MB~~ | ~~≈ 15~~ | ~~≈ 240~~ |
+| ~~16 players at 30/15 Hz~~ superseded | ~~≈ 477 MB~~ | ~~≈ 10~~ | ~~≈ 170~~ |
 
-Math: per-client bytes from [netcode.md §14](netcode.md#14-bandwidth-budget-server--client) × players × 3,600 s; 5 GB taken as 5,000 MB. Client assets come from Vercel (100 GB/month Hobby), not Render. Owner accepted suspension risk; usage is logged (room stats line, `ops_usage_daily`, month-to-date on `/status`). **Hosted test runs count against the same 5 GB**: a 10-min 16-bot run costs ≈ 60 MB and a 1-h soak ≈ 340 MB, so hosted bot runs (isolated test window only) are capped at 5 min (≈ 30 MB) and soaks run locally (§8).
+> Superseded 2026-11-12: cap is 6. 6-player row: 4.6 KB/s × 6 × 3,600 s ≈ 100 MB; 5,000 ÷ 100 = 50 room-hours = 300 player-hours. No 6-player 30/15 Hz figure derived (re-measure in M0-W2). The 8-player row is a mixed shape, not a cap case.
+
+Math: per-client bytes from [netcode.md §14](netcode.md#14-bandwidth-budget-server--client) × players × 3,600 s; 5 GB taken as 5,000 MB. Client assets come from Vercel (100 GB/month Hobby), not Render. Owner accepted suspension risk; usage is logged (room stats line, `ops_usage_daily`, month-to-date on `/status`). **Hosted test runs count against the same 5 GB**: a 10-min 6-bot run costs ≈ 17 MB and a 1-h soak ≈ 100 MB (est., 27.8 KB/s; the 16-bot figures 60 / 340 MB are superseded), so hosted bot runs (isolated test window only) are capped at 5 min (≈ 8 MB) and soaks run locally (§8).
 
 ### 6.3 Render instance hours
 
 750 h/month per workspace, used by the one service (ADR-0029). Prod sleeps when nobody plays; the wake probe fires only on the first title-screen interaction and never for bots/crawlers, so page views alone do not wake prod. Planning split: live play ≤ 690 h, hosted test windows ≤ 10 h, 50 h reserve ([environments.md §5](environments.md#5-render-free-tier-caveats)). Instance-seconds are logged to `ops_usage_daily` and shown month-to-date on `/status`; M0 verifies that Render health checks do not keep the instance awake.
+
+### 6.4 Solo Web Worker sim (ADR-0031) - NOT MEASURED
+
+Solo Shifts run `RoomSim` in a client Web Worker ([ADR-0031](../adr/0031-local-first-solo.md)); these are budgets, not measurements. Measure on the UHD 620 floor (Tier B) before claiming PASS.
+
+| Budget | Value | Status |
+| --- | --- | --- |
+| Worker sim step at `SIM_TICK_HZ` (20), tick p95 | <= 4 ms Tier A / <= 8 ms Tier B (own thread; must not delay main-thread frames) | NOT MEASURED |
+| Main-thread host cost (post/receive, decode into render state) | <= 0.3 ms per frame | NOT MEASURED |
+| Steady-state allocation per frame, main thread and worker | 0 (3-buffer transferable snapshot pool, pooled input buffers) | NOT MEASURED |
+| Input to first visual response (predicted own avatar/tool) | next rendered frame (<= 1 frame budget) | NOT MEASURED |
+| Checkpoint encode + gzip + IndexedDB write | sliced <= 2 ms per worker tick; no main-thread stall | NOT MEASURED |
+| Worker heap (steady state) | <= 100 MB | NOT MEASURED |
+| Golden-hash parity Node vs browser Worker | identical over >= 10,000 ticks | NOT MEASURED |
+| Solo server cost | one small upload per 120 s when dirty (plus pause/Clock Out); no server room | NOT MEASURED |
 
 ## 7. Netcode budgets on the client
 

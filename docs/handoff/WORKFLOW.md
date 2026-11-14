@@ -25,6 +25,25 @@ scripts blindly; review them and ask only if trust/permissions or machine-wide i
 Contracts/schema/root changes are sequenced by their responsible owner when consumers can migrate together; no need to
 wait for a new wave or commit. New core architecture changes need a concise ADR; small fixes and dependency use do not.
 
+## Long-running agents and background tasks: periodic health checks
+
+Owner rule (Cee, 2026-11-13). The lead does not fire-and-forget long work. While any agent or background task (capture
+chain, dev server, load test, build, bot run) is live, the lead checks it periodically (about every 10-15 min of wall
+time, and always before reporting status) and does not assume "no news = fine":
+
+- **Alive?** `ListAgents`, plus the process/port check (`tasklist`, `netstat`) for servers, browsers and capture chains.
+  An agent marked completed with no report, or a chain whose last log line is older than its expected step time, is stale.
+- **Progressing?** Compare the newest mtime of its report/log/evidence files against the last check. No new output for two
+  checks = stalled: resume it once with the same ID and a narrower brief, then label it with exact next steps.
+- **Healthy?** Look for repeated usage-limit stops, turn-limit stops without a report, wrong files being edited, two writers
+  on one path, or output landing outside the repo (stray folders such as `C:\c\`).
+- **Cleaned up?** Orphaned Vite/preview servers, headless browsers and loops are stopped by the lead the moment their owner
+  finishes. Never leave a server on a port or a polling loop running between turns.
+- **Still valid?** If code changed under a running capture (client source edits while a visual check runs), mark that
+  evidence stale and rerun it; do not start a second writer or GPU job while one needs exclusive GPU.
+- A worker that stops at a turn/usage limit is resumed with the same ID (never a model swap for Fable work unless Cee
+  says so). The lead records the check result in STATUS only when something was found wrong or stale.
+
 ## Tests and review
 
 Keep deterministic sim/world/protocol tests, meaningful unit tests, typecheck/lint/build, browser smoke, console monitoring,
@@ -33,6 +52,8 @@ Run focused checks during iteration and full checks at coherent integration/fina
 Lead schedules focused independent review for high-risk algorithms/trust boundaries or unresolved defects, plus one integrated
 code/visual/gameplay/performance review of the candidate. No mandatory independent approval for every small task.
 Known substantive findings remain until fixed/verified or the affected component is deliberately removed and reported as such.
+- Solo-first: judge visual/motion/perf/input checks in solo first; multiplayer checks are best-effort on Render free and never block a solo-feel deliverable.
+
 Tests/acceptance failures block declaring that feature complete, not all unrelated useful development.
 
 ## Ask only for a real decision or input

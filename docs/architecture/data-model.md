@@ -6,7 +6,7 @@
 
 
 Status: **Planning baseline (2026-11-12)** · Owner: backend-data-engineer (`packages/db`, `apps/server/src/persistence`, `apps/server/src/api`) · Save layout contract: `packages/shared/src/save/format.ts` (contracts-architect).
-Canonical: [tech-stack.md](tech-stack.md) (Aiven PostgreSQL Free, Drizzle ORM 0.45.x, drizzle-kit 0.31.x, `postgres` driver, migrations in the Render build command, two logical DBs). Evidence: [data-auth-observability.md §4–5](../research/tech/data-auth-observability.md), [platform-limits.md §C](../research/tech/platform-limits.md), [terrain-and-dust-techniques.md §7](../research/tech/terrain-and-dust-techniques.md), [moon-sweepers-reception.md §8](../research/moon-sweepers-reception.md) (save-loss lessons).
+Canonical: [tech-stack.md](tech-stack.md) (Neon PostgreSQL Free, Drizzle ORM 0.45.x, drizzle-kit 0.31.x, `postgres` driver, migrations in the Render build command, two logical DBs). Evidence: [data-auth-observability.md §4–5](../research/tech/data-auth-observability.md), [platform-limits.md §C](../research/tech/platform-limits.md), [terrain-and-dust-techniques.md §7](../research/tech/terrain-and-dust-techniques.md), [moon-sweepers-reception.md §8](../research/moon-sweepers-reception.md) (save-loss lessons).
 
 ## 1. Conventions
 
@@ -109,7 +109,7 @@ Indexes: unique `(token_hash)`; `(player_id)`; `(family_id)`; `(expires_at)`.
 | `owner_player_id` | uuid | no | FK → players, cascade |
 | `name` | text | no | 3–32 chars |
 | `shift_type` | text | no | `solo` · `private` · `open`; a change applies to the live room (one room name `shift`, [netcode.md §9.3](netcode.md)) |
-| `max_players` | smallint | no | 1 for solo, ≤ 16 otherwise (CHECK) |
+| `max_players` | smallint | no | 1 for solo, ≤ 6 otherwise (CHECK) |
 | `grid_m` | smallint | no | 128 (Standard, 163,842 plots); 64 if Moonlet ships |
 | `plot_count` | integer | no | 10·m²+2 |
 | `seed` | bigint | no | Procedural detail, Stray Cargo placement |
@@ -157,15 +157,17 @@ Indexes: PK `(contract_id, player_id)`; `(player_id, last_seen_at desc)` for "my
 | `slot` | char(1) | no | PK part, CHECK `A` or `B` |
 | `save_format_version` | smallint | no | `SAVE_FORMAT_VERSION` of the blob |
 | `game_data_version` | text | no | |
-| `codec` | text | no | `gzip` (RFC 1952: Node `zlib` on the server, `CompressionStream` in a browser worker for v1.0 offline Solo) |
+| `codec` | text | no | `gzip` (RFC 1952: Node `zlib` on the server, `CompressionStream` in the browser sim worker for local-first Solo, ADR-0031) |
 | `raw_size` | integer | no | Uncompressed bytes |
 | `blob_size` | integer | no | Compressed bytes |
 | `checksum` | integer | no | CRC32 of the raw (uncompressed) bytes |
 | `blob` | bytea | no | Column storage set to `EXTERNAL` (already compressed → skip TOAST pglz) |
-| `save_seq` | bigint | no | Monotonic per Contract, +1 per write (newest = highest). Optimistic concurrency / split-brain guard |
+| `save_seq` | bigint | no | **Save generation** (ADR-0031): monotonic per Contract across every host (newest = highest). Server rooms write newest + 1; an accepted solo upload writes the generation in its envelope, which is always greater. Optimistic concurrency / split-brain guard |
+| `parent_seq` | bigint | yes | Generation this state descends from (envelope `parentGeneration`); null for the first save. Used by the conflict rules of §3.7c |
+| `origin_kind` | text | no | `room` (server room checkpoint) · `solo` (accepted local-first upload); CHECK; default `room` |
 | `sim_tick` | bigint | no | Tick at capture |
 | `saved_at` | timestamptz | no | |
-| `saved_by` | text | no | Lease instance string |
+| `saved_by` | text | no | Lease instance string; for solo uploads `solo:<device id>` (random per-browser install id, no personal data) |
 
 **This section and §3.7b are the canonical save layout** (lead decision 2026-11-12; [world-and-dust-simulation.md §6](world-and-dust-simulation.md) defines only the dust chunk payload and defers here).
 
@@ -201,6 +203,40 @@ Indexes: PK `(contract_id, chunk_id, ver)` only. A chunk that has never been tou
 
 Why this is consistent: a chunk keeps its two most recent writes. If the newest of them (seq b) is ≤ H, no write happened between b and H, so b is the chunk's state at H. If b > H, then b = H + 1 (the failed header's transaction) and the older version a ≤ H is the state at H for the same reason; if a does not exist the chunk was first touched in H + 1 and is pristine at H. Header and chunks therefore always come from the same checkpoint. A chosen version that fails its own CRC (bit rot) falls back to the other version if its `save_seq` ≤ H, with a `chunk_fallback` Sentry warning (that chunk may roll back by one checkpoint; never forward).
 
+### 3.7c Solo checkpoint upload and verify (ADR-0031)
+
+A Solo Shift runs locally ([ADR-0031](../adr/0031-local-first-solo.md), [netcode.md §19](netcode.md#19-solo-local-vs-room-server-adr-0031)). Its checkpoints use the **same** envelope, header slots and chunk versions as server rooms; only the writer differs. The server stores and sanity-checks them and never treats them as authoritative game state.
+
+**Save generation.** The envelope fixed header carries `generation` (u64, = `save_seq`), `parentGeneration` (u64), `originKind` (u8: 0 room, 1 solo) and `originId` (16 B: device id or instance boot uuid), folded into `SAVE_FORMAT_VERSION = 1` (§6). Every checkpoint on any host has `generation = parentGeneration + 1` on that host. The device also remembers `baseGeneration`, the newest generation it knows the server has (after an accepted upload or a download).
+
+**Local store (client, IndexedDB, written by the worker).** Per Contract: the newest and previous checkpoint (header envelope + chunk versions), one IndexedDB transaction per checkpoint, the `baseGeneration`, a "pending upload" marker and one **backup slot** for a copy that lost a conflict. `navigator.storage.persist()` is requested; a quota error shows a UI warning and forces an upload attempt.
+
+**Upload flow** (`apps/client/src/net` → `apps/server/src/api` + `persistence`):
+
+| Step | Rule |
+| --- | --- |
+| 1 Pick | Only the newest local checkpoint per Contract is queued; older pending ones are dropped (coalesced). Sent every ≤ 120 s when dirty, on pause and on Clock Out, only after the first user interaction and never by bots/crawlers |
+| 2 Request | `POST /v1/contracts/:id/solo-checkpoints` with metadata (`generation`, `parentGeneration`, `baseGeneration`, formats, sizes, CRCs, summary, bounded profile delta) and a binary checkpoint package (`MCCK`: header envelope + dirty chunk payloads). ≤ 1 MB → one request; larger → upload session of ≤ 1 MB parts, ≤ 4 MB total, staged **in server memory** (≤ 2 sessions per process, 1 per player, TTL 120 s; parts lost on restart are simply re-sent) |
+| 3 Verify (cheap, bounded) | Bearer JWT; caller is Holder; `shift_type = solo`; no live lease (`lease_expires_at < now()` or null), otherwise 409 `CONTRACT_BUSY`; `saveFormatVersion` ≤ server's (newer → 409 `SAVE_VERSION_UNSUPPORTED`), known `game_data_version`, `bakeHash`/`gridM`/`plotCount` match the Contract; CRC32 of envelope and every chunk; header ≤ 1 MB, chunk payload ≤ 256 KB, chunk ids 0–640, Contract within its hard cap (§5.1); `generation > baseGeneration`; envelope header + section table decode (gunzip via async `zlib`, single-concurrency queue, 503 `RETRY_LATER` while a room's tick budget is under pressure); rate limit: ≥ 20 s between accepted uploads per Contract and ≤ 60/h per player (429). Hard failures → 422 `CHECKPOINT_REJECTED` with a reason code; nothing is written |
+| 4 Concurrency | Accepted only if the server's newest `save_seq` = `baseGeneration` (fast-forward). Otherwise 409 `SAVE_CONFLICT` with the server copy's summary (no write) |
+| 5 Write | One transaction exactly as §3.7 steps 1–5 (older slot, CAS on that slot's `save_seq`), with `save_seq = generation`, `parent_seq`, `origin_kind = solo`, `saved_by = solo:<device id>` |
+| 6 Plausibility (flag, not reject) | `playtime` delta ≤ wall-clock since the last accepted upload × 1.05 + 120 s; `simTick` delta ≤ playtime delta × `SIM_TICK_HZ` × 1.05; wallet/Shine within game-data and `plot_count` bounds. On violation: accept the save, write an `abuse_events` row `solo_implausible` (rate-limited per kind), and keep the Contract out of any shared ranking |
+| 7 Shared surfaces | The profile delta in the upload (playtime, Tenure, Commendations, achievement ids) is applied only up to per-upload caps derived from game-data (per hour of accepted playtime); achievements must exist in the catalog. Cheating your own solo game is acceptable; inflating shared tables is not |
+| 8 Response | `{acceptedGeneration, savedAt, flags[]}`; the client sets `baseGeneration = acceptedGeneration` |
+
+**Download / restore.** `GET /v1/contracts/:id/save/head` returns the newest copy's summary (`generation`, `parentGeneration`, `originKind`, `savedAt`, `simTick`, `playtimeS`, `shinePolished`, `walletLumens`, formats). `GET /v1/contracts/:id/save` returns the newest header envelope plus every non-pristine chunk version chosen by the §3.7b load rule, as an `MCCK` package (paged ≤ 1 MB per response). It is used on a new device, after "use the server copy", and after "Return to solo".
+
+**Conflict rules (last writer by monotonic generation, explicit prompt on mismatch).**
+
+| Local copy vs server head | Action |
+| --- | --- |
+| Same `generation` | In sync; nothing to do |
+| Local has unsynced checkpoints and `baseGeneration` = server generation | Local descends from server → upload (fast-forward) |
+| Local has nothing unsynced and server generation > `baseGeneration` | Server descends from local → download and replace silently |
+| Local has unsynced checkpoints and server generation ≠ `baseGeneration` | **Diverged** → "Which copy?" prompt with both summaries (saved-at, device, playtime, Shine %, wallet). *Keep this device*: re-upload with `baseGeneration` = server generation and `generation` = max(local, server) + 1 (explicit overwrite). *Use the server copy*: download it. Either way the losing copy goes to the local backup slot (restorable from Settings for 7 days). Never resolved silently |
+
+Local-only Contracts (created while the server was unreachable) carry a client-generated UUIDv7 id and seed. They are registered on first sync by `POST /v1/contracts` with `clientContractId` (idempotent; the ≤ 3 quota is checked then; refusal keeps the Contract local-only with a banner), then follow the upload flow from `baseGeneration = 0`.
+
 ### 3.8 `achievements` (catalog, seeded from `packages/game-data`)
 
 | Column | Type | Notes |
@@ -234,7 +270,7 @@ No table in the MVP. If a leaderboard screen ships, it reads `profiles (tenure_p
 | --- | --- | --- |
 | `id` | bigint identity | PK |
 | `at` | timestamptz | |
-| `kind` | text | `kick` · `ban` · `unban` · `vote_kick` · `role_changed` · `invite_rotated` · `report` · `rate_limited` · `invalid_message` · `speed_violation` · `teleport_violation` · `purchase_rejected_suspicious` · `guest_create_limited` · `token_reuse` · `recover_failed` · `recover_global_lock` · `holder_transferred` · `contract_compacted` |
+| `kind` | text | `kick` · `ban` · `unban` · `vote_kick` · `role_changed` · `invite_rotated` · `report` · `rate_limited` · `invalid_message` · `speed_violation` · `teleport_violation` · `purchase_rejected_suspicious` · `guest_create_limited` · `token_reuse` · `recover_failed` · `recover_global_lock` · `holder_transferred` · `contract_compacted` · `solo_implausible` · `checkpoint_rejected` (ADR-0031, §3.7c) |
 | `contract_id` | uuid | Null-able, set null |
 | `actor_player_id`, `target_player_id` | uuid | Null-able, set null |
 | `ip_hash` | bytea | HMAC-SHA256(IP, pepper + current month) — linkable within a month only; null if not relevant |
@@ -251,7 +287,7 @@ Indexes: `(at)`; `(contract_id, at)`; `(target_player_id, at)`. Writes are rate-
 
 ## 4. Size math against 1 GB
 
-Aiven Free = 1 GB storage for **both** logical DBs plus WAL and catalogs ([platform-limits.md §C1](../research/tech/platform-limits.md)).
+Neon Free = 1 GB storage for **both** logical DBs plus WAL and catalogs ([platform-limits.md §C1](../research/tech/platform-limits.md)).
 
 Per-row estimates (row + index, PostgreSQL ~24 B tuple header):
 
@@ -312,11 +348,11 @@ Compaction rewrites a Contract's chunk rows only while no room is live for it (l
 
 | Item | Rule |
 | --- | --- |
-| Header envelope (slot blob) | Magic `MCSV`, `SAVE_FORMAT_VERSION` u16, `gridM` u16, `radiusM` u16, `plotCount` u32, `bakeHash` (terrain + grid golden hash, 32 B), `dustModelVersion` u16, `simTick` u64, section table; trailer CRC32 of everything before it |
+| Header envelope (slot blob) | Magic `MCSV`, `SAVE_FORMAT_VERSION` u16, `gridM` u16, `radiusM` u16, `plotCount` u32, `bakeHash` (terrain + grid golden hash, 32 B), `dustModelVersion` u16, `simTick` u64, **`generation` u64, `parentGeneration` u64, `originKind` u8 + reserved u8, `originId` 16 B** (save generation, ADR-0031, §3.7c; part of v1), section table; trailer CRC32 of everything before it |
 | Header sections (each: id u16, section version u16, length u32; unknown ids skipped) | `META` (wallet, shared upgrades, suit gear, beacons, visited outposts, Temp permissions, Stray Cargo 150-bit set, Survey Points 24-bit set, Contract Fulfilled, Shine mirror, stats) · `PLAYERS` (per member: tools owned, equipped tool, Holster loadout, Dust Cell levels, Cell fill, mg accumulator, last pose, owned vehicles) · `VEHICLES` · `ROBOTS` (type, Roost/Nest, state, cargo, pose, current lane plan) · `STRUCTURES` · `RAILS` · `MACHINES` · `PUCKS` (capped count). **No `PLOTS` or `LEDGERS` section**: all per-plot dust data is in chunk rows |
 | Dust chunk payload (chunk rows) | Format `DUST_CHUNK` defined in [WDS §6](world-and-dust-simulation.md), own payload version, deflate per row, CRC32 in the row |
 | Compression | gzip of the whole header envelope; deflate per chunk payload |
-| Ownership | `packages/shared/src/save/format.ts` defines layout + versions; `packages/world` and `packages/sim` write/read their sections (`apps/server/src/world` the chunk payloads); `apps/server/src/persistence` compresses and stores |
+| Ownership | `packages/shared/src/save/format.ts` defines layout + versions; `packages/world` and `packages/sim` write/read their sections **and the chunk payloads** (pure code, so the browser sim worker and the server share it, ADR-0031); envelope encode/decode + CRC32 are pure code in `packages/sim`; `apps/server/src/persistence` compresses (Node `zlib`) and stores, `apps/client/src/sim-host` compresses (`CompressionStream`) and stores locally |
 | Upgrades | Loader runs an in-memory chain `vN → vN+1 → … → current`; the next checkpoint writes the current version. Each step is owned by the package that changed its section |
 | Downgrades | **Never.** A server whose `SAVE_FORMAT_VERSION` is older than a blob refuses it (4108). So a code rollback after a save-format bump makes touched Contracts unavailable until roll-forward. Release rule: save-format bumps ship alone, soak 48 h locally against copies of representative saves before the push to `main` |
 | Fixtures | One golden save per historical version, committed as test fixtures; CI loads every fixture with the current loader |
@@ -328,13 +364,14 @@ Compaction rewrites a Contract's chunk rows only while no room is live for it (l
 | Write | When | Size |
 | --- | --- | --- |
 | Header blob (older slot) + dirty chunk versions, one transaction | Every ≤ 30 s **only if dirty**; on room empty; on SIGTERM; priority events (Contract Fulfilled, capstone purchase, ban) coalesced ≥ 5 s apart | header 0.002–0.3 MB + 1–20 chunks × 1–30 KB |
+| Solo checkpoint upload (§3.7c, ADR-0031) | Newest local checkpoint every ≤ 120 s when dirty, on pause and on Clock Out; server rate limit ≥ 20 s per Contract | same shape as a room checkpoint; ≈ 30 writes per solo hour instead of 120 |
 | Lease renewal (CAS) | Every 10 s per live room | tiny |
 | Profiles | Per player every 60 s if changed, and on leave | < 1 KB |
 | Player achievements | On unlock (batched per second) | tiny |
 | `contracts` mirrors (`last_played_at`, `shine_polished`, `wallet_lumens`, `playtime_s`) | With each save | tiny |
 | `ops_usage_daily` | 10 min | tiny |
 
-Write volume per busy room-hour ≈ 120 checkpoints × (≈ 0.1 MB header + ≈ 0.15 MB chunks) ≈ 30 MB (plus WAL of the same order). Ten room-hours/day ≈ 0.3 GB/day of writes; disk stays bounded because header slots and chunk versions are overwritten alternately, but WAL retention on the free plan is **unverified** — watch the Aiven disk graph during the M0 spike.
+Write volume per busy room-hour ≈ 120 checkpoints × (≈ 0.1 MB header + ≈ 0.15 MB chunks) ≈ 30 MB (plus WAL of the same order). Ten room-hours/day ≈ 0.3 GB/day of writes; disk stays bounded because header slots and chunk versions are overwritten alternately, but WAL retention on the free plan is **unverified** — watch the Neon storage graph during the M0 spike.
 
 ## 8. Migration strategy
 
@@ -345,7 +382,7 @@ Write volume per busy room-hour ≈ 120 checkpoints × (≈ 0.1 MB header + ≈ 
 | Apply | Render **build command** runs `pnpm --filter @moon-cleanup/db run migrate` — the **programmatic** Drizzle migrator (`packages/db/src/migrate.ts`, `drizzle-orm/postgres-js/migrator`), never the `drizzle-kit migrate` CLI, because only the programmatic path sets the session limits below — with `DATABASE_URL` + `DATABASE_CA_CERT`, after the build and before the new instance starts; then `pnpm --filter @moon-cleanup/server run seed` (achievements upsert from game-data; lives in the server because `packages/db` must not import `game-data`). Failure fails the build → old instance keeps serving |
 | Session limits | `lock_timeout = 5s`, `statement_timeout = 60s` for the migration connection |
 | Expand/contract | Migration N must work with code N−1 (old instance keeps running during the build). Add nullable/defaulted columns first → code writes them → backfill → constraint in a later release. Drop columns ≥ 2 releases after code stops reading them. Renames = add + copy + drop |
-| Never | `drizzle-kit push` against Aiven (local Docker only); editing an applied migration |
+| Never | `drizzle-kit push` against Neon (local Docker only); editing an applied migration |
 | Backups | Before any risky migration Cee takes a manual `pg_dump` of schema `prod` (free-tier backup policy unverified) |
 | Order across envs | Migrate an isolated local Postgres first; a push to `main` → Render build migrates schema `prod` (ADR-0029) |
 
@@ -353,13 +390,13 @@ Write volume per busy room-hour ≈ 120 checkpoints × (≈ 0.1 MB header + ≈ 
 
 | Item | Plan | Fallback |
 | --- | --- | --- |
-| Layout | One Aiven PG Free service; application tables in schema `prod` (`DB_SCHEMA`), inside a dedicated application database/role when Aiven Free allows it (`CONNECT` revoked from `PUBLIC`); one Drizzle migrations table in that schema. `staging` stays a valid but unused `DB_SCHEMA` value | If extra databases/roles are not available (unverified, [platform-limits.md §C1](../research/tech/platform-limits.md)): the supplied `defaultdb` with schema `prod`, selected via the connection's `search_path` option |
-| Connections | Pools: prod max 4 (×2 during deploy overlap), migrations 1, admin 1 → ≤ 10 | Aiven Free `max_connections` is unpublished (PG Developer = 20) |
+| Layout | One Neon PG Free project; application tables in schema `prod` (`DB_SCHEMA`), inside a dedicated application database/role when Neon Free allows it (`CONNECT` revoked from `PUBLIC`); one Drizzle migrations table in that schema. `staging` stays a valid but unused `DB_SCHEMA` value | If extra databases/roles are not available (unverified, [platform-limits.md §C1](../research/tech/platform-limits.md)): the supplied `defaultdb` with schema `prod`, selected via the connection's `search_path` option |
+| Connections | Pools: prod max 4 (×2 during deploy overlap), migrations 1, admin 1 → ≤ 10 | Neon Free connection limit: verify in the Neon console (PG Developer = 20) |
 | Shared limits | 1 GB storage and CPU are shared with live play; hosted test-window fixtures stay within their 100 MB bucket and are deleted afterwards | — |
 
 ## 10. Open issues
 
 1. **Write amplification / WAL on 1 GB** is unmeasured; if disk climbs, lengthen the cadence to 60 s (dirty-chunk rows are already the design, ADR-0016 amendment).
 2. **Per-Contract sizes** (§4) are estimates; P2 measures real header and chunk sizes and the capacity thresholds of §5.1 are re-derived from them before launch.
-3. **Aiven Free facts unverified:** extra databases/roles, `max_connections`, backups, WAL retention, idle power-off threshold.
+3. **Neon Free facts to verify:** extra databases/roles, `max_connections`, backups, WAL retention, idle power-off threshold.
 4. **Moonlet size** (`grid_m = 64`) is supported by the schema but not confirmed by game-design.

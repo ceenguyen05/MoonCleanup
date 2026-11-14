@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "scenario": "spike-16",
+    "milestone": "M0",
+    "url": "http://localhost:2572",
+    "profile": "none",
+    "seed": 1,
+    "tickHz": 20,
+    "snapshotHz": 10,
+    "startedAt": "2026-11-13T03:30:01.604Z",
+    "durationS": 60,
+    "node": "v26.13.1"
+  },
+  "bots": {
+    "bots": 6,
+    "elapsedS": 60,
+    "snapshotHzTarget": 10,
+    "snapshotHzAchievedPerBot": 10.01,
+    "frameInterArrivalMs": {
+      "n": 3605,
+      "p50": 97.34,
+      "p95": 111.6,
+      "p99": 113.4,
+      "max": 137.05
+    },
+    "rttMs": {
+      "n": 173,
+      "p50": 0,
+      "p95": 1,
+      "p99": 3,
+      "max": 3
+    },
+    "bytesInPerBotPerS": {
+      "FRAME": 2288,
+      "DUST": 577,
+      "PONG": 4,
+      "statePatch": 107,
+      "stateFull": 2,
+      "other": 0
+    },
+    "bytesInPerBotPerSTotal": 2978,
+    "inputsSent": 7231,
+    "inputMessages": 7216,
+    "skippedSends": 0,
+    "resyncs": 1965,
+    "joins": 7,
+    "disconnects": 7,
+    "unexpectedDrops": 0,
+    "reconnects": 1,
+    "serverBufferDepth": {
+      "n": 3612,
+      "p50": 0,
+      "p95": 3,
+      "p99": 3,
+      "max": 3
+    },
+    "botProcessHeapGrowthMB": -0.9
+  },
+  "server": {
+    "lines": 11,
+    "roomStatsLines": 7,
+    "tickMs": {
+      "p50Median": 0.2,
+      "p95Max": 0.651,
+      "maxMs": 4.623
+    },
+    "cpuPercentOfQuota": {
+      "median": 21.9,
+      "max": 42.1
+    },
+    "eventLoopP99MaxMs": 40.93,
+    "bytesOutPerClientPerS": {
+      "SPIKE_FRAME": 2347,
+      "SPIKE_DUST": 599,
+      "schema_patch": 126,
+      "PONG": 6,
+      "other": 1,
+      "schema_full": 0,
+      "control": 0
+    },
+    "rssMB": null,
+    "heapUsedMB": null,
+    "counters": null,
+    "lastSpikeLoop": null
+  },
+  "netsim": null,
+  "desync": {
+    "count": null,
+    "note": "n/a in spike: synthetic world has no client prediction to compare (arrives with M1 sim)"
+  },
+  "rejectedInputs": {
+    "late": null,
+    "rateLimited": null,
+    "malformed": null,
+    "substituted": null
+  }
+}

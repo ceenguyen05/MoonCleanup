@@ -84,3 +84,49 @@ All commands run from the repo root with the wave §3 Node 26 prefix. `<pkg>` = 
 ## Suggested Conventional Commit message(s)
 - `build(deps): first pnpm install, lockfile, workspace build-script policy`
 - `build(config): ESLint boundary and three.js ban-list rules, Vitest and Prettier presets with fixture tests`
+
+## Fix cycle 2 (review findings 1, 2, 5, 6)
+
+Files: `packages/config/eslint/boundaries.ts`, `index.ts`, `boundaries.test.ts` (no new dependency).
+
+- **1 dynamic import():** new `dynamicImportSyntax()` in `boundaries.ts` converts the same `paths` / `patterns` (globs and
+  regexes) of every layer into `no-restricted-syntax` selectors on `ImportExpression > Literal.source`; `rulesFor()` in
+  `index.ts` appends them, so rules 1, 2, direction, 3, 4a, 4b, 6 and the ban-list import sources fire with the same
+  messages. Only string-literal specifiers are matchable (`import(name)` stays legal). 17 dynamic fixtures plus two allowed
+  fixtures (client/server lazy imports).
+- **2 sibling relative imports:** `packageDirection()` adds `^(\.\./)+(names)/(src|dist)(/|$)` regexes derived from `PACKAGES`
+  (forbidden siblings: direction/rule 2 message; allowed siblings: rule 6). Allowed fixture: `../sim/input.ts` and
+  `../../world/index.ts` inside `packages/shared/src` stay clean. 5 fixtures.
+- **5:** `colyseus/**` banned (rule 3). `require()` in `.cjs` left as-is.
+- **6:** `game-data` added to `ENVIRONMENT_AGNOSTIC` (comment records why). 2 fixtures.
+- Also fixed the stale comments of finding 13 (`restrict()`, "rule 4 of coding standards", rule 5 not lint-enforced).
+- Known residual: a local folder `src/<pkg>/src/...` reached by `../<pkg>/src` would be flagged; accepted.
+
+Evidence (Node v26.13.1): `pnpm --filter @moon-cleanup/config test` 2 files / 158 tests passed (was 131); `pnpm exec eslint .`
+clean; `pnpm exec tsc -p packages/config/tsconfig.json` exit 0; `prettier --check packages/config` clean.
+
+## Addendum 2026-11-12: server boot unblock (manifest/lockfile changes)
+
+- `apps/server/package.json`: `uWebSockets.js` re-pinned from `#v20.71.0` (9ec36de, broken ESM wrapper importing missing `./index.js`) to upstream commit `b1092c70692ddbcc87464a77da44848614f6342a` (= tag v20.70.0, resolved via `git ls-remote`). Lockfile integrity `sha512-imizeoZ5qzl4yNm/MNOlg5K/vatTvGqqbmYjzrhmCHREov1zBKMUEf+NkAJDDLl2DfRrJbEbBkcGyBwjdg4ibw==`, version 20.70.0. The commit pin also addresses the security review's optional recommendation (tag cannot be re-pointed). `import('uWebSockets.js')` under Node 26.13.1 win32 loads (41 exports). The scoped `-` override in pnpm-workspace.yaml is unchanged.
+- `apps/server/package.json`: added `uwebsockets-express` `2.0.4` (exact), option (a). Provenance: npm, sole maintainer is the Colyseus author (endel), repo colyseus/uWebSockets-express, MIT, published 2026-07-24 (3.5 months old, passes minimumReleaseAge, no exclusion needed), integrity sha512-GhnDwn4r+oG49WHjpRo5xtb1Wyt6hhiWht8mKMJAwqnOGUENADCN3K4lsSDncoSl66KZCguewhmSYYY77S1P1w==. Scripts: only `prepublishOnly`, `test`, `typecheck` (none run on install); no install/postinstall. Deps: express 5, mime, path-to-regexp, http-status-codes (all no lifecycle scripts; allowBuilds unchanged). Chosen over a pnpm patch/stub because it is the transport's declared peer, needs no maintained patch, and is least risky. Lockfile: +15 -2 packages.
+- Verification: `pnpm --filter @moon-cleanup/server test` 74/75 pass; uws-boot test passes alone (3.9s) but timed out at the default 5s once in the full parallel run (cold uWS/transport import under load). tsc and eslint on apps/server clean.
+
+## Addendum 2026-11-12: @electric-sql/pglite for migration tests
+- `packages/db/package.json` devDependency `@electric-sql/pglite` `0.5.16` (exact); lockfile +2/-1 entries. Rationale: run
+  `0000_ops_usage_daily.sql` against real PostgreSQL (WASM) with no server, so `migrate.test.ts` is no longer skipped by default.
+- Review: npm, Apache-2.0, SLSA provenance, 4 ElectricSQL maintainers, no runtime dependencies, no install/postinstall scripts,
+  `allowBuilds` untouched. Details: docs/agent-reports/M0-KTX2-and-db.md.
+
+## Fix cycle 3 (non-blocking findings of the T02 code review)
+Files: `packages/config/eslint/{ban-list,boundaries,index}.ts`, `ban-list.test.ts`, `boundaries.test.ts`, `packages/config/README.md` (one command line).
+- **F3 member selectors scoped:** `bannedSyntax` (every file) now only holds named imports/re-exports and `onBeforeCompile` keys; the member/type/destructuring forms moved to `bannedThreeMemberSyntax`, applied to `apps/client/**`, `tools/**`, `tests/**` only. Server and the agnostic packages no longer misfire (5 misfire fixtures stay clean; a client fixture proves it still fires there).
+- **F4 forms:** `THREE.Clock` without `new`, `extends`, type positions (`TSQualifiedName`), namespace destructuring, `THREE["X"]`, `const { renderAsync } = r`, default import of `three/src/**/WebGLRenderer*|ShaderMaterial*|RawShaderMaterial*|Clock*`. `Clock` is only banned on a `THREE|three|Three` namespace identifier.
+- **F5:** `colyseus/**` was already added in cycle 2; fixture added. `.cjs` `require("three")` skipped (low risk, ESM-only repo).
+- **F6:** done in cycle 2 (game-data is environment-agnostic).
+- **F7:** `*.test|spec.*` under shared/sim/world/protocol/game-data `src` may import Node built-ins and use Node globals; DOM, three and Colyseus bans stay (5 allow fixtures + 2 deny fixtures).
+- **F9:** README command fixed (`pnpm turbo run lint typecheck test --filter=@moon-cleanup/config`).
+- **F12:** one message per banned name; every ban-list fixture now asserts its own entry's message.
+- **F13:** relative-path rule 1 regex derived from `APPS`/`TOOLS` and now includes `tests/e2e`; header already says rule 5 is not lint-enforced.
+- **Extra:** `tools/.bin/**` added to ESLint ignores (git-ignored KTX binaries with bundled docs JS made `eslint .` fail; not caused by this cycle).
+- **Skipped:** F8 (T03 brief item), F10 (lead decision: ambient libs vs lib change), F11 (harmless), F14 (beyond brief), `.cjs` require in F5.
+- **Evidence (Node 26.13.1):** config tests 2 files / 187 tests pass (was 131); `pnpm exec eslint .` exit 0 with no existing repo file flagged; `tsc -p packages/config` 0; prettier check clean.

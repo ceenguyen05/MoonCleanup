@@ -1,0 +1,32 @@
+[
+ {
+  "view": "shadeSlope",
+  "probe": "slopeLit",
+  "px": [
+   387,
+   712
+  ],
+  "luma": 172.5,
+  "labB": 0.97,
+  "rgb": [
+   174,
+   172,
+   171
+  ]
+ },
+ {
+  "view": "shadeSlope",
+  "probe": "slopeShadow",
+  "px": [
+   534,
+   391
+  ],
+  "luma": 86,
+  "labB": 1.77,
+  "rgb": [
+   88,
+   86,
+   83
+  ]
+ }
+]

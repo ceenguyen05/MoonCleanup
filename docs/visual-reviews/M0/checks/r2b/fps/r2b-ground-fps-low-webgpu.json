@@ -1,0 +1,60 @@
+{
+ "preset": "low",
+ "backend": "webgpu",
+ "fps": {
+  "s01:regolith": {
+   "frames": 280,
+   "fps": 35,
+   "frameAvg": 28.59,
+   "frameP50": 28,
+   "frameP95": 35.4,
+   "renderScale": 0.75,
+   "errors": 0
+  },
+  "s01:standin": {
+   "frames": 54,
+   "fps": 6.6,
+   "frameAvg": 152.49,
+   "frameP50": 140.4,
+   "frameP95": 207.8,
+   "renderScale": 0.75,
+   "errors": 0
+  },
+  "s05:regolith": {
+   "frames": 277,
+   "fps": 34.3,
+   "frameAvg": 29.15,
+   "frameP50": 28,
+   "frameP95": 47.2,
+   "renderScale": 0.75,
+   "errors": 0
+  },
+  "s05:standin": {
+   "frames": 44,
+   "fps": 5.4,
+   "frameAvg": 185.9,
+   "frameP50": 167.8,
+   "frameP95": 247.1,
+   "renderScale": 0.75,
+   "errors": 0
+  },
+  "s06:regolith": {
+   "frames": 182,
+   "fps": 21.9,
+   "frameAvg": 45.6,
+   "frameP50": 42,
+   "frameP95": 85.1,
+   "renderScale": 0.75,
+   "errors": 0
+  },
+  "s06:standin": {
+   "frames": 17,
+   "fps": 1.2,
+   "frameAvg": 826.1,
+   "frameP50": 235.7,
+   "frameP95": 10515.8,
+   "renderScale": 0.75,
+   "errors": 0
+  }
+ }
+}

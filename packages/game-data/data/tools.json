@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "tool.desk_duster",
+      "tier": 1,
+      "priceLm": 0,
+      "widthM": 0.15,
+      "depthLevels": 5,
+      "reachM": 1.2,
+      "strokeS": 0.45,
+      "cellBaseKg": 4,
+      "traitId": "trait.detailing"
+    },
+    {
+      "id": "tool.crescent_squeegee",
+      "tier": 2,
+      "priceLm": 75,
+      "widthM": 0.28,
+      "depthLevels": 6,
+      "reachM": 1.4,
+      "strokeS": 0.55,
+      "cellBaseKg": 8,
+      "traitId": "trait.flick"
+    },
+    {
+      "id": "tool.bristle_broom",
+      "tier": 3,
+      "priceLm": 200,
+      "widthM": 0.45,
+      "depthLevels": 8,
+      "reachM": 1.8,
+      "strokeS": 0.7,
+      "cellBaseKg": 15,
+      "traitId": "trait.sure_footing"
+    },
+    {
+      "id": "tool.lane_broom",
+      "tier": 4,
+      "priceLm": 750,
+      "widthM": 0.75,
+      "depthLevels": 8,
+      "reachM": 2,
+      "strokeS": 0.8,
+      "cellBaseKg": 30,
+      "traitId": "trait.lane_lock"
+    },
+    {
+      "id": "tool.static_rake",
+      "tier": 5,
+      "priceLm": 1100,
+      "widthM": 1,
+      "depthLevels": 13,
+      "reachM": 2.6,
+      "strokeS": 0.9,
+      "cellBaseKg": 55,
+      "traitId": "trait.charge"
+    },
+    {
+      "id": "tool.ion_curtain",
+      "tier": 6,
+      "priceLm": 9000,
+      "widthM": 1.4,
+      "depthLevels": 10,
+      "reachM": 3,
+      "strokeS": 1,
+      "cellBaseKg": 110,
+      "traitId": "trait.twin_pass"
+    },
+    {
+      "id": "tool.assembly_gun",
+      "tier": 0,
+      "priceLm": 750,
+      "widthM": 0,
+      "depthLevels": 0,
+      "reachM": 12,
+      "strokeS": 0,
+      "cellBaseKg": 0,
+      "traitId": null
+    }
+  ]
+}

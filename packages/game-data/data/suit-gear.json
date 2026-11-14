@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "lines": [
+    {
+      "id": "gear.holster_rig",
+      "levels": [
+        { "costLm": 100, "effects": [{ "stat": "holsterSlots", "op": "set", "value": 2 }] },
+        { "costLm": 400, "effects": [{ "stat": "holsterSlots", "op": "set", "value": 3 }] },
+        { "costLm": 1500, "effects": [{ "stat": "holsterSlots", "op": "set", "value": 4 }] },
+        { "costLm": 5500, "effects": [{ "stat": "holsterSlots", "op": "set", "value": 5 }] },
+        { "costLm": 20000, "effects": [{ "stat": "holsterSlots", "op": "set", "value": 6 }] }
+      ]
+    },
+    {
+      "id": "gear.hop_pack",
+      "levels": [
+        { "costLm": 2500, "effects": [{ "stat": "hopBursts", "op": "add", "value": 1 }] },
+        { "costLm": 10000, "effects": [{ "stat": "hopBursts", "op": "add", "value": 2 }] },
+        { "costLm": 38000, "effects": [{ "stat": "hopBursts", "op": "add", "value": 3 }] }
+      ]
+    },
+    {
+      "id": "gear.ballast_soles",
+      "levels": [{ "costLm": 1500, "effects": [{ "stat": "ballastGravityMps2", "op": "set", "value": 9.81 }] }]
+    },
+    {
+      "id": "gear.crown_lamp",
+      "levels": [
+        {
+          "costLm": 150,
+          "effects": [
+            { "stat": "crownLampLevel", "op": "set", "value": 1 },
+            { "stat": "lampRangeM", "op": "set", "value": 12 }
+          ]
+        },
+        {
+          "costLm": 1000,
+          "effects": [
+            { "stat": "crownLampLevel", "op": "set", "value": 2 },
+            { "stat": "lampRangeM", "op": "set", "value": 20 }
+          ]
+        },
+        {
+          "costLm": 6000,
+          "effects": [
+            { "stat": "crownLampLevel", "op": "set", "value": 3 },
+            { "stat": "lampRangeM", "op": "set", "value": 28 }
+          ]
+        },
+        {
+          "costLm": 30000,
+          "effects": [
+            { "stat": "crownLampLevel", "op": "set", "value": 4 },
+            { "stat": "lampRangeM", "op": "set", "value": 36 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gear.lowlight_visor",
+      "levels": [{ "costLm": 4500, "effects": [{ "stat": "lowlightVisor", "op": "set", "value": 1 }] }]
+    }
+  ]
+}

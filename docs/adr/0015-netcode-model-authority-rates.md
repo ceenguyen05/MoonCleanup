@@ -1,19 +1,19 @@
 # ADR-0015: Netcode model - authority, tick rates, prediction and interest management
 
-- **Status:** Superseded by [ADR-0025](0025-netcode-model-revision.md) (2026-11-12)
+- **Status:** Superseded by [ADR-0025](0025-netcode-model-revision.md) (2026-11-12); Solo Shifts further amended by [ADR-0031](0031-local-first-solo.md) (2026-11-13)
 - **Deciders:** lead/orchestrator, netcode-engineer
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) section 1 (Render rows), section 3
 
 ## Context
 
-The server is a Render Free instance (0.1 CPU is ~100 ms CPU per wall-clock second; bursts beyond ~10 ms per 100 ms period may stall) with 5 GB/month egress (about 5-6 full 16-player hours; naive JSON would burn 5 GB in ~11 player-hours). WebSocket (TCP) only. Players expect responsive movement and a world that survives restarts. Browsers throttle hidden tabs, so the server must tolerate "away" clients.
+The server is a Render Free instance (0.1 CPU is ~100 ms CPU per wall-clock second; bursts beyond ~10 ms per 100 ms period may stall) with 5 GB/month egress (about 5-6 full 16-player hours; naive JSON would burn 5 GB in ~11 player-hours). WebSocket (TCP) only. Players expect responsive movement and a world that survives restarts. Browsers throttle hidden tabs, so the server must tolerate "away" clients. Superseded 2026-11-12: cap is 6 (16-player hours not rescaled).
 
 ## Options considered
 
 1. **Server-authoritative, 20 Hz sim / 10 Hz snapshots, client prediction + reconciliation, interest management.** Pro: fits the CPU/bandwidth estimate (10-50% CPU, est.); responsive. Con: 150-250 ms interpolation delay for remote entities.
 2. **30 Hz sim / 15-20 Hz snapshots.** Pro: snappier. Con: ~50% more CPU and bandwidth; unproven on 0.1 CPU.
 3. **Client-authoritative with sanity checks.** Pro: cheapest. Con: cheating; consistency of dust/economy.
-4. **Lockstep.** Pro: tiny bandwidth. Con: stalls with 16 players and variable latency; poor with restarts.
+4. **Lockstep.** Pro: tiny bandwidth. Con: stalls with 6 players and variable latency; poor with restarts.
 
 ## Decision
 
@@ -38,7 +38,7 @@ Option 1:
 
 ## Revisit trigger
 
-- M0-W2 spike: CPU > 50% for 16 bots at 20 Hz: drop to 15 Hz or reduce snapshot rate (ADR-0014 trigger).
+- M0-W2 spike: CPU > 50% for 6 bots at 20 Hz: drop to 15 Hz or reduce snapshot rate (ADR-0014 trigger).
 - Egress per player-hour > ~900 KB in bot tests (would exhaust 5 GB in <6 hours).
 - A paid instance becomes available: raise rates.
 

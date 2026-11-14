@@ -1,0 +1,75 @@
+{
+ "backend": "webgpu",
+ "a": "tent4",
+ "b": "pcf3",
+ "look": {
+  "shade:tent4": {
+   "filter": "tent4",
+   "knobs": "shadowfilter=tent4",
+   "cascadeTexelCm": [
+    2.3,
+    9.71,
+    27.61
+   ],
+   "edgeWidthCm": 7.57,
+   "flatRunCm": 0,
+   "lo": 85,
+   "hi": 184.3,
+   "width1090": 5,
+   "flatRun": 0,
+   "pxPerM": 33,
+   "errors": []
+  },
+  "shade:pcf3": {
+   "filter": "pcf3",
+   "knobs": "shadowfilter=pcf3",
+   "cascadeTexelCm": [
+    2.3,
+    9.71,
+    27.61
+   ],
+   "edgeWidthCm": 7.57,
+   "flatRunCm": 0,
+   "lo": 85,
+   "hi": 184.3,
+   "width1090": 5,
+   "flatRun": 0,
+   "pxPerM": 33,
+   "errors": []
+  },
+  "post:tent4": {
+   "filter": "tent4",
+   "knobs": "shadowfilter=tent4",
+   "cascadeTexelCm": [
+    2.3,
+    9.71,
+    27.61
+   ],
+   "edgeWidthCm": 4.53,
+   "flatRunCm": 0.98,
+   "lo": 89.4,
+   "hi": 183.2,
+   "width1090": 23,
+   "flatRun": 5,
+   "pxPerM": 254.1,
+   "errors": []
+  },
+  "post:pcf3": {
+   "filter": "pcf3",
+   "knobs": "shadowfilter=pcf3",
+   "cascadeTexelCm": [
+    2.3,
+    9.71,
+    27.61
+   ],
+   "edgeWidthCm": 4.53,
+   "flatRunCm": 0,
+   "lo": 89.4,
+   "hi": 183.2,
+   "width1090": 23,
+   "flatRun": 0,
+   "pxPerM": 254.1,
+   "errors": []
+  }
+ }
+}

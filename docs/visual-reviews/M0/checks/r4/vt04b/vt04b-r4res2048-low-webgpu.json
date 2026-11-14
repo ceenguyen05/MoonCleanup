@@ -1,0 +1,138 @@
+{
+ "url": "http://localhost:5195/?scene=s05&preset=low&backend=webgpu&scale=1&sun=60&az=250&view=wide&slope=toward&shadowres=2048&capture=1",
+ "meta": {
+  "look": {
+   "scene": "s05",
+   "state": {
+    "sunElevationDeg": 60,
+    "sunAzimuthDeg": 250,
+    "earthElevationDeg": 32,
+    "earthAzimuthDeg": 60,
+    "sunRateDegPerS": 0,
+    "earthDiameterDeg": 4.2
+   },
+   "keyMode": "sun",
+   "ev100": 14.3,
+   "cascades": [
+    {
+     "index": 0,
+     "texelM": 0.011500778064613816,
+     "endM": 10
+    },
+    {
+     "index": 1,
+     "texelM": 0.09202901101322139,
+     "endM": 80
+    }
+   ],
+   "preset": "low",
+   "backend": "webgpu",
+   "postPasses": [
+    "scene",
+    "grade",
+    "bloom",
+    "fxaa"
+   ],
+   "knobs": "shadowres=2048",
+   "skyDome": "baked",
+   "shadowFilter": "pcf3+pcf5"
+  },
+  "mc": {
+   "backend": "webgpu",
+   "tier": "B",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr": 1,
+   "renderScale": 1,
+   "frameTimeAvgMs": 166.63333574930826,
+   "frameTimeP95Ms": 466.6000061035156,
+   "drawCalls": 125,
+   "triangles": 295080,
+   "texPoolMB": 0,
+   "placeholderAssets": [],
+   "lossCount": 0
+  }
+ },
+ "az": 250,
+ "slope": "toward",
+ "suns": [
+  4,
+  1
+ ],
+ "targets": [],
+ "nbias": "shipped",
+ "dbias": "shipped",
+ "dbt": "source",
+ "heights": {
+  "mc:look-post@0,0": 1,
+  "mc:look-boulder@0,8": 0.38037380218505856,
+  "mc:look-post@-22,0": 0.9567936282070167,
+  "mc:look-boulder@-22,8": 0.46865140695413915
+ },
+ "rows": [],
+ "tips": [
+  {
+   "target": "post",
+   "sun": 4,
+   "heightM": 1,
+   "expectedM": 14.35,
+   "scannedToM": 20.4,
+   "fFull": 0.581,
+   "attachedRunEndM": 0.12,
+   "lastShadowedM": 13.08,
+   "objectLitPx": 545,
+   "objectFalseShadowShare": 0.0202,
+   "objectMeanLossCodes": 22.3,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0.01
+  },
+  {
+   "target": "boulder",
+   "sun": 4,
+   "heightM": 0.38,
+   "expectedM": 5.44,
+   "scannedToM": 8.3,
+   "fFull": 0.606,
+   "attachedRunEndM": 0.6,
+   "lastShadowedM": 5.6,
+   "objectLitPx": 24493,
+   "objectFalseShadowShare": 0.0147,
+   "objectMeanLossCodes": 33.8,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0.11
+  },
+  {
+   "target": "post",
+   "sun": 1,
+   "heightM": 1,
+   "expectedM": 57.34,
+   "scannedToM": 40,
+   "fFull": 0.683,
+   "attachedRunEndM": 0.12,
+   "lastShadowedM": 21.52,
+   "objectLitPx": 783,
+   "objectFalseShadowShare": 0.0332,
+   "objectMeanLossCodes": 15.6,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0
+  },
+  {
+   "target": "boulder",
+   "sun": 1,
+   "heightM": 0.38,
+   "expectedM": 21.79,
+   "scannedToM": 30.4,
+   "fFull": 0.776,
+   "attachedRunEndM": 0.6,
+   "lastShadowedM": 22.72,
+   "objectLitPx": 25348,
+   "objectFalseShadowShare": 0.0323,
+   "objectMeanLossCodes": 33.1,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0.03
+  }
+ ],
+ "acne": [],
+ "sweep": [],
+ "errors": []
+}

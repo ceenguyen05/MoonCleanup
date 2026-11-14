@@ -28,18 +28,18 @@ Changes from the v1 MVP plan (review M14): **added** the first local robot (Roos
 | Plots | Grimy/Opened/Polished, server ledger, integer thresholds and recount, Plot Card (C), Inspector's Stamp (50 LM), Shine to four decimals + albedo readout | 8 bots × 30 min: zero stuck plots; client and server Shine agree |
 | Hand tools | Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom (T1–T4) with traits Detailing, Flick, Sure Footing and Lane Lock | Sweeping feels good (internal playtest ≥4/5); Lane Lock works |
 | Dust Cells | Levels I–III for T1–T4; full Cell stops pickup | — |
-| Dust Pucks | Form (F) and band into Puck Stacks (hold F), carry, drop, throw (Q), pour back into a Cell; loose-puck caps (20 per player, 200 per contract) and merge | Pucks sync for 16 players |
+| Dust Pucks | Form (F) and band into Puck Stacks (hold F), carry, drop, throw (Q), pour back into a Cell; loose-puck caps (20 per player, 200 per contract) and merge | Pucks sync for 6 players |
 | Selling | Assay Counter (hold-to-pour, 4 pour slots, ka-ching); Receiving Gate fed by the Motor Pool's Dump Plate; Railshot visual every 2 t | Payment server-authoritative; the wallet never desyncs |
 | Promotions Board (subset) | Hub; Storage Cell lines T1–T4 + Densifier; Broad Strokes; Scour; Cadence; Quick Pour; Rate Review (10 of 23 nodes) | Shared purchase races resolved server-side |
 | Suit gear (subset) | Holster Rig L1 (2 slots), Crown Lamp L1 (Clip Light) | — |
-| Vehicles | Motor Pool **pre-built** at Boreal (no Assembly Gun in MVP). **Trundle only**, per player, no upgrade lines; Repeat Requisition | 16 players driving with no rubber-banding at 120 ms ±30 jitter |
-| Robots | **Roost + Sandpiper** (no Plover, no Albatross). One Roost pad pre-built at Boreal (no Assembly Gun in MVP); the first Roost is **bought with money** (4,500 × 1.15^(n−1)) from its Equipment Card and deploys on that pad. Up to **3 Roosts** (MVP technical cap, shown as "Roosts 1 / 3"). Free one-click **Re-site** anywhere in the Pilot Area. MVP-only stand-in for rails: the Roost store pays on arrival at the ordinary dust price ("Roost Uplink"). Robot states, Equipment Card with status line. Robots work at their **calibrated base rate** whenever the room is active, independent of player count or activity | Server sim of 3 Roosts × 16 shifts within the tick budget; robot positions and plot changes sync to 16 clients within the bandwidth budget; robots keep working at base rate with nobody nearby; nothing accrues while the room is suspended |
+| Vehicles | Motor Pool **pre-built** at Boreal (no Assembly Gun in MVP). **Trundle only**, per player, no upgrade lines; Repeat Requisition | 6 players driving with no rubber-banding at 120 ms ±30 jitter |
+| Robots | **Roost + Sandpiper** (no Plover, no Albatross). One Roost pad pre-built at Boreal (no Assembly Gun in MVP); the first Roost is **bought with money** (4,500 × 1.15^(n−1)) from its Equipment Card and deploys on that pad. Up to **3 Roosts** (MVP technical cap, shown as "Roosts 1 / 3"). Free one-click **Re-site** anywhere in the Pilot Area. MVP-only stand-in for rails: the Roost store pays on arrival at the ordinary dust price ("Roost Uplink"). Robot states, Equipment Card with status line. Robots work at their **calibrated base rate** whenever the room is active, independent of player count or activity | *(Superseded 2026-11-12: player cap is 6, not 16; read 6 shifts/clients.)* Server sim of 3 Roosts × 16 shifts within the tick budget; robot positions and plot changes sync to 16 clients within the bandwidth budget; robots keep working at base rate with nobody nearby; nothing accrues while the room is suspended |
 | Day/night | 60 min (30/30), contract starts at sunrise, Clip Light, night penalty, minimum-visibility floor | — |
 | Navigation | Compass (outposts, nearest-outpost arrow, pings) and Spot Check | — |
 | Robot suggestion | Tutorial only: once the shift owns a Trundle and can nearly afford a Roost, DOT suggests buying one ("The pad is pre-built. The robot is not. Requisition pending."). No quest gate, no free robot; the Roost is purchasable from the start | See MVP pacing below |
 | Exploration | 6 Near Parcels within 300 m of Boreal (Induction step 8) | — |
 | Onboarding | Induction Checklist (8 steps), DOT text tips, DOT Handbook (H) | New tester buys the Crescent Squeegee in 5–10 min unaided |
-| Co-op | **Solo Shift and Private Shift** (invite code/link, up to 16), shared wallet and upgrades, per-player tools and vehicles, join-in-progress with Standard Issue, reconnect grace, Holder kick/ban; one AFK policy (On Break after 10 min without input; idle clients closed after 30 min per netcode §10; the room checkpoints and suspends when no client is connected) | `/bot-test`: 16 bots, 10 min, within tick and bandwidth budgets; robot output identical with 1 or 16 bots connected |
+| Co-op | **Solo Shift and Private Shift** (invite code/link, up to 6), shared wallet and upgrades, per-player tools and vehicles, join-in-progress with Standard Issue, reconnect grace, Holder kick/ban; one AFK policy (On Break after 10 min without input; idle clients closed after 30 min per netcode §10; the room checkpoints and suspends when no client is connected) | `/bot-test`: 6 bots, 10 min, within tick and bandwidth budgets; robot output identical with 1 or 6 bots connected |
 | Accounts & persistence | Guest auth (opaque refresh + JWT). One Contract per player. Checkpoint ≤30 s, on empty, on SIGTERM. Resume after a Render cold start with a "waking server" screen | Kill the server mid-session: ≤30 s of progress lost; contract resumes |
 | UI | HUD (wallet, Shine, Cell gauges, compass, suit icons, Next Requisition tracker), Requisitions Desk, Ops Console (board subset), Motor Pool UI, Roost panel, settings (remap, accessibility basics) | KBM and gamepad complete |
 | Audio | Helmet-muffled SFX set (sweep, pour, stamp, Trundle, Sandpiper chirps), day and night ambient beds, DOT chime | — |
@@ -51,7 +51,7 @@ Changes from the v1 MVP plan (review M14): **added** the first local robot (Roos
 | --- | --- | --- | --- | --- |
 | First Inspector's Stamp | 5–8 min | 5.9 min | ≈3 min | Hand-derived (economy §18.2) |
 | Crescent Squeegee | 5–10 min | 5.9 min | ≈3 min | Hand-derived |
-| Trundle (Motor Pool pre-built, 1,800 LM) | 1–1.5 h | 1.1 h | ≈0.4 h | Hand-derived |
+| Trundle (Motor Pool pre-built, 2,100 LM) | 1–1.5 h | 1.1 h | ≈0.4 h | Hand-derived |
 | First Roost bought (4,500 LM, pre-built pad) | 1.5–2 h | ≈1.5 h | <1 h | Estimate: Trundle income ≈12–14k LM/h from 1.1 h (economy Appendix B); replaces the former Pilot Review row (1.8 h); sim to confirm |
 
 **Explicitly not in MVP:**
@@ -115,7 +115,7 @@ Parked per [REFERENCE_TARGET](REFERENCE_TARGET.md) and ADR-0030. Designs and num
 | Photo mode | Free camera, hide HUD, filters, Earthrise presets (clip-friendly, cf. virality [R§3]) |
 | Beacon Run time trials | Uses existing Flare Beacons and vehicles; cosmetic rewards; promoted to full feature in the Showcase Moon |
 | Survey Globe and Punch List UX | Filters, search by Plot ID, export Flare Beacon routes |
-| Performance passes | Tier A/B budgets with robots and machines at their technical caps, 16 players and a full solar farm |
+| Performance passes | Tier A/B budgets with robots and machines at their technical caps, 6 players and a full solar farm |
 | Audio polish | Full music layers per Shine milestone, Hold Music track list, mix pass |
 | Localization pipeline | String tables (no machine-translated shipping text without human review ★ [R C13]) |
 | Tutorial polish | Probation pacing, DOT barks, first-night experience |
@@ -127,7 +127,7 @@ Parked per [REFERENCE_TARGET](REFERENCE_TARGET.md) and ADR-0030. Designs and num
 | Item | Why / notes |
 | --- | --- |
 | **Moonlet Contracts** (GP(64,0), 40,962 plots) | 8–10 h solo contracts for shorter commitment (tech-stack ADR-0007 sizes). Needs its own technical caps in `caps.json` |
-| **Offline Solo worker** | Run `packages/sim` in a Web Worker for fully offline Solo Shifts (ADR-0015 keeps the sim transport-free); sync to the server later |
+| **Offline Solo worker** | **Superseded 2026-11-13: pulled forward by [ADR-0031](../adr/0031-local-first-solo.md) (local-first Solo in a Web Worker); not post-launch.** Original note: run `packages/sim` in a Web Worker for fully offline Solo Shifts; sync to the server later |
 | **Night Shift** (capped offline robot catch-up) | On resume: credit min(offline, 2 h) × 25% fleet output (candidate). Must ship with a re-run balance sim showing the contract-active targets still hold (or with re-stated targets) |
 | **Account linking** (Discord / Google / GitHub OAuth) | ADR-0018; moves guest progress to an account |
 | **Mobile / touch** | ADR-0021: desktop first; needs a touch control scheme and UI scaling |
@@ -143,7 +143,7 @@ Parked per [REFERENCE_TARGET](REFERENCE_TARGET.md) and ADR-0030. Designs and num
 
 | Tier | Proves |
 | --- | --- |
-| MVP | Dust feel, 16-player shared world, persistence across Render cold starts, server-side robots at base rate and their sync, the money-driven tool → vehicle → robot arc, first ≈2 h of pacing, visual bar |
-| v1.0 | The full reference-mode contract (length regenerated by the sim against the 30–35 h solo target); bounded robot performance; co-op 1–16 |
+| MVP | Dust feel, 6-player shared world, persistence across Render cold starts, server-side robots at base rate and their sync, the money-driven tool → vehicle → robot arc, first ≈2 h of pacing, visual bar |
+| v1.0 | The full reference-mode contract (length regenerated by the sim against the 30–35 h solo target); bounded robot performance; co-op 1–6 |
 | Polish | Retention and readiness for wider sharing |
 | Post-launch | Longevity without monetization |

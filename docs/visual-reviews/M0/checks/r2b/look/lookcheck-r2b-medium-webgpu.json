@@ -1,0 +1,70 @@
+{
+ "preset": "medium",
+ "backend": "webgpu",
+ "s02": {
+  "chips": {
+   "a010": 130.1,
+   "a033": 180.3,
+   "a080": 212.4,
+   "grime": 119.8,
+   "clean": 181.9
+  },
+  "facts": {
+   "variant": "noon",
+   "sunLux": 115874.19902635788,
+   "ev100": 14.3,
+   "fetches": 9,
+   "textureBindings": 2,
+   "maskTexelCm": 0.78125
+  },
+  "errors": []
+ },
+ "s05": {
+  "shade": {
+   "flatLit": {
+    "luma": 182.4,
+    "labB": 0.6
+   },
+   "flatShadow": {
+    "luma": 86,
+    "labB": -1.91
+   },
+   "wallShadow": {
+    "luma": 170.3,
+    "labB": 1.28
+   },
+   "wallLit": {
+    "luma": 170.3,
+    "labB": 1.28
+   }
+  },
+  "shadeSlope": {
+   "slopeLit": {
+    "luma": 180.9,
+    "labB": 0.57
+   },
+   "slopeShadow": {
+    "luma": 87.2,
+    "labB": -1.91
+   }
+  },
+  "wall": {
+   "flatLit": {
+    "luma": 144,
+    "labB": 0
+   },
+   "flatShadow": {
+    "luma": 86,
+    "labB": -1.89
+   },
+   "wallShadow": {
+    "luma": 144,
+    "labB": 0
+   },
+   "wallLit": {
+    "luma": 144,
+    "labB": 0
+   }
+  }
+ }
+}

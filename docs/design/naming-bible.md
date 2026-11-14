@@ -34,7 +34,7 @@ Follow [REFERENCE_TARGET](REFERENCE_TARGET.md). This catalog keeps terminology c
 | Dispatcher AI | **DOT** (Dispatch Operations Terminal) | Voice of tutorials, tips and contract reports. Dry corporate politeness. Appears as a small amber status light on HUD panels |
 | Player job title | **Custodian** | Ranks shown on profile: Trainee → Custodian → Senior Custodian → Lead Custodian → Head Custodian |
 | A saved world | **Contract** | "The Brightside contract for Luna": one persistent moon. Players start, resume, share contracts. Never shown as a signing/agreement screen |
-| Session types | **Solo Shift** (1 player) · **Private Shift** (invite code/link, up to 16) · **Open Shift** (public drop-in, up to 16) | Room types; Solo/Private/Open are flags on a Contract session |
+| Session types | **Solo Shift** (1 player) · **Private Shift** (invite code/link, up to 6) · **Open Shift** (public drop-in, up to 6) | Room types; Solo/Private/Open are flags on a Contract session |
 | Players together | **the shift** | Prose only ("your shift", "shift wallet"); never an item name or a build mode |
 
 ## 2. Currency, progress and meta

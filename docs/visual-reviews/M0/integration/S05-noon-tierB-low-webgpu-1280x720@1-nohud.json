@@ -1,0 +1,76 @@
+{
+  "scene": "S05",
+  "tod": "noon",
+  "tier": "B",
+  "preset": "low",
+  "backend": "webgpu",
+  "requestedBackend": "webgpu",
+  "dpr": 1,
+  "width": 1280,
+  "height": 720,
+  "hud": "nohud",
+  "seed": "vt-standard-01",
+  "lane": "gpu",
+  "commit": "60faef9",
+  "browser": "157.0.8103.79",
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "frameTimeSample": {
+    "avgMs": 17.00937457382679,
+    "p95Ms": 27.700000762939453
+  },
+  "drawCalls": 128,
+  "triangles": 440393,
+  "texPoolMB": 0,
+  "placeholderAssets": [],
+  "stepFrames": 30,
+  "view": null,
+  "measure": {
+    "lumaMean": {
+      "value": 119.10376017167854,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 720
+      }
+    },
+    "sobel": {
+      "value": 30.433477515761865,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 720
+      }
+    },
+    "labB": {
+      "value": -7.9994897613428275,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 720
+      }
+    },
+    "edgeWidth1090": {
+      "value": 342.11680858352224,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 720
+      }
+    },
+    "stars": {
+      "value": 3,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1280,
+        "h": 720
+      }
+    },
+    "nonBlackFraction": 1,
+    "diskBytes": 364518
+  }
+}

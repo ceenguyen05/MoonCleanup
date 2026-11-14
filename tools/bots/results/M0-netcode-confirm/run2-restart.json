@@ -1,0 +1,71 @@
+{
+  "meta": {
+    "scenario": "spike-16",
+    "milestone": "M0-netcode-confirm",
+    "url": "http://localhost:2571",
+    "profile": "none",
+    "seed": 1,
+    "tickHz": 20,
+    "snapshotHz": 10,
+    "startedAt": "2026-11-13T12:11:23.757Z",
+    "durationS": 75,
+    "node": "v26.13.1"
+  },
+  "bots": {
+    "bots": 6,
+    "elapsedS": 75,
+    "snapshotHzTarget": 10,
+    "snapshotHzAchievedPerBot": 8.4,
+    "frameInterArrivalMs": {
+      "n": 3772,
+      "p50": 99.06,
+      "p95": 110.74,
+      "p99": 111.64,
+      "max": 120.21
+    },
+    "rttMs": {
+      "n": 186,
+      "p50": 1,
+      "p95": 1,
+      "p99": 2,
+      "max": 2
+    },
+    "bytesInPerBotPerS": {
+      "FRAME": 2032,
+      "DUST": 483,
+      "PONG": 3,
+      "statePatch": 91,
+      "stateFull": 3,
+      "other": 0
+    },
+    "bytesInPerBotPerSTotal": 2612,
+    "inputsSent": 7864,
+    "inputMessages": 7596,
+    "skippedSends": 1338,
+    "resyncs": 12,
+    "joins": 12,
+    "disconnects": 12,
+    "unexpectedDrops": 6,
+    "reconnects": 6,
+    "serverBufferDepth": {
+      "n": 3784,
+      "p50": 3,
+      "p95": 3,
+      "p99": 3,
+      "max": 3
+    },
+    "botProcessHeapGrowthMB": 1
+  },
+  "server": null,
+  "netsim": null,
+  "desync": {
+    "count": null,
+    "note": "n/a in spike: synthetic world has no client prediction to compare (arrives with M1 sim)"
+  },
+  "rejectedInputs": {
+    "late": null,
+    "rateLimited": null,
+    "malformed": null,
+    "substituted": null
+  }
+}

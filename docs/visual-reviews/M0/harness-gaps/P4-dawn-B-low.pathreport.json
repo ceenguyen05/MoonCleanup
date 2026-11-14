@@ -1,0 +1,51 @@
+{
+  "path": "P4",
+  "scene": "S01",
+  "tod": "dawn",
+  "checks": "LOD pop, CSM to horizon-shadow handoff",
+  "durationS": 30,
+  "stepped": {
+    "frames": 8,
+    "settleFramesPerPosition": 2,
+    "dt": 0.016666666666666666
+  },
+  "note": "stepped keyframes, not a 30 s real-time run; the ground-spike ratio is a LOD-pop proxy, the verdict needs the frames viewed",
+  "serve": {
+    "mode": "production",
+    "url": "http://127.0.0.1:5182/",
+    "how": "preview-started"
+  },
+  "files": [
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f00.png",
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f01.png",
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f02.png",
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f03.png",
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f04.png",
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f05.png",
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f06.png",
+    "C:\\Users\\caseyn\\Downloads\\BroswerMoonSweeper\\docs\\visual-reviews\\M0\\harness-gaps\\S01-dawn-tierB-low-webgpu-1920x1080@1-nohud-floor-P4-f07.png"
+  ],
+  "summary": {
+    "frames": 8,
+    "pairDiffWhole": [
+      18.814974384756276,
+      21.794924897140834,
+      20.847119210352318,
+      20.894769175450467,
+      23.080171010918733,
+      25.513453856264643,
+      13.514287593096586
+    ],
+    "pairDiffGround": [
+      31.841106625524937,
+      42.89903070478252,
+      40.98818407254638,
+      41.342115254319374,
+      53.11478499079606,
+      74.4726527233408,
+      40.54286277928976
+    ],
+    "groundSpikeRatio": 1.8013749965432644,
+    "maxGroundDiffAt": 6
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "levelMult": [1.75, 2.75, 4],
+  "costsLm": {
+    "tool.desk_duster": [90, 160, 300],
+    "tool.crescent_squeegee": [100, 200, 450],
+    "tool.bristle_broom": [140, 320, 800],
+    "tool.lane_broom": [500, 1100, 2700],
+    "tool.static_rake": [1800, 4000, 10000],
+    "tool.ion_curtain": [6000, 13500, 33000]
+  },
+  "puckKg": 1,
+  "stackMaxKg": 20,
+  "loosePuckCap": { "perPlayer": 20, "perContract": 200, "despawnS": 600, "despawnValueFrac": 0.5 }
+}

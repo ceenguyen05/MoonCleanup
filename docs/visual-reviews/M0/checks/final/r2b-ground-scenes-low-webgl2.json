@@ -1,0 +1,88 @@
+{
+ "preset": "low",
+ "backend": "webgl2",
+ "scenes": {
+  "s01-a-noon": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 184.9,
+    "grime": 144.2
+   },
+   "errors": []
+  },
+  "s01-a-dawn": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 232.2,
+    "grime": 123.7
+   },
+   "errors": []
+  },
+  "s01-b-noon": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 181.2,
+    "grime": 195
+   },
+   "errors": []
+  },
+  "s01-wide-morning": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 183.1,
+    "grime": 109.7
+   },
+   "errors": []
+  },
+  "s01-close-noon": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "grime": 212.9
+   },
+   "errors": []
+  },
+  "s05-wide-sun15": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "flatLit": 189.7,
+    "flatShadow": 104.1,
+    "slopeShadow": 188,
+    "wallShadow": 241.1,
+    "wallLit": 241.1
+   },
+   "errors": []
+  },
+  "s05-slope-sun60": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "slopeLit": 181.3,
+    "slopeShadow": 129.4,
+    "slopeBoots": 78.4
+   },
+   "errors": []
+  },
+  "s06-pool": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "pool": 144.6
+   },
+   "errors": []
+  },
+  "s06-wide": {
+   "filter": "pcf3",
+   "knobs": "default",
+   "probeLuma": {
+    "pool": 133.1
+   },
+   "errors": []
+  }
+ }
+}

@@ -1,6 +1,6 @@
 # ADR-0002: Free-tier hosting topology ($0 forever)
 
-- **Status:** Accepted (2026-11-12); branch and staging topology ("Render Free web service x2", "Release order") **superseded by [ADR-0029](0029-single-deploy-branch-main.md) (2026-11-12)**
+- **Status:** Accepted (2026-11-12); branch and staging topology ("Render Free web service x2", "Release order") **superseded by [ADR-0029](0029-single-deploy-branch-main.md) (2026-11-12)**; **superseded in part 2026-11-13: Neon free Postgres replaces Aiven free Postgres** (Cee decision; Neon auto-wakes from scale-to-zero, no card, publicly trusted TLS CA, no pasted certificate). Where this ADR says Aiven, read Neon; see [HOSTING_GUIDE](../HOSTING_GUIDE.md) section 1
 - **Deciders:** owner (budget), lead/orchestrator
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) sections 1 and 4 (Hosting row)
 
@@ -12,6 +12,7 @@ The owner fixed a **$0 forever** hosting budget on 2026-11-11. The game needs a 
 - Render Free web service: 0.1 CPU / 512 MB, spins down after 15 min without inbound traffic (WebSocket messages count), ~1 min cold start, may restart at any time, 750 instance-hours per workspace per month.
 - Render Hobby workspace: 5 GB outbound per month; with no payment method, free services are suspended for the rest of the month.
 - **Aiven free MySQL was retired on 6 Nov 2026.** The only free Aiven database is PostgreSQL (1 CPU, 1 GB RAM, 1 GB storage, powers off when idle).
+- **Superseded in part 2026-11-13:** Neon Free replaces Aiven Free (see Status above). The Aiven wording below is historical rationale.
 
 ## Options considered
 
@@ -39,7 +40,7 @@ Option 1:
 **Negative / risks**
 - 750 free hours cover one 24/7 service; two services that are both awake exhaust them and Render then suspends **all** free services. Staging must stay asleep except during tests.
 - Cold start and random restarts drop every room: the server checkpoints every <=30 s and on SIGTERM, and the client has a "waking server" flow (ADR-0015, ADR-0016).
-- 5 GB/month is roughly 5-6 full 16-player hours; exceeding it suspends the game for the rest of the month.
+- 5 GB/month is roughly 5-6 full 16-player hours; exceeding it suspends the game for the rest of the month. Superseded 2026-11-12: cap is 6.
 - Aiven free DB powers off when idle and may change cloud/region; 1 GB storage limits saves (ADR-0016).
 - Vercel Hobby forbids commercial use: no ads, payments or paid contributors.
 

@@ -10,8 +10,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "lint": "echo game-data lint: placeholder until sources land - see README",
-    "typecheck": "echo game-data typecheck: placeholder until sources land - see README",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

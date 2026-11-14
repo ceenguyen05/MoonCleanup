@@ -2,7 +2,7 @@
 
 The game name is **Clean The Moon!** everywhere it is displayed. Existing `moon-cleanup` package/repository IDs remain internal implementation identifiers.
 
-A browser co-op moon-cleaning game for 1–16 players: clean regolith, earn Lumens, upgrade tools,
+A browser co-op moon-cleaning game for 1–6 players per room (mostly single-player; multiplayer for demos): clean regolith, earn Lumens, upgrade tools,
 drive vehicles and automate the operation. Original Brightside Facilities Co. identity, detailed lunar terrain,
 stylized PBR lighting and satisfying low-gravity motion. TypeScript, three.js WebGPU/WebGL2, React and Colyseus.
 
@@ -154,9 +154,9 @@ data; memory-mode progress resetting is expected. Report missing features separa
 
 ## Deployment and references
 
-`main` → Vercel static client + one Render Free server + Aiven Postgres; no release branch or second staging service
+`main` → Vercel static client + one Render Free server + Neon Postgres; no release branch or second staging service
 ([ADR-0029](docs/adr/0029-single-deploy-branch-main.md)). Cee sets Vercel's Production Branch to main in its dashboard.
-Follow [Connect Aiven, Render and Vercel](docs/HOSTING_GUIDE.md) for account setup, exact environment keys, generated
+Follow [Connect Neon, Render and Vercel](docs/HOSTING_GUIDE.md) for account setup, exact environment keys, generated
 secrets, database TLS, domain wiring and troubleshooting. Read that guide only when setting up hosting.
 Do not publish until the real builds/gates pass; the old release-client workflow has been removed.
 Strict protocol compatibility and the updating-server UI must handle independent client/server deployment timing.

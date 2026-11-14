@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "traits": [
+    { "id": "trait.detailing", "params": { "radiusM": 0.5 } },
+    { "id": "trait.flick", "params": { "airborneSweep": true } },
+    { "id": "trait.sure_footing", "params": { "steepSweepMult": 1 } },
+    { "id": "trait.lane_lock", "params": { "sweepSpeedMult": 1.15 } },
+    { "id": "trait.charge", "params": { "steepSweepMult": 1, "finishStampMult": 1.5 } },
+    { "id": "trait.twin_pass", "params": { "effectiveWidthMult": 1.15 } }
+  ]
+}

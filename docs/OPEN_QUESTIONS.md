@@ -5,24 +5,25 @@ Ask only for an input currently blocking useful work. Established decisions are 
 | ID | Outstanding input / default | When |
 | --- | --- | --- |
 | Q9 | License: no new LICENSE declaration until Cee chooses; retain NASA/HYG/asset attribution | Before public release |
-| Q10 | Repo visibility: private by default | Owner decision before publication |
-| Q11 | No uptime pinger by default; accept free-server cold starts | Revisit only if launch needs it |
+| Q10 (RESOLVED 2026-11-13 by Cee: repo is PUBLIC, on his personal GitHub account) | Repo visibility. Hygiene: never commit .env or secrets; secrets only in Render/Vercel dashboards | Closed |
+| Q11 (RESOLVED 2026-11-13 by Cee: accept the ~1 min cold start + waking screen, no pinger) | Optional later step if wanted | Closed |
 | Q12 | Desktop KBM/gamepad first; mobile not in core scope (ADR-0021) | Scope change only by Cee |
 | Q13 | No monetization/paid hosting by default | Cee authorizes any change |
 | Q14 | DOT text/chime first; voice requires a rights-cleared source | When audio needs it |
 | Q15 | AI assets only with appropriate rights/disclosure and ledger entries | Before shipping those assets |
-| Q16 | Offline Solo is post-launch; current solo uses authoritative server | Optional owner scope decision |
+| Q16 (RESOLVED 2026-11-13 by [ADR-0031](adr/0031-local-first-solo.md)) | Local-first Solo ships in M1: `RoomSim` in a Web Worker, offline persistence via an IndexedDB checkpoint queue, Render for auth/sync/verify. Remaining optional (M4): fully offline play without ever contacting the server; account-less save export/import. `VITE_OFFLINE_SOLO` is superseded/removed | Closed |
 | Q17 | Standard Moon only; smaller Moonlet is optional later | No current blocker |
-| Q18 | Cee selects compatible Aiven/Render region; do not recreate services automatically | Deploy setup |
+| Q18 (RESOLVED 2026-11-13 by Cee: Render region **Ohio**; DB = **Neon free** (auto-wakes) replacing Aiven) | Do not recreate services automatically | Deploy setup |
 | Q20 | LOLA terrain + HYG stars; other datasets need cleared terms | Only if a new dataset is proposed |
+| Q28 | Solo tick rate 20 vs 30 Hz: decide after the E13 input-to-visual latency measurement (M1); default 20 Hz | M1 after E13 |
 | Q25 | Per-command fnm Node 26 prefix; do not alter the user's profile/system PATH | Every Node/tool command |
-| Q27 | Co-op completion bands (4p ≈ 15 h, 16p 8–10 h) relied on the retired On-Shift Bonus. **Default:** regenerate co-op bands with the reference-mode balance-sim and accept them (no ★ multiplier); Cee may instead pull On-Shift back in (economy §24) | Before M1/M2 balance acceptance |
+| Q27 (RESOLVED 2026-11-12 by Cee: solo-tuned, no On-Shift Bonus; co-op shares the same pace; max 6 players) | Co-op completion bands (4p ≈ 15 h, 16p 8–10 h) relied on the retired On-Shift Bonus. **Default:** regenerate co-op bands with the reference-mode balance-sim and accept them (no ★ multiplier); Cee may instead pull On-Shift back in (economy §24) | Before M1/M2 balance acceptance | Superseded 2026-11-12: cap is 6.
 
 ## Settled choices (do not reopen on resume)
 
 - Q1/Q6/Q7: exact title **Clean The Moon!**; close Moon Sweepers experience, flexible item names, authored assets/branding;
   [REFERENCE_TARGET](design/REFERENCE_TARGET.md) and ADR-0030 supersede prior forced differences/custom gates.
-- Q2: persistent saved Contracts; Solo/Private/Open sessions; up to 16 players. Q3/Q5: $0 budget, Aiven Postgres.
+- Q2: persistent saved Contracts; Solo/Private/Open sessions; up to 16 players. Q3/Q5: $0 budget, free Postgres (Neon free chosen 2026-11-13, replacing Aiven). Superseded 2026-11-12: cap is 6.
 - Q4: owner accepts free-tier egress suspension risk; monitor usage, do not add paid billing.
 - Q8: existing folder/repo identifiers and package scope stay stable; no agent git mutations.
 - Q19/Q24/Q24b: main-only, one Render service and schema prod (ADR-0029); no release/staging setup.

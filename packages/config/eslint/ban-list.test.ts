@@ -170,6 +170,82 @@ const cases: Case[] = [
     title: "pmndrs postprocessing package",
     code: `import { EffectComposer } from "postprocessing";\nexport const c = EffectComposer;\n`,
   },
+  // --- fix cycle 3: forms that slipped through (T02 review finding 4) ---
+  {
+    entry: "Clock",
+    title: "THREE.Clock without new",
+    code: `import * as THREE from "three";
+export const C = THREE.Clock;
+`,
+  },
+  {
+    entry: "Clock",
+    title: "extends THREE.Clock",
+    code: `import * as THREE from "three";
+export class C extends THREE.Clock {}
+`,
+  },
+  {
+    entry: "Clock",
+    title: "type position",
+    code: `import type * as THREE from "three";
+export type C = THREE.Clock;
+`,
+  },
+  {
+    entry: "WebGLRenderer",
+    title: "type position",
+    code: `import type * as THREE from "three";
+export let r: THREE.WebGLRenderer | undefined;
+`,
+  },
+  {
+    entry: "WebGLRenderer",
+    title: "destructuring the namespace",
+    code: `import * as THREE from "three";
+const { WebGLRenderer } = THREE;
+export const r = WebGLRenderer;
+`,
+  },
+  {
+    entry: "Clock",
+    title: "destructuring the namespace",
+    code: `import * as THREE from "three";
+const { Clock } = THREE;
+export const c = Clock;
+`,
+  },
+  {
+    entry: "WebGLRenderer",
+    title: "computed member",
+    code: `import * as THREE from "three";
+export const r = THREE["WebGLRenderer"];
+`,
+  },
+  {
+    entry: "renderAsync",
+    title: "destructured method",
+    code: `export function f(r: { renderAsync: () => void }) {
+  const { renderAsync } = r;
+  renderAsync();
+}
+`,
+  },
+  {
+    entry: "WebGLRenderer",
+    title: "default import of the class file",
+    code: `import W from "three/src/renderers/WebGLRenderer.js";
+export const r = W;
+`,
+  },
+  {
+    entry: "WebGLRenderer",
+    title: "scoped to tools: type position",
+    file: "tools/screenshots/src/a.ts",
+    code: `import type * as THREE from "three";
+export let r: THREE.WebGLRenderer | undefined;
+`,
+  },
   { entry: "postprocessing", title: "pmndrs postprocessing subpath", code: `import "postprocessing/build/x.js";\n` },
 ];
 
@@ -199,10 +275,27 @@ describe("three.js ban-list: each entry fires", () => {
     }
   });
 
-  it.each(cases)("$entry: $title", async ({ code, file }) => {
+  // Each fixture must fail for ITS OWN reason: the message names the banned entry (T02 review finding 12).
+  const reasonFor = (entry: Case["entry"]): RegExp => {
+    switch (entry) {
+      case "three/examples/jsm/postprocessing/*":
+        return /post-processing passes are banned/;
+      case "R3F":
+        return /React Three Fiber/;
+      case "postprocessing":
+        return /postprocessing/;
+      default:
+        return new RegExp(`"${entry}" is banned`);
+    }
+  };
+
+  it.each(cases)("$entry: $title", async ({ entry, code, file }) => {
     const hits = restrictedFindings(await lintFixture(code, file ?? FILE));
     expect(hits.length, "a no-restricted-* rule must fire").toBeGreaterThan(0);
-    expect(hits.every((h) => h.message.length > 0)).toBe(true);
+    expect(
+      hits.some((h) => reasonFor(entry).test(h.message)),
+      JSON.stringify(hits),
+    ).toBe(true);
   });
 });
 
@@ -221,6 +314,28 @@ describe("three.js ban-list: allowed API stays clean", () => {
       code: `class Clock {\n  now() {\n    return 0;\n  }\n}\nexport const c = new Clock();\n`,
     },
     {
+      title: "type position of an allowed class",
+      code: `import type * as THREE from "three/webgpu";
+export let r: THREE.WebGPURenderer | undefined;
+export let t: THREE.Timer | undefined;
+`,
+    },
+    {
+      title: "destructuring allowed names from the namespace",
+      code: `import * as THREE from "three/webgpu";
+const { WebGPURenderer, Timer } = THREE;
+export const all = [WebGPURenderer, Timer];
+`,
+    },
+    {
+      title: "a local Clock type and a Clock-named member of another object in the client",
+      code: `interface Clock {
+  now(): number;
+}
+export const f = (deps: { Clock: Clock }) => deps.Clock.now();
+`,
+    },
+    {
       title: "awaiting renderer.init() then render()",
       code: `export async function start(r: { init(): Promise<void>; render(a: number): void }) {\n  await r.init();\n  r.render(1);\n}\n`,
     },
@@ -229,5 +344,57 @@ describe("three.js ban-list: allowed API stays clean", () => {
   it.each(allowed)("$title", async ({ code }) => {
     const findings = await lintFixture(code, FILE);
     expect(findings, JSON.stringify(findings)).toEqual([]);
+  });
+});
+
+// Member / type / destructuring selectors only apply where three.js can be imported (T02 review finding 3).
+describe("three.js ban-list: member selectors are scoped to client, tools and e2e", () => {
+  const misfires: { title: string; file: string; code: string }[] = [
+    {
+      title: "hooks.onBeforeCompile in the server",
+      file: "apps/server/src/a.ts",
+      code: `export const f = (hooks: { onBeforeCompile?: () => void }) => hooks.onBeforeCompile?.();
+`,
+    },
+    {
+      title: "renderAsync member in the sim",
+      file: "packages/sim/src/a.ts",
+      code: `export const f = (o: { renderAsync: () => void }) => o.renderAsync();
+`,
+    },
+    {
+      title: "PostProcessing member in a package",
+      file: "packages/shared/src/a.ts",
+      code: `export const f = (o: { PostProcessing: number }) => o.PostProcessing;
+`,
+    },
+    {
+      title: "new deps.Clock() in the sim",
+      file: "packages/sim/src/a.ts",
+      code: `export const f = (deps: { Clock: new () => object }) => new deps.Clock();
+`,
+    },
+    {
+      title: "own namespace import Clock in the server",
+      file: "apps/server/src/a.ts",
+      code: `import * as net from "@moon-cleanup/protocol";
+export const c = (net as unknown as { Clock: new () => object }).Clock;
+`,
+    },
+  ];
+  it.each(misfires)("$title stays clean", async ({ file, code }) => {
+    const findings = restrictedFindings(await lintFixture(code, file));
+    expect(findings, JSON.stringify(findings)).toEqual([]);
+  });
+
+  it("a renderAsync member is still caught in the client, where three can be imported", async () => {
+    const hits = restrictedFindings(
+      await lintFixture(
+        `export const f = (o: { renderAsync: () => void }) => o.renderAsync();
+`,
+        FILE,
+      ),
+    );
+    expect(hits.length).toBeGreaterThan(0);
   });
 });

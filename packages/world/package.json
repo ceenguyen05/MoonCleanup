@@ -10,9 +10,11 @@
   },
   "sideEffects": false,
   "scripts": {
-    "lint": "echo world lint: placeholder until sources land - see README",
-    "typecheck": "echo world typecheck: placeholder until sources land - see README",
-    "test": "vitest run --passWithNoTests"
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "test:golden": "vitest run -c vitest.config.ts golden && vitest run -c vitest.browser.config.ts",
+    "test:golden:node": "vitest run -c vitest.config.ts golden"
   },
   "dependencies": {
     "@moon-cleanup/shared": "workspace:*"

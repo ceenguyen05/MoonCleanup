@@ -1,0 +1,9 @@
+{
+  "name": "dust-sim-harness",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared benchmark harness: same scene, seed and camera path for every dust-sim approach.",
+  "license": "UNLICENSED",
+  "scripts": {}
+}

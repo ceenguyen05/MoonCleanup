@@ -9,7 +9,7 @@ Owner walkthrough: [HOSTING_GUIDE](../HOSTING_GUIDE.md); localhost commands: [RE
 | Environment | Client | Server/data |
 | --- | --- | --- |
 | Local | Vite `http://localhost:5173+N` | `http://localhost:2567+N`; memory or isolated local Postgres |
-| Hosted | Vercel production branch `main` | One Render Free service `moon-cleanup-server`, branch `main`; Aiven Postgres, schema `prod` |
+| Hosted | Vercel production branch `main` | One Render Free service `moon-cleanup-server`, branch `main`; Neon Postgres (AWS us-east-2), schema `prod` |
 
 No release branch, permanent staging service, branch-promotion flow or Vercel deploy-hook workflow.
 Keep stable technical identifiers; displayed game title is Clean The Moon!.
@@ -57,8 +57,7 @@ Budget long tests locally and short agreed hosted spikes separately. Cold starts
 
 ## 6. Database reconnect and migrations
 
-One Aiven connection target, application schema `prod` (dedicated DB/user if available; defaultdb fallback). Validate CA/TLS,
-small pools, bounded retry/backoff after sleep and truthful readiness. Run versioned migrations with the hosted build using
+One Neon connection target (the DIRECT string, never the `-pooler` host), application schema `prod` in the default `neondb` database. TLS is always verified: against the system CA store (Neon uses a public CA) or `DATABASE_CA_CERT` when set. Small pools (4), 15 s connect timeout, bounded retry/backoff through the scale-to-zero wake (Neon Free suspends after 5 idle minutes and wakes in about 1-5 s) and truthful readiness. Run versioned migrations with the hosted build using
 the configured schema; do not reset live data. Persistence tests use isolated local/test databases. See data-model/netcode
 for atomic saves, leases, idempotency and reconnect behavior. Credentials/CA values stay out of tracked files and output.
 
@@ -91,17 +90,17 @@ Record BLOCKED/provisional results for absent services/devices; continue indepen
 | `VITE_SENTRY_DSN` | client | no | no (public DSN) | Browser Sentry project DSN; empty disables Sentry | Sentry project settings → Vercel dashboard |
 | `VITE_BUILD_VERSION` | client | yes | no | Build identifier shown in UI, sent as `clientBuild`, Sentry release | Vercel build command from `VERCEL_GIT_COMMIT_SHA`; `dev` locally |
 | `VITE_ENV` | client | yes | no | `local` · `preview` · `production` (staging remains a reserved internal value) | Vercel dashboard (per environment/branch) |
-| `VITE_OFFLINE_SOLO` | client | no | no | Run `RoomSim` in a Web Worker without a server (dev flag; v1.0 feature) | `.env.local` / Vercel dashboard |
+| `VITE_OFFLINE_SOLO` | client | no | no | SUPERSEDED/REMOVED by [ADR-0031](../adr/0031-local-first-solo.md): Solo always runs `RoomSim` in a Web Worker; no flag | n/a |
 | `SENTRY_AUTH_TOKEN` | client build (Vercel) | for source maps | **yes** | Uploads source maps during the build | Sentry → Vercel dashboard (not `VITE_`) |
 | `SENTRY_ORG` | client build | for source maps | no | Sentry organisation slug | Sentry → Vercel dashboard |
 | `SENTRY_PROJECT` | client build | for source maps | no | Sentry client project slug | Sentry → Vercel dashboard |
 | `VERCEL_GIT_COMMIT_SHA` | client build | auto | no | Commit SHA (system variable) | Provided by Vercel |
 | `NODE_ENV` | server (Render) | yes | no | `production` on Render, `development` locally | Render dashboard / `render.yaml` |
 | `PORT` | server | yes | no | HTTP/WS listen port | Injected by Render (10000); `2567+N` locally |
-| `ENV_NAME` | server | yes | no | `local` · `staging` · `production`; used in JWT `aud`, logs, Sentry environment, lease ids | `render.yaml` value |
-| `DATABASE_URL` | server | if `postgres` | **yes** | Postgres connection URL for this environment's DB and role | Aiven console → Overview → Connection information (host/port) + per-env DB/role created in the console → Render dashboard |
+| `ENV_NAME` | server | yes | no | `local` · `production` (ADR-0029: no staging service); used in JWT `aud`, logs, Sentry environment, lease ids | `render.yaml` value |
+| `DATABASE_URL` | server | if `postgres` | **yes** | Neon **direct** connection string (no `-pooler`) with `sslmode=require`; the server refuses non-TLS URLs unless `ENV_NAME=local` | Neon console → project → Connect → pooling OFF → Show password → copy → Render dashboard |
 | `DB_SCHEMA` | server | no (default `prod`) | no | Schema for repositories/migrations: `prod` on the one hosted service. Use an isolated local database/schema for test data | `render.yaml` / `.env.example` |
-| `DATABASE_CA_CERT` | server | if not local | no (public cert) | Aiven project CA certificate, full PEM text incl. BEGIN/END lines | Aiven console → Overview → CA certificate → Download → paste into Render dashboard |
+| `DATABASE_CA_CERT` | server | no | no (public cert) | Optional PEM of a private CA. Empty for Neon (verified against the system CA store) | Leave empty |
 | `PERSISTENCE_DRIVER` | server | yes | no | `postgres` or `memory` (memory = local only, refused when `ENV_NAME` ≠ `local`) | `render.yaml` / `.env` |
 | `DB_POOL_MAX` | server | no (default 4) | no | Max DB connections from this instance | `render.yaml` |
 | `JWT_SECRET` | server | yes | **yes** | HS256 signing key for access JWTs (≥ 32 random bytes, base64) | `render.yaml` `generateValue: true`, unique per environment |
@@ -116,7 +115,7 @@ Record BLOCKED/provisional results for absent services/devices; continue indepen
 | `MAX_ROOMS` | server | no (default 3) | no | **Hard ceiling** on live rooms per instance; admission is decided by the measured tick budget below it ([netcode.md §15](netcode.md)) | `render.yaml` |
 | `TICK_BUDGET_MS` | server | no (default 3.5) | no | Admission budget: Σ room tick p95 + new-room estimate must stay ≤ this (70 % of a 20 Hz tick) | `render.yaml` |
 | `CLIENT_IP_HEADER` | server | no (default `true-client-ip`) | no | The single Render-documented client-IP header used for per-IP limits; `x-forwarded-for` means "right-most entry only" ([security.md §5](security.md#5-rate-limiting)) | `render.yaml` |
-| `MAX_CLIENTS` | server | no (default 24) | no | Admission limit for connected clients per instance | `render.yaml` |
+| `MAX_CLIENTS` | server | no (default 12) | no | Admission limit for connected clients per instance | `render.yaml` |
 | `CHECKPOINT_INTERVAL_S` | server | no (default 30) | no | Max seconds between checkpoints of a dirty room (≤ 30 per tech-stack) | `render.yaml` |
 | `SEAT_HOLD_S` | server | no (default 60) | no | Reconnection seat-hold window | `render.yaml` |
 | `BUILD_VERSION` | server | no | no | Build identifier in `/healthz`, logs, Sentry release, lease ids; derived from `RENDER_GIT_COMMIT` when unset | Render (derived) / `.env` |
@@ -124,3 +123,4 @@ Record BLOCKED/provisional results for absent services/devices; continue indepen
 | `NODE_OPTIONS` | server | yes on Render | no | `--max-old-space-size=384` heap cap | `render.yaml` |
 | `PROD_SERVER_HTTP_URL` | Local/test tools (`tools/bots`, `tools/perf`, e2e), as a **deny** value | yes | no | Live Render HTTPS URL; automated test tools refuse it. Hosted measurement requires explicit isolated/test-only setup | Ignored local/test tool environment |
 | `NET_SPIKE` | server | no (default 0) | no | Enables test spike rooms only in an agreed isolated test window; restore 0 afterward | local/test env; Render dashboard only when authorized |
+| `TRANSPORT` | server | no (default `auto`) | no | WebSocket transport: `auto` tries uWebSockets.js and falls back to Colyseus' `ws` transport (same protections) with one boot warning `[net] transport=ws (uWebSockets.js unavailable: <reason>)`; `uws` fails boot if uWS cannot load; `ws` forces the fallback. Boot log `[net] transport=uws|ws` shows the live one | Not set on Render (default); local/test env |

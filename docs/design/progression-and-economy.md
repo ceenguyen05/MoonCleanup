@@ -172,7 +172,7 @@ Area rate = width × cruise speed × 0.8 coverage ÷ passes (Moon mix). The duty
 
 | Tier | Vehicle | Price | Seats | Width | Cruise | Boost | Depth | Payload | Puck slots | Area rate | Payload fill | Gate |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Trundle (walk-behind) | 1,800 | 0 | 1.6 m | 3.0 m/s | ×1.30 | 7 | 200 kg | 1 | 2.65 m²/s (3.49 outpost mix) | 3.0 min | — |
+| 1 | Trundle (walk-behind) | 2,100 | 0 | 1.6 m | 3.0 m/s | ×1.30 | 7 | 200 kg | 1 | 2.65 m²/s (3.49 outpost mix) | 3.0 min | — |
 | 2 | Skiff | 12,000 | 1 | 2.2 m | 6.5 m/s | ×1.40 | 7 | 600 kg | 2 | 7.9 | 3.0 min | — |
 | 3 | Carryall (transport) | 20,000 | 8 | — | 7.5 m/s | ×1.40 | — | Flatbed: 40 pucks, 8 Puck Stacks or 2 Bales | — | no cleaning | — | — |
 | 4 | Bulldust | 28,000 | 1 | 3.4 m | 6.2 m/s | ×1.35 | 9 | 2,000 kg | 4 | 15.3 | 5.1 min | — |
@@ -182,7 +182,7 @@ Area rate = width × cruise speed × 0.8 coverage ÷ passes (Moon mix). The duty
 **Puck slots** carry pucks or Puck Stacks (T loads/unloads within 3 m). **One vehicle per Motor Pool** can be out at a time; demolishing a Motor Pool sends its vehicles to the nearest other Motor Pool (or to storage if none).
 
 **Motor Pool parts:**
-- **Motor Pool** 1,000 LM (garage; recalls, stores and upgrades any vehicle; **includes one Dump Plate**). v1 double-counted that Dump Plate in the Trundle step; the opening now costs 2,800 (Motor Pool + Trundle).
+- **Motor Pool** 1,000 LM (garage; recalls, stores and upgrades any vehicle; **includes one Dump Plate**). v1 double-counted that Dump Plate in the Trundle step; the opening now costs 3,100 (Motor Pool + Trundle). *Retuned 2026-11-14 (M1-W2-T05 balance review): Trundle 1,800 → 2,100 so the nominal efficient solo first Roost clears the 1.5 h floor (1.47 → 1.54 h); Trundle stays in band at 1.16 h. The MVP slice has the Motor Pool pre-built, so only the Trundle price applies there.*
 - Extra **Dump Plate** 200 (unload pad; a Dump Plate placed against a Gate pays directly).
 - **Dust Vault** 1,500 (20 t buffer; outputs Puck Stacks to a rail or through a Bale Chute face into an adjacent Gate).
 
@@ -198,7 +198,7 @@ Area rate = width × cruise speed × 0.8 coverage ÷ passes (Moon mix). The duty
 | **Fast Tip** | Unload −40% (0.10) · −70% (0.30) |
 | **Running Lamps** | 30 m beam, −10 points night penalty in this vehicle (0.05) · 45 m, −20 points (0.15) |
 
-- Maxing a cleaning vehicle costs **6.30× its price** (1.70 + 1.35 + 0.55 + 0.05 + 2.05 + 0.40 + 0.20): Behemoth **756,000 LM**; Trundle 11,340.
+- Maxing a cleaning vehicle costs **6.30× its price** (1.70 + 1.35 + 0.55 + 0.05 + 2.05 + 0.40 + 0.20): Behemoth **756,000 LM**; Trundle 13,230.
 - The Carryall takes only Gear Ratio, Afterburner, Throttle Lock and Running Lamps (2.50×).
 - A maxed Behemoth reaches about 33 m²/s raw; 36 m²/s with Master Stroke.
 
@@ -417,6 +417,8 @@ Co-op columns were derived with the parked On-Shift Bonus, Docket and Review per
 | ★ Solo purchase gap, P50 / max (M7, m10) | ≤45 min / ≤90 min | est. ≈35 min / ≈90 min | Target kept; value regenerate | — | — | — | — |
 | ★ 4 players at 50% attendance, Fulfilled (M19) | 17–21 h contract-active | — | Regenerate | — | est. 18.5 h | — | — |
 
+> Superseded 2026-11-12: cap is 6. The 16-player figures above are not rescaled; use the 4- and 8-player rows as bounds until re-measured.
+
 The former player-attributable-share target (B1) depended on Unattended ×0.5 and is retired with it (§24.8).
 
 ### 18.2 Worked math for the early milestones (outpost mix 0.335 kg/m², 1.84 LM/m²)
@@ -427,7 +429,7 @@ Trips use the §22 distance model: before the Puck Former, trip = 2 × d ÷ 3.4 
 2. **Crescent Squeegee (75) at 5.9 min,** straight from the first plot's 88 LM.
 3. **First Cell (Squeegee Cell I, 100) at 8.5 min.** An Apron plot with the Squeegee takes 133 s + one 23.6 s trip = 2.6 min and pays 88 LM (≈2,000 LM/h).
 4. **Assembly Gun (750) at 42 min.** The Apron is done at ≈17 min (528 LM in all). The Bristle Broom + Cell I on outpost ground cleans 0.728 m²/s, fills 26.3 kg in 108 s, walks 45–50 s → duty ≈0.70 → 0.51 m²/s → 3,300 LM/h lit, 2,700 LM/h dark with the Clip Light. Squeegee 75 + Cell 100 + Bristle 200 + Cell 140 + Clip Light 150 + Holster I 100 + Assembly Gun 750 = 1,515 LM, reached at 0:42 with three Near Parcels (90 LM). ✓
-5. **Trundle at 1.49 h.** The Puck Former kit (400) at 0:49 cuts trips to 21 s (duty 0.84, 4,000 LM/h); the Lane Broom (750) at 1:04 gives 1.05 m²/s (≈6,800 LM/h lit). Motor Pool 1,000 (includes the Dump Plate) + Trundle 1,800 = 2,800 at 1:29. ✓
+5. **Trundle at 1.49 h.** The Puck Former kit (400) at 0:49 cuts trips to 21 s (duty 0.84, 4,000 LM/h); the Lane Broom (750) at 1:04 gives 1.05 m²/s (≈6,800 LM/h lit). Motor Pool 1,000 (includes the Dump Plate) + Trundle 1,800 = 2,800 at 1:29. ✓ *(v2 hand derivation, kept as history; the Trundle is now 2,100 and the opening 3,100. Current timings come from `tools/balance-sim`.)*
 6. **Roost at 2.0 h.** The Trundle on outpost ground: 1.6 × 3.0 × 0.8 ÷ 1.10 = 3.49 m²/s, 200 kg fills in 171 s against a 100 s trip → 2.20 m²/s → 14,300 LM/h lit (11,900 dark). Static Rake 1,100 at 1:34 and Broad Strokes I 350, then Roost 4,700 at ≈2:01. ✓ (upper edge)
 7. **Bead Kiln at 3.5 h.** 15,000 + 12,600 power = 27,600 LM after the Skiff (12,000, ≈3.0 h) at ≈66k LM/h. ✓ (The parked Auto-Relocate is no longer bought at ≈4.5 h; local uptime stays 0.64.)
 8. **Albatross at ≈6.0 h (estimate).** 200,000 + Nest 30,000 at 0.55–0.83M LM/h, after ≈16 Roosts are upgraded to Plovers. Without the parked Docket income, v1's 6.0 h stands; with a 24-Roost cap the greedy policy may buy more Roosts first. Sim to confirm.
@@ -615,7 +617,7 @@ Other policies: **casual** (skill 0.7 on all rates, buys in list order, Rake bef
 
 ## 23. Tuning notes and risks
 
-- **Edges:** first Roost (2.0 h), first production (3.5 h) and first Albatross (≈6.0 h) sit at the upper edge of their windows. Levers: Kiln price −20%, Trundle 1,500, or first Albatross 180,000.
+- **Edges:** first Roost (2.0 h), first production (3.5 h) and first Albatross (≈6.0 h) sit at the upper edge of their windows. Levers: Kiln price −20%, Trundle 1,500, or first Albatross 180,000. Superseded 2026-11-12: cap is 6.
 - **Solo completion** (31.1 h candidate) must be regenerated. Expected risks: robot dust at full price snowballs the mid-game faster (Albatross payback ≈4× quicker than under Bulk Rate); without Flight Plan the late fleet tops out at 24 × 11 × 0.9 ≈ 238 m²/s versus the candidate 971 m²/s, which may stretch the clear well beyond 35 h. First levers if out of band: Albatross base rate, Albatross price growth (1.18), technical caps (perf permitting).
 - **Co-op targets** (4p ~15 h, 16p 8–10 h) relied on the parked On-Shift Bonus. Without it, co-op speed-up comes only from more hands and shared purchases; the 16-player band will likely be missed. Owner decision whether to restate the co-op bands or pull a co-op lever back in.
 - **Purchase gaps:** if the sim shows a solo gap >90 min, check Albatross/Nest price steps and machine power bundles first.

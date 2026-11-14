@@ -2,13 +2,13 @@
   "name": "@moon-cleanup/bots",
   "version": "0.0.0",
   "private": true,
-  "description": "Headless bot clients, 16-player scenarios and reports.",
+  "description": "Headless bot clients, 6-player scenarios and reports.",
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "bots": "echo bots placeholder: Fable replaces with tsx src/cli.ts",
-    "lint": "echo bots lint: placeholder until sources land - see README",
-    "typecheck": "echo bots typecheck: placeholder until sources land - see README",
+    "bots": "tsx src/cli.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

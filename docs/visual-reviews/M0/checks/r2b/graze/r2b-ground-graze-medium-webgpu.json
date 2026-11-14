@@ -1,0 +1,272 @@
+{
+ "preset": "medium",
+ "backend": "webgpu",
+ "graze": {
+  "regolith:sun4:empty:A-fadeoff": {
+   "p1": 55.3,
+   "p5": 64,
+   "p50": 160.1,
+   "p95": 192.1,
+   "darkSharePct": 13.19,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun4:empty:B-fadeoff-flat": {
+   "p1": 55.3,
+   "p5": 68,
+   "p50": 161.1,
+   "p95": 166.1,
+   "darkSharePct": 9.36,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun4:empty:C-shipped": {
+   "p1": 55.3,
+   "p5": 68,
+   "p50": 161.1,
+   "p95": 173.1,
+   "darkSharePct": 9.48,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun4:post:A-fadeoff": {
+   "p1": 30.8,
+   "p5": 37.3,
+   "p50": 147.9,
+   "p95": 183.1,
+   "darkSharePct": 33.19,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun4:post:B-fadeoff-flat": {
+   "p1": 30.8,
+   "p5": 37.3,
+   "p50": 157.1,
+   "p95": 161.9,
+   "darkSharePct": 30.51,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun4:post:C-shipped": {
+   "p1": 30.8,
+   "p5": 37.3,
+   "p50": 155.9,
+   "p95": 166.1,
+   "darkSharePct": 30.59,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun1:empty:A-fadeoff": {
+   "p1": 18.9,
+   "p5": 20.1,
+   "p50": 101.1,
+   "p95": 174.1,
+   "darkSharePct": 17.02,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun1:empty:B-fadeoff-flat": {
+   "p1": 53,
+   "p5": 65.4,
+   "p50": 107.1,
+   "p95": 118.1,
+   "darkSharePct": 1.08,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun1:empty:C-shipped": {
+   "p1": 49.1,
+   "p5": 63.2,
+   "p50": 107.1,
+   "p95": 126.1,
+   "darkSharePct": 1.58,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun1:post:A-fadeoff": {
+   "p1": 18.9,
+   "p5": 19.1,
+   "p50": 67.9,
+   "p95": 159.1,
+   "darkSharePct": 22.24,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun1:post:B-fadeoff-flat": {
+   "p1": 18.9,
+   "p5": 29.9,
+   "p50": 93.1,
+   "p95": 99.1,
+   "darkSharePct": 15.54,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:sun1:post:C-shipped": {
+   "p1": 18.9,
+   "p5": 28.1,
+   "p50": 90.1,
+   "p95": 110.3,
+   "darkSharePct": 15.68,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "regolith:errors": [],
+  "standin:sun4:empty:A-fadeoff": {
+   "p1": 55.2,
+   "p5": 65.6,
+   "p50": 160.7,
+   "p95": 191.6,
+   "darkSharePct": 14.25,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun4:empty:B-fadeoff-flat": {
+   "p1": 55.3,
+   "p5": 68,
+   "p50": 163.8,
+   "p95": 166.8,
+   "darkSharePct": 9.45,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun4:empty:C-shipped": {
+   "p1": 55.3,
+   "p5": 67.3,
+   "p50": 163.5,
+   "p95": 173.8,
+   "darkSharePct": 9.99,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun4:post:A-fadeoff": {
+   "p1": 30.8,
+   "p5": 37.3,
+   "p50": 142.9,
+   "p95": 188.6,
+   "darkSharePct": 34.02,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun4:post:B-fadeoff-flat": {
+   "p1": 30.8,
+   "p5": 37.3,
+   "p50": 158.7,
+   "p95": 163.7,
+   "darkSharePct": 30.5,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun4:post:C-shipped": {
+   "p1": 30.8,
+   "p5": 37.3,
+   "p50": 156.8,
+   "p95": 168.9,
+   "darkSharePct": 30.89,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun1:empty:A-fadeoff": {
+   "p1": 19,
+   "p5": 20.9,
+   "p50": 99.4,
+   "p95": 173.4,
+   "darkSharePct": 26.17,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun1:empty:B-fadeoff-flat": {
+   "p1": 53.1,
+   "p5": 65.5,
+   "p50": 110.7,
+   "p95": 117.2,
+   "darkSharePct": 1.68,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun1:empty:C-shipped": {
+   "p1": 30.6,
+   "p5": 62,
+   "p50": 109.7,
+   "p95": 126.6,
+   "darkSharePct": 2.44,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun1:post:A-fadeoff": {
+   "p1": 18.8,
+   "p5": 19.9,
+   "p50": 64.3,
+   "p95": 168.7,
+   "darkSharePct": 25.94,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun1:post:B-fadeoff-flat": {
+   "p1": 18.9,
+   "p5": 29.9,
+   "p50": 94.9,
+   "p95": 101.7,
+   "darkSharePct": 16.02,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:sun1:post:C-shipped": {
+   "p1": 18.9,
+   "p5": 26.1,
+   "p50": 91.1,
+   "p95": 111.9,
+   "darkSharePct": 16.35,
+   "uniforms": [
+    1,
+    1
+   ]
+  },
+  "standin:errors": []
+ }
+}

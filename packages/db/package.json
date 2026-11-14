@@ -2,18 +2,18 @@
   "name": "@moon-cleanup/db",
   "version": "0.0.0",
   "private": true,
-  "description": "Drizzle schema, generated SQL migrations, repositories (Aiven PostgreSQL). Server-only.",
+  "description": "Drizzle schema, generated SQL migrations, repositories (Neon PostgreSQL). Server-only.",
   "license": "UNLICENSED",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "echo db lint: placeholder until sources land - see README",
-    "typecheck": "echo db typecheck: placeholder until sources land - see README",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests",
-    "generate": "echo db generate placeholder: Fable replaces with drizzle-kit generate",
-    "migrate": "echo db migrate placeholder: Fable replaces with a run of src/migrate.ts - the programmatic drizzle-orm/postgres-js migrator, NOT the drizzle-kit migrate CLI - which sets lock_timeout=5s and statement_timeout=60s and reads DATABASE_URL + DATABASE_CA_CERT"
+    "generate": "drizzle-kit generate",
+    "migrate": "node src/migrate-cli.ts"
   },
   "dependencies": {
     "@moon-cleanup/shared": "workspace:*",
@@ -21,6 +21,7 @@
     "postgres": "4.1.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.16",
     "@types/node": "26.6.6",
     "drizzle-kit": "0.31.11"
   }

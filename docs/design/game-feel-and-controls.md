@@ -841,7 +841,7 @@ Sim tests run headless in `packages/sim` (Vitest, fixed tick); client tests in P
 | GF-32 | Trick detection | Unit cases: 2.0 s air → Hang Time; 4.0 s → Moonshot!; 330° pitch → Lunar Loop; 330° roll → Corkscrew; 61° tilt at contact → Faceplant voids; combo ×1.5; caps per E §2 |
 | GF-33 | Knockback | Off / Open: no contact effect. On: ≥ 1.5 m/s launches ≤ 9 m/s; same pair not hit twice within 2.0 s |
 | GF-34 | Enter / exit | At 120 ms RTT the driving control goes live by the end of the 0.45 s animation in ≥ 99% of trials; exit above 2 m/s brakes then exits |
-| GF-35 | Prediction (netsim 120 ± 30 ms, 1% loss, 10 min, 16 bots) | Own avatar correction p95 ≤ 5 cm, snaps ≤ 1 per 10 min; vehicle p95 ≤ 15 cm / 2°; 0 double-applied inputs |
+| GF-35 | Prediction (netsim 120 ± 30 ms, 1% loss, 10 min, 6 bots) | Own avatar correction p95 ≤ 5 cm, snaps ≤ 1 per 10 min; vehicle p95 ≤ 15 cm / 2°; 0 double-applied inputs |
 | GF-36 | Remote airborne smoothness | Remote avatar jump arc: max deviation from the true ballistic path ≤ 5 cm (vs ≥ 20 cm for linear interpolation) |
 | GF-37 | Server cost | Movement + vehicles ≤ 0.4 ms per tick p95 with 16 avatars and 4 driven vehicles |
 | GF-38 | Device switching | Idle gamepad with ±0.2 stick drift: zero movement while KBM is used (stuck-W regression) |

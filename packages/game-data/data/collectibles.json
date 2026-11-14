@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "strayCargo": [
+    { "size": "near_parcel", "count": 32, "lm": 30 },
+    { "size": "parcel", "count": 58, "lm": 200 },
+    { "size": "crate", "count": 45, "lm": 600 },
+    { "size": "pallet", "count": 15, "lm": 2500 }
+  ],
+  "surveyPoints": [
+    { "id": "survey.peary_rim", "featureName": "Peary crater rim", "lm": 4000 },
+    { "id": "survey.shackleton_rim", "featureName": "Shackleton crater rim", "lm": 4000 },
+    { "id": "survey.tycho_central_peak", "featureName": "Tycho central peak", "lm": 4000 },
+    { "id": "survey.copernicus_central_peaks", "featureName": "Copernicus central peaks", "lm": 4000 },
+    { "id": "survey.kepler", "featureName": "Kepler crater", "lm": 4000 },
+    { "id": "survey.aristarchus", "featureName": "Aristarchus crater", "lm": 4000 },
+    { "id": "survey.plato_floor", "featureName": "Plato crater floor", "lm": 4000 },
+    { "id": "survey.clavius", "featureName": "Clavius crater", "lm": 4000 },
+    { "id": "survey.theophilus_central_peak", "featureName": "Theophilus central peak", "lm": 4000 },
+    { "id": "survey.eratosthenes", "featureName": "Eratosthenes crater", "lm": 4000 },
+    { "id": "survey.archimedes", "featureName": "Archimedes crater", "lm": 4000 },
+    { "id": "survey.ptolemaeus", "featureName": "Ptolemaeus walled plain", "lm": 4000 },
+    { "id": "survey.alphonsus", "featureName": "Alphonsus crater", "lm": 4000 },
+    { "id": "survey.arzachel", "featureName": "Arzachel crater", "lm": 4000 },
+    { "id": "survey.grimaldi", "featureName": "Grimaldi basin", "lm": 4000 },
+    { "id": "survey.langrenus", "featureName": "Langrenus crater", "lm": 4000 },
+    { "id": "survey.petavius_rille", "featureName": "Petavius floor rille", "lm": 4000 },
+    { "id": "survey.gassendi", "featureName": "Gassendi crater", "lm": 4000 },
+    { "id": "survey.schickard", "featureName": "Schickard crater", "lm": 4000 },
+    { "id": "survey.posidonius", "featureName": "Posidonius crater", "lm": 4000 },
+    { "id": "survey.hadley_rille", "featureName": "Rima Hadley", "lm": 4000 },
+    { "id": "survey.vallis_schroteri", "featureName": "Vallis Schroteri", "lm": 4000 },
+    { "id": "survey.mons_piton", "featureName": "Mons Piton", "lm": 4000 },
+    { "id": "survey.mons_pico", "featureName": "Mons Pico", "lm": 4000 }
+  ]
+}

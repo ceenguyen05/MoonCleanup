@@ -1,0 +1,52 @@
+{
+ "preset": "medium",
+ "backend": "webgpu",
+ "earth": [
+  {
+   "label": "corner-shipped-4.2deg",
+   "centrePx": [
+    280,
+    192
+   ],
+   "visible": true,
+   "skyLuma": 16,
+   "peakLuma": 240.6,
+   "litPx": 5744,
+   "maxFeretPx": 94.7,
+   "minFeretPx": 80.5,
+   "pxPerDegAtEarth": 24.18,
+   "diameterDeg": 3.91
+  },
+  {
+   "label": "centre-shipped-4.2deg",
+   "centrePx": [
+    960,
+    540
+   ],
+   "visible": true,
+   "skyLuma": 15,
+   "peakLuma": 234.7,
+   "litPx": 2729,
+   "maxFeretPx": 69.7,
+   "minFeretPx": 51,
+   "pxPerDegAtEarth": 16.32,
+   "diameterDeg": 4.27
+  },
+  {
+   "label": "centre-2.4deg",
+   "centrePx": [
+    960,
+    540
+   ],
+   "visible": true,
+   "skyLuma": 15,
+   "peakLuma": 233.9,
+   "litPx": 903,
+   "maxFeretPx": 40.3,
+   "minFeretPx": 29,
+   "pxPerDegAtEarth": 16.32,
+   "diameterDeg": 2.47
+  }
+ ],
+ "s01Errors": []
+}

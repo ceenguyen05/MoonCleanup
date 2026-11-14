@@ -1,0 +1,169 @@
+{
+  "kind": "device-report",
+  "schema": 1,
+  "id": "8c566ede06b8",
+  "createdAt": "2026-11-14T13:06:01.886Z",
+  "system": {
+    "os": "Windows_NT 10.0.26200 (x64)",
+    "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "cores": 8,
+    "ramGb": 15.9
+  },
+  "browser": {
+    "name": "Chromium-based",
+    "version": "157.0.8103.79",
+    "channel": "chrome",
+    "headless": false
+  },
+  "display": {
+    "screen": [
+      1920,
+      1080
+    ],
+    "viewport": [
+      1920,
+      1080
+    ],
+    "dpr": 1
+  },
+  "gpu": {
+    "rendererString": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "softwareRenderer": false,
+    "webgpu": {
+      "available": true,
+      "adapter": {
+        "vendor": "intel",
+        "architecture": "gen-9",
+        "device": "",
+        "description": ""
+      },
+      "limits": {
+        "maxTextureDimension1D": 16384,
+        "maxTextureDimension2D": 16384,
+        "maxTextureDimension3D": 2048,
+        "maxTextureArrayLayers": 2048,
+        "maxBindGroups": 4,
+        "maxBindGroupsPlusVertexBuffers": 24,
+        "maxBindingsPerBindGroup": 1000,
+        "maxDynamicUniformBuffersPerPipelineLayout": 10,
+        "maxDynamicStorageBuffersPerPipelineLayout": 8,
+        "maxSampledTexturesPerShaderStage": 48,
+        "maxSamplersPerShaderStage": 16,
+        "maxStorageBuffersPerShaderStage": 16,
+        "maxStorageTexturesPerShaderStage": 8,
+        "maxUniformBuffersPerShaderStage": 12,
+        "maxUniformBufferBindingSize": 65536,
+        "maxStorageBufferBindingSize": 2147483644,
+        "minUniformBufferOffsetAlignment": 256,
+        "minStorageBufferOffsetAlignment": 256,
+        "maxVertexBuffers": 8,
+        "maxBufferSize": 2147483648,
+        "maxVertexAttributes": 30,
+        "maxVertexBufferArrayStride": 2048,
+        "maxInterStageShaderVariables": 28,
+        "maxColorAttachments": 8,
+        "maxColorAttachmentBytesPerSample": 128,
+        "maxComputeWorkgroupStorageSize": 32768,
+        "maxComputeInvocationsPerWorkgroup": 1024,
+        "maxComputeWorkgroupSizeX": 1024,
+        "maxComputeWorkgroupSizeY": 1024,
+        "maxComputeWorkgroupSizeZ": 64,
+        "maxComputeWorkgroupsPerDimension": 65535,
+        "maxImmediateSize": 64,
+        "maxStorageBuffersInFragmentStage": 16,
+        "maxStorageTexturesInFragmentStage": 8,
+        "maxStorageBuffersInVertexStage": 16,
+        "maxStorageTexturesInVertexStage": 8
+      },
+      "features": [
+        "bgra8unorm-storage",
+        "chromium-experimental-multi-draw-indirect",
+        "chromium-experimental-sampling-resource-table",
+        "chromium-experimental-timestamp-query-inside-passes",
+        "clip-distances",
+        "core-features-and-limits",
+        "depth-clip-control",
+        "depth32float-stencil8",
+        "dual-source-blending",
+        "float32-blendable",
+        "float32-filterable",
+        "indirect-first-instance",
+        "primitive-index",
+        "rg11b10ufloat-renderable",
+        "shader-f16",
+        "texture-component-swizzle",
+        "texture-compression-bc",
+        "texture-compression-bc-sliced-3d",
+        "texture-compression-unaligned",
+        "texture-formats-tier1",
+        "texture-formats-tier2",
+        "timestamp-query"
+      ],
+      "timestampQuery": true,
+      "error": null
+    }
+  },
+  "detector": {
+    "backend": "webgpu",
+    "tier": "B",
+    "preset": "low"
+  },
+  "capture": {
+    "warmupS": 10,
+    "captureS": 30,
+    "scaleMode": "preset spec ceiling (low 0.75, medium 0.85, high 1.00)",
+    "seed": "device-1"
+  },
+  "cells": [
+    {
+      "scene": "s01",
+      "backendRequested": "webgpu",
+      "backendActual": "webgpu",
+      "presetRequested": "low",
+      "presetActual": "low",
+      "renderScale": 0.75,
+      "dpr": 1,
+      "status": "ok",
+      "note": null,
+      "terrainSource": null,
+      "frameMs": {
+        "p50": 22.400000000001455,
+        "p95": 33.70000000000073,
+        "p99": 36.70000000000073
+      },
+      "fps": 43.91153401054392,
+      "gpuMs": {
+        "p50": 18.332048,
+        "p95": 19.917021999999996
+      },
+      "gpuTimingSource": "timestamp-query",
+      "cpuTotalMsP95": 20.599999994039536,
+      "draws": 190,
+      "tris": 387084
+    },
+    {
+      "scene": "s01",
+      "backendRequested": "webgl2",
+      "backendActual": "webgl2",
+      "presetRequested": "low",
+      "presetActual": "low",
+      "renderScale": 0.75,
+      "dpr": 1,
+      "status": "ok",
+      "note": null,
+      "terrainSource": null,
+      "frameMs": {
+        "p50": 18.30000000000291,
+        "p95": 35.29999999999927,
+        "p99": 41.69999999999709
+      },
+      "fps": 52.636329059250514,
+      "gpuMs": null,
+      "gpuTimingSource": "none",
+      "cpuTotalMsP95": 25.5,
+      "draws": 191.5,
+      "tris": 387482
+    }
+  ],
+  "warnings": []
+}

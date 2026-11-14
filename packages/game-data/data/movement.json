@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "walkMps": 3.4,
+  "lopeMps": 5,
+  "sweepWalkMps": 2.2,
+  "jumpApexM": 1.6,
+  "hopBurstMps": 3,
+  "hopRechargeS": 4,
+  "nightPenaltyFrac": 0.3,
+  "lampPenaltyReliefFrac": 0.05,
+  "carryUnits": 1
+}

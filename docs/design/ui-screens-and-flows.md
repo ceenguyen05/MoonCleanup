@@ -539,7 +539,7 @@ Shift Briefing (v1.0, L4 card, left third, world live behind):
 
 ```
 +------------------------------------------------------------------------------------+
-|  SHIFT ROSTER    Luna Pilot · Private Shift · 5/16          [Invite: MC-7Q4K-2 ][Copy]|
+|  SHIFT ROSTER    Luna Pilot · Private Shift · 5/6             [Invite: MC-7Q4K-2 ][Copy]|
 |------------------------------------------------------------------------------------|
 |  #   NAME            ROLE         STATUS             NEAR                           |
 |  1  * You (Casey)    Holder       Sweeping           Boreal                        |
@@ -963,7 +963,7 @@ Rules: only one L4 moment at a time; a moment that fires while a panel is open q
 | 4102 KICKED | "Clocked out by the {role}" | Reason text from `reasonCode`; "You can rejoin this Contract in 14:59" (15 min countdown) | Back to Contracts | MVP |
 | 4103 BANNED | "You no longer have access to this Contract" | "The Holder has removed you." The Contract disappears from your list | Back to Contracts | MVP |
 | 4104 RATE_LIMITED | "Slow down a little" | "Too many actions at once. You can rejoin in 0:30." | Rejoin (enabled after 30 s), Back | MVP |
-| 4105 ROOM_FULL | "This shift is full" | "16 Custodians already. Try again soon." | Try again, Back | MVP |
+| 4105 ROOM_FULL | "This shift is full" | "6 Custodians already. Try again soon." | Try again, Back | MVP |
 | 4105 AT_CAPACITY / 507 | "Brightside is at capacity" | As SCR-03 `at_capacity` | Shift Board (v1.0), Try again, Back | MVP |
 | 4106 DUPLICATE_SESSION (older tab) | "You clocked in from another tab" | "This tab has stepped aside." | Use this tab instead (rejoin), Close | MVP |
 | 4107 IDLE_TIMEOUT | "Clocked out for inactivity" | "30 minutes On Break. Your shift keeps running without you." | Clock In again, Back | MVP |
@@ -1373,7 +1373,7 @@ Reduced motion replaces every row's motion with 120 ms opacity fades; sounds are
 | SCR-09 Roster | (1) Rows show name, numeral, role, status. (2) Holder row menu has Kick and Ban; Staff's does not; Holder row cannot be kicked. (3) Kick sends `kick {playerId, reasonCode}`; the target sees SCR-22 "Clocked out by the Holder" with a 15:00 countdown. (4) Mute persists across rejoin for that player id |
 | SCR-10 Desk | (1) Shows T1–T4, Holster Rig L1, Crown Lamp L1 with prices from game-data and Standard Issue state. (2) Wallet never changes before `purchase_result`. (3) Success follows the FL-5 timeline (frame-stepped capture at 0/80/120/400 ms after the reply). (4) Each §3.10.1 code shows its copy and behaviour. (5) Hold-to-approve appears at ≥ 50 % of the wallet. (6) Gamepad: (A) on a card focuses Requisition, second (A) buys |
 | SCR-11 Ops Console | (1) Shows exactly the 10 MVP nodes (scope-tiers §1), hidden (not greyed) others. (2) Prereq-locked nodes explain the missing prerequisite. (3) Purchase fills the node pip and unlocks children visibly. (4) Exposed as `role="tree"` with level text. (5) Locked nodes show "Requires <item>" or "Costs N LM", never a cleaned-percentage or Review gate; the Permits tab shows `used / cap` meters |
-| SCR-12 Motor Pool | (1) Trundle purchasable at 1,800 LM; shows the 40 % Repeat Requisition price when another member owns one. (2) Bring out disabled with the reason while another vehicle from this Motor Pool is out |
+| SCR-12 Motor Pool | (1) Trundle purchasable at 2,100 LM; shows the 40 % Repeat Requisition price when another member owns one. (2) Bring out disabled with the reason while another vehicle from this Motor Pool is out |
 | SCR-14 Equipment Card | (1) Roost card shows state (one of the 9 names), the status line, store fill, base rate and its cap. (2) Re-site nearest / here and Ground send their intents and show pending → result. (3) "Patch Picked Clean" makes Re-site the initial focus |
 | SCR-16 Assay Slip | (1) Appears within 1 frame of the first gram poured. (2) Weighed and Paid are monotonic and finish exactly at the server totals. (3) Wallet tick-up starts on `cargo.sold`, not before. (4) With 4 slots busy the prompt shows the queue message |
 | SCR-17 Plot Card | (1) [C] toggles; ID rendered as `Plot NN-NNN` in JetBrains Mono. (2) State chip has the pattern glyph. (3) Live % updates ≤ 10 Hz; Polished shows the stamp glyph |

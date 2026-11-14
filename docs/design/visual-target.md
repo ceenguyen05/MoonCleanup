@@ -232,7 +232,7 @@ Every item names its scene or path (§6.2–6.3) and a pass threshold. **Severit
 | VT-M0-12 | Harness output | Files follow §6.6 naming, PNG pixel size = output × DPR, a sidecar JSON exists for every PNG, and the **measure tool** has written its numbers (luma patches, edge profiles, Sobel, star count) into the sidecar and `index.md`. The measure tool passes its own tests on synthetic charts | all | — | V1 |
 | VT-M0-13 | Stars stable | 10 s slow pan (P3), Medium (SMAA) and High: no star flicker or crawl (per-star peak luma varies ≤ 10 %). Stars are round Gaussian disks of radius ≥ 1.2 px, never squares | S06 | A, B | V2 |
 | VT-M0-14 | Earth size | Earth disk diameter = 2.4° ± 0.1° (≈ 39 ± 2 px at 1080p, third-person FOV). 2.4° is resolved | S01 | A | V3 |
-| VT-M0-15 | Horizon-map spike | Dawn (sun 4°) flyover P4 on Medium and High: terrain shadows continue past CSM max far with edge-width ratio ≤ 2× across the seam and no luma step > 8 on flat ground; crater rims beyond CSM range still cast long shadows on Medium (rendering-pipeline §5.2) | P4 | A, B | V1 |
+| VT-M0-15 | Horizon-map spike | Dawn (sun 4°) flyover P4 on Medium and High: terrain shadows continue past CSM max far with edge-width ratio ≤ 2× across the seam **measured in screen pixels** (owner decision 2026-11-13: what the player sees; 10–90 % widths of the horizon-term edges beyond the CSM far over those of the cascade edges inside it) and no luma step > 8 on flat ground; crater rims beyond CSM range still cast long shadows on Medium (rendering-pipeline §5.2). Informational, not the bar: the same ratio in metres measured 2.86 at t = 0.25 and 0.58 at t = 0.75 on UHD 620 / Medium (1.44 and 0.30 in pixels; [r2b](../agent-reports/M0-look-polish-r2b.md) item 6) | P4 | A, B | V1 |
 | VT-M0-16 | Fill on up-facing ground | Noon shadow on flat ground, on a slope facing away from the sun, and on a vertical wall: up-facing clean ground 81–97, wall shadow brighter than flat shadow, never blue (b* rule of VT-M1-09) | S05 | A, B, C | V1 |
 
 ### 4.2 M1: MVP (`v0.2.0`)
@@ -366,7 +366,7 @@ Full table with reasons: [`art-direction.md` §2.4](art-direction.md#24-delibera
 | S07 | Far-side night, lamp only, Lowlight Visor variant | 3rd person | night-far | M2 |
 | S08 | Dust FX: Desk Duster, Static Rake, Ion Curtain strokes; Hop Pack burst | 3rd person 3 m side view, sun back-lit 30° | noon, dawn | M1 |
 | S09 † | Vehicle: Trundle push (M1), Skiff at 8 m/s past camera (M2), then all five vehicles line-up | Side tracking 6 m; static line-up at 60 m | noon, dawn | M1 / M2 |
-| S10 † | Shift crowd: 16 bots at Outpost Boreal, all player colors, mixed tools and liveries | 3rd person 8 m, then 50 m | noon, night-near | M1 |
+| S10 † | Shift crowd: 6 bots at Outpost Boreal, all player colors, mixed tools and liveries | 3rd person 8 m, then 50 m | noon, night-near | M1 |
 | S11 † | Survey Globe: whole moon, plot states, terminator, Earth | Orbit view, moon fills 70% height | — (sun fixed) | M2 |
 | S12 | HUD sheet: gameplay HUD + Requisitions Desk + Promotions Board + toast + DOT line + Plot Card | Over S04 (brightest background) and S06 | noon, night-near | M0 (test page) / M1 |
 | S13 † | Inspector's Stamp on a plot reaching Polished | Elevated 15 m and 3rd person | noon, night-near | M1 |
@@ -381,7 +381,7 @@ Full table with reasons: [`art-direction.md` §2.4](art-direction.md#24-delibera
 
 | Path | Description | Duration | Checks |
 |---|---|---|---|
-| P1 | Walk loop around Outpost Boreal and a half-cleaned plot, 16 bots active | 60 s | Frame time, shimmer, hitches |
+| P1 | Walk loop around Outpost Boreal and a half-cleaned plot, 6 bots active | 60 s | Frame time, shimmer, hitches |
 | P2 | Dolly out from 1 m above a stroke to 60 m altitude | 20 s | LOD pop, berm fade, ring edge |
 | P3 | Orbit custodian 360° at r = 4 m, then a 10 s slow sky pan | 22 s | Shadows, stars stable |
 | P4 | Flyover at 30 m altitude, 300 m straight line, dawn | 30 s | LOD pop, CSM to horizon-shadow handoff |

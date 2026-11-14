@@ -12,13 +12,61 @@ import {
 } from "./messages";
 import { PAYLOAD_SCHEMAS } from "./payloads";
 
+const MVP_ACTIVE = [
+  "INPUT",
+  "PING",
+  "DUST_REQUEST",
+  "READY",
+  "VISIBILITY",
+  "DUST_INTEREST",
+  "PURCHASE",
+  "SELECT_TOOL",
+  "SET_SHIFT_TYPE",
+  "KICK",
+  "FRAME",
+  "DUST_SNAPSHOT",
+  "DUST_LEDGER",
+  "DUST_LOG",
+  "DUST_CHECK",
+  "PONG",
+  "HELLO",
+  "PURCHASE_RESULT",
+  "ERROR",
+  "SHUTDOWN_NOTICE",
+  "KICK_NOTICE",
+  "SHIFT_TYPE_CHANGED",
+  "CAPACITY_NOTICE",
+  "SIM_EVENTS",
+] as const;
+const POST_MVP_RESERVED = [
+  "BUILD_PLACE",
+  "BUILD_SHIFT",
+  "BUILD_RECLAIM",
+  "RELAY_TELEPORT",
+  "BEACON_SET",
+  "QUICK_CHAT",
+  "PING_MARKER",
+  "SET_PERMISSIONS",
+  "APPOINT_ROLE",
+  "BAN",
+  "VOTE_KICK",
+  "REPORT_PLAYER",
+  "STRUCTURES_CHUNK",
+  "ROSTER_MARKERS",
+  "BUILD_RESULT",
+  "TELEPORT_RESULT",
+  "VOTE_KICK_STATE",
+  "ROLE_CHANGED",
+  "REPORT_ACK",
+] as const;
+
 const entries = Object.entries(MESSAGE_CATALOG) as [MessageName, MessageDef][];
 const bytesEntries = entries.filter(([, def]) => def.channel === Channel.Bytes);
 const controlEntries = entries.filter(([, def]) => def.channel === Channel.Control);
 
 /**
  * The netcode.md tables (sections 4.1, 4.2, 4.3) copied by hand: name -> [channel, direction, id]. HELLO and the
- * three SPIKE_* rows are the additions of M0-W0-T01. A change to the catalog must be made here too, on purpose.
+ * three SPIKE_* rows are the additions of M0-W0-T01; SELECT_TOOL and SIM_EVENTS those of M1-W0-T02. A change to the catalog must be made here too, on purpose.
  */
 const SPEC: Record<string, readonly [channel: string, direction: string, id: number | string]> = {
   // 4.1 client -> server, bytes
@@ -30,6 +78,7 @@ const SPEC: Record<string, readonly [channel: string, direction: string, id: num
   VISIBILITY: ["control", "c2s", "visibility"],
   DUST_INTEREST: ["control", "c2s", "dust_interest"],
   PURCHASE: ["control", "c2s", "purchase"],
+  SELECT_TOOL: ["control", "c2s", "select_tool"],
   BUILD_PLACE: ["control", "c2s", "build_place"],
   BUILD_SHIFT: ["control", "c2s", "build_shift"],
   BUILD_RECLAIM: ["control", "c2s", "build_reclaim"],
@@ -66,6 +115,7 @@ const SPEC: Record<string, readonly [channel: string, direction: string, id: num
   SHIFT_TYPE_CHANGED: ["control", "s2c", "shift_type_changed"],
   REPORT_ACK: ["control", "s2c", "report_ack"],
   CAPACITY_NOTICE: ["control", "s2c", "capacity_notice"],
+  SIM_EVENTS: ["control", "s2c", "sim_events"],
   // M0 spike
   SPIKE_INPUT: ["bytes", "c2s", 0x70],
   SPIKE_FRAME: ["bytes", "s2c", 0x71],
@@ -73,9 +123,9 @@ const SPEC: Record<string, readonly [channel: string, direction: string, id: num
 };
 
 describe("protocol version and channels", () => {
-  it("PROTOCOL_VERSION is 0", () => {
-    expect(PROTOCOL_VERSION).toBe(0);
-    expectTypeOf<typeof PROTOCOL_VERSION>().toEqualTypeOf<0>();
+  it("PROTOCOL_VERSION is 1", () => {
+    expect(PROTOCOL_VERSION).toBe(1);
+    expectTypeOf<typeof PROTOCOL_VERSION>().toEqualTypeOf<1>();
   });
 
   it("has the three channels of netcode section 2 and two directions", () => {
@@ -92,7 +142,7 @@ describe("message catalog", () => {
   it("matches the netcode tables id for id", () => {
     const actual = Object.fromEntries(entries.map(([name, def]) => [name, [def.channel, def.direction, def.id]]));
     expect(actual).toEqual(SPEC);
-    expect(entries).toHaveLength(44);
+    expect(entries).toHaveLength(46);
   });
 
   it("gives every entry a direction, a message channel and a status", () => {
@@ -153,13 +203,30 @@ describe("message catalog", () => {
       expect(def.id).toMatch(/^[a-z]+(_[a-z]+)*$/);
     }
     expect(new Set(ids).size).toBe(ids.length);
-    expect(controlEntries).toHaveLength(30);
+    expect(controlEntries).toHaveLength(32);
   });
 
-  it("marks exactly HELLO, PING and PONG as active, and each has a payload schema", () => {
+  it("marks exactly the MVP entries as active, and each has a payload schema", () => {
     const active = entries.filter(([, def]) => def.status === MessageStatus.Active).map(([name]) => name);
-    expect(active.sort()).toEqual(["HELLO", "PING", "PONG"]);
+    expect(active.sort()).toEqual([...MVP_ACTIVE].sort());
     expect(Object.keys(PAYLOAD_SCHEMAS).sort()).toEqual(active);
+  });
+
+  it("keeps post-MVP entries reserved", () => {
+    const reserved = entries.filter(([, def]) => def.status === MessageStatus.Reserved).map(([name]) => name);
+    expect(reserved.sort()).toEqual([...POST_MVP_RESERVED].sort());
+  });
+
+  it("gives every entry a rate, and limited rates are positive", () => {
+    for (const [name, def] of entries) {
+      expect(["tick", "snapshot", "interval", "limited", "reply", "event", "once"], name).toContain(def.rate.kind);
+      if (def.rate.kind === "limited") {
+        expect(def.rate.perSecond, name).toBeGreaterThan(0);
+        expect(def.rate.burst, name).toBeGreaterThanOrEqual(1);
+      }
+    }
+    expect(MESSAGE_CATALOG.INPUT.rate).toEqual({ kind: "tick" });
+    expect(MESSAGE_CATALOG.FRAME.rate).toEqual({ kind: "snapshot" });
   });
 
   it("reserves exactly three spike ids", () => {
@@ -168,9 +235,15 @@ describe("message catalog", () => {
   });
 
   it("HELLO is a server -> client control message, PING / PONG are bytes", () => {
-    expect(MESSAGE_CATALOG.HELLO).toEqual({ channel: "control", direction: "s2c", id: "hello", status: "active" });
-    expect(MESSAGE_CATALOG.PING).toEqual({ channel: "bytes", direction: "c2s", id: 0x02, status: "active" });
-    expect(MESSAGE_CATALOG.PONG).toEqual({ channel: "bytes", direction: "s2c", id: 0x27, status: "active" });
+    expect(MESSAGE_CATALOG.HELLO).toEqual({
+      channel: "control",
+      direction: "s2c",
+      id: "hello",
+      status: "active",
+      rate: { kind: "once" },
+    });
+    expect(MESSAGE_CATALOG.PING).toMatchObject({ channel: "bytes", direction: "c2s", id: 0x02, status: "active" });
+    expect(MESSAGE_CATALOG.PONG).toMatchObject({ channel: "bytes", direction: "s2c", id: 0x27, status: "active" });
   });
 });
 
@@ -189,7 +262,13 @@ describe("message catalog types", () => {
 
   it("rejects a bytes entry with a string id", () => {
     // @ts-expect-error -- a bytes message id must be a number
-    const bad: MessageDef = { channel: "bytes", direction: "c2s", id: "ping", status: "active" };
+    const bad: MessageDef = {
+      channel: "bytes",
+      direction: "c2s",
+      id: "ping",
+      status: "active",
+      rate: { kind: "tick" },
+    };
     expect(bad).toBeDefined();
   });
 });

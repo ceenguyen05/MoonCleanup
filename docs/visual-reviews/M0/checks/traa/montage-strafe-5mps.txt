@@ -1,0 +1,7 @@
+row 0: traa-moving
+row 1: traa-still
+row 2: traa-novel-moving
+row 3: traa-novel-still
+row 4: smaa-moving
+row 5: smaa-still
+columns: ground band crop (x centre, y 62 %), horizon band crop (y 30 %); native pixels

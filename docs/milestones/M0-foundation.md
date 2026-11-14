@@ -2,6 +2,9 @@
 
 Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
+> **Priority note (owner 2026-11-13): solo first.** Solo graphics, animation, fps and feel never lag; multiplayer must exist and work but is secondary.
+> Remaining M0 checks are judged on solo frame time on the UHD 620 floor; netcode adds no solo input delay or frame-time/allocation cost.
+
 Execution: `docs/handoff/MODEL_POLICY.md`; stages are checkpoints, not usage-window promises.
 
 Owner: lead (structure) · Lead alone maintains task rows from actual progress ([backlog rules](README.md)).
@@ -9,7 +12,7 @@ Roadmap: [../ROADMAP.md](../ROADMAP.md) · Process: [continuous build](../handof
 
 ## 1. Goal
 
-A green, deployable monorepo that every later wave can build on: tooling and CI green with real sources, contracts v0, a hello-world client on Vercel and a `/healthz` server on Render, a vendored three r187 docs snapshot, a git-blocking hook, and **three spikes that retire the biggest technical unknowns early enough to guide MVP; unrelated ready features keep progressing**: render (three.js WebGPURenderer cost on Tier A/B, Babylon revisit trigger), netcode (16 bots on a real Render Free instance at 20/10 Hz, Colyseus built-in HTTP routing on uWS) and terrain bake (NASA LOLA → height cube map). M0 also lands the first look-dev (light, sky, regolith) **before** the render spike is captured, so the spike measures the real look (real regolith material on the real baked height cube), not a stand-in, and the visual bar is tested from day one.
+A green, deployable monorepo that every later wave can build on: tooling and CI green with real sources, contracts v0, a hello-world client on Vercel and a `/healthz` server on Render, a vendored three r187 docs snapshot, a git-blocking hook, and **three spikes that retire the biggest technical unknowns early enough to guide MVP; unrelated ready features keep progressing**: render (three.js WebGPURenderer cost on Tier A/B, Babylon revisit trigger), netcode (6 bots in a local CPU-limited container at 20/10 Hz, Colyseus built-in HTTP routing on uWS) and terrain bake (NASA LOLA → height cube map). M0 also lands the first look-dev (light, sky, regolith) **before** the render spike is captured, so the spike measures the real look (real regolith material on the real baked height cube), not a stand-in, and the visual bar is tested from day one.
 
 ## 2. Exit criteria (all required for `v0.1.0`)
 
@@ -17,12 +20,12 @@ A green, deployable monorepo that every later wave can build on: tooling and CI 
 | --- | --- | --- |
 | E1 | `pnpm verify` meaningful and green locally with lockfile + sources; record remote CI when Cee later pushes | `/verify`, GitHub Actions |
 | E2 | Local client serves the hello-world; repeat on Vercel main when available: WebGPU boot, `?backend=webgl2` fallback, build version + backend/tier overlay, live connection to `HelloRoom` with RTT | Browser check, Playwright smoke |
-| E3 | Local `/healthz` = 200, truthful DB readiness and first migration verified on isolated Postgres; repeat on the one hosted Render/Aiven service when available | SETUP_CHECKLIST: Hosted verification |
+| E3 | Local `/healthz` = 200, truthful DB readiness and first migration verified on isolated Postgres; repeat on the one hosted Render/Neon service when available | SETUP_CHECKLIST: Hosted verification |
 | E4 | `packages/shared` contracts v0 with version headers; ESLint import-boundary + three.js ban-list rules active | `code-reviewer`, `/verify` |
 | E5 | `docs/vendor/three-r187/` snapshot with index and source URLs | `code-reviewer` |
 | E6 | Git-blocking PreToolUse hook active and its command matrix test passes | hook test |
 | E7 | **Render spike verdict** (performance-reviewer) with Tier A / Tier B / WebGL2 numbers measured **after look-dev v0 and on the real baked height cube** (M0-W3-T07 bench v1); Babylon revisit trigger evaluated on that run, not on the stand-in run; lead ADR written | `tools/perf/results/M0/`, review file, ADR |
-| E8 | **Netcode spike verdict**: 16 bots on the one Render Free service during an isolated test-only window at 20/10 Hz (and 30/20 comparison), each hosted run ≤ 5 min (netcode §17; longer soaks run locally) with CPU %, tick p50/p95/max, event-loop p99, bytes/client; HTTP routing on uWS confirmed or fallback chosen; lead ADR | `tools/bots/results/M0/`, review file, ADR |
+| E8 | **Netcode spike verdict**: 6 bots in the local CPU-limited container at 20/10 Hz (and 30/20 comparison), 10 min per run (hosted run dropped 2026-11-12; cap is 6; 16-bot figures superseded) with CPU %, tick p50/p95/max, event-loop p99, bytes/client; HTTP routing on uWS confirmed or fallback chosen; lead ADR | `tools/bots/results/M0/`, review file, ADR |
 | E9 | **Terrain bake spike**: LDEM_16 → `height-cube-1024.bin` + `height-cube-256.bin` + manifest; slope acceptance (world-and-dust §3.3) passes; bake time/RAM and LDEM_64 extrapolation recorded | bake report |
 | E10 | VT-M0-01…16 (incl. 04b grazing sun, 15 horizon-map spike, 16 fill): every V1 item passes; ≤ 3 V2 open with tickets. VT-M0-06 is calibrated **with AgX on** (noon key: albedo 0.10 / 0.33 / 0.80 → 126 / 181 / 213 ± 8; grime 0.085 vs clean 0.34 → ratio ≥ 1.45, ≥ 50 codes) | `/visual-check` M0 matrix (visual-target §6.5) |
 | E11 | M0 technical checks complete; unresolved external evidence explicitly recorded; continue M1 | Compact STATUS/evidence, or integration report if useful |
@@ -58,32 +61,32 @@ Cee commits/publishes only when satisfied. Final acceptance must disclose any un
 
 | ID | Stage | Role | Goal | Depends on | Port | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| M0-W0-T01 | M0-S1 | contracts-architect | Contracts v0 in packages/shared | M0-W0-T02 | 0 | in-progress |
-| M0-W0-T02 | M0-S1 | devops-engineer | Tooling config package + root configs + FIRST install/lockfile | — | 1 | changes-requested |
-| M0-W0-T03 | M0-S2 | devops-engineer | Real package scripts, Vite/esbuild configs, CI lanes, NET_SPIKE + DB_SCHEMA keys, minimal bootstrap stubs (`boot.ts`, server `index.ts`) | M0-W0-T01, M0-W0-T02 | 2 | todo |
-| M0-W0-T04 | M0-S1 | devops-engineer | Git-blocking hook + vendored three r187 docs snapshot | — | 3 | changes-requested |
-| M0-W0-T05 | M0-S2 | integrator | M0-W0 integration: verify green, contracts consumer list (extends T03's stubs only if needed) | M0-W0-T01, M0-W0-T03, M0-W0-T04, M0-W0-T06 | 9 | todo |
-| M0-W0-T06 | M0-S2 | technical-artist | Asset-pipeline proof: one rock + one outpost module, script to budget-checked hashed glTF (art-direction §13.5, ADR-0027; Q23) | M0-W0-T03 (Blender installed, Q23 resolved) | 5 | todo |
-| M0-W1-T01 | M0-S3 | rendering-engineer | Renderer bootstrap: backend/tier detection, frame loop, RenderPipeline skeleton | M0-W0-T05 | 1 | todo |
-| M0-W1-T02 | M0-S3 | devops-engineer | Server ops: env schema, pino logger, room-stats + bandwidth counters | M0-W0-T05 | 2 | todo |
-| M0-W1-T03 | M0-S3 | backend-data-engineer | /healthz + /readyz handlers, db package skeleton + first migration | M0-W0-T05 | 3 | todo |
-| M0-W1-T04 | M0-S4 | netcode-engineer | Colyseus on uWS server factory, HTTP routing, HelloRoom, client connect | M0-W0-T05 | 4 | todo |
-| M0-W1-T05 | M0-S4 | qa-test-engineer | Screenshot harness v0 + `tools/screenshots/measure` (with synthetic-chart tests) + Playwright smoke e2e | M0-W0-T05 | 5 | todo |
-| M0-W1-T06 | M0-S4 | integrator | M0-W1 integration: hello-world client + server composition roots | M0-W1-T01, M0-W1-T02, M0-W1-T03, M0-W1-T04, M0-W1-T05 | 9 | todo |
-| M0-W2-T01 | M0-S5 | performance-profiler | F3 perf HUD, GPU timing, tools/perf capture runner | M0-W1-T06 | 1 | todo |
-| M0-W2-T02 | M0-S5 | rendering-engineer | Render spike bench scene v0 (stand-in terrain, full worst-case terrain-shader stub incl. horizon-map term and camera-only velocity check) + instancing helpers + reversed-Z/WebGL2 check | M0-W1-T06 | 2 | todo |
-| M0-W2-T03 | M0-S5 | netcode-engineer | Netcode spike LoadTestRoom (20/10 Hz synthetic 16-player load + metrics) | M0-W1-T06 | 3 | todo |
-| M0-W2-T04 | M0-S6 | qa-test-engineer | Headless bots v0 + netsim v0 + spike-16 scenario | M0-W2-T03 | 4 | todo |
-| M0-W2-T05 | M0-S6 | terrain-dust-engineer | Terrain bake spike (LDEM_16 → height cube + manifest) | M0-W1-T06 | 5 | todo |
-| M0-W2-T07 | M0-S6 | rendering-engineer | r187 feature verification matrix (rendering-pipeline §21), PASS/FAIL on `webgpu` and `webgl2` | M0-W2-T02 | 6 | todo |
-| M0-W2-T06 | M0-S6 | integrator | M0-W2 integration: wire perf HUD, bench route, LoadTestRoom flag; local spike runs incl. the early bench-v0 capture | M0-W2-T01, M0-W2-T02, M0-W2-T03, M0-W2-T04, M0-W2-T05, M0-W2-T07 | 9 | todo |
-| M0-W3-T01 | M0-S7 | qa-test-engineer | Run netcode spike on the one Render Free service during an isolated test-only window (20/10 and 30/20) | M0-W2-T06, isolated hosted-test access | 4 | todo |
-| M0-W3-T02 | M0-S8 | performance-profiler | Second capture (gates ADR-0003): render spike matrix on Tier A / Tier B / WebGL2 **on bench v1 (after look-dev v0)**, incl. a `webgl2` capture of the real terrain shader | M0-W3-T03, M0-W3-T04, M0-W3-T07 | 1 | todo |
-| M0-W3-T03 | M0-S7 | technical-artist | Look-dev v0: sun + CSM rig, sky, stars, Earth placeholder, post look; grazing-sun (VT-M0-04b), horizon-map spike (VT-M0-15), fill (VT-M0-16) | M0-W2-T06 | 3 | todo |
-| M0-W3-T04 | M0-S7 | technical-artist | Regolith/dust material v0 with mask input, berm, albedo chart calibrated with AgX on | M0-W2-T06 | 6 | todo |
-| M0-W3-T05 | M0-S8 | ui-ux-motion-designer | Design tokens v0, UI root, HUD crispness test page, waking overlay | M0-W2-T06 | 7 | todo |
-| M0-W3-T06 | M0-S8 | integrator | M0 closing integration: full gates, VT-M0 matrix, release checklist v0.1.0 | M0-W3-T01, M0-W3-T02, M0-W3-T03, M0-W3-T04, M0-W3-T05, M0-W3-T07 | 9 | todo |
-| M0-W3-T07 | M0-S8 | rendering-engineer | Bench v1: real regolith material + real baked height cube in the bench scene (render-spike input) | M0-W3-T03, M0-W3-T04, M0-W2-T05, M0-W2-T06 | 2 | todo |
+| M0-W0-T01 | M0-S1 | contracts-architect | Contracts v0 in packages/shared | M0-W0-T02 | 0 | done (contracts v1.2; shared 239 tests) |
+| M0-W0-T02 | M0-S1 | devops-engineer | Tooling config package + root configs + FIRST install/lockfile | — | 1 | done (blocking fixed; supply-chain APPROVED; non-blocking review findings 3-4,7+ open) |
+| M0-W0-T03 | M0-S2 | devops-engineer | Real package scripts, Vite/esbuild configs, CI lanes, NET_SPIKE + DB_SCHEMA keys, minimal bootstrap stubs (`boot.ts`, server `index.ts`) | M0-W0-T01, M0-W0-T02 | 2 | done (pnpm verify green; Playwright CI lane unrun on CI) |
+| M0-W0-T04 | M0-S1 | devops-engineer | Git-blocking hook + vendored three r187 docs snapshot | — | 3 | done (blocking fixed; 189/189 Node 22+26; non-blocking 4-10 open) |
+| M0-W0-T05 | M0-S2 | integrator | M0-W0 integration: verify green, contracts consumer list (extends T03's stubs only if needed) | M0-W0-T01, M0-W0-T03, M0-W0-T04, M0-W0-T06 | 9 | done (covered by W1-T06/W2-T06 integration; verify green) |
+| M0-W0-T06 | M0-S2 | technical-artist | Asset-pipeline proof: one rock + one outpost module, script to budget-checked hashed glTF (art-direction §13.5, ADR-0027; Q23) | M0-W0-T03 (Blender installed, Q23 resolved) | 5 | done (KTX2 on both assets; checker 0 warnings; GPU-memory saving is an estimate until client loads KTX2) |
+| M0-W1-T01 | M0-S3 | rendering-engineer | Renderer bootstrap: backend/tier detection, frame loop, RenderPipeline skeleton | M0-W0-T05 | 1 | in-review (wired; Tier A, compat, real device loss unproven) |
+| M0-W1-T02 | M0-S3 | devops-engineer | Server ops: env schema, pino logger, room-stats + bandwidth counters | M0-W0-T05 | 2 | done |
+| M0-W1-T03 | M0-S3 | backend-data-engineer | /healthz + /readyz handlers, db package skeleton + first migration | M0-W0-T05 | 3 | done (SQL+journal verified on PGlite; runMigrations over real postgres.js/TLS NOT RUN) |
+| M0-W1-T04 | M0-S4 | netcode-engineer | Colyseus on uWS server factory, HTTP routing, HelloRoom, client connect | M0-W0-T05 | 4 | done (6-player cap; local only) |
+| M0-W1-T05 | M0-S4 | qa-test-engineer | Screenshot harness v0 + `tools/screenshots/measure` (with synthetic-chart tests) + Playwright smoke e2e | M0-W0-T05 | 5 | in-review (gpu lane partial) |
+| M0-W1-T06 | M0-S4 | integrator | M0-W1 integration: hello-world client + server composition roots | M0-W1-T01, M0-W1-T02, M0-W1-T03, M0-W1-T04, M0-W1-T05 | 9 | done |
+| M0-W2-T01 | M0-S5 | performance-profiler | F3 perf HUD, GPU timing, tools/perf capture runner | M0-W1-T06 | 1 | done (HUD +0.13 ms per frame) |
+| M0-W2-T02 | M0-S5 | rendering-engineer | Render spike bench scene v0 (stand-in terrain, full worst-case terrain-shader stub incl. horizon-map term and camera-only velocity check) + instancing helpers + reversed-Z/WebGL2 check | M0-W1-T06 | 2 | done (no ghost trails; PASS on webgpu+webgl2 draw) |
+| M0-W2-T03 | M0-S5 | netcode-engineer | Netcode spike LoadTestRoom (20/10 Hz synthetic 6-player load + metrics) | M0-W1-T06 | 3 | done (local, 6 players) |
+| M0-W2-T04 | M0-S6 | qa-test-engineer | Headless bots v0 + netsim v0 + spike-16 scenario | M0-W2-T03 | 4 | done (20/10 + 30/15 long runs, bad/outage/coldstart + restart rejoin PASS; late-drop counter n/a) |
+| M0-W2-T05 | M0-S6 | terrain-dust-engineer | Terrain bake spike (LDEM_16 → height cube + manifest) | M0-W1-T06 | 5 | done (LDEM_16; LDEM_64 no-go) |
+| M0-W2-T07 | M0-S6 | rendering-engineer | r187 feature verification matrix (rendering-pipeline §21), PASS/FAIL on `webgpu` and `webgl2` | M0-W2-T02 | 6 | done (13/15 PASS, row 13 FAIL webgl2, row 5 via custom node) |
+| M0-W2-T06 | M0-S6 | integrator | M0-W2 integration: wire perf HUD, bench route, LoadTestRoom flag; local spike runs incl. the early bench-v0 capture | M0-W2-T01, M0-W2-T02, M0-W2-T03, M0-W2-T04, M0-W2-T05, M0-W2-T07 | 9 | done (wiring + smokes pass) |
+| M0-W3-T01 | M0-S7 | qa-test-engineer | Run netcode spike on the one Render Free service during an isolated test-only window (20/10 and 30/20) | M0-W2-T06, isolated hosted-test access | 4 | dropped (owner: no hosted run) |
+| M0-W3-T02 | M0-S8 | performance-profiler | Second capture (gates ADR-0003): render spike matrix on Tier A / Tier B / WebGL2 **on bench v1 (after look-dev v0)**, incl. a `webgl2` capture of the real terrain shader | M0-W3-T03, M0-W3-T04, M0-W3-T07 | 1 | done locally, CONDITIONAL (UHD 620 provisional; Tier A/B BLOCKED; S06 margin thin) |
+| M0-W3-T03 | M0-S7 | technical-artist | Look-dev v0: sun + CSM rig, sky, stars, Earth placeholder, post look; grazing-sun (VT-M0-04b), horizon-map spike (VT-M0-15), fill (VT-M0-16) | M0-W2-T06 | 3 | done for v0 (T03b polish; VT-04b shadow-length fixed, boulder contact gap 3.5 cm + VT-13/14 + VT-15 edge ratio open in M0-visual-checks) |
+| M0-W3-T04 | M0-S7 | technical-artist | Regolith/dust material v0 with mask input, berm, albedo chart calibrated with AgX on | M0-W2-T06 | 6 | done locally (look r2b-r4; VT-07/06/08/15 PASS; Low far-shadow limit in STATUS) |
+| M0-W3-T05 | M0-S8 | ui-ux-motion-designer | Design tokens v0, UI root, HUD crispness test page, waking overlay | M0-W2-T06 | 7 | done locally (VT-M0-10 passes at DPR 1.5; DPR 1/2 one faint row unconfirmed) |
+| M0-W3-T06 | M0-S8 | integrator | M0 closing integration: full gates, VT-M0 matrix, release checklist v0.1.0 | M0-W3-T01, M0-W3-T02, M0-W3-T03, M0-W3-T04, M0-W3-T05, M0-W3-T07 | 9 | in-review (verify 52/52 green, final code review approved; VT-M0-11 BLOCKED, VT-M0-12 partial, release checklist v0.1.0 not run) |
+| M0-W3-T07 | M0-S8 | rendering-engineer | Bench v1: real regolith material + real baked height cube in the bench scene (render-spike input) | M0-W3-T03, M0-W3-T04, M0-W2-T05, M0-W2-T06 | 2 | done (provisional UHD 620 numbers; perf pass T08 + device report done) |
 | M0-W4-T01 | M0-S9 | rendering-engineer | *Contingent*: Babylon 9 bench prototype (render revisit trigger) | M0-W3-T02 | 2 | todo |
 | M0-W4-T02 | M0-S9 | netcode-engineer | *Contingent*: custom uWS edge prototype (netcode revisit trigger) | M0-W3-T01 | 3 | todo |
 | M0-W4-T03 | M0-S9 | integrator | *Contingent*: run prototype benchmarks, re-run M0 gates after the ADR | M0-W4-T01 or M0-W4-T02 | 9 | todo |
@@ -283,7 +286,7 @@ flowchart LR
 
 #### M0-W1-T03 — `/healthz` + `/readyz`, db package skeleton, first migration
 - **Stage** M0-S3 · **Role** `backend-data-engineer` · **Port** 3 · **Status** `todo`
-- **Goal:** health endpoints Render can probe, and a Drizzle/Postgres package whose migrate step works in the Render build against Aiven.
+- **Goal:** health endpoints Render can probe, and a Drizzle/Postgres package whose migrate step works in the Render build against Neon.
 - **Owned files:** `apps/server/src/api/**`, `packages/db/**`.
 - **Read first:** data-model.md §1, §3.12, §8, §9; environments.md §6; security.md §4.1, §7; ADR-0016; netcode.md §16 (DB row).
 - **Input contracts:** `shared/api/rest.ts` v0 (`HttpRouteDef`, `HealthResponse`, `ReadyResponse`).
@@ -386,7 +389,7 @@ flowchart LR
 
 #### M0-W2-T03 — Netcode spike: `LoadTestRoom`
 - **Stage** M0-S5 · **Role** `netcode-engineer` · **Port** 3 · **Status** `todo`
-- **Goal:** a room that reproduces the MVP's per-tick server work and bytes at 16 players so a real Render Free instance can be measured.
+- **Goal:** a room that reproduces the MVP's per-tick server work and bytes at 6 players so a 0.1-CPU instance can be measured locally.
 - **Owned files:** `apps/server/src/net/spike/**`.
 - **Read first:** netcode.md §2–§4.4, §14, §15, §17; performance-budgets §6; tech-stack §3 (revisit trigger).
 - **Input contracts:** `shared/protocol` v0 (reserved spike IDs); ops `RoomStats` (M0-W1-T02); server factory (M0-W1-T04).
@@ -402,7 +405,7 @@ flowchart LR
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `netcode-security-reviewer`, `performance-reviewer`.
 - **Definition of done:** Standard DoD.
 
-#### M0-W2-T04 — Headless bots v0, netsim v0, `spike-16` scenario
+#### M0-W2-T04 — Headless bots v0, netsim v0, `spike-16` scenario (name kept; runs 6 bots since 2026-11-12)
 - **Stage** M0-S6 · **Role** `qa-test-engineer` · **Port** 4 · **Status** `todo`
 - **Goal:** 16 headless clients under realistic network conditions that produce a numeric report.
 - **Owned files:** `tools/bots/**` (incl. `tools/bots/results/**`), `tools/netsim/**`.
@@ -412,7 +415,7 @@ flowchart LR
 - **Acceptance criteria:**
   - [ ] Bot runner (Node, `@colyseus/sdk`): N bots join one room, send synthetic inputs at 20 Hz, record bytes received per message type, RTT, disconnects.
   - [ ] In-process conditioner: latency 120 ms ± 30, 1 % loss modelled as TCP stall delay; profiles good/typical/bad/outage per netcode §17.
-  - [ ] `spike-16` scenario: 10 min, target URL param (local by default; hosted only for an approved test window), reads server room-stats lines (local stdout or a pasted Render log export) and writes JSON + Markdown to `tools/bots/results/<milestone>/`.
+  - [ ] `spike-16` scenario (name kept; runs 6 bots since 2026-11-12): 10 min, target URL param (local by default; hosted only for an approved test window), reads server room-stats lines (local stdout or a pasted Render log export) and writes JSON + Markdown to `tools/bots/results/<milestone>/`.
   - [ ] `pnpm bots -- spike-16 --url http://localhost:2571` works against a local server.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `performance-reviewer`.
@@ -469,14 +472,14 @@ flowchart LR
 
 #### M0-W3-T01 — Netcode spike in an isolated hosted-test window Render Free
 - **Stage** M0-S7 · **Role** `qa-test-engineer` · **Port** 4 · **Status** `todo`
-- **Goal:** the real numbers for "16 players on 0.1 CPU".
+- **Goal:** the real numbers for "6 players on 0.1 CPU".
 - **Owned files:** `tools/bots/results/M0/**`, `tools/bots/src/scenarios/**` (fixes only).
 - **Read first:** netcode.md §14–§15, §17; performance-budgets §6–§6.3; environments.md §5.
 - **Input contracts:** isolated hosted-test URL with `NET_SPIKE=1` (when isolated hosted-test access is available).
 - **Depends on:** M0-W2-T06, isolated hosted-test access.
 - **Acceptance criteria:**
   - [ ] Cold-start timing: sleeping service → `/healthz` 200 (3 samples).
-  - [ ] `spike-16` ≤ 5 min at 20/10 Hz and ≤ 5 min at 30/20 Hz on the one Render Free service during an isolated, Cee-authorized test window (netcode §17 / environments §5 cap; a 10 min run of each is repeated locally for comparison); per run: CPU % of 0.1 quota (EWMA 60 s), tick p50/p95/max, event-loop p99, bytes/client/s by type, `/healthz` p95 latency under load, disconnects.
+  - [ ] `spike-16` (6 bots) 10 min at 20/10 Hz and 10 min at 30/20 Hz in the local CPU-limited container (hosted run dropped 2026-11-12; local checks only); per run: CPU % of 0.1 quota (EWMA 60 s), tick p50/p95/max, event-loop p99, bytes/client/s by type, `/healthz` p95 latency under load, disconnects.
   - [ ] Verdict inputs: one 16-bot room > 50 % CPU at 20 Hz → revisit trigger fires (M0-W4-T02); egress per room-hour vs performance-budgets §6.2.
   - [ ] Total egress used by the test recorded (expected ≈ 0.3 GB of the 5 GB month).
   - [ ] M0 server verifications recorded: Render **health-check traffic** (instance-seconds consumed by `healthCheckPath`; drop it from `render.yaml` if it keeps the instance awake, environments §4.1); the **client-IP header** Render actually sends (confirm `CLIENT_IP_HEADER` default `true-client-ip`) with a **forged `X-Forwarded-For` test** (security §5, §11); **GC/heap flags** evaluated under the 16-bot load (max GC stall traced ≤ 50 ms; `NODE_OPTIONS` changed only on evidence); precomputed grid binaries build step noted for M1 (netcode §15).
@@ -601,7 +604,7 @@ flowchart LR
 - **Read first:** tech-stack §3; netcode.md §15; M0-W3-T01 results; ADR-0014.
 - **Input contracts:** `LoadTestRoom` workload definition (M0-W2-T03).
 - **Depends on:** M0-W3-T01 (trigger fired).
-- **Acceptance criteria:** same workload and metrics; `spike-16` run locally in the CPU-limited container; a hosted run only if Cee chooses to deploy the prototype to the one service during an isolated test window (ADR-0029, no staging service); `prototypes/netcode-edge/BENCHMARK.md` by `performance-reviewer`.
+- **Acceptance criteria:** same workload and metrics; `spike-16` run locally in the CPU-limited container; no hosted run (dropped 2026-11-12); `prototypes/netcode-edge/BENCHMARK.md` by `performance-reviewer`.
 - **Visual acceptance:** n/a.
 - **Applicable review lenses (lead selects for risk/final review):** `performance-reviewer`, `netcode-security-reviewer`, `code-reviewer`.
 - **Definition of done:** Standard DoD + lead ADR (keep Colyseus edge or replace in M1-W4).

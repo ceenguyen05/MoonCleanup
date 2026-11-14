@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024"],
+    "types": ["node"],
+    "typeRoots": ["../../../tools/bots/node_modules/@types"],
+    "paths": {
+      "@moon-cleanup/shared": ["../../../packages/shared/src/index.ts"]
+    }
+  },
+  "include": ["src", "../../../tools/bots/src/scenarios/dust-contest"]
+}

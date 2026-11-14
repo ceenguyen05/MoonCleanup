@@ -1,0 +1,364 @@
+{
+ "preset": "high",
+ "backend": "webgpu",
+ "scene": "typical",
+ "frames": 20,
+ "hold": 40,
+ "end": {
+  "position": [
+   -4.2,
+   1.7,
+   -11.5
+  ],
+  "yawDeg": 20,
+  "pitchDeg": -13
+ },
+ "summary": [
+  {
+   "config": "traa",
+   "path": "forward-1.5mps",
+   "speed": "1.5 m/s forward",
+   "frame": {
+    "mean": 0.54,
+    "p99": 7.1,
+    "over8Share": 0.0082
+   },
+   "ground": {
+    "mean": 0.52,
+    "p99": 5.2,
+    "over8Share": 0.0026
+   },
+   "sharpFrame": 0.831,
+   "sharpGround": 0.794
+  },
+  {
+   "config": "traa",
+   "path": "forward-5mps",
+   "speed": "5 m/s forward",
+   "frame": {
+    "mean": 0.53,
+    "p99": 7.1,
+    "over8Share": 0.0084
+   },
+   "ground": {
+    "mean": 0.47,
+    "p99": 4.8,
+    "over8Share": 0.0015
+   },
+   "sharpFrame": 0.853,
+   "sharpGround": 0.846
+  },
+  {
+   "config": "traa",
+   "path": "forward-15mps",
+   "speed": "15 m/s forward",
+   "frame": {
+    "mean": 0.5,
+    "p99": 7.1,
+    "over8Share": 0.0088
+   },
+   "ground": {
+    "mean": 0.39,
+    "p99": 3.3,
+    "over8Share": 0.0019
+   },
+   "sharpFrame": 0.897,
+   "sharpGround": 0.93
+  },
+  {
+   "config": "traa",
+   "path": "strafe-5mps",
+   "speed": "5 m/s sideways",
+   "frame": {
+    "mean": 0.25,
+    "p99": 3.3,
+    "over8Share": 0.0038
+   },
+   "ground": {
+    "mean": 0.2,
+    "p99": 1.8,
+    "over8Share": 0.0012
+   },
+   "sharpFrame": 0.974,
+   "sharpGround": 0.983
+  },
+  {
+   "config": "traa",
+   "path": "yaw-30dps",
+   "speed": "30 deg/s yaw",
+   "frame": {
+    "mean": 0.47,
+    "p99": 6.2,
+    "over8Share": 0.0071
+   },
+   "ground": {
+    "mean": 0.42,
+    "p99": 4.2,
+    "over8Share": 0.0017
+   },
+   "sharpFrame": 0.885,
+   "sharpGround": 0.863
+  },
+  {
+   "config": "traa",
+   "path": "yaw-90dps",
+   "speed": "90 deg/s yaw",
+   "frame": {
+    "mean": 0.38,
+    "p99": 5.2,
+    "over8Share": 0.0061
+   },
+   "ground": {
+    "mean": 0.31,
+    "p99": 2.8,
+    "over8Share": 0.0015
+   },
+   "sharpFrame": 0.955,
+   "sharpGround": 0.956
+  },
+  {
+   "config": "traa",
+   "url": "http://localhost:5193/?scene=typical&preset=high&backend=webgpu&scale=1&capture=1",
+   "passes": [
+    "scene",
+    "prepass",
+    "gtao",
+    "traa",
+    "grade",
+    "bloom"
+   ],
+   "presentOk": true,
+   "errors": []
+  },
+  {
+   "config": "traa-novel",
+   "path": "forward-1.5mps",
+   "speed": "1.5 m/s forward",
+   "frame": {
+    "mean": 0.91,
+    "p99": 11.8,
+    "over8Share": 0.0161
+   },
+   "ground": {
+    "mean": 1,
+    "p99": 8.2,
+    "over8Share": 0.0108
+   },
+   "sharpFrame": 0.783,
+   "sharpGround": 0.685
+  },
+  {
+   "config": "traa-novel",
+   "path": "forward-5mps",
+   "speed": "5 m/s forward",
+   "frame": {
+    "mean": 1.03,
+    "p99": 17.1,
+    "over8Share": 0.0222
+   },
+   "ground": {
+    "mean": 0.94,
+    "p99": 11.9,
+    "over8Share": 0.016
+   },
+   "sharpFrame": 0.814,
+   "sharpGround": 0.798
+  },
+  {
+   "config": "traa-novel",
+   "path": "forward-15mps",
+   "speed": "15 m/s forward",
+   "frame": {
+    "mean": 0.96,
+    "p99": 18.7,
+    "over8Share": 0.0187
+   },
+   "ground": {
+    "mean": 0.67,
+    "p99": 6,
+    "over8Share": 0.0057
+   },
+   "sharpFrame": 0.915,
+   "sharpGround": 1.051
+  },
+  {
+   "config": "traa-novel",
+   "path": "strafe-5mps",
+   "speed": "5 m/s sideways",
+   "frame": {
+    "mean": 1.1,
+    "p99": 15.1,
+    "over8Share": 0.024
+   },
+   "ground": {
+    "mean": 1.17,
+    "p99": 11.3,
+    "over8Share": 0.0222
+   },
+   "sharpFrame": 0.777,
+   "sharpGround": 0.692
+  },
+  {
+   "config": "traa-novel",
+   "path": "yaw-30dps",
+   "speed": "30 deg/s yaw",
+   "frame": {
+    "mean": 1.19,
+    "p99": 18.1,
+    "over8Share": 0.0259
+   },
+   "ground": {
+    "mean": 1.2,
+    "p99": 13.9,
+    "over8Share": 0.023
+   },
+   "sharpFrame": 0.772,
+   "sharpGround": 0.675
+  },
+  {
+   "config": "traa-novel",
+   "path": "yaw-90dps",
+   "speed": "90 deg/s yaw",
+   "frame": {
+    "mean": 1.17,
+    "p99": 16.9,
+    "over8Share": 0.0248
+   },
+   "ground": {
+    "mean": 1.14,
+    "p99": 10.9,
+    "over8Share": 0.0202
+   },
+   "sharpFrame": 0.786,
+   "sharpGround": 0.702
+  },
+  {
+   "config": "traa-novel",
+   "url": "http://localhost:5193/?scene=typical&preset=high&backend=webgpu&scale=1&capture=1",
+   "passes": [
+    "scene",
+    "prepass",
+    "gtao",
+    "traa",
+    "grade",
+    "bloom"
+   ],
+   "presentOk": true,
+   "errors": []
+  },
+  {
+   "config": "smaa",
+   "path": "forward-1.5mps",
+   "speed": "1.5 m/s forward",
+   "frame": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "ground": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "sharpFrame": 1,
+   "sharpGround": 1
+  },
+  {
+   "config": "smaa",
+   "path": "forward-5mps",
+   "speed": "5 m/s forward",
+   "frame": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "ground": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "sharpFrame": 1,
+   "sharpGround": 1
+  },
+  {
+   "config": "smaa",
+   "path": "forward-15mps",
+   "speed": "15 m/s forward",
+   "frame": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "ground": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "sharpFrame": 1,
+   "sharpGround": 1
+  },
+  {
+   "config": "smaa",
+   "path": "strafe-5mps",
+   "speed": "5 m/s sideways",
+   "frame": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "ground": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "sharpFrame": 1,
+   "sharpGround": 1
+  },
+  {
+   "config": "smaa",
+   "path": "yaw-30dps",
+   "speed": "30 deg/s yaw",
+   "frame": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "ground": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "sharpFrame": 1,
+   "sharpGround": 1
+  },
+  {
+   "config": "smaa",
+   "path": "yaw-90dps",
+   "speed": "90 deg/s yaw",
+   "frame": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "ground": {
+    "mean": 0,
+    "p99": 0,
+    "over8Share": 0
+   },
+   "sharpFrame": 1,
+   "sharpGround": 1
+  },
+  {
+   "config": "smaa",
+   "url": "http://localhost:5193/?scene=typical&preset=high&backend=webgpu&scale=1&traa=off&capture=1",
+   "passes": [
+    "scene",
+    "grade",
+    "bloom",
+    "smaa"
+   ],
+   "presentOk": true,
+   "errors": []
+  }
+ ]
+}

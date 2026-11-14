@@ -91,3 +91,20 @@ If step 3 is not blocked, check whether the harness expands `$CLAUDE_PROJECT_DIR
 ## Suggested Conventional Commit message(s)
 - feat(hooks): add PreToolUse git-blocking hook with 145-case matrix test and register it in .claude/settings.json
 - docs(vendor): add three.js r187 offline docs snapshot with source index and MIT notice
+
+## Fix cycle 2 (review findings 1-3)
+Files: `.claude/hooks/block-git.mjs` (prettier-formatted), `.claude/hooks/block-git.test.mjs`. No other paths touched.
+- **F1 lexer:** `<<` is a heredoc only when not part of `<<<` (`isHeredocStart`); no heredoc inside `$(( ))` / `(( ))` (arithmetic flag in `findCloseParen`, `((` command skipped whole in the tokenizer); PowerShell `<# ... #>` skipped in the `ps` dialect; `$'...'` honours `\'` escapes.
+- **F2 PowerShell false positives:** the tokenizer marks a command that is piped (`.pipe`); a lone quoted string is scanned as a script only when the next stage is `iex`/`Invoke-Expression`/`eval` or a shell. The computed-command-name heuristic is skipped in `ps` when the next word is a comparison operator (`-match`, `-eq`, ...). `"git commit" | iex` and `& $g commit` stay denied.
+- **F3 junction:** entry guard compares `realpathSync(argv[1])`; new test runs a copy through a directory junction in a temp dir (exit 2).
+- **Matrix:** 189 tests, 189 pass, 0 fail on Node v26.13.1 (was 162): +26 matrix cases (11 deny + 3 allow for F1, 7 allow + 4 deny for F2... all review repros included) and +1 junction test. Node 22 not re-run this cycle.
+- Findings 4-10 (non-blocking) not addressed.
+
+## Fix cycle 3 (non-blocking findings 4-10 of the code review; security review checkpoint had only the already-fixed finding 1)
+Files: `.claude/hooks/block-git.mjs`, `.claude/hooks/block-git.test.mjs`.
+- **F4 quadratic work:** shared work budget (`MAX_WORK` 4M units charged by `scan`, `analyzeGit`, `findGitWord`, `find -exec`); exhausting it throws and `evaluate` falls back to the linear coarse regex. 17,000-word `pnpm git status ...` input and 12,000 `-exec` input now finish in about 1 s (was 25 s); trailing `git push` still blocked.
+- **F6:** a relative path word such as `tools/git` is not a git program inside runners/start words; path-qualified `git-*` scripts (`./tools/git-hooks-check.sh`) are allowed unless the suffix is a denied subcommand. Bare `git-frobnicate`, `git-commit`, `/usr/bin/git`, `pnpm exec git commit` still blocked.
+- **F7:** PowerShell here-string recognised after `=`, `(`, `,` (`$plan=@'`), both quote styles.
+- **F8:** header failure table corrected (deep nesting blocks on any git mention; work budget row added) and tests added for nesting, computed `eval`, `--config-env`, and the budget/coarse fallback.
+- **Skipped:** F5 (eval refusal next to any git mention is a documented fail-closed decision; relaxing it weakens the net, lead call), F9 (refactor of `analyze()`, no behaviour change; left for a quiet moment), F10 (task-card wording, lead-owned).
+- **Evidence:** `node --test .claude/hooks/block-git.test.mjs` 193 pass / 0 fail on Node 26.13.1 and on Node 22.20.0 (was 189); prettier clean; `eslint .` exit 0. No git command run.

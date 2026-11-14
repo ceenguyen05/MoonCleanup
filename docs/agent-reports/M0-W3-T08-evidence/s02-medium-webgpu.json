@@ -1,0 +1,64 @@
+{
+ "query": "scene=s02&preset=medium",
+ "info": {
+  "scene": "s02",
+  "state": {
+   "sunElevationDeg": 60,
+   "sunAzimuthDeg": 0,
+   "earthElevationDeg": -90,
+   "earthAzimuthDeg": 70,
+   "sunRateDegPerS": 0,
+   "earthDiameterDeg": 4.2
+  },
+  "keyMode": "sun",
+  "ev100": 14.3,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922764,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.0971484014333395,
+    "endM": 42.23076211353316
+   },
+   {
+    "index": 2,
+    "texelM": 0.2761260956047685,
+    "endM": 120
+   }
+  ],
+  "preset": "medium",
+  "backend": "webgpu",
+  "postPasses": [
+   "scene",
+   "grade",
+   "bloom",
+   "smaa"
+  ],
+  "knobs": "default",
+  "skyDome": "baked",
+  "shadowFilter": "tent4"
+ },
+ "look": {},
+ "chips": {
+  "a010": 129.9,
+  "a033": 180.2,
+  "a080": 212.3,
+  "grime": 119.8,
+  "clean": 181.8
+ },
+ "facts": {
+  "variant": "noon",
+  "sunLux": 115874.19902635788,
+  "ev100": 14.3,
+  "fetches": 9,
+  "textureBindings": 2,
+  "maskTexelCm": 0.78125
+ },
+ "errors": [
+  "warn: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+  "warn: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127"
+ ]
+}

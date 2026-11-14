@@ -23,7 +23,7 @@ Option 1:
 - **Browser mode:** Vitest browser (`@vitest/browser-playwright`, versions pinned identically) for HUD/DOM; keep every `@vitest/*` on one exact version.
 - **E2E / visual:** Playwright with **two lanes**: **CI** with software WebGL2 for smoke/flow tests (no pixel baselines), and **local real-GPU** runs for screenshot baselines. Capture mode disables TRAA/dynamic resolution, waits for frames, masks volatile UI. A GPU runner or headed + Xvfb WebGPU spike is an M0 task.
 - **Netcode:** an in-process network conditioner (delay, jitter, loss, reorder) in `tools/netsim`, plus **Toxiproxy** for TCP faults against a real server.
-- **Load:** `@colyseus/loadtest` and custom headless **16-player bots** (`tools/bots`), run against a real Render Free instance for the M0 spike; the server is also tested capped at 0.1 CPU / 512 MB.
+- **Load:** `@colyseus/loadtest` and custom headless **6-player bots** (`tools/bots`), run against a real Render Free instance for the M0 spike; the server is also tested capped at 0.1 CPU / 512 MB.
 - **Perf:** `tools/perf` benchmarks; GPU/frame budgets from the feasibility budgets.
 - ESLint and boundary rules run in CI; migrations are tested against local Postgres.
 

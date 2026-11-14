@@ -1,0 +1,143 @@
+# render
+
+Owner: rendering-engineer. Renderer setup and backend detection, frame orchestration, quality presets, render scale,
+GPU resource lifetime. Spec: `docs/architecture/rendering-pipeline.md` sections 2, 3.1, 4, 8.1, 9, 14, 18.
+Import from `../render` (the barrel) only; at run time use the service registry.
+
+## Files
+
+| File | Content | three |
+| --- | --- | --- |
+| `backend.ts` | Section 2.1 detection (override, adapter, software adapter, blocklist, unsupported); backend read-back | no |
+| `tier.ts` | GPU class, tier A/B/C, default preset, backend limits, `resolveQuality` | no |
+| `gpu-classes.json`, `blocklist.json` | Data for the two above (regular expressions; blocklist is empty until a failure is recorded) | no |
+| `quality-service.ts` | `quality` service: current settings, capabilities, `setPreset`, `stepDown`, `quality.changed` | no |
+| `url-options.ts` | `?backend ?preset ?dpr ?scale ?dynres ?scene ?capture` | no |
+| `viewport.ts` | CSS size + capped DPR, polled once per frame | no |
+| `render-scale.ts` | Render scale range, clamp and pins (`floor`, `ceil`, fixed number) | no |
+| `dynres.ts` | `DynamicResolution`: the section 9 control law (p90 window, hysteresis, vsync probe), no allocation per sample | no |
+| `renderer-host.ts` | Create / init / device-lost recreation state machine, frame scheduler | no |
+| `frame-loop.ts` | Per-frame module order, `mc:<module>:update` spans, manual stepping, frame-time stats | no |
+| `harness-hooks.ts` | `__mcReady`, `__mcStep`, `__mcInfo` for the screenshot harness and e2e smoke; `__mcDynres()`, `__mcRenderScale(s)` for perf tools | no |
+| `three-renderer.ts` | `WebGPURenderer` driver, canvas mount, WebGL2 probe, feature probe | yes |
+| `pipeline.ts` | `RenderPipeline` skeleton: HDR scene pass, `renderOutput`, stage hooks | yes |
+| `scene-roots.ts` | Scene, root groups, main camera and its depth range | yes |
+| `smoke-scene.ts` | `?scene=smoke` parity test mesh | yes |
+| `module.ts` | `RenderModule` (ClientModule + `renderer` service) | types |
+
+## Services
+
+- `renderer` (`RenderRendererService`): `backend`, `tier`, `forced`, `renderer` (the `WebGPURenderer`, `null` while it
+  is being recreated), `canvas`, `viewport`, `renderScale`, `setPipelineStages`, `readStats`, `onLost`, `onRecreated`,
+  `onFatal`, plus `scheduler` and `viewportSource` for the frame loop.
+- `sceneRoots` (`SceneRoots`): `scene`, `world`, `sky`, `vfx`, `debug`, `camera`.
+- `quality` (`RenderQualityService`): `current`, `maxPreset`, `recommendedPreset`, `capabilities`, `setPreset`,
+  `stepDown`. Settings objects are frozen and replaced, never mutated: compare by identity.
+
+Events: `render.backendSelected` (at boot; again only if a recreated renderer runs on another backend or tier) and
+`quality.changed` (first choice and every change).
+
+## Dynamic resolution (M0-W3-T08)
+
+- The scale applies to the scene pass (and the look's prepass) through `setResolutionScale`; canvas and DOM UI stay native.
+- `renderer.setRenderScale(scale)`: set it now, clamped to the preset's range (returns the scale in effect; a pin wins).
+  `renderer.setDynamicResolution(on)`, `renderer.dynamicResolution` (read-out: `enabled, pinned, scale, scaleMin, scaleMax,
+  signal, p90Ms, targetMs, steps, floorHint`), `renderer.reportGpuFrameMs(ms)` (a GPU-time reporter; while reports are
+  younger than 1 s the controller steers on GPU ms against `dynres.gpuBudgetMs`, else on the frame loop's `dt` against
+  `1000 / dynres.targetFps`).
+- Law: every 0.5 s on the p90 of the last 30 frames; over 1.05 x target: -0.10; under 0.80 x target for 4 s: +0.05; no
+  reverse within 4 s; one change per 2 s. Interval signal only: after 8 s on budget it probes +0.05 (vsync hides headroom)
+  and takes a failed probe back within about 1.5 s, doubling the hold up to 64 s.
+- Start: integrated GPUs start at the range floor and climb; everything else starts at the ceiling.
+- Off: `?scale=floor|ceil|<0.25..1>` (a number is a fixed pin, not limited to the preset range: `?scale=1` is 1.0 on any
+  preset), `?capture=1` (ceiling), `?dynres=off` (holds the start scale; the setter still works).
+- GPU signal: `GpuTimingPump` (`gpu-timing.ts`) resolves three's timestamp queries sparsely (every 16 frames; every 8 in the
+  debug module), one request in flight, and calls `reportGpuFrameMs(render + compute ms)`. Production: the composition
+  root registers `GpuTimingModule` in the last (`debug`) frame slot whenever dynres can run and WebGPU is expected
+  (`navigator.gpu`, not `?backend=webgl2`, not `?dynres=off` / `?scale=` / capture); it has no HUD, DOM or window hook. Dev or
+  `?perf=1`: the debug module owns the same pump instead (never both). No `timestamp-query` or WebGL2: no query is issued
+  and dynres steers on the frame interval (CPU frame pacing).
+- Not wired yet: no TRAA history resample on a step, no "Lower preset?" toast for `floorHint`.
+
+## Hooks for other roles
+
+- **technical-artist (visuals):** add objects under `sceneRoots.world / sky / vfx`. Install post effects with
+  `renderer.setPipelineStages({ hdr, display, dispose })`: `hdr(color, ctx)` runs scene-linear before the tone map
+  (AO, TRAA, VFX composite, bloom, exposure), `display(color, ctx)` runs after `renderOutput()` (SMAA, sharpen).
+  `ctx.scenePass` is the `PassNode` (call `setMRT`, `getTextureNode("depth")` on it). Stage functions are called again
+  after a device loss and must build fresh nodes each time. Do not set `scene.background`: the clear is black and the
+  sky is geometry. Tone mapper and output colour space are the renderer's (`renderer.toneMapping` follows
+  `quality.current.post.toneMapping`; exposure stays 1, lights are pre-exposed).
+- **terrain-dust-engineer / anyone with GPU-only state** (render targets, storage textures, compute state): subscribe
+  to `renderer.onLost` and `renderer.onRecreated` and rebuild against the new `renderer.renderer`. Geometries,
+  materials and CPU-backed textures are re-uploaded by three.
+- **gameplay:** owns the camera transform and FOV; render owns aspect, near and far (`applyCameraProjection`).
+- **performance-profiler (debug):** `FrameLoop.lastStepMs(step)`, `frameTimeStats()`, the User Timing spans
+  `mc:<step>:update`, `renderer.readStats(out)`; construct `RenderModule` with `trackTimestamp: true` to enable GPU
+  timestamp queries. `FrameLoop.setSpansEnabled(false)` removes the span cost.
+- **Everyone:** the per-frame `FrameInfo` and `viewport` objects are reused; read them, do not keep them.
+
+## Rules that hold here
+
+- One renderer: `WebGPURenderer`; WebGL2 is its own fallback backend (`forceWebGL`), not a second code path.
+- `await renderer.init()` once (inside `RendererHost`), then synchronous `render()` through `RenderPipeline`.
+- The canvas is opaque, clears to black, has no MSAA; AA is a post stage. DPR cap applies to the canvas only.
+- Manual stepping advances one frame per display frame: three advances its node frame once per `requestAnimationFrame`,
+  so several renders inside one display frame would reuse the first scene pass.
+
+## Bench scene v0 (`?scene=bench`, M0-W2-T02) and instancing helpers
+
+Early-signal render spike, **not a verdict** (E7 is decided on bench v1, M0-W3-T07). Code: `bench/`, `instancing/`.
+
+- URL: `?scene=bench&draws=200|350|600|900&preset=low|medium|high` plus `path=p1|p3` (the bench drives the camera:
+  P1 walk loop, P3 orbit + sky pan), `anim=0` (static frame), `dbg=1..7` (terrain shader value as a grey image),
+  `probe=zfight` (reversed-Z probe: two planes 3 m apart at 15 km; the rear one must never show). Add `capture=1` for
+  frame-stepped runs.
+- Content: 64 skirted terrain chunks (stand-in) with the worst-case terrain shader stub (27 counted fetches, 8 texture
+  bindings), 2,100 instanced rocks in 4 draws, 16 avatar proxies in one `BatchedMesh`, 40 props, sun + `CSMShadowNode`
+  (cascades from the preset), post chain: High = prepass + GTAO (indirect only) + TRAA + bloom + AgX; Low/Medium =
+  bloom + AgX + FXAA (Low; client default, `?aa=smaa` restores SMAA) / SMAA (Medium). The bench look wires the post-AA star
+  layer on TRAA chains like `VisualsModule`. Bloom at the canonical 4.0 / 0.5 / 0.06 / 0.35.
+- `?draws=` is the renderer's own count over all passes: zero-size filler boxes are added or removed until the previous
+  frame's `renderer.info` count matches (calibrated at the default pose; a moving camera drifts from it). If the base
+  scene is already above the target, no filler is shown and `stats().draws` says so.
+- `window.__mcBench`: `ready`, `paths.p1|p3` (keyframe specs in the shape of `__mcCameraPath`), `setPath(id|null)`,
+  `setDraws(n)`, `stats()` (backend, preset, draws, triangles, fillers, cascades, post passes, texture bindings,
+  `pipelinesAfterWarmup`, ...). `ready` becomes true after `compileAsync`, 8 frames and the draw calibration;
+  `pipelinesAfterWarmup` is the growth of `renderer.info.memory.programs` since then.
+- Velocity: `bench/camera-velocity.ts` writes camera-only reprojection (current minus previous NDC, unjittered
+  matrices captured once per frame) for everything static; moving casters must keep three's `velocity` per material.
+- Helpers for later waves: `instancing/` `InstancedSet` (one `InstancedMesh`, matrices in place, one `dispose()`),
+  `BatchedPool` (one `BatchedMesh`, several geometries), `splitInstanceCounts`, `drawsNeeded`, `batchCapacity`.
+- **Hard limit found by the bench:** at most 16 sampled textures per fragment stage (target <= 12 for terrain); see
+  rendering-pipeline.md section 7.
+
+### Bench v1 (M0-W3-T07): real regolith material on the baked height cube
+
+- Default `terrain=real`; `terrain=standin` is the v0 path. Extra knobs: `terrainBase=<dir url>` (default
+  `/assets/terrain/`, which nothing serves yet: in dev pass `/@fs/<abs repo path>/assets/terrain/`), `cube=256|1024`,
+  `horizon=on|off`, `verify=1` (hash check of the inflated payloads in the browser). A failed load falls back to the
+  stand-in loudly: `stats().terrainSource` is `real | standin | standin-fallback`, `terrainError` has the reason.
+- Loading is async: `__mcBench` is installed (and `ready` can become true) only after the chunks, props and camera are
+  built on the loaded height. Wait for `window.__mcBench?.ready`, not only `__mcReady`.
+- Height: `terrain-cube.ts` decodes CTMH/CTMW (`DecompressionStream("deflate-raw")`) and samples bilinearly;
+  `setTerrainHeightSource` makes `groundY` and the chunk builder use it. The cube lives in vertex data only. Horizon
+  angles are two vec4 vertex attributes (`horizon-visibility.ts`); `HorizonCsmNode` multiplies the material's
+  `userData.mcHorizonVisibility` into the cascade result. Material: `createRegolithMaterial` (visuals/materials barrel),
+  mask = `bench-mask.ts` (2048^2 over 64 m, CPU filled). Fragment textures: 2 + CSM cascades.
+- Look seam (follow-up): sun, fill, cascaded shadows, sky and post chain sit behind `bench/look.ts` `LookProvider`.
+  `?look=visuals` (default) runs the technical-artist rig through the visuals barrel (`SunRig` + `MoonShadowNode`, `SkyRig`,
+  `createLookStages` with `LOOK_GRADE`; `bench/look-visuals.ts`); `?look=v0` keeps the original bench chain (plain sun +
+  `HorizonCsmNode`, stand-in sky, `createBenchStages`; `bench/look-v0.ts`) so numbers recorded earlier stay comparable.
+  `stats().look` says which one ran. The regolith material's horizon term reaches `MoonShadowNode` through the same
+  `userData.mcHorizonVisibility` key, so `horizon=on` works under both. Tests inject a look with `lookFactory`.
+- Per-feature knobs (M0-W3-T08, visuals look and the look-dev scenes; parser `visuals/look-knobs.ts`): `aa=smaa|fxaa|traa|none`,
+  `traa=on|off`, `gtao=on|off`, `aainput=rgba8|half-float`, `shadowres=512|1024|2048|4096`, `cascades=0..4`,
+  `shadowfilter=vogel5|tent4|hard`, `pcf=<texels>`, `bloom=off|quarter|half`, `grade=look|neutral|off`, `sky=<level>|off`,
+  `skyoff=dome,stars,earth,halo,sun`, `skydome=baked|procedural`. No knob = the shipped look; `stats().lookKnobs` reports
+  them. Cost split on the UHD 620: `docs/agent-reports/M0-W3-T08-perf-pass.md`.
+- Serving the terrain: nothing serves `assets/terrain` yet (see the T07 report for the Vite plugin the integrator adds);
+  until then pass `terrainBase=/@fs/<abs repo path>/assets/terrain/`.
+- Double "loading baked terrain" / "scene=bench" log lines are a Vite dev **full page reload** (a source file changed or
+  dependencies were re-optimised while the page was open), not a second build in one page. `stats().buildsInPage` stays 1
+  and `stats().pageTimeOrigin` changes when the page reloaded; a capture should assert both.

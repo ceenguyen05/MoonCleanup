@@ -6,10 +6,10 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "test:e2e": "echo e2e placeholder: Fable replaces with playwright test",
+    "test:e2e": "playwright test",
     "install:browsers": "playwright install --with-deps chromium",
-    "lint": "echo e2e lint: placeholder until sources land - see README",
-    "typecheck": "echo e2e typecheck: placeholder until sources land - see README"
+    "lint": "eslint . --no-error-on-unmatched-pattern",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@moon-cleanup/shared": "workspace:*",

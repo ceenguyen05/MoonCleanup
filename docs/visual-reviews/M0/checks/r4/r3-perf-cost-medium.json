@@ -1,0 +1,265 @@
+{
+ "base": "scene=typical&view=play&preset=medium&backend=webgpu&scale=ceil",
+ "variants": [
+  {
+   "name": "round3",
+   "query": "shadowkernel=square"
+  },
+  {
+   "name": "round4",
+   "query": ""
+  }
+ ],
+ "warm": 6,
+ "seconds": 8,
+ "rounds": 3,
+ "rows": [
+  {
+   "round": 0,
+   "variant": "round3",
+   "frames": 291,
+   "fps": 36.3,
+   "avg": 27.56,
+   "p50": 27.4,
+   "p95": 31.3,
+   "p99": 32.8,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "shadowkernel=square",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 290,
+    "med": 27.5,
+    "over33": 32,
+    "over50": 1,
+    "max": 51.1,
+    "hitches": 12,
+    "hitchMs": 225,
+    "hitchAt": [
+     0.03,
+     0.67,
+     1.09,
+     2.09,
+     3.6,
+     3.73,
+     5.13,
+     5.38,
+     6.49,
+     6.57,
+     7.27,
+     7.61
+    ]
+   }
+  },
+  {
+   "round": 0,
+   "variant": "round4",
+   "frames": 287,
+   "fps": 36.3,
+   "avg": 27.58,
+   "p50": 27.4,
+   "p95": 32,
+   "p99": 36.1,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 286,
+    "med": 31.6,
+    "over33": 82,
+    "over50": 2,
+    "max": 60.5,
+    "hitches": 2,
+    "hitchMs": 56,
+    "hitchAt": [
+     4.8,
+     6.29
+    ]
+   }
+  },
+  {
+   "round": 1,
+   "variant": "round3",
+   "frames": 291,
+   "fps": 36.3,
+   "avg": 27.55,
+   "p50": 27.4,
+   "p95": 31.1,
+   "p99": 32.8,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "shadowkernel=square",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 290,
+    "med": 31.3,
+    "over33": 79,
+    "over50": 4,
+    "max": 57.5,
+    "hitches": 4,
+    "hitchMs": 91,
+    "hitchAt": [
+     0.94,
+     3.68,
+     4.18,
+     4.26
+    ]
+   }
+  },
+  {
+   "round": 1,
+   "variant": "round4",
+   "frames": 292,
+   "fps": 36.4,
+   "avg": 27.46,
+   "p50": 27.3,
+   "p95": 31.2,
+   "p99": 33.6,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 291,
+    "med": 31.5,
+    "over33": 88,
+    "over50": 4,
+    "max": 59.2,
+    "hitches": 4,
+    "hitchMs": 102,
+    "hitchAt": [
+     0.39,
+     0.74,
+     3.91,
+     7.38
+    ]
+   }
+  },
+  {
+   "round": 2,
+   "variant": "round3",
+   "frames": 296,
+   "fps": 36.9,
+   "avg": 27.11,
+   "p50": 26.7,
+   "p95": 31.1,
+   "p99": 39.3,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "shadowkernel=square",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 295,
+    "med": 31,
+    "over33": 93,
+    "over50": 7,
+    "max": 60.8,
+    "hitches": 7,
+    "hitchMs": 168,
+    "hitchAt": [
+     0.3,
+     2.27,
+     2.65,
+     4.88,
+     5.62,
+     6.27,
+     6.45
+    ]
+   }
+  },
+  {
+   "round": 2,
+   "variant": "round4",
+   "frames": 261,
+   "fps": 32.4,
+   "avg": 30.83,
+   "p50": 28.7,
+   "p95": 45.2,
+   "p99": 84.8,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 260,
+    "med": 31.6,
+    "over33": 91,
+    "over50": 10,
+    "max": 121,
+    "hitches": 7,
+    "hitchMs": 334,
+    "hitchAt": [
+     3.52,
+     4.13,
+     4.95,
+     7.51,
+     7.64,
+     7.73,
+     7.85
+    ]
+   }
+  }
+ ],
+ "summary": {
+  "round3": {
+   "pages": 3,
+   "fps": 36.3,
+   "p50": 27.4,
+   "p50All": [
+    27.4,
+    27.4,
+    26.7
+   ],
+   "p95": 31.1,
+   "p95All": [
+    31.3,
+    31.1,
+    31.1
+   ],
+   "avg": 27.55
+  },
+  "round4": {
+   "pages": 3,
+   "fps": 36.3,
+   "p50": 27.4,
+   "p50All": [
+    27.4,
+    27.3,
+    28.7
+   ],
+   "p95": 32,
+   "p95All": [
+    32,
+    31.2,
+    45.2
+   ],
+   "avg": 27.58,
+   "deltaP50": 0
+  }
+ }
+}

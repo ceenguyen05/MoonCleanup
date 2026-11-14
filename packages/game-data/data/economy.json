@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "materials": [
+    { "id": "material.regolith_dust", "lmPerKg": 5 },
+    { "id": "material.glass_beads", "lmPerKg": 16 },
+    { "id": "material.sinter_tiles", "lmPerKg": 37.5 }
+  ],
+  "stampBaseLm": 50,
+  "relayFeeLm": 50,
+  "recallFeeLm": 100,
+  "repeatRequisitionFrac": 0.4,
+  "repeatRequisitionMinTier": 4,
+  "standardIssueMaxTier": 3,
+  "startWalletLm": 0,
+  "settle": { "payFrac": 0.25 },
+  "refundRule": "paidPrice",
+  "trickComboMult": 1.5,
+  "tricks": [
+    { "id": "trick.hang_time", "lm": 25 },
+    { "id": "trick.moonshot", "lm": 100 },
+    { "id": "trick.lunar_loop", "lm": 150 },
+    { "id": "trick.corkscrew", "lm": 150 }
+  ],
+  "trickCapPerDriverLm": 250,
+  "trickCapPerShiftLm": 500,
+  "trickCapWindowS": 600,
+  "trickDriverOnly": true
+}

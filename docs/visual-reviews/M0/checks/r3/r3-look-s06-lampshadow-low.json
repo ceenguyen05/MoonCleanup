@@ -1,0 +1,52 @@
+{
+ "base": "scene=s06&view=pool&preset=low&backend=webgpu&scale=1",
+ "variants": [
+  {
+   "name": "after",
+   "query": ""
+  },
+  {
+   "name": "nolampshadow",
+   "query": "off=lampshadow"
+  },
+  {
+   "name": "oldlamp",
+   "query": "lampshadow=plain&lampres=1024"
+  }
+ ],
+ "result": {
+  "after": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": []
+  },
+  "nolampshadow": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.021,
+    "max": 43.5,
+    "over2Pct": 0.139,
+    "over8Pct": 0.068
+   }
+  },
+  "oldlamp": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.004,
+    "max": 25.8,
+    "over2Pct": 0.049,
+    "over8Pct": 0.013
+   }
+  }
+ }
+}

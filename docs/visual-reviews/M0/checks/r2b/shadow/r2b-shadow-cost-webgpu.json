@@ -1,0 +1,119 @@
+{
+ "backend": "webgpu",
+ "a": "tent4",
+ "b": "pcf3",
+ "cost": {
+  "low": {
+   "rows": [
+    {
+     "kernel": "tent4",
+     "filter": "tent4",
+     "frames": 265,
+     "frameAvg": 27.95,
+     "frameP50": 25.9,
+     "frameP95": 44,
+     "renderScale": 0.75,
+     "errors": 0
+    },
+    {
+     "kernel": "pcf3",
+     "filter": "pcf3",
+     "frames": 254,
+     "frameAvg": 31.67,
+     "frameP50": 28.9,
+     "frameP95": 60,
+     "renderScale": 0.75,
+     "errors": 0
+    },
+    {
+     "kernel": "tent4",
+     "filter": "tent4",
+     "frames": 284,
+     "frameAvg": 28.64,
+     "frameP50": 26.1,
+     "frameP95": 49.9,
+     "renderScale": 0.75,
+     "errors": 0
+    },
+    {
+     "kernel": "pcf3",
+     "filter": "pcf3",
+     "frames": 269,
+     "frameAvg": 30.2,
+     "frameP50": 26.4,
+     "frameP95": 56.2,
+     "renderScale": 0.75,
+     "errors": 0
+    }
+   ],
+   "tent4": {
+    "avg": 28.3,
+    "p50": 26,
+    "p95": 46.95
+   },
+   "pcf3": {
+    "avg": 30.94,
+    "p50": 27.65,
+    "p95": 58.1
+   },
+   "deltaAvgMs": 2.64,
+   "deltaP50Ms": 1.65
+  },
+  "medium": {
+   "rows": [
+    {
+     "kernel": "tent4",
+     "filter": "tent4",
+     "frames": 256,
+     "frameAvg": 31.52,
+     "frameP50": 28.7,
+     "frameP95": 44.5,
+     "renderScale": 0.85,
+     "errors": 0
+    },
+    {
+     "kernel": "pcf3",
+     "filter": "pcf3",
+     "frames": 251,
+     "frameAvg": 32.16,
+     "frameP50": 29.8,
+     "frameP95": 45,
+     "renderScale": 0.85,
+     "errors": 0
+    },
+    {
+     "kernel": "tent4",
+     "filter": "tent4",
+     "frames": 274,
+     "frameAvg": 29.34,
+     "frameP50": 28.4,
+     "frameP95": 37.6,
+     "renderScale": 0.85,
+     "errors": 0
+    },
+    {
+     "kernel": "pcf3",
+     "filter": "pcf3",
+     "frames": 252,
+     "frameAvg": 32.04,
+     "frameP50": 29.4,
+     "frameP95": 51.4,
+     "renderScale": 0.85,
+     "errors": 0
+    }
+   ],
+   "tent4": {
+    "avg": 30.43,
+    "p50": 28.55,
+    "p95": 41.05
+   },
+   "pcf3": {
+    "avg": 32.1,
+    "p50": 29.6,
+    "p95": 48.2
+   },
+   "deltaAvgMs": 1.67,
+   "deltaP50Ms": 1.05
+  }
+ }
+}

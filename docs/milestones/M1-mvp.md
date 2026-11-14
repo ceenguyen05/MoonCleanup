@@ -2,6 +2,10 @@
 
 Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
+> **Priority note (owner 2026-11-13): solo first.** The vertical slice is judged solo-first: snappy arcade tool feel, input-to-visual latency budget, animation, fps.
+> Solo inputs feel instant on the hosted Vercel + Render build (client-side prediction / local-first). Multiplayer E-criteria stay but are best-effort and lag-tolerant on Render free.
+> **Local-first Solo ([ADR-0031](../adr/0031-local-first-solo.md), 2026-11-13):** a Solo Shift runs `RoomSim` in a browser Web Worker; Render handles guest auth, checkpoint sync/verify and multiplayer rooms. New rows M1-W0-T06, M1-W3-T08, M1-W5-T07/T08, M1-W6-T07, M1-W8-T07 and exit criteria E13–E15; existing rows unchanged.
+
 Execution: `docs/handoff/MODEL_POLICY.md`; stages are checkpoints, not usage-window promises.
 
 Owner: lead (structure) · Lead alone maintains task rows from actual progress ([backlog rules](README.md)).
@@ -9,7 +13,7 @@ Scope: [scope-tiers.md §1](../design/scope-tiers.md#1-mvp-v020--boreal-pilot-ar
 
 ## 1. Goal
 
-A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots inside the Pilot Fence on a full-size, orbit-renderable Moon) that **already meets the visual bar in that small area**. It proves the four risky things: dust feel, a shared 16-player world over the network, persistence across Render cold starts, and the first 2–3 hours of pacing.
+A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots inside the Pilot Fence on a full-size, orbit-renderable Moon) that **already meets the visual bar in that small area**. It proves the four risky things: dust feel, a shared 6-player world over the network, persistence across Render cold starts, and the first 2–3 hours of pacing.
 
 **Visuals are scheduled early, not as polish:** W1 decides the dust approach by contest, W2 builds terrain + light + regolith to the bar, W3 lands production dust trails **and the first playable already includes look-dev (W2 light/sky/regolith), a blockout custodian with the Desk Duster, and grime-tinted grains**, W4 lands the production custodian suit and all four hand tools, W5–W7 the Outpost Boreal kit and vehicles, and every wave passes a visual gate on what it adds. **Original 3D art is produced by a decided path (D5, ADR-0027; the pipeline is proven in M0-W0-T06), scheduled as explicit tasks, not left to chance.** Every hero asset passes a turntable bar (art-direction §13.3, VT-M1-35).
 
@@ -21,14 +25,17 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | E2 | Passes visual-target §4.2: all V1 items, ≤ 3 V2 open with tickets; VM-01…VM-07 and VM-09 approved (VM-08 Survey Globe is v1.0, M2-W1); comparator CMP-02/05/07/15 | `/visual-check M1` |
 | E3 | 8 bots × 30 min: zero stuck plots; client and server Shine agree | `/bot-test` soak |
 | E4 | Sweeping feels good (internal playtest ≥ 4/5); Lane Lock works | Gate P1 |
-| E5 | Pucks and vehicles sync for 16 players; no rubber-banding at 120 ms ± 30 jitter | `/bot-test` + manual |
+| E5 | Pucks and vehicles sync for 6 players; no rubber-banding at 120 ms ± 30 jitter (best-effort on Render free; solo feel has priority) | `/bot-test` + manual |
 | E6 | Payment server-authoritative; wallet never desyncs; shared purchase races resolved server-side | tests + `/bot-test` |
 | E7 | First Roost bought solo in 1.5–2 h (hand + Trundle; money only, no quest gate); 4 players < 1 h (scope-tiers MVP pacing, sim to confirm) | `/balance-check` + playtest |
 | E8 | New tester buys the Crescent Squeegee in 5–10 min unaided | Gate P2 |
-| E9 | `/bot-test`: 16 bots, 10 min, within tick (p95 ≤ 3.5 ms) and bandwidth (≤ 6.5 KB/s/client busy) budgets locally (CPU-limited container), plus a ≤ 5-min hosted run when Cee authorizes a test window | `/bot-test` |
+| E9 | `/bot-test`: 6 bots, 10 min, within tick (p95 ≤ 3.5 ms) and bandwidth (≤ 6.5 KB/s/client busy) budgets locally (CPU-limited container), (no hosted run; dropped 2026-11-12) (best-effort on Render free; solo feel has priority) | `/bot-test` |
 | E10 | Kill the server mid-session: ≤ 30 s progress lost; contract resumes after cold start with the waking screen | restart scenario + e2e |
 | E11 | KBM and gamepad complete; frame time VT-M1-27 on Tier A High and Tier B Medium | `/perf-check` |
 | E12 | M1 closing integration PASS; `/release-checklist` go | `M1-W9-integration.md` |
+| E13 | **Solo feel (ADR-0031):** input-to-first-visual latency (camera/avatar/tool head) ≤ 1 frame budget (33.3 ms at the 30 fps floor) on UHD 620 Low, dust result ≤ 1 sim tick + 1 frame; **zero network use during play** (no WebSocket, no request on the play path; play identical with the network offline; only background checkpoint uploads) | `/perf-check` latency capture + request log, netcode.md §19.4 |
+| E14 | Worker and Node `RoomSim` golden hashes identical over ≥ 10,000 ticks (Chromium worker in CI; Firefox/WebKit when available); `LocalRoomHost` vs `RemoteRoomHost` parity run identical | CI `determinism` lane |
+| E15 | Solo saves: tab kill loses ≤ 10 s; server asleep → play continues and the newest checkpoint syncs later; two diverged copies show the "Which copy?" prompt and are never silently overwritten; restore on a second browser | e2e + manual (data-model §3.7c) |
 
 ## 3. Pre-wave decisions (lead, logged in OPEN_QUESTIONS/ADR before the named stage)
 
@@ -46,24 +53,24 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | Stage | Wave | Tasks | Technical check / Next |
 | --- | --- | --- | --- |
 | **M1-S1** | W0 | T04 (installs) **first**; T01 and T03 launch when T04 reports | One installer; consumers wait only for the dependency/config changes they need |
-| **M1-S2** | W0 | T02, then T05 (integrator) | Verify affected checks; continue |
+| **M1-S2** | W0 | T02, then T06 (Solo contracts, ADR-0031; after T01-T03), then T05 (integrator) | Verify affected checks; continue |
 | **M1-S3** | W1 | T01, T02 | |
 | **M1-S4** | W1 | T03, T04, T05 (P1/P2/P3 in parallel) | |
 | **M1-S5** | W1 | T06 (integrator: benchmark runs) + BENCHMARK.md reviewers | D2 technical verdict; continue |
 | **M1-S6** | W2 | T01, T02, T03 | |
 | **M1-S7** | W2 | T04, T05, then T06 (integrator) | **Visual gate V-M1a** |
 | **M1-S8** | W3 | T01, T02, T03 | |
-| **M1-S9** | W3 | T04 and T07 in parallel, then T05 (integrator: local sandbox) | **Visual gate V-M1b** (first playable, looks good) |
+| **M1-S9** | W3 | T04, T07 and T08 (Solo sim host; needs W0-T06) in parallel, then T05 (integrator: local sandbox) | **Visual gate V-M1b** (first playable, looks good) |
 | **M1-S10** | W4 | T01, T03, T05 | |
 | **M1-S11** | W4 | T02, T04, T07 (3D art), then T06 (integrator) | Verify affected checks; continue |
 | **M1-S12** | W5 | T01, T02, T03 | |
-| **M1-S13** | W5 | T04, T05, then T06 (integrator) | **G-M1-1** bot-test (local; hosted window when authorized) |
+| **M1-S13** | W5 | T04, T05, T07 (checkpoint REST), T08 (client sync; after T07), then T06 (integrator) | **G-M1-1** bot-test (local; hosted window when authorized) |
 | **M1-S14** | W6 | T01, T02, T03 | |
-| **M1-S15** | W6 | T04, T05, then T06 (integrator) | **Visual gate V-M1c**, **P1** playtest |
+| **M1-S15** | W6 | T04, T05, T07 (save-conflict UI; after W5-T08), then T06 (integrator) | **Visual gate V-M1c**, **P1** playtest |
 | **M1-S16** | W7 | T01, T02, T03 | |
 | **M1-S17** | W7 | T05, then T06 (integrator) | Verify affected checks; continue |
 | **M1-S18** | W8 | T01, T02, T03 | |
-| **M1-S19** | W8 | T04, T05, then T06 (integrator) | **P2** playtest, **G-M1-2** local soak |
+| **M1-S19** | W8 | T04, T05, T07 (open Solo to friends; after W5-T08), then T06 (integrator) | **P2** playtest, **G-M1-2** local soak |
 | **M1-S20** | W9 | T01, T02, T03 | |
 | **M1-S21** | W9 | T04, T05, then T06 (integrator, milestone close) | **Final visual gate**, technical candidate check; Cee commits later |
 
@@ -81,13 +88,14 @@ Unavailable testers/cloud checks remain pending; continue independent work and r
 
 | ID | Stage | Role | Goal | Depends on | Port | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| M1-W0-T01 | M1-S1 | contracts-architect | World/dust/stroke/save contracts v1 | M1-W0-T04 | 0 | todo |
-| M1-W0-T02 | M1-S2 | contracts-architect | Protocol/input/sim/REST contracts v1 | M1-W0-T01 | 0 | todo |
-| M1-W0-T03 | M1-S1 | contracts-architect | Events/UI/audio/render/config contracts v1 + root barrel | M1-W0-T04 | 0 | todo |
-| M1-W0-T04 | M1-S1 | devops-engineer | Installs from actual dependency needs (sequential install), CI determinism + size lanes | required M0 tooling and actual dependency needs | 1 | todo |
-| M1-W0-T05 | M1-S2 | integrator | M1-W0 integration: compile fixes in app roots, consumer list | M1-W0-T01, M1-W0-T02, M1-W0-T03, M1-W0-T04 | 9 | todo |
-| M1-W1-T01 | M1-S3 | terrain-dust-engineer | packages/world plot grid GP(128,0) + height function | M1-W0-T05 | 1 | todo |
-| M1-W1-T02 | M1-S3 | qa-test-engineer | Dust contest harness (scenes, seeds, paths, bot scenarios) | M1-W0-T05 | 2 | todo |
+| M1-W0-T01 | M1-S1 | contracts-architect | World/dust/stroke/save contracts v1 | M1-W0-T04 | 0 | done |
+| M1-W0-T02 | M1-S2 | contracts-architect | Protocol/input/sim/REST contracts v1 | M1-W0-T01 | 0 | done |
+| M1-W0-T03 | M1-S1 | contracts-architect | Events/UI/audio/render/config contracts v1 + root barrel | M1-W0-T04 | 0 | done |
+| M1-W0-T04 | M1-S1 | devops-engineer | Installs from actual dependency needs (sequential install), CI determinism + size lanes | required M0 tooling and actual dependency needs | 1 | done |
+| M1-W0-T05 | M1-S2 | integrator | M1-W0 integration: compile fixes in app roots, consumer list | M1-W0-T01, M1-W0-T02, M1-W0-T03, M1-W0-T04 | 9 | done |
+| M1-W0-T06 | M1-S2 | contracts-architect | Local-first Solo contracts (ADR-0031): `RoomHost` local/remote, save generation header, `MCCK` package, SoloCheckpoint DTOs, sync UI slice/events | M1-W0-T01, M1-W0-T02, M1-W0-T03 | 0 | done |
+| M1-W1-T01 | M1-S3 | terrain-dust-engineer | packages/world plot grid GP(128,0) + height function | M1-W0-T05 | 1 | done |
+| M1-W1-T02 | M1-S3 | qa-test-engineer | Dust contest harness (scenes, seeds, paths, bot scenarios) | M1-W0-T05 | 2 | done |
 | M1-W1-T03 | M1-S4 | terrain-dust-engineer | Dust prototype P1 scalar + procedural | M1-W1-T01, M1-W1-T02 | 3 | todo |
 | M1-W1-T04 | M1-S4 | terrain-dust-engineer | Dust prototype P2 strokes + atlas + ledger | M1-W1-T01, M1-W1-T02 | 4 | todo |
 | M1-W1-T05 | M1-S4 | terrain-dust-engineer | Dust prototype P3 client-painted min-merge | M1-W1-T01, M1-W1-T02 | 5 | todo |
@@ -96,7 +104,7 @@ Unavailable testers/cloud checks remain pending; continue independent work and r
 | M1-W2-T02 | M1-S6 | technical-artist | Production light + sky: day/night, horizon shadows, exposure, Earth phase | M1-W1-T06 | 2 | todo |
 | M1-W2-T03 | M1-S6 | rendering-engineer | Render infra: dynamic res, presets, culling/LOD, warm-up, memory ledger | M1-W1-T06 | 3 | todo |
 | M1-W2-T04 | M1-S7 | technical-artist | Production regolith, rocks/craters scatter, asset pipeline | M1-W2-T01 | 4 | todo |
-| M1-W2-T05 | M1-S7 | game-designer | MVP game-data tables + balance-sim v0 | M1-W1-T06 | 5 | todo |
+| M1-W2-T05 | M1-S7 | game-designer | MVP game-data tables + balance-sim v0 | M1-W1-T06 | 5 | done |
 | M1-W2-T06 | M1-S7 | integrator | M1-W2 integration: hero scene at Boreal, visual gate V-M1a | M1-W2-T01, M1-W2-T02, M1-W2-T03, M1-W2-T04, M1-W2-T05 | 9 | todo |
 | M1-W3-T01 | M1-S8 | terrain-dust-engineer | World dust ledger, rasterisation, thresholds, stamp rule | M1-W2-T06 | 1 | todo |
 | M1-W3-T02 | M1-S8 | terrain-dust-engineer | Client GPU stroke replay, tile atlas, detail ring | M1-W2-T06 | 2 | todo |
@@ -104,11 +112,12 @@ Unavailable testers/cloud checks remain pending; continue independent work and r
 | M1-W3-T04 | M1-S9 | terrain-dust-engineer | Server authoritative dust state, interest sets, checkpoint serialisation | M1-W3-T01 | 4 | todo |
 | M1-W3-T05 | M1-S9 | integrator | M1-W3 integration: local sandbox (client-side RoomSim), visual gate V-M1b | M1-W3-T01, M1-W3-T02, M1-W3-T03, M1-W3-T04, M1-W3-T07 | 9 | todo |
 | M1-W3-T07 | M1-S9 | technical-artist | First-playable art: blockout custodian (art-direction §13.4 bar) + Desk Duster v0 + grime-tinted grains v0 (D5 pipeline) | M1-W2-T06, D5 ADR | 6 | todo |
-| M1-W4-T01 | M1-S10 | netcode-engineer | packages/protocol codecs, vectors, session + interpolation buffer | M1-W3-T05 | 1 | todo |
+| M1-W3-T08 | M1-S9 | gameplay-systems-engineer | LocalRoom sim host in Web Worker (`apps/client/src/sim-host`): fixed step, pooled transferable messaging, local checkpoints (IndexedDB), worker golden-hash lane | M1-W3-T03, M1-W3-T01, M1-W0-T06 | 7 | todo |
+| M1-W4-T01 | M1-S10 | netcode-engineer | packages/protocol codecs, vectors, session + interpolation buffer | M1-W3-T05 | 1 | done (packages/protocol; adapters + netsim numbers are W4-T02/T04) |
 | M1-W4-T02 | M1-S11 | netcode-engineer | Server ShiftRoom over RoomSim, Schema encode-once, bytes channel | M1-W4-T01 | 2 | todo |
 | M1-W4-T03 | M1-S10 | gameplay-systems-engineer | Server sim driver + validation; client input, camera rig, tool aiming | M1-W3-T05 | 3 | todo |
 | M1-W4-T04 | M1-S11 | netcode-engineer | Client net: prediction/reconciliation, interpolation, dust ingest, wake-up | M1-W4-T01 | 4 | todo |
-| M1-W4-T05 | M1-S10 | backend-data-engineer | DB schema v1 + guest auth + contracts/profile REST | M1-W3-T05 | 5 | todo |
+| M1-W4-T05 | M1-S10 | backend-data-engineer | DB schema v1 + guest auth + contracts/profile REST | M1-W3-T05 | 5 | in-review |
 | M1-W4-T06 | M1-S11 | integrator | M1-W4 integration: 2-client online loop with auth | M1-W4-T01, M1-W4-T02, M1-W4-T03, M1-W4-T04, M1-W4-T05, M1-W4-T07 | 9 | todo |
 | M1-W4-T07 | M1-S11 | technical-artist | Custodian suit production model + hand tools T1–T4 (Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom) | M1-W3-T05 | 6 | todo |
 | M1-W5-T01 | M1-S12 | backend-data-engineer | Persistence: checkpoints, lease, restore, SIGTERM drain, DB power-off | M1-W4-T06 | 1 | todo |
@@ -117,23 +126,27 @@ Unavailable testers/cloud checks remain pending; continue independent work and r
 | M1-W5-T04 | M1-S13 | animation-engineer | Skeleton pipeline, locomotion blend, low-g bounce, foot IK, tool layer | M1-W4-T07 | 4 | todo |
 | M1-W5-T05 | M1-S13 | terrain-dust-engineer | Footprints and tracks ring | M1-W4-T06 | 5 | todo |
 | M1-W5-T06 | M1-S13 | integrator | M1-W5 integration: persistence + characters, first 16-bot run | M1-W5-T01, M1-W5-T02, M1-W5-T03, M1-W5-T04, M1-W5-T05 | 9 | todo |
+| M1-W5-T07 | M1-S13 | backend-data-engineer | Solo checkpoint upload/verify/head/download REST + save generation columns (data-model §3.7c) | M1-W5-T01 | 7 | todo |
+| M1-W5-T08 | M1-S13 | netcode-engineer | Client checkpoint sync: upload queue (newest only), head check, restore on another device, conflict detection | M1-W5-T07, M1-W3-T08 | 8 | todo |
 | M1-W6-T01 | M1-S14 | gameplay-systems-engineer | Tools T1-T4 + traits, Dust Cells I-III, Dust Pucks, Plot Card | M1-W5-T06 | 1 | todo |
 | M1-W6-T02 | M1-S14 | gameplay-systems-engineer | Economy: selling, wallet, Promotions subset, suit gear, Stamp, Roost purchase, cargo, achievements | M1-W5-T06 | 2 | todo |
 | M1-W6-T03 | M1-S14 | technical-artist | VFX: ballistic dust, Inspector's Stamp, Assay pour, Railshot, lamp pools | M1-W5-T06 | 3 | todo |
 | M1-W6-T04 | M1-S15 | ui-ux-motion-designer | HUD, toasts, Requisitions Desk, Ops Console, settings | M1-W6-T01, M1-W6-T02 | 4 | todo |
 | M1-W6-T05 | M1-S15 | technical-artist | Outpost Boreal hardware kit part 2 (Motor Pool, Requisitions Desk, Ops Console) | M1-W5-T06 | 5 | todo |
 | M1-W6-T06 | M1-S15 | integrator | M1-W6 integration: core loop playable, visual gate V-M1c | M1-W6-T01, M1-W6-T02, M1-W6-T03, M1-W6-T04, M1-W6-T05 | 9 | todo |
+| M1-W6-T07 | M1-S15 | ui-ux-motion-designer | "Which copy?" save-conflict prompt, sync/offline status indicator, backup restore in Settings | M1-W5-T08 | 7 | todo |
 | M1-W7-T01 | M1-S16 | gameplay-systems-engineer | Trundle kinematics, Motor Pool, upgrade lines, vehicle cleaning | M1-W6-T06 | 1 | todo |
 | M1-W7-T02 | M1-S16 | technical-artist | Trundle model, brush-drum VFX | M1-W6-T06 | 2 | todo |
 | M1-W7-T03 | M1-S16 | ui-ux-motion-designer | Compass, onboarding, invite UI | M1-W6-T06 | 3 | todo |
-| M1-W7-T05 | M1-S17 | audio-engineer | Audio graph, helmet muffle, MVP SFX, ambient beds, DOT chime | M1-W6-T06 | 5 | todo |
+| M1-W7-T05 | M1-S17 | audio-engineer | Audio graph, helmet muffle, MVP SFX, ambient beds, DOT chime | M1-W6-T06 | 5 | in-review |
 | M1-W7-T06 | M1-S17 | integrator | M1-W7 integration: vehicle, onboarding, audio | M1-W7-T01, M1-W7-T02, M1-W7-T03, M1-W7-T05 | 9 | todo |
 | M1-W8-T01 | M1-S18 | netcode-engineer | Co-op: Solo/Private Shift, invite join, join-in-progress, reconnect grace, kick/ban, vehicle sync | M1-W7-T06 | 1 | todo |
 | M1-W8-T02 | M1-S18 | animation-engineer | Vehicle suspension/enter-exit, machine motion (Assay, Railshot, Gate) | M1-W7-T06 | 2 | todo |
 | M1-W8-T03 | M1-S18 | game-designer | MVP pacing pass, DOT copy, Induction/Handbook text, achievements wording | M1-W7-T06 | 3 | todo |
 | M1-W8-T04 | M1-S19 | qa-test-engineer | MVP e2e flows, 16-bot drive scenario, 8x30 min soak | M1-W8-T01 | 4 | todo |
-| M1-W8-T05 | M1-S19 | performance-profiler | MVP capture suite (S10 16 bots, P1/P2/P4), budget tracker | M1-W7-T06 | 5 | todo |
+| M1-W8-T05 | M1-S19 | performance-profiler | MVP capture suite (S10 6 bots, P1/P2/P4), budget tracker | M1-W7-T06 | 5 | todo |
 | M1-W8-T06 | M1-S19 | integrator | M1-W8 integration: full MVP feature set integrated and playable | M1-W8-T01, M1-W8-T02, M1-W8-T03, M1-W8-T04, M1-W8-T05 | 9 | todo |
+| M1-W8-T07 | M1-S19 | netcode-engineer | Open Solo to friends (checkpoint handoff → authoritative server room) and Return to solo | M1-W8-T01, M1-W5-T08 | 7 | todo |
 | M1-W9-T01 | M1-S20 | technical-artist | Visual V1 fixes + comparator CMP-02/05/07/15 | M1-W8-T06 | 1 | todo |
 | M1-W9-T02 | M1-S20 | rendering-engineer | Perf fixes, Low preset dignity, WebGL2 MVP parity | M1-W8-T06 | 2 | todo |
 | M1-W9-T03 | M1-S20 | devops-engineer | Sentry + source maps, release config, usage logging, size gate | M1-W8-T06 | 3 | todo |
@@ -148,6 +161,7 @@ flowchart TB
   subgraph W0["W0 installs, then contracts v1 (S1-S2)"]
     a4[T04 installs + CI] --> a1[T01 world/dust/save] & a3[T03 events/ui/audio/config]
     a1 --> a2[T02 protocol/sim/REST]
+    a1 & a2 & a3 --> a6[T06 Solo contracts ADR-0031]
     a1 & a2 & a3 & a4 --> a5{{T05 integrate}}
   end
   subgraph W1["W1 dust contest (S3-S5)"]
@@ -166,7 +180,8 @@ flowchart TB
     d2[T02 GPU replay + atlas]
     d3[T03 RoomSim core]
     d7[T07 blockout custodian + grains v0]
-    d1 & d2 & d3 & d4 & d7 --> d5{{T05 local sandbox, V-M1b}}
+    d8[T08 Solo sim host worker]
+    d1 & d2 & d3 & d4 & d7 & d8 --> d5{{T05 local sandbox, V-M1b}}
   end
   subgraph W4["W4 netcode + auth (S10-S11)"]
     e1[T01 codecs] --> e2[T02 ShiftRoom] & e4[T04 client net]
@@ -181,13 +196,15 @@ flowchart TB
     f3[T03 outpost hero hardware v1]
     e7x[W4-T07 custodian] --> f4[T04 animation]
     f5[T05 footprints]
-    f1 & f2 & f4 & f5 --> f6{{T06 integrate}}
+    f1 --> f7[T07 checkpoint REST] --> f8[T08 client sync]
+    f1 & f2 & f4 & f5 & f7 & f8 --> f6{{T06 integrate}}
   end
   subgraph W6["W6 core loop (S14-S15)"]
     g1[T01 tools/cells/pucks] & g2[T02 economy] --> g4[T04 HUD + desks]
     g3[T03 VFX]
     g5[T05 outpost kit]
-    g3 & g4 & g5 --> g6{{T06 V-M1c}}
+    f8x[W5-T08 sync] --> g7[T07 conflict UI]
+    g3 & g4 & g5 & g7 --> g6{{T06 V-M1c}}
   end
   subgraph W7["W7 Trundle, onboarding, audio (S16-S17)"]
     h1[T01 vehicles sim] & h2[T02 vehicle art] & h3[T03 compass/onboarding UI] & h5[T05 audio] --> h6{{T06 integrate}}
@@ -197,14 +214,18 @@ flowchart TB
     i2[T02 vehicle/machine anim]
     i3[T03 pacing + copy]
     i5[T05 capture suite]
-    i2 & i3 & i4 & i5 --> i6{{T06 integrate}}
+    f8y[W5-T08 sync] --> i7[T07 open Solo to friends]
+    i1 --> i7
+    i2 & i3 & i4 & i5 & i7 --> i6{{T06 integrate}}
   end
   subgraph W9["W9 MVP candidate (S20-S21)"]
     j1[T01 visual fixes] & j2[T02 perf + parity] & j3[T03 Sentry/release] --> j5[T05 exit tests]
     j4[T04 UI polish]
     j4 & j5 --> j6{{T06 close M1}}
   end
-  a5 --> b1 & b2
+  a5 & a6 --> b1 & b2
+  a6 -.-> d8
+  f8 -.-> f8x & f8y
   b6 --> c1 & c2 & c3 & c5
   c6 --> d1 & d2 & d3
   d5 --> e1 & e3 & e5
@@ -708,7 +729,7 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 
 #### M1-W5-T06 — M1-W5 integration: persistence + characters, first 16-bot run
 - **Stage** M1-S13 · **Role** `integrator` · **Port** 9 · **Status** `todo`
-- **Goal:** characters in the world, progress survives restarts, 16 bots measured.
+- **Goal:** characters in the world, progress survives restarts, 6 bots measured.
 - **Owned files:** `apps/client/src/app/**`, `apps/server/src/app/**`, `docs/agent-reports/M1-W5-integration.md`.
 - **Depends on:** M1-W5-T01 … T05.
 - **Input contracts:** W5 exports.
@@ -1003,3 +1024,67 @@ Common to T03–T05: harness, scene, seed and camera paths from M1-W1-T02; grid 
 - **Visual acceptance:** VT-M1-01…31.
 - **Applicable review lenses (lead selects for risk/final review):** `code-reviewer`, `visual-qa-reviewer`, `performance-reviewer`, `netcode-security-reviewer`, `balance-reviewer`.
 - **Definition of done:** implemented and meaningfully verified; continue ready work without waiting for commits.
+
+### M1 additions — local-first Solo (ADR-0031)
+
+Integration: each wave integrator (W0-T05, W3-T05, W5-T06, W6-T06, W8-T06) also integrates the rows below that land in its wave; the lead wires these dependencies when briefing. Briefs for W3-T01/W3-T04 place the pure dust authority (ledger sequencing, plot completion, chunk codec, interest sets) in `packages/world`, not `apps/server/src/world` (module-boundaries §3).
+
+#### M1-W0-T06 — Local-first Solo contracts
+- **Stage** M1-S2 · **Role** `contracts-architect` · **Port** 0 · **Status** `todo`
+- **Goal:** freeze the shared surface for LocalRoom, checkpoint sync and the conflict prompt before any consumer builds on it. The lead may fold these bullets into T01–T03 (same owner, same wave).
+- **Owned files:** `packages/shared/src/client/room-host.ts`, `save/format.ts`, `save/checkpoint-package.ts`, `api/rest.ts`, `ui/store.ts`, `events/catalog.ts` (+ tests, barrels).
+- **Read first:** ADR-0031; data-model §3.7c, §6; netcode §19; `docs/agent-reports/M0-adr-0031-local-first.md` (type sketches).
+- **Depends on:** M1-W0-T01, T02, T03 (same files, sequential).
+- **Acceptance criteria:** [ ] `RoomHost`/`LocalRoomHost`/`RemoteRoomHost` + `ShiftStateView` (no DOM/Worker types); [ ] header `generation`/`parentGeneration`/`originKind`/`originId` inside `SAVE_FORMAT_VERSION = 1` with golden vectors; [ ] `MCCK` package layout + vectors; [ ] SoloCheckpoint begin/part/commit/head DTOs, `clientContractId` on create, error codes `SAVE_CONFLICT`, `CHECKPOINT_REJECTED`, `SAVE_VERSION_UNSUPPORTED`, `PAYLOAD_TOO_LARGE`; [ ] `saveSync` UI slice + `save.*` events; [ ] zod round-trip tests; consumers listed.
+- **Applicable review lenses:** `code-reviewer`, `netcode-security-reviewer`.
+- **Definition of done:** Standard DoD.
+
+#### M1-W3-T08 — LocalRoom sim host in a Web Worker
+- **Stage** M1-S9 · **Role** `gameplay-systems-engineer` · **Port** 7 · **Status** `todo`
+- **Goal:** Solo Shift runs the authoritative `RoomSim` off the render thread with no network.
+- **Owned files:** `apps/client/src/sim-host/**`.
+- **Read first:** ADR-0031; netcode §19; module-boundaries §3–§4; performance-budgets (frame budget).
+- **Depends on:** M1-W3-T03, M1-W3-T01, M1-W0-T06.
+- **Acceptance criteria:** [ ] module worker with a drift-compensated fixed step; [ ] pool of 3 transferable frame buffers + pooled input buffers, no `SharedArrayBuffer`, zero steady-state allocation (heap growth ≤ 1 MB/min over 10 min); [ ] FRAME bytes via `packages/protocol` (or a documented interim layout until M1-W4-T01, swapped without consumer change); [ ] local checkpoints ≤ 10 s when dirty + on hide (gzip `CompressionStream`, one IndexedDB transaction, `storage.persist()`), Web Locks one-tab rule; [ ] worker crash → reboot from newest local checkpoint; [ ] golden-hash test in a browser worker equals Node over ≥ 10,000 ticks; [ ] main-thread host cost ≤ 0.3 ms/frame and worker tick p95 ≤ 2 ms on UHD 620.
+- **Applicable review lenses:** `code-reviewer`, `performance-reviewer`.
+- **Definition of done:** Standard DoD; E13/E14 evidence started.
+
+#### M1-W5-T07 — Solo checkpoint upload/verify REST (server)
+- **Stage** M1-S13 · **Role** `backend-data-engineer` · **Port** 7 · **Status** `todo`
+- **Goal:** the server stores and sanity-checks solo checkpoints and protects the DB and shared surfaces.
+- **Owned files:** `apps/server/src/api/**`, `apps/server/src/persistence/**`, `packages/db/**` (after M1-W5-T01, sequential).
+- **Read first:** data-model §3.7, §3.7b, §3.7c, §5.1, §6; security §5.
+- **Depends on:** M1-W5-T01.
+- **Acceptance criteria:** [ ] `parent_seq`/`origin_kind` expand migration; [ ] upload (single + ≤ 1 MB parts, in-memory staging caps), head, download routes; [ ] every verify rule of §3.7c with a test (format/version, CRC, sizes, chunk ids, lease busy, rate limits, fast-forward vs `SAVE_CONFLICT`); [ ] plausibility flags → `abuse_events`, capped profile/achievement deltas; [ ] verification never raises a live room's tick p95 > 0.5 ms (bot run with concurrent uploads).
+- **Applicable review lenses:** `code-reviewer`, `netcode-security-reviewer`.
+- **Definition of done:** Standard DoD.
+
+#### M1-W5-T08 — Client checkpoint sync
+- **Stage** M1-S13 · **Role** `netcode-engineer` · **Port** 8 · **Status** `todo`
+- **Goal:** solo progress follows the player across devices without ever blocking play.
+- **Owned files:** `apps/client/src/net/**` (save-sync submodule).
+- **Read first:** data-model §3.7c; netcode §19.3; system-overview §4.1.
+- **Depends on:** M1-W5-T07, M1-W3-T08.
+- **Acceptance criteria:** [ ] newest-only upload queue with backoff, only after first user interaction; [ ] head check at Clock In; silent fast-forward up/down; divergence → `saveSync.conflict` state; [ ] keep-local/use-server actions incl. backup slot; [ ] local-only Contract registration (`clientContractId`); [ ] e2e: offline play → later sync, second-browser restore, two-device divergence prompt (E15).
+- **Applicable review lenses:** `code-reviewer`, `netcode-security-reviewer`.
+- **Definition of done:** Standard DoD.
+
+#### M1-W6-T07 — Save-conflict prompt and sync status
+- **Stage** M1-S15 · **Role** `ui-ux-motion-designer` · **Port** 7 · **Status** `todo`
+- **Goal:** the player always knows where their progress is, and picks explicitly when copies diverge.
+- **Owned files:** `apps/client/src/ui/**` (save-sync screens only; coordinate with M1-W6-T04 on the same path, sequential).
+- **Depends on:** M1-W5-T08.
+- **Acceptance criteria:** [ ] "Which copy?" dialog (saved-at, device, playtime, Shine %, wallet) with no default auto-choice; [ ] unobtrusive sync/offline indicator (never a blocking waking screen in Solo); [ ] backup restore in Settings; KBM + gamepad focus.
+- **Visual acceptance:** VT-M1-24/25 rules for new screens.
+- **Applicable review lenses:** `code-reviewer`, `visual-qa-reviewer`.
+- **Definition of done:** Standard DoD.
+
+#### M1-W8-T07 — Open Solo to friends / Return to solo
+- **Stage** M1-S19 · **Role** `netcode-engineer` · **Port** 7 · **Status** `todo`
+- **Goal:** a local Solo Shift becomes an authoritative server room on demand and comes back local afterwards.
+- **Owned files:** `apps/client/src/net/**`, `apps/server/src/net/**` (after M1-W8-T01, same owner).
+- **Read first:** netcode §19.3, §9; data-model §3.7c.
+- **Depends on:** M1-W8-T01, M1-W5-T08.
+- **Acceptance criteria:** [ ] Open to friends: final checkpoint + accepted upload → `shiftType` change → REST join → room loads that save; worker suspended; [ ] Return to solo: final room checkpoint, dispose, download, worker resumes at that generation; [ ] no progress lost across either handoff (state hash before/after); [ ] solo uploads refused while the room holds the lease.
+- **Applicable review lenses:** `code-reviewer`, `netcode-security-reviewer`.
+- **Definition of done:** Standard DoD.

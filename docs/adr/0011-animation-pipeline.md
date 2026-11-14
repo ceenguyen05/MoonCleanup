@@ -6,7 +6,7 @@
 
 ## Context
 
-Up to 16 avatars plus robots and vehicles must animate convincingly in low gravity: locomotion with exaggerated bounce, a tool-use upper body, jetpack poses and vehicle suspension visuals. Animation must be driven by sim state (position, velocity, tool action), not own the movement. Source clips must be legally redistributable from a possibly public repo; Mixamo files may not be redistributed to non-team members.
+Up to 6 avatars plus robots and vehicles must animate convincingly in low gravity: locomotion with exaggerated bounce, a tool-use upper body, jetpack poses and vehicle suspension visuals. Animation must be driven by sim state (position, velocity, tool action), not own the movement. Source clips must be legally redistributable from a possibly public repo; Mixamo files may not be redistributed to non-team members.
 
 ## Options considered
 
@@ -14,7 +14,7 @@ Up to 16 avatars plus robots and vehicles must animate convincingly in low gravi
 2. **Third-party animation graph library.** Pro: ready state machines. Con: extra dependency per ADR rule; unproven with WebGPURenderer.
 3. **Fully procedural animation (no clips).** Pro: no assets, perfect responsiveness. Con: art quality, effort.
 4. **Mixamo clips committed to the repo.** Pro: fast. Con: raw files must not be distributed; license-risky in a public repo.
-5. **Vertex-animation textures for crowds.** Pro: cheap many-instance playback. Con: limits blending; overkill at 16 players.
+5. **Vertex-animation textures for crowds.** Pro: cheap many-instance playback. Con: limits blending; overkill at 6 players.
 
 ## Decision
 

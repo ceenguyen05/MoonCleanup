@@ -6,9 +6,13 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "perf": "echo perf placeholder: Fable replaces with tsx src/run.ts",
-    "lint": "echo perf lint: placeholder until sources land - see README",
-    "typecheck": "echo perf typecheck: placeholder until sources land - see README",
+    "perf": "tsx src/cli.ts",
+    "capture": "tsx src/cli.ts capture",
+    "budgets": "tsx src/cli.ts budgets",
+    "device-report": "tsx src/cli.ts device-report --verdict",
+    "device-verdict": "tsx src/cli.ts verdict",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

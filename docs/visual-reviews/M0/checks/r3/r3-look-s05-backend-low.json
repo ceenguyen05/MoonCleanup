@@ -1,0 +1,35 @@
+{
+ "base": "scene=s05&view=slope&sun=60&preset=low&scale=1",
+ "variants": [
+  {
+   "name": "webgpu",
+   "query": "backend=webgpu"
+  },
+  {
+   "name": "webgl2",
+   "query": "backend=webgl2"
+  }
+ ],
+ "result": {
+  "webgpu": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": []
+  },
+  "webgl2": {
+   "backend": "webgl2",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.001,
+    "max": 22.3,
+    "over2Pct": 0.008,
+    "over8Pct": 0.002
+   }
+  }
+ }
+}

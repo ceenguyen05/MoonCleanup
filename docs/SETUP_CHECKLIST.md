@@ -23,16 +23,16 @@ No setup commit, PR, tag, branch promotion or stage sign-off is required. Cee co
 
 ## Hosting, only when Cee chooses
 
-Topology: `main` → Vercel static client + **one** Render Free service + Aiven Postgres, schema `prod`
+Topology: `main` → Vercel static client + **one** Render Free service + Neon Postgres (us-east-2), schema `prod`
 ([ADR-0029](adr/0029-single-deploy-branch-main.md)). No release branch, second staging service, deploy-hook secret or release workflow.
 Local feature development does not depend on cloud setup. Account/dashboard actions and publication remain Cee's choice.
 Verify current provider terms/quotas before account changes; stay within the $0 budget.
 
-1. Aiven: obtain database URI and CA certificate. Confirm assigned region and choose the closest available Render region
-   before first service creation; do not recreate a service automatically. Use a dedicated application DB/user when available;
-   `defaultdb` + schema `prod` is the fallback. Never paste credentials into tracked files or agent prompts.
+1. Neon (free, GitHub sign-in, no card): create project `moon-cleanup` in AWS US East 2 (Ohio, nearest to Render Ohio), copy the **direct**
+   connection string (Connect -> pooling OFF; default database `neondb`, schema `prod` is created by the build). No CA certificate is needed.
+   Click path: [HOSTING_GUIDE](HOSTING_GUIDE.md) checklist B. Never paste credentials into tracked files or agent prompts.
 2. Render: connect the existing repo, branch `main`, use `render.yaml`; confirm exactly one service, `plan: free`, correct
-   region, `ENV_NAME=production`, `DB_SCHEMA=prod`, `NET_SPIKE=0`. Supply `DATABASE_URL`, `DATABASE_CA_CERT`, optional `SENTRY_DSN`
+   region, `ENV_NAME=production`, `DB_SCHEMA=prod`, `NET_SPIKE=0`. Supply `DATABASE_URL` (leave `DATABASE_CA_CERT` empty), optional `SENTRY_DSN`
    and exact client origins via the dashboard. Keep generated `JWT_SECRET` and `REFRESH_TOKEN_PEPPER` private.
 3. Vercel: import the existing repo, root directory = repository root, use `vercel.json` and **Production Branch = main**.
    Use the Node version required by the repo. Set public `VITE_SERVER_HTTP_URL`, `VITE_SERVER_WS_URL`,
@@ -50,6 +50,7 @@ Verify current provider terms/quotas before account changes; stay within the $0 
 - Main client/server deploy independently. Reject incompatible protocol versions cleanly and show updating/retry UI.
 - Use local isolated data for soak/restart/destructive tests. Hosted spikes need an agreed isolated/test-only window;
   no live player data. Keep runs short under documented budgets, restore `NET_SPIKE=0`, record bytes/device/environment.
+  The server refuses `NET_SPIKE=1` with `ENV_NAME=production`; use the temporary recipe in [HOSTING_GUIDE §5](HOSTING_GUIDE.md#5-post-deploy-smoke-checklist).
 - Missing cloud/device tests remain BLOCKED/provisional while other development continues. Final candidate report discloses them.
 - No uptime pinger by default. Keep secrets in local ignored env/provider dashboards. Monitor real usage and provider limits.
 - Hub metadata/images only if a portal is actually chosen; verify its schema then. Retain asset licensing/credits checks.

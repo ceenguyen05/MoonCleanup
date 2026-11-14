@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794522563987,
+      "tag": "0000_ops_usage_daily",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794637613154,
+      "tag": "0001_identity_contracts_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794637641248,
+      "tag": "0002_w5t07_lease_and_save_generation",
+      "breakpoints": true
+    }
+  ]
+}

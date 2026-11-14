@@ -1,0 +1,389 @@
+{
+  "kind": "client-capture",
+  "createdAt": "2026-11-13T05:28:02.508Z",
+  "milestone": "M0/sweep-med-webgpu-0.50",
+  "scene": "bench",
+  "seed": "perf-1",
+  "cameraPath": "orbit-v0",
+  "tier": "C",
+  "preset": "medium",
+  "backend": "webgpu",
+  "warmupS": 8,
+  "captureS": 15,
+  "machine": {
+    "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "cores": 8,
+    "ramGb": 15.9,
+    "os": "Windows_NT 10.0.26200 (x64)",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "browser": "Chrome 157.0.8103.79",
+    "adapterFlag": "default",
+    "nodeVersion": "v26.13.1"
+  },
+  "provisional": true,
+  "gpuTimingSource": "timestamp-query",
+  "runs": [
+    {
+      "frameMsP50": 31.100000000002183,
+      "frameMsP95": 48.900000000001455,
+      "frameMsP99": 59.400000000001455,
+      "fps": 32.93648779001879,
+      "frames": 519,
+      "cpuTotalMsP50": 27.5,
+      "cpuTotalMsP95": 31.900000005960464,
+      "cpuStepMsP95": {
+        "input": 0,
+        "net": 0,
+        "sim": 0,
+        "gameplay": 0,
+        "animation": 0,
+        "terrain": 0,
+        "visuals": 0,
+        "render": 31.900000005960464,
+        "audio": 0,
+        "ui": 0,
+        "debug": 0
+      },
+      "gpuRenderMsP50": 27.123239999999996,
+      "gpuRenderMsP95": 28.049063999999994,
+      "drawCalls": 493,
+      "triangles": 1002585,
+      "gpuMemoryBytes": 97962942,
+      "jsHeapBytes": 147281144,
+      "pipelinesAfterWarmup": null,
+      "lossCount": 0
+    }
+  ],
+  "aggregate": {
+    "frameMsP50": {
+      "median": 31.100000000002183,
+      "min": 31.100000000002183,
+      "max": 31.100000000002183,
+      "runs": 1
+    },
+    "frameMsP95": {
+      "median": 48.900000000001455,
+      "min": 48.900000000001455,
+      "max": 48.900000000001455,
+      "runs": 1
+    },
+    "frameMsP99": {
+      "median": 59.400000000001455,
+      "min": 59.400000000001455,
+      "max": 59.400000000001455,
+      "runs": 1
+    },
+    "fps": {
+      "median": 32.93648779001879,
+      "min": 32.93648779001879,
+      "max": 32.93648779001879,
+      "runs": 1
+    },
+    "frames": {
+      "median": 519,
+      "min": 519,
+      "max": 519,
+      "runs": 1
+    },
+    "cpuTotalMsP50": {
+      "median": 27.5,
+      "min": 27.5,
+      "max": 27.5,
+      "runs": 1
+    },
+    "cpuTotalMsP95": {
+      "median": 31.900000005960464,
+      "min": 31.900000005960464,
+      "max": 31.900000005960464,
+      "runs": 1
+    },
+    "gpuRenderMsP50": {
+      "median": 27.123239999999996,
+      "min": 27.123239999999996,
+      "max": 27.123239999999996,
+      "runs": 1
+    },
+    "gpuRenderMsP95": {
+      "median": 28.049063999999994,
+      "min": 28.049063999999994,
+      "max": 28.049063999999994,
+      "runs": 1
+    },
+    "drawCalls": {
+      "median": 493,
+      "min": 493,
+      "max": 493,
+      "runs": 1
+    },
+    "triangles": {
+      "median": 1002585,
+      "min": 1002585,
+      "max": 1002585,
+      "runs": 1
+    },
+    "gpuMemoryBytes": {
+      "median": 97962942,
+      "min": 97962942,
+      "max": 97962942,
+      "runs": 1
+    },
+    "jsHeapBytes": {
+      "median": 147281144,
+      "min": 147281144,
+      "max": 147281144,
+      "runs": 1
+    },
+    "pipelinesAfterWarmup": null,
+    "lossCount": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.input": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.net": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.sim": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.gameplay": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.animation": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.terrain": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.visuals": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.render": {
+      "median": 31.900000005960464,
+      "min": 31.900000005960464,
+      "max": 31.900000005960464,
+      "runs": 1
+    },
+    "cpuStep.audio": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.ui": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    },
+    "cpuStep.debug": {
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "runs": 1
+    }
+  },
+  "lastSnapshot": {
+    "schema": 1,
+    "atMs": 36720.29999998212,
+    "env": {
+      "backend": "webgpu",
+      "tier": "B",
+      "preset": "medium",
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+      "dpr": 0.588,
+      "renderScale": 0.85,
+      "canvasCssPx": [
+        1920,
+        1080
+      ]
+    },
+    "frameMs": {
+      "samples": 240,
+      "avg": 30.409166666616997,
+      "min": 23.200000017881393,
+      "max": 40.099999994039536,
+      "p50": 30.30000001192093,
+      "p95": 36.400000005960464,
+      "p99": 40
+    },
+    "fps": 32.88482091479982,
+    "cpuMs": {
+      "input": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "net": {
+        "samples": 240,
+        "avg": 0.0016666665673255921,
+        "min": 0,
+        "max": 0.09999999403953552,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0.09999999403953552
+      },
+      "sim": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "gameplay": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "animation": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "terrain": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "visuals": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "render": {
+        "samples": 240,
+        "avg": 27.38750000024835,
+        "min": 18.299999982118607,
+        "max": 37.400000005960464,
+        "p50": 27.5,
+        "p95": 32.79999998211861,
+        "p99": 37.29999998211861
+      },
+      "audio": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "ui": {
+        "samples": 240,
+        "avg": 0.002916666616996129,
+        "min": 0,
+        "max": 0.20000001788139343,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0.09999999403953552
+      },
+      "debug": {
+        "samples": 240,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      }
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 27.392083333432673,
+      "min": 18.299999982118607,
+      "max": 37.400000005960464,
+      "p50": 27.5,
+      "p95": 32.79999998211861,
+      "p99": 37.29999998211861
+    },
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 12,
+        "avg": 26.992821499999994,
+        "min": 24.730197999999994,
+        "max": 28.049063999999994,
+        "p50": 27.265739999999997,
+        "p95": 28.049063999999994,
+        "p99": 28.049063999999994
+      },
+      "computeMs": {
+        "samples": 12,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "render": {
+      "drawCalls": 501,
+      "triangles": 1016465,
+      "geometries": 88,
+      "textures": 34,
+      "gpuMemoryBytes": 97962942,
+      "texturesBytes": 90134623,
+      "pipelinesAfterWarmup": null,
+      "framesRendered": 1203,
+      "lossCount": 0
+    },
+    "memory": {
+      "jsHeapBytes": 135654688
+    },
+    "net": {
+      "rttMs": null,
+      "conn": "asleep"
+    },
+    "frames": 518
+  }
+}

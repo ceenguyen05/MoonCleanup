@@ -13,7 +13,14 @@ export const nodePreset = defineConfig({
   test: {
     environment: "node",
     include: ["**/*.{test,spec}.?(c|m)[jt]s?(x)"],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.turbo/**"],
+    // *.browser.test.ts files run only in the browser lane (browserPreset), never in Node.
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/.turbo/**",
+      "**/*.browser.{test,spec}.?(c|m)[jt]s?(x)",
+    ],
     // A package that has no tests yet must not fail the gate (CI is designed to pass on an empty repo).
     passWithNoTests: true,
     // Tests must not leak mocks into each other; deterministic sim tests rely on a clean slate.

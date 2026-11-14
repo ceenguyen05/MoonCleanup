@@ -6,8 +6,9 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "lint": "echo netsim lint: placeholder until sources land - see README",
-    "typecheck": "echo netsim typecheck: placeholder until sources land - see README",
+    "netsim": "tsx src/cli.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

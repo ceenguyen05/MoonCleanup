@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    {
+      "id": "overflow_former",
+      "description": "A full Dust Cell bands itself into one Puck Stack at the Custodian's feet; sweeping continues."
+    },
+    {
+      "id": "smooth_handoff_rail_snap",
+      "description": "Thrown pucks and Puck Stacks within 2 m of a Glide Rail snap onto it."
+    },
+    {
+      "id": "golden_handshake_credit",
+      "description": "The Stamp Premium multiplier also applies to robot-credited (Flock) plots."
+    },
+    {
+      "id": "punch_list",
+      "description": "Survey Globe list of every plot not yet Polished, nearest first."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "dust-sim-p1-scalar-procedural",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Approach P1: scalar dust field with procedural dust.",
+  "license": "UNLICENSED",
+  "scripts": {}
+}

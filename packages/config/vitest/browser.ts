@@ -1,13 +1,11 @@
-// PLACEHOLDER Vitest browser-mode preset (real browser tests for apps/client modules that need WebGL2/WebGPU or the DOM).
-// Browser mode needs a provider package (`@vitest/browser-playwright`) that is NOT installed in M0-W0: adding it is a
-// designated devops install when a task needs it (ADR-0028). Until then this preset takes the provider as an argument so that no
-// dependency is imported here, and nothing in the repo uses it yet.
+// Vitest browser-mode preset: real browser tests (determinism lane for sim/world, DOM/WebGL2 modules of apps/client).
+// The provider package @vitest/browser-playwright 5.1.0 is a root devDependency since M1-W0-T04 (ADR-0019, ADR-0028).
+// The provider is still passed in by the caller so this file imports no dependency.
 //
-// Future opt-in from apps/client/vitest.config.ts:
-//   import { mergeConfig } from "vitest/config";
+// Opt in from a package's own vitest.browser.config.ts:
 //   import { playwright } from "@vitest/browser-playwright";
 //   import { browserPreset } from "@moon-cleanup/config/vitest";
-//   export default mergeConfig(baseConfig, browserPreset({ provider: playwright() }));
+//   export default browserPreset({ provider: playwright() });
 import { defineConfig } from "vitest/config";
 import type { BrowserProviderOption } from "vitest/node";
 
@@ -16,9 +14,11 @@ export interface BrowserPresetOptions {
   provider: BrowserProviderOption;
   /** Run without a visible window. Default true; CI uses the software-WebGL2 lane (docs/architecture/environments.md). */
   headless?: boolean;
+  /** Engines to run. Default chromium; the CI determinism job passes all three (netcode.md section 17, WDS section 1). */
+  browsers?: readonly ("chromium" | "firefox" | "webkit")[];
 }
 
-export function browserPreset({ provider, headless = true }: BrowserPresetOptions) {
+export function browserPreset({ provider, headless = true, browsers = ["chromium"] }: BrowserPresetOptions) {
   return defineConfig({
     test: {
       include: ["**/*.browser.{test,spec}.?(c|m)[jt]s?(x)"],
@@ -28,7 +28,7 @@ export function browserPreset({ provider, headless = true }: BrowserPresetOption
         enabled: true,
         provider,
         headless,
-        instances: [{ browser: "chromium" }],
+        instances: browsers.map((browser) => ({ browser })),
       },
     },
   });

@@ -1,0 +1,14 @@
+assets/.gitkeep	0	20
+assets/index-CHk0dWQA.css	21839	4813
+assets/index-DgSoD4T8.js	1879649	574277
+assets/inter-latin-wght-Dx4kXJAl.woff2	48256	48254
+assets/jetbrains-mono-latin-wght-B9CIFXIH.woff2	40404	40437
+assets/space-grotesk-latin-wght-BhU9QXUp.woff2	22288	22316
+assets/terrain/height-cube-1024.0d70550a0d75.bin	7918107	7920213
+assets/terrain/height-cube-256.3b5aa9176cde.bin	601663	601857
+assets/terrain/horizon-map.0600f54d4815.bin	6977254	6979402
+assets/terrain/manifest.json	7082	2827
+favicon.svg	285	193
+hub/.gitkeep	0	20
+index.html	465	300
+totals [raw, gzip9] {"js":[1879649,574277],"css":[21839,4813],"font":[110948,111007],"terrain":[15504106,15504299],"map":[0,0],"other":[750,533]}

@@ -1,0 +1,6 @@
+{
+  // Proves the core is environment-agnostic: no DOM lib, no Node types.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2024"], "types": [] },
+  "include": ["src/core"]
+}

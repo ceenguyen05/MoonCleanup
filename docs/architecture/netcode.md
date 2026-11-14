@@ -3,6 +3,7 @@
 > **Current execution correction (2026-11-12):** [ADR-0029](../adr/0029-single-deploy-branch-main.md) governs deployment: `main` only, Vercel production + one Render service.
 > Use local/test fixtures and read-only live checks; hosted load tests need an explicitly approved isolated safe fixture.
 > [MODEL_POLICY](../handoff/MODEL_POLICY.md) governs model/reading/review overhead; technical acceptance criteria remain.
+> **Local-first Solo (owner, 2026-11-13):** [ADR-0031](../adr/0031-local-first-solo.md). A Solo Shift runs `RoomSim` in a browser Web Worker; §1–§18 describe **server rooms** (multiplayer, or a Solo opened to friends). Authority per mode: [§19](#19-solo-local-vs-room-server-adr-0031).
 
 
 Status: **Planning baseline (2026-11-12, revised after the principal-engineer review)** · Owner: netcode-engineer (`packages/protocol`, `apps/*/src/net`) · Contracts: `packages/shared/src/protocol/*`, `sim/input.ts`, `world/stroke.ts` (contracts-architect).
@@ -13,8 +14,8 @@ Evidence: [netcode-case-colyseus.md](../research/tech/netcode-case-colyseus.md),
 
 | # | Rule |
 | --- | --- |
-| N1 | Server is authoritative for everything. Clients send **intents** (inputs, purchase/build requests), never positions, strokes or amounts. |
-| N2 | `RoomSim` (`packages/sim`) is pure TypeScript with no Colyseus, DOM or Node imports. The Colyseus `Room` in `apps/server/src/net` is a thin adapter. The same `RoomSim` runs in the client for prediction and (v1.0) in a Web Worker for offline Solo. |
+| N1 | In a **server room** the server is authoritative for everything. Clients send **intents** (inputs, purchase/build requests), never positions, strokes or amounts. In a **Solo Shift** the local worker `RoomSim` is authoritative and the server only stores and sanity-checks checkpoints (§19, ADR-0031). |
+| N2 | `RoomSim` (`packages/sim`) is pure TypeScript with no Colyseus, DOM or Node imports. The Colyseus `Room` in `apps/server/src/net` is a thin adapter. The same `RoomSim` runs in the client for prediction and, from M1, in a Web Worker (`apps/client/src/sim-host`) as the authoritative host of every Solo Shift (§19). |
 | N3 | Two channels over one WebSocket: **Schema** (Colyseus `@colyseus/schema` 5.x, encode-once, no `.view()`/StateView) for low-rate shared state; **bytes** (`sendBytes`/`onMessageBytes`, our codec in `packages/protocol`) for everything per-client or high-rate. Colyseus typed messages (msgpack) for rare control requests. |
 | N4 | Default free-tier rates: `SIM_TICK_HZ=20`, `SNAPSHOT_HZ=10`. Supported alternative: **30 / 15** (paid instance only). `SNAPSHOT_HZ` must divide `SIM_TICK_HZ` (boot refuses otherwise). All rates and cadences derive from these two env vars; nothing hard-codes 20, 10 or "every 2 ticks". |
 | N5 | TCP is reliable and ordered: deltas are against **what this client was last sent**, no ack round-trip for state. Only inputs are acked (for reconciliation). |
@@ -68,19 +69,20 @@ Ack: every `FRAME` header carries `ackInputSeq` = last input sequence consumed f
 
 ## 4. Message catalog
 
-The single catalog (type ids, bit layouts, rates, direction) is `packages/shared/src/protocol/messages.ts`, written by contracts-architect as the **first Wave-0 task, before any codec work**. The tables below are its specification.
+The single catalog (type ids, bit layouts, rates, direction) is `packages/shared/src/protocol/messages.ts`, written by contracts-architect as the **first Wave-0 task, before any codec work**. The tables below are its specification. **v1 (M1-W0-T02, `PROTOCOL_VERSION = 1`)** has 46 catalog entries: 24 active, 19 reserved for post-MVP features and 3 M0 spike entries. Where v1 differs from the tables below, the row says so and `packages/shared/src/protocol/*` wins; the differences are marked **[v1]**.
 
 ### 4.1 Client → server
 
 | Name | Channel / type id | Rate | Wire size | Fields (type, quantization) | Validation |
 | --- | --- | --- | --- | --- | --- |
-| `INPUT` | bytes `0x01` | `SIM_TICK_HZ` while visible; may carry 1–2 inputs if the client fell behind | **10 B** per input (+1 B count) | `seq` u16 (wraps); `moveX`,`moveY` i8 (stick/WASD ×127, server normalises length ≤ 1); `yaw` u16 (camera yaw, 65,536 steps); `pitch` i8 (±90°); `buttons` u16 bitfield: jump, hopPack, lope, toolPrimary, toolSecondary, interact, brake/descend, boost, ballast, lampCycle, holsterNext, holsterPrev, seatSwitch (names per game-feel §9; the Plot Card is UI-only); `toolParam` u8 (aim distance 0–255 → 0–reach) | Exact length 1 + 1 + 10·n (n ≤ 2); `seq` newer than last received (mod 2¹⁶ window 1,024) else dropped as late; token bucket derived from `SIM_TICK_HZ` (§11); NaN impossible (integers) |
+| `INPUT` | bytes `0x01` | `SIM_TICK_HZ` while visible; may carry 1–2 inputs if the client fell behind | **10 B** per input (+1 B count; layout `INPUT_WIRE`: `seq` u16, `moveX` i8, `moveY` i8, `yaw` u16, `pitch` i8, `buttons` u16, `toolParam` u8, little-endian) | `seq` u16 (wraps); `moveX`,`moveY` i8 (stick/WASD ×127, server normalises length ≤ 1); `yaw` u16 (camera yaw, 65,536 steps); `pitch` i8 (±90°); `buttons` u16 bitfield of **levels** (the sim derives press/release edges from consecutive inputs; the wire never carries edges) **[v1]**: bit order jump, hopPack, lope, toolPrimary, toolSecondary, interact, descend, boost, ballast, lampCycle, holsterNext, holsterPrev, seatSwitch, laneLock, puckForm, pickupDrop (16 logical buttons; the last three are new in v1; driver/passenger/build meanings come from context, `INPUT_BUTTON_MEANING`; the Plot Card is UI-only); `toolParam` u8 (aim distance 0–255 → 0–reach) | Exact length 1 + 1 + 10·n (n ≤ 2); `seq` newer than last received (mod 2¹⁶ window 1,024) else dropped as late; token bucket derived from `SIM_TICK_HZ` (§11); NaN impossible (integers) |
 | `PING` | bytes `0x02` | every 2 s (also while tab hidden; keeps Render awake while in a room) | 5 B | `clientTimeMs` u32 | Length 5; ≤ 2/s |
 | `DUST_REQUEST` | bytes `0x03` | ≤ 1 per 2 s | ≤ 34 B | WDS §5.1 `dust.request` (≤ 8 PlotIds or one chunkId) | Bounds (PlotId < plotCount, chunkId ≤ 640); only plots/chunks inside the client's dust radius |
 | `ready` | control | once after the blocking join snapshot is applied | ~20 B | `{}` | zod |
 | `visibility` | control | on tab hide/show, ≤ 1/s | ~15 B | `{hidden: boolean}` | zod |
 | `dust_interest` | control | on join and on preset change, ≤ 1/5 s | ~20 B | `{residencyRadiusM: 60–220}` (WDS §5.2) | zod, clamped |
 | `purchase` | control | on demand | ~60 B | `{requestId: uuid, itemId: string (game-data id), quantity?: 1}` | zod; idempotent by `requestId` (§11) |
+| `select_tool` **[v1]** | control | on demand, ≤ 10/s burst 20 (control bucket, §11) | ~15 B | `{slot: 0–5}` (direct holster selection, wheel or keys 1–6; `holsterNext` / `holsterPrev` alone cannot jump several slots in one tick) | zod; idempotent (no `requestId`); slot ownership is checked by the sim |
 | `build_place` | control | on demand | ~70 B | `{requestId, pieceId, plotId (0–163,841), local: [x,y] (cm, snapped), rot: 0–23 (15° steps), finish: enum}` | zod + snap/collision/permission in sim |
 | `build_shift` | control | on demand | ~60 B | `{requestId, structureId: u32, local, rot}` | zod + ownership/permission |
 | `build_reclaim` | control | on demand | ~40 B | `{requestId, structureId}` | zod + permission |
@@ -95,11 +97,13 @@ The single catalog (type ids, bit layouts, rates, direction) is `packages/shared
 | `vote_kick` | control | Staff, only when no Holder or Supervisor is online | ~40 B | `{targetPlayerId, vote: boolean}` | Role = `staff`; target role = `temp` ([security.md §8](security.md#8-abuse-in-open-shifts)) |
 | `report_player` | control | ≤ 1 per 60 s | ~60 B | `{playerId, reasonCode: enum}` | zod; writes an audit row |
 
+**MVP active set [v1]:** `INPUT`, `PING`, `DUST_REQUEST`, `ready`, `visibility`, `dust_interest`, `purchase`, `select_tool`, `set_shift_type` (Holder only; `solo` and `private`) and `kick` (Holder). Reserved, not routed in the MVP: `build_place`, `build_shift`, `build_reclaim`, `relay_teleport`, `beacon_set`, `quick_chat`, `ping_marker`, `set_permissions`, `appoint_role`, `ban`, `vote_kick`, `report_player`. Every active client-to-server payload has a zod schema in `protocol/payloads.ts` / `sim/input.ts` (`PAYLOAD_SCHEMAS`); rate limits per message are in `protocol/limits.ts`.
+
 ### 4.2 Server → client (bytes)
 
 | Name | Type id | Rate | Typical size | Contents |
 | --- | --- | --- | --- | --- |
-| `FRAME` | `0x20` | `SNAPSHOT_HZ` per visible client; 1 Hz Self-only while hidden | 120–600 B (cap 1,000 B) | Header **9 B**: `type` u8, `serverTick` u32, `ackInputSeq` u16, `inputBufferDepth` u8, `flags` u8 (keyframe, hasSlotChanges, hasEntities, hasStrokes, hasRobotIntents, hasDustPlots, hasEvents). Sections in order: **Self** (always; includes Dust Cell grams = `dust.ack`), **SlotChanges**, **Entities**, **DustStrokes** (WDS `dust.strokes`, incl. own-stroke echoes), **RobotIntents** (WDS `robot.plot`), **DustPlots** (WDS `dust.plots`, every `SNAPSHOT_HZ/2`-th frame), **Events** |
+| `FRAME` | `0x20` | `SNAPSHOT_HZ` per visible client; 1 Hz Self-only while hidden | 120–600 B (cap 1,000 B) | Header **9 B**: `type` u8, `serverTick` u32, `ackInputSeq` u16, `inputBufferDepth` u8, `flags` u8 (keyframe, hasSlotChanges, hasEntities, hasStrokes, hasRobotIntents, hasDustPlots, hasEvents). Sections in order: **Self** (always; includes Dust Cell grams = `dust.ack`), **SlotChanges**, **Entities**, **DustStrokes** (WDS `dust.strokes`, incl. own-stroke echoes), **RobotIntents** (WDS `robot.plot`), **DustPlots** (WDS `dust.plots`, every `SNAPSHOT_HZ/2`-th frame), **Events**. **[v1] Framing:** flag bit 7 is reserved (0); after the header and Self, every present section is `u16 byteLength` (little-endian, excludes the prefix) + body, in this order, so a decoder can skip an unknown section. Self has no prefix. Max message 1,000 B (`FRAME_MAX_BYTES`) |
 | `DUST_SNAPSHOT` | `0x21` | join, hidden-tab return, resync; sliced, ≤ 2 slices per frame | WDS §5.4 | `sliceIndex` u16, `sliceCount` u16, `snapshotVersion` u32, deflate payload per WDS §5.4 |
 | `DUST_LEDGER` | `0x22` | on dust-radius entry, on `DUST_REQUEST` | WDS §5.1 | One plot's ledger, deflated |
 | `DUST_LOG` | `0x23` | within 60 m on entry, on `DUST_REQUEST` | WDS §5.1 | One plot's stroke log as chains |
@@ -112,17 +116,19 @@ The single catalog (type ids, bit layouts, rates, direction) is `packages/shared
 
 | Section | Encoding | Size |
 | --- | --- | --- |
-| Self | own avatar: position 3×24 b, velocity 3×16 b, yaw 10 b, move-state 5 b (grounded, airborne, hopping, seated, anchored…), hop charges 3 b, Dust Cell grams u16 (0.1 kg) ; if driving: vehicle position 3×24 b, orientation 2+3×15 b, linear vel 3×16 b, angular vel 3×16 b, steer i8, gear/boost 4 b | 20 B (on foot) / 52 B (driving) |
-| SlotChanges | per-client slot table (0–254 → `entityId` u32 + kind 3 b): assign / release | 6 B per change |
-| Entities | `count` u8, then per record: `slot` u8, `recType` 2 b (FULL / DELTA / REMOVE). Unlisted slot = unchanged. FULL on slot assign, after a skipped frame, and as a **staggered keyframe**: slot s is refreshed when `(frameIndex + s) mod (5 × SNAPSHOT_HZ) == 0`, so each slot is keyed every 5 s but never all in one frame. If FULL records would exceed the 1,000 B cap, the excess spills to the next frames (those entities keep interpolating) | see §4.5 |
-| DustStrokes, RobotIntents, DustPlots | Bit layouts per WDS §5.1 | WDS §5.3 |
-| Events | compact: Glide Rail puck spawn/despawn (`railSegmentId` u16, `spawnTick` offset u8, `kind` 2 b), machine state change (`structureId` u32, state 3 b), structure placed/shifted/reclaimed (record as above), `plot.polished` (PlotId 18 b, creditedSlot 6 b) | 3–14 B each |
+| Self | own avatar: position 3×24 b, velocity 3×16 b, yaw 10 b, move-state 5 b (grounded, airborne, hopping, seated, anchored…), hop charges 3 b, Dust Cell grams **u24 (integer grams, = `dust.ack`, WDS §5.1)** [v1] ; if driving: vehicle position 3×24 b, orientation 2+3×15 b, linear vel 3×16 b, angular vel 3×16 b, steer i8, gear/boost 4 b | **21 B (162 bits, on foot) / 49 B (389 bits, driving)** [v1; netcode estimated 20 / 52]; move-state is a 5-bit enum (`MOVE_STATES`), pitch in other-avatar records is an unsigned 6-bit code (0 = −90°, 63 = +90°) |
+| SlotChanges (`u16` length prefix [v1]) | per-client slot table (0–254 → `entityId` u32 + kind 3 b): assign / release | 6 B per change |
+| Entities (`u16` length prefix [v1]) | `count` u8, then per record: `slot` u8, `recType` 2 b (FULL / DELTA / REMOVE). Unlisted slot = unchanged. FULL on slot assign, after a skipped frame, and as a **staggered keyframe**: slot s is refreshed when `(frameIndex + s) mod (5 × SNAPSHOT_HZ) == 0`, so each slot is keyed every 5 s but never all in one frame. If FULL records would exceed the 1,000 B cap, the excess spills to the next frames (those entities keep interpolating) | see §4.5 |
+| DustStrokes, RobotIntents, DustPlots (each with a `u16` length prefix [v1]) | Bit layouts per WDS §5.1; payload schemas are `world/dust.ts` and `world/stroke.ts` | WDS §5.3 |
+| Events (`u16` length prefix [v1]) | compact, **v1.0 only (the MVP server never sets `hasEvents`)**: Glide Rail puck spawn/despawn (`railSegmentId` u16, `spawnTick` offset u8, `kind` 2 b), machine state change (`structureId` u32, state 3 b), structure placed/shifted/reclaimed (record as above). The `plot.polished` compact record of v0 is **superseded [v1]**: MVP sim events travel in the `sim_events` control message (§4.3) | 3–14 B each |
 
 ### 4.3 Server → client (control messages)
 
 | Name | When | Payload |
 | --- | --- | --- |
+| `hello` | first message after a successful join (not the version check, §13) | session parameters (`HelloPayload`) |
 | `purchase_result` | reply to `purchase` | `{requestId, ok, code?, walletAfter?}` |
+| `sim_events` **[v1]** | frame ticks, only when non-empty | Batched `RoomSimEvent`s (`{name, payload}` of `SimEventMap`, all with `tick`) for this client: everything **except `dust.collected`**, which the client derives from Self `cellGrams` (`dust.ack`) and its stroke echoes. A Solo host delivers the same events through `RoomHost.onEvent` without this message |
 | `build_result` | reply to `build_*` | `{requestId, ok, code?, structureId?}` |
 | `teleport_result` | reply to `relay_teleport` | `{requestId, ok, code?}` |
 | `error` | rejected control message, rate limit | `{code, ref?}` (`RATE_LIMITED`, `FORBIDDEN`, `INVALID`) |
@@ -133,6 +139,8 @@ The single catalog (type ids, bit layouts, rates, direction) is `packages/shared
 | `shift_type_changed` | Holder changes Solo/Private/Open on the live room | `{shiftType}` |
 | `report_ack` | reply to `report_player` | `{ok}` |
 | `capacity_notice` | admission control starts refusing new joins (§15) | `{reason: "at_capacity"}` |
+
+Post-MVP, reserved in the v1 catalog (not routed): `build_result`, `teleport_result`, `vote_kick_state`, `role_changed`, `report_ack`.
 
 ### 4.4 Server → client (Schema `ShiftState`, patched on frame ticks)
 
@@ -158,9 +166,9 @@ Expected Schema traffic: ≤ 200 B/s per client (wallet and cell changes dominat
 
 | Entity | FULL | DELTA (moving, typical) | Rate |
 | --- | --- | --- | --- |
-| Avatar (other player) | 13 B: pos 60 b, yaw 10 b, pitch 6 b, anim state 6 b, toolId 4 b, flags 6 b (cleaning, hop thrust, lamp, visor, seated, afk) | ≈ 8 B | every frame inside entity interest (§7) |
-| Vehicle | 16 B: pos 60 b, orientation 32 b, steer 6 b, speed 8 b, driverSlot 8 b, flags 8 b (lights, boost, intake, hopper level 4 b) | ≈ 11 B | as avatars |
-| Robot (Sandpiper, Plover, Albatross) | 10 B: pos 60 b, heading 8 b, state 4 b (9 UI states, naming bible), cargo 3 b | ≈ 6 B | every 2nd frame inside entity interest; markers only beyond |
+| Avatar (other player) | 13 B incl. the 10-bit slot/recType prefix [v1]: pos 60 b, yaw 10 b, pitch 6 b (unsigned code), anim state 6 b (animation-spec P1 `AVATAR_ACTION_STATES`, 41 used), toolId 4 b, flags 6 b (cleaning, hop thrust, lamp, visor, seated, afk) | ≈ 8 B | every frame inside entity interest (§7) |
+| Vehicle | 16 B (17 B incl. the prefix [v1]): pos 60 b, orientation 32 b, steer 6 b, speed 8 b, driverSlot 8 b, flags 8 b (lights, boost, intake, hopper level 4 b) | ≈ 11 B | as avatars |
+| Robot (Sandpiper, Plover, Albatross) | 10 B (11 B incl. the prefix [v1]): pos 60 b, heading 8 b, state 4 b (9 UI states, naming bible), cargo 3 b | ≈ 6 B | every 2nd frame inside entity interest; markers only beyond |
 | Dust Puck on Glide Rail | not streamed: simulated on the client from rail graph + `spawnTick` events | 0 | — |
 
 ## 5. Prediction and reconciliation
@@ -263,7 +271,7 @@ sequenceDiagram
   participant R as Render
   participant S as Old instance
   participant N as New instance (deploy only)
-  participant D as Aiven PG
+  participant D as Neon PG
   participant C as Client
   R->>S: SIGTERM (t=0)
   S->>S: draining=true (/readyz 503), registry closed, join → 503
@@ -325,9 +333,12 @@ HTTP and join limits are in [security.md §5](security.md#5-rate-limiting).
 
 | Code | Name | Source | Client behaviour |
 | --- | --- | --- | --- |
-| 1000/1001/1006 | normal / going away / abnormal | WebSocket | 1006 → seat-hold reconnect |
+| 1000/1001/1005/1006 | normal / going away / no status / abnormal | WebSocket | 1005, 1006 and 1001 → SDK seat-hold reconnect (the 0.18 SDK reconnects on exactly 1005, 1006, 1001 and 4010) |
 | 4000 | CONSENTED | Colyseus | No reconnect (player left) |
-| 4001 | SERVER_SHUTDOWN | Colyseus | Rejoin with restore (§9.3) |
+| 4001 | SERVER_SHUTDOWN | Colyseus | The SDK does **not** reconnect; our client rejoins with restore (§9.3) |
+| 4002 | WITH_ERROR | Colyseus | Room closed the connection because of an error; no SDK reconnect; show a generic failure, offer Clock In again [v1: row added] |
+| 4003 | FAILED_TO_RECONNECT | Colyseus SDK | SDK reconnection ran out of retries; treat as a lost session, back to the title/Contracts list [v1: row added] |
+| 4010 | MAY_TRY_RECONNECT | Colyseus | Dev-mode restart or "may try to reconnect"; the SDK reconnects [v1: row added] |
 | 4100 | PROTOCOL_MISMATCH | ours | `update_required` flow (§13) |
 | 4101 | AUTH_INVALID | ours | Refresh token, retry once, else re-auth |
 | 4102 | KICKED | ours | Message; rejoin blocked 15 min |
@@ -338,7 +349,7 @@ HTTP and join limits are in [security.md §5](security.md#5-rate-limiting).
 | 4107 | IDLE_TIMEOUT | ours | "Clocked out for inactivity"; Clock In again |
 | 4108 | CONTRACT_UNAVAILABLE | ours | Save failed to load (incl. newer save format) or lease lost; report to Sentry |
 
-Exact Colyseus reserved values must be checked against the 0.18 `CloseCode` enum during M0; our codes stay in 4100–4199.
+**Verified 2026-11-13 (M1-W0-T02)** against `@colyseus/shared-types@0.18.3` (`build/Protocol.d.ts`) and `@colyseus/sdk@0.18.10` (`Room.mjs`): the Colyseus values above are exact, `client.leave(code, data)` passes the code to ws/uWS unchanged, and `4001` plus every `4100`–`4108` end the room without SDK reconnect. They are recorded in `protocol/close-codes.ts` as `FOREIGN_CLOSE_CODES` and `SDK_RECONNECT_CLOSE_CODES`; our codes stay in 4100–4199 and are never reused.
 
 ## 13. Versioning and release order
 
@@ -353,11 +364,11 @@ Exact Colyseus reserved values must be checked against the 0.18 `CloseCode` enum
 
 ## 14. Bandwidth budget (server → client)
 
-Assumptions: busy 16-player Private Shift, everyone inside each other's horizon-aware interest (clustered), 8 vehicles moving, 32 robots moving in interest, all players cleaning; default rates 20/10. Overhead: ≈ 80 B per socket write (TLS record + WebSocket header + TCP/IP), with `FRAME` (incl. dust sections) + Schema patch coalesced into one write per frame interval (verified in M0, §3).
+Assumptions (table below is the superseded 16-player case; the 6-player cap column follows it): busy 16-player Private Shift, everyone inside each other's horizon-aware interest (clustered), 8 vehicles moving, 32 robots moving in interest, all players cleaning; default rates 20/10. Overhead: ≈ 80 B per socket write (TLS record + WebSocket header + TCP/IP), with `FRAME` (incl. dust sections) + Schema patch coalesced into one write per frame interval (verified in M0, §3).
 
 | Item | Math | B/s per client |
 | --- | --- | --- |
-| Frame header + Self | (9 + 20) × 10 | 290 |
+| Frame header + Self (v1: Self is 21 B, +10 B/s, inside rounding) | (9 + 20) × 10 | 290 |
 | Other avatars | 15 × 8 B × 10 | 1,200 |
 | Vehicles | 8 × 11 B × 10 | 880 |
 | Robots | 32 × 6 B × 5 | 960 |
@@ -369,17 +380,29 @@ Assumptions: busy 16-player Private Shift, everyone inside each other's horizon-
 | Roster markers, pong | 50 + 5 | 55 |
 | Ledger/structure streaming (amortized while moving) | | 300 |
 | Socket/TLS/TCP overhead | ≈ 11 writes/s × 80 B | 880 |
-| **Total busy** | | **≈ 5.8 KB/s (≈ 47 kbit/s)** |
+| **Total busy (16 players, superseded)** | | ~~≈ 5.8 KB/s (≈ 47 kbit/s)~~ |
+
+**6-player busy column (cap 6; est. (derived from 4/8-player rows, re-measure locally in M0-W2)).** Only the player-count-linear lines change; vehicles (8), robots (32) and the other lines keep the assumptions above.
+
+| Item | Math (6 players) | B/s per client |
+| --- | --- | --- |
+| Other avatars | 5 × 8 B × 10 | 400 |
+| Dust strokes incl. own echoes | 6 × 4 B × 10 + headers 100 | 340 |
+| All other lines (header+Self 290, vehicles 880, robots 960, plots 200, intents 30, events 100, Schema 200, roster 55, streaming 300, overhead 880) | unchanged | 3,895 |
+| **Total busy, 6 players** | 400 + 340 + 3,895 | **≈ 4.6 KB/s (≈ 37 kbit/s) est.** |
 
 | Scenario (per month, 5 GB = 5,000 MB Render Hobby egress) | Per client | Room egress | MB per room-hour | Room-hours per 5 GB |
 | --- | --- | --- | --- | --- |
-| 16 players busy, 20/10 | 5.8 KB/s | 94 KB/s | ≈ 337 | **≈ 15** (≈ 240 player-hours) |
-| 16 players busy, 30/15 | ≈ 8.3 KB/s | 132 KB/s | ≈ 477 | ≈ 10 |
+| **6 players busy, 20/10 (cap) — est. (derived from 4/8-player rows, re-measure locally in M0-W2)** | ≈ 4.6 KB/s | ≈ 27.8 KB/s | ≈ 100 | **≈ 50** (≈ 300 player-hours) |
+| ~~16 players busy, 20/10~~ superseded | ~~5.8 KB/s~~ | ~~94 KB/s~~ | ~~≈ 337~~ | ~~≈ 15~~ |
+| ~~16 players busy, 30/15~~ superseded | ~~≈ 8.3 KB/s~~ | ~~132 KB/s~~ | ~~≈ 477~~ | ~~≈ 10~~ |
 | 8 players mixed, 20/10 | ≈ 4.0 KB/s | 32 KB/s | ≈ 115 | ≈ 43 |
 | 4 players typical, 20/10 | ≈ 2.5 KB/s | 10 KB/s | ≈ 36 | ≈ 140 |
 | Solo Shift, 20/10 | ≈ 1.6 KB/s | 1.6 KB/s | ≈ 5.8 | ≈ 860 |
 | Hidden tab (any room) | ≈ 0.3 KB/s | — | — | — |
 | Joins | ≈ 0.05–0.3 MB each | — | — | 1,000 joins ≈ 0.1 GB |
+
+> Superseded 2026-11-12: cap is 6. 16-player rows are struck and not binding. The 6-player row is derived: 4.6 KB/s × 6 = 27.8 KB/s × 3,600 s ≈ 100 MB/room-hour; 5,000 MB ÷ 100 ≈ 50 room-hours (300 player-hours). It lies between the 4-player (36 MB) and 16-player rows as expected. No 6-player 30/15 figure is derived (rate scaling is not linear in the table; re-measure in M0-W2).
 
 Upstream per client ≈ 20 × (10 + 6 + ~60) B ≈ 1.5 KB/s (inbound is not metered by Render per [netcode-case-raw-websocket.md §6](../research/tech/netcode-case-raw-websocket.md)). Owner accepted the suspension risk: no cap, but bytes out are logged per room per minute, persisted daily (`ops_usage_daily`) and shown month-to-date on `/status`. **Hosted test runs share the same egress:** hosted bot runs (isolated test window only) are capped at 5 min and soaks run locally in a CPU-limited container ([performance-budgets.md §8](performance-budgets.md)).
 
@@ -401,25 +424,43 @@ Upstream per client ≈ 20 × (10 + 6 + ~60) B ≈ 1.5 KB/s (inbound is not mete
 | Socket writes (uWS, coalesced) | ≈ 12 × 10 µs | 0.12 |
 | Checkpoint slices (avg over 30 s) | 30 ms / 600 ticks | 0.05 |
 | Minor GC, runtime, metrics | | 0.30 |
-| **Total** | | **≈ 2.3 ms/tick ≈ 45 % of 0.1 CPU** |
+| **Total (16 players, superseded)** | | ~~≈ 2.3 ms/tick ≈ 45 % of 0.1 CPU~~ |
+
+> Superseded 2026-11-12: cap is 6. The 16-player column is not binding. 6-player column below: est. (derived from 4/8-player rows, re-measure locally in M0-W2). Player-linear items scale by 6/16; robot count (64), economy, checkpoint and GC items are kept at the table value (conservative).
+
+| Work item (one 6-player room, 64 robots) | Math | ms per tick (est.) |
+| --- | --- | --- |
+| Input decode + validate | 6 × 3 µs | 0.02 |
+| Avatar + vehicle step (12 bodies, assuming 2 per player as the 32 = 2 × 16 above) | 12 × 10 µs | 0.12 |
+| Robots: motion + AI (6 decisions × 15 µs) | 0.13 + 0.09 | 0.22 |
+| Stroke rasterization | 0.15 × 6/16 | 0.06 |
+| Robot ledger ops | unchanged | 0.15 |
+| Economy, Glide Rails, machines | unchanged | 0.10 |
+| `InterestService` | 6 × 0.15 ms / 10 ticks | 0.09 |
+| Frame encode per client | 6 × 45 µs / 2 | 0.14 |
+| Schema patch encode | unchanged | 0.05 |
+| Socket writes | 0.12 × 6/16 | 0.05 |
+| Checkpoint slices | unchanged | 0.05 |
+| Minor GC, runtime, metrics | unchanged | 0.30 |
+| **Total, 6 players** | | **≈ 1.35 ms/tick ≈ 27 % of 0.1 CPU est.** |
 
 Not in the steady-state table, gated separately:
 
 | Item | Plan | Gate |
 | --- | --- | --- |
-| Major GC | A V8 major GC on a 100–300 MB heap costs tens of ms of CPU → 0.3–1 s process stall under the quota. M0 spike evaluates heap cap 192–256 MB (vs 384), `--max-semi-space-size`, `--single-threaded-gc`; typed arrays (ledgers, grid) live off-heap; no per-tick allocation in hot paths | **Max stall with GC traced ≤ 50 ms** over a 10-min 16-bot run |
+| Major GC | A V8 major GC on a 100–300 MB heap costs tens of ms of CPU → 0.3–1 s process stall under the quota. M0 spike evaluates heap cap 192–256 MB (vs 384), `--max-semi-space-size`, `--single-threaded-gc`; typed arrays (ledgers, grid) live off-heap; no per-tick allocation in hot paths | **Max stall with GC traced ≤ 50 ms** over a 10-min 6-bot run (cap 6) |
 | Boot | Bundle load + height map (12.6 MB) + precomputed grid binaries (WDS §2.5): ≈ 150 ms on a full core ≈ 1.5 s at 0.1 CPU | Boot to listening ≤ 5 s measured at 0.1 CPU |
 | Room creation | Per-room allocation + sliced save decode (§9.4) | No live room's tick p95 rises > 0.5 ms during another room's creation |
 
 | Gate | Value |
 | --- | --- |
-| Room tick p95 (16 bots) | ≤ 3.5 ms; max ≤ 8 ms (excluding traced major GC, gated above) |
+| Room tick p95 (6 bots) | ≤ 3.5 ms; max ≤ 8 ms (excluding traced major GC, gated above) |
 | Process CPU (EWMA 60 s) | ≤ 60 % of quota with one full room |
 | Event-loop delay p99 | ≤ 20 ms |
-| Tech-stack revisit trigger | One 16-bot room > 50 % CPU at 20 Hz on real Render Free → replace Colyseus edge with custom uWS adapter |
-| **Admission control (M10)** | A new room is admitted only if **all** hold: rooms < `MAX_ROOMS` (**hard ceiling, default 3**); Σ measured room tick p95 (EWMA) + estimate for the new room (0.5 ms, then measured) ≤ `TICK_BUDGET_MS` (default 3.5 ms = 70 % of the 5 ms tick); process CPU EWMA ≤ 70 %; clients < `MAX_CLIENTS` (24). Joins into a live room are refused (4105) while process tick p95 > 4 ms for 30 s. Refusal → 4105 "Brightside at capacity" |
+| Tech-stack revisit trigger | One 6-bot room (cap 6) > 50 % CPU at 20 Hz on real Render Free → replace Colyseus edge with custom uWS adapter |
+| **Admission control (M10)** | A new room is admitted only if **all** hold: rooms < `MAX_ROOMS` (**hard ceiling, default 3**); Σ measured room tick p95 (EWMA) + estimate for the new room (0.5 ms, then measured) ≤ `TICK_BUDGET_MS` (default 3.5 ms = 70 % of the 5 ms tick); process CPU EWMA ≤ 70 %; clients < `MAX_CLIENTS` (12). Joins into a live room are refused (4105) while process tick p95 > 4 ms for 30 s. Refusal → 4105 "Brightside at capacity" |
 
-**Capacity reality on the free tier:** one 0.1-CPU instance hosts **only a few live Contracts at once** — typically one busy shared shift plus a couple of Solo or small shifts, never more than `MAX_ROOMS`. Every Solo Shift is a server room in the MVP. Players without a Contract slot are steered to **existing Open Shifts, which share rooms**; the Open Shifts list sorts by free seats. The Worker-based offline Solo (dev flag today) is the v1.0 relief valve.
+**Capacity reality on the free tier:** one 0.1-CPU instance hosts **only a few live Contracts at once** — typically one busy shared shift plus a couple of small shifts, never more than `MAX_ROOMS`. **Solo Shifts use no server room** (ADR-0031, §19): they run in the player's browser and only upload checkpoints, so `MAX_ROOMS` and admission apply to multiplayer rooms (including a Solo opened to friends). Players without a Contract slot are steered to **existing Open Shifts, which share rooms**; the Open Shifts list sorts by free seats.
 
 ## 16. Failure modes
 
@@ -450,7 +491,7 @@ Not in the steady-state table, gated separately:
 | Reconciliation | Vitest + netsim | 120 ms ± 30 ms RTT, 1 % loss: own-avatar correction | p95 < 5 cm on flat ground; snaps ≤ 1 per 10 min |
 | Room uniqueness | Vitest + `@colyseus/testing` | Concurrent joins, full room, drain lock, shift-type change, two instances against one DB | Exactly one room per Contract |
 | Network conditions | `tools/netsim` (in-process conditioner) + Toxiproxy | Profiles: good (40 ms RTT), typical (120 ms, 15 ms jitter), bad (250 ms, 50 ms jitter, 1 % loss → TCP stalls), outage (5 s blackhole) | No desync; reconnect inside 60 s |
-| Load | `tools/bots` (headless bots using `packages/protocol` + the `packages/sim` reconciler) + `@colyseus/loadtest` | 16 bots per room: walk, clean, drive, buy, build; join/leave churn every 30 s. **1 h soaks run locally** in a CPU-limited (0.1 CPU) container, never on the hosted service | §15 gates; bytes/client ≤ budget §14 |
+| Load | `tools/bots` (headless bots using `packages/protocol` + the `packages/sim` reconciler) + `@colyseus/loadtest` | 6 bots per room: walk, clean, drive, buy, build; join/leave churn every 30 s. **1 h soaks run locally** in a CPU-limited (0.1 CPU) container, never on the hosted service | §15 gates; bytes/client ≤ budget §14 |
 | Restart | Bots + scripted SIGTERM | Drain completes ≤ 25 s; all bots rejoin and positions match checkpoint | 100 % rejoin |
 | Gate command | `/bot-test`: 16 headless bots via `tools/bots`, netsim 120 ms ± 30 ms, 1 % loss, 10 min **locally**; reports tick p50/p95/max, GC stalls, bytes per client per message type, desync (checksum mismatches, reconciliation error) | Local | §14–15 budgets; zero unrecovered desync |
 | Real host | `/bot-test --hosted-spike`: same scenario during an isolated, Cee-authorized test window on the one Render service (environments.md §3), **≤ 5 min**, no live player data, bytes recorded in `ops_usage_daily` (M0 netcode spike and before launch only) | Hosted window | Tech-stack revisit trigger |
@@ -458,8 +499,63 @@ Not in the steady-state table, gated separately:
 
 ## 18. Open issues
 
-1. **Colyseus close-code values** other than 4001 are from memory of earlier releases; verify against 0.18 before coding. Also verify `exposedMethods`, `reserveSeatFor` and `broadcastPatch` with automatic patching disabled.
+1. **Colyseus close-code values: closed (M1-W0-T02)**, see §12. **Still open:** verify `exposedMethods`, `reserveSeatFor` and `broadcastPatch` with automatic patching disabled.
+6. **Hot-path frame source (opened by M1-W0-T02):** `RoomSim.snapshot()` is the cold path (saves, tests, join assembly). `packages/sim` and `packages/protocol` must agree a reusable-buffer interface (per-client Self and entity views, proposal `RoomSim.readSelf(actor, out)` plus an interest-set iterator) before the FRAME encoder is written. FRAME bit layouts are verified only against a test-local packer until that codec exists.
+7. **Protocol 0 → 1 is a hard break:** v0 clients get close 4100 (strict equality, §13); release order per ADR-0029.
 2. **`maxShutdownDelaySeconds` on Free** is unverified; design assumes 30 s.
 3. **Render health checks and spin-down:** whether `healthCheckPath` traffic counts as inbound traffic (would keep prod awake) is unverified; M0 checks it and drops `healthCheckPath` on Free if it does ([environments.md §8](environments.md)).
 4. **Research bandwidth guard** ([netcode-case-raw-websocket.md §8.6](../research/tech/netcode-case-raw-websocket.md) "refuse rooms past 4.5 GB") is **not** adopted, per owner decision; only logging and `/status`.
 5. **GC tuning flags** (heap cap, `--single-threaded-gc`) are decided by the M0 spike; `NODE_OPTIONS` stays `--max-old-space-size=384` until then.
+
+## 19. Solo (local) vs Room (server) (ADR-0031)
+
+Two hosts implement one client-facing `RoomHost` contract (`LocalRoomHost` / `RemoteRoomHost`, proposed for the first M1 contracts task). Client gameplay, prediction, animation, render, audio and UI code is the same in both modes; only the host differs.
+
+### 19.1 Authority per mode
+
+| Concern | Solo Shift: `LocalRoom` (browser Web Worker) | Room: Private/Open Shift, or Solo opened to friends (Render server) |
+| --- | --- | --- |
+| Authoritative `RoomSim` (`packages/sim` + `packages/world`) | Worker in the player's browser (`apps/client/src/sim-host`) | Server room (`apps/server/src/net` + `sim` + `world`), §3 |
+| Input/intent transport | `MessagePort` to the worker; pooled transferable buffers; no network | WebSocket bytes/control channels, §2, §4.1 |
+| Own avatar / vehicle / tool head | Main-thread prediction with the shared reconciler (§5); the ack returns within one frame, so corrections are about zero | §5 prediction + reconciliation |
+| Dust ledger, strokes, Dust Cells, pucks, robots, economy, purchases | Worker, same fixed ledger order (WDS §4.5a), so it applies at once | Server, same code; purchases/builds wait for `*_result` |
+| Remote entities (robots, other players) | Robots come from worker frames; interpolation delay = 1 tick (no jitter) | §6 interpolation buffer (150–250 ms) |
+| Tick rate | Fixed step at `SIM_TICK_HZ` (20, or the supported 30); no snapshot-rate/network budget | `SIM_TICK_HZ` / `SNAPSHOT_HZ` (N4) |
+| Interest | The same pure interest functions (moved to `packages/world`/`sim`) for the one local player | `InterestService`, §7 |
+| Frames | FRAME layout of `packages/protocol` in transferable buffers (one decode path); low-rate shift state as a `ShiftStateView` message on change (≤ 10 Hz) | Bytes `FRAME` + Schema `ShiftState`, §4.2/§4.4 |
+| Saves | Local checkpoint to IndexedDB every ≤ 10 s if dirty, plus on `visibilitychange: hidden`/`pagehide`; upload of the latest one every ≤ 120 s if dirty, on pause and on Clock Out ([data-model.md §3.7c](data-model.md)) | Server checkpoints ≤ 30 s when dirty, §9.4, data-model §3.7 |
+| Server dependency while playing | **None.** Guest auth, uploads and restore are background tasks; server asleep → uploads queue (latest per Contract) | Required (WSS); waking screen and reconnect flows, §9–§10 |
+| Trust | Player's own state; cheating is acceptable. Server checks uploads only for format, size, rate and plausibility flags, and bounds shared-surface deltas | Server-authoritative; §11 rate limits, validation, violations |
+| Capacity | Uses no room; not counted by `MAX_ROOMS` / admission | §15 admission, `MAX_ROOMS` |
+| Hidden tab | Main thread stops rendering; the worker keeps stepping for a 60 s grace, then pauses until visible (no hidden-tab robot accrual; game-designer may change this with the idle-accrual balance item); a local checkpoint is written on hide | Self-only 1 Hz frames, neutral inputs (§16) |
+| Several tabs | One tab per Contract via `navigator.locks` (`contract:<id>`); a second tab gets "Already open in another tab" | One live room per Contract (N9) |
+
+### 19.2 LocalRoom messaging budget (render thread first)
+
+| Rule | Detail |
+| --- | --- |
+| Worker loop | Drift-compensated fixed-step accumulator in the worker (≤ 3 catch-up steps, like §3); never driven by `requestAnimationFrame` |
+| Buffers | Worker → main frames: a pool of 3 `ArrayBuffer`s transferred and returned after decode (ping-pong double buffer + one spare); main → worker inputs: pooled small buffers, also transferred back. No `SharedArrayBuffer` (no COOP/COEP headers needed on Vercel) |
+| Allocation | Zero steady-state per-frame/per-tick allocation on both threads (heap growth ≤ 1 MB/min in a 10-min solo capture) |
+| Costs | Main-thread host ingest ≤ 0.3 ms per frame on UHD 620; worker tick p95 ≤ 2 ms on UHD 620 laptop CPU; checkpoint encode + `CompressionStream` gzip + IndexedDB write sliced ≤ 2 ms per tick inside the worker |
+| Starvation | Worker frame not yet arrived → the main thread keeps predicting (own avatar) and extrapolates others ≤ 1 tick; it never blocks on the worker |
+| Failure | Worker error/crash → overlay "Restarting the shift…", the worker reboots from the newest local checkpoint (≤ 10 s of progress lost), Sentry breadcrumb |
+
+### 19.3 Mode transitions
+
+| Transition | Steps | Server involvement |
+| --- | --- | --- |
+| Clock In (solo) | Load newest local checkpoint (or download the server copy if newer, [data-model.md §3.7c](data-model.md)); boot worker; play. Server asleep → play locally, sync later | Optional (background) |
+| Open to friends | Holder: final local checkpoint → upload (must succeed, generation in sync) → `PATCH /v1/contracts/:id {shiftType}` → `POST /v1/contracts/:id/join` → server room loads that save (normal room-create path) → worker suspended | Waking screen allowed here |
+| Return to solo | Holder: "Return to solo" → room notifies members, final checkpoint, dispose, lease released → client downloads the newest save → `shiftType = solo` → worker resumes from it | Required |
+| Server unreachable mid-solo | Nothing changes for play; the upload queue keeps only the latest checkpoint per Contract and retries with backoff 30 s → 5 min after the first user interaction (never from bots/crawlers, §10) | — |
+
+### 19.4 Tests (added to §17)
+
+| Layer | What | Gate |
+| --- | --- | --- |
+| Determinism across hosts | Golden-hash run of the full `RoomSim` (movement, strokes/ledger, robots, economy) on Node and in a browser **Worker** (Vitest browser mode; Chromium in CI, Firefox/WebKit when available) | Identical hashes over ≥ 10,000 ticks |
+| Host parity | Same scripted inputs through `LocalRoomHost` and `RemoteRoomHost` (local server) | Identical final state hash; identical event sequence |
+| Solo latency | Input event timestamp → first presented frame showing the response (camera/avatar/tool head) on UHD 620 Low | ≤ 1 frame budget (33.3 ms at the 30 fps floor); dust result ≤ 1 tick + 1 frame |
+| Zero network during play | DevTools offline / request log during a 10-min solo session | No WebSocket; no request on the play path; play identical offline; only background checkpoint uploads |
+| Sync/conflict | Two devices editing one Contract offline; tab kill; quota error | Never a silent overwrite; prompt on divergence; ≤ 10 s progress lost on tab kill |

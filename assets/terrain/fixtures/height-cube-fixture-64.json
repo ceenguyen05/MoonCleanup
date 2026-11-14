@@ -1,0 +1,11 @@
+{
+  "file": "height-cube-fixture-64.bin",
+  "format": "uint16 little-endian, 6 faces (+X,-X,+Y,-Y,+Z,-Z), each (faceSize+2)^2 row-major with a 1-texel gutter; no header",
+  "faceSize": 64,
+  "padded": 66,
+  "gutter": 1,
+  "offsetM": -46.001129150390625,
+  "scaleM": 0.0015496543627577643,
+  "sha256": "ab021a4f53e7780cd70c5ed4a9a1f62c61bba633807a6304e09b0456f0820fc4",
+  "note": "Same pipeline and parameters as height-cube-1024 at 64^2 per face (fixture for packages/world unit tests)."
+}

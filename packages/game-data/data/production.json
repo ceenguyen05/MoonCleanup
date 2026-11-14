@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "machines": [
+    {
+      "id": "piece.bead_kiln",
+      "priceLm": 15000,
+      "recipe": {
+        "in": [{ "materialId": "material.regolith_dust", "kg": 1 }],
+        "out": [{ "materialId": "material.glass_beads", "kg": 1 }]
+      },
+      "grades": [{ "throughputKgph": 1800, "upgradeCostLm": 0, "powerKw": 12 }]
+    },
+    {
+      "id": "piece.tile_sinterer",
+      "priceLm": 50000,
+      "recipe": {
+        "in": [
+          { "materialId": "material.regolith_dust", "kg": 1 },
+          { "materialId": "material.glass_beads", "kg": 1 }
+        ],
+        "out": [{ "materialId": "material.sinter_tiles", "kg": 2 }]
+      },
+      "grades": [{ "throughputKgph": 2400, "upgradeCostLm": 0, "powerKw": 20 }]
+    }
+  ],
+  "minPowerFrac": 0.1
+}

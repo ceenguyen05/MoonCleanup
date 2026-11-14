@@ -1,0 +1,119 @@
+{
+  "task": "M0-W0-T06",
+  "date": "2026-11-12",
+  "methodPreview": true,
+  "note": "Rendered offline with headless Blender 4.5.10 (EEVEE Next, 24 TAA samples, AgX) from the raw pre-meshopt GLB of each asset. NOT an in-engine capture; the screenshot harness (M0-W1) replaces it for VT-M1-35.",
+  "machine": "Windows 11, Intel Core i7-8650U, integrated GPU",
+  "views": "8 views at 45 degree steps (file suffix = azimuth index * 45), camera elevation 11 degrees, 35 mm, 1920x1080 PNG",
+  "lighting": {
+    "noon": "sun 60 deg elevation #FFF4EA 0.53 deg disk + 15 % warm-gray fill",
+    "night": "earthshine 300 lux-equivalent #CFE0FF 2.4 deg disk + Crown Lamp spot #FFE7C8 40 deg (rock 6000 cd, module 22000 cd); EV 14.3 -> 7.3 folded into light strengths"
+  },
+  "assets": {
+    "boreal_hab_module": {
+      "file": "boreal_hab_module.a9201d780d3a.glb",
+      "bytes": 1415324,
+      "placeholder": true,
+      "replaceBy": "M1-W6 (Boreal outpost kit, art-direction 13.5)",
+      "class": "outpostModule",
+      "sizeM": [7.101, 4.22, 4.69],
+      "lodTriangles": [27736, 11572, 2584],
+      "materials": 1,
+      "textureSizePx": 1024,
+      "textureFormat": "png (KTX2 skipped: ktx CLI not installed)",
+      "texelDensityPxPerM": {
+        "areaM2": 104.385,
+        "areaShareAtLeast256": 0.9486,
+        "areaShareAtLeast512": 0.0992,
+        "mean": 414.8,
+        "median": 357.5,
+        "p05": 236.4
+      },
+      "segmentsPer360": {
+        "shellAndRibs": 64,
+        "smallHeroCylinders": 24
+      },
+      "bevelSegments": 2,
+      "paletteMeshAreaShares": {
+        "deck-gray": 0.0344,
+        "emissive": 0.0007,
+        "glass": 0.0091,
+        "graphite": 0.0295,
+        "ivory": 0.5505,
+        "steel": 0.0543,
+        "teal": 0.3074,
+        "yellow": 0.0141
+      },
+      "paletteTurntable": {
+        "maxYellowShareInAnyView": 0.0317,
+        "method": "flat base-colour emission render, 960x540, 8 views, nearest palette token per visible pixel",
+        "visibleAreaShares": {
+          "deck-gray": 0.0365,
+          "emissive": 0.0032,
+          "glass": 0.0134,
+          "graphite": 0.0311,
+          "ivory": 0.6052,
+          "steel": 0.0448,
+          "teal": 0.2508,
+          "yellow": 0.015
+        }
+      },
+      "images": [
+        "boreal_hab_module-night-000.png",
+        "boreal_hab_module-night-045.png",
+        "boreal_hab_module-night-090.png",
+        "boreal_hab_module-night-135.png",
+        "boreal_hab_module-night-180.png",
+        "boreal_hab_module-night-225.png",
+        "boreal_hab_module-night-270.png",
+        "boreal_hab_module-night-315.png",
+        "boreal_hab_module-noon-000.png",
+        "boreal_hab_module-noon-045.png",
+        "boreal_hab_module-noon-090.png",
+        "boreal_hab_module-noon-135.png",
+        "boreal_hab_module-noon-180.png",
+        "boreal_hab_module-noon-225.png",
+        "boreal_hab_module-noon-270.png",
+        "boreal_hab_module-noon-315.png"
+      ]
+    },
+    "rock_boulder_a": {
+      "file": "rock_boulder_a.936c0346f2bb.glb",
+      "bytes": 1873996,
+      "placeholder": true,
+      "replaceBy": "M1-W7 (rocks final, art-direction 13.5)",
+      "class": "rock",
+      "sizeM": [1.627, 1.22, 1.167],
+      "lodTriangles": [2400, 300, 60],
+      "materials": 1,
+      "textureSizePx": 1024,
+      "textureFormat": "png (KTX2 skipped: ktx CLI not installed)",
+      "texelDensityPxPerM": {
+        "areaM2": 5.508,
+        "areaShareAtLeast256": 0.9091,
+        "areaShareAtLeast512": 0,
+        "mean": 309.9,
+        "median": 320.9,
+        "p05": 244
+      },
+      "images": [
+        "rock_boulder_a-night-000.png",
+        "rock_boulder_a-night-045.png",
+        "rock_boulder_a-night-090.png",
+        "rock_boulder_a-night-135.png",
+        "rock_boulder_a-night-180.png",
+        "rock_boulder_a-night-225.png",
+        "rock_boulder_a-night-270.png",
+        "rock_boulder_a-night-315.png",
+        "rock_boulder_a-noon-000.png",
+        "rock_boulder_a-noon-045.png",
+        "rock_boulder_a-noon-090.png",
+        "rock_boulder_a-noon-135.png",
+        "rock_boulder_a-noon-180.png",
+        "rock_boulder_a-noon-225.png",
+        "rock_boulder_a-noon-270.png",
+        "rock_boulder_a-noon-315.png"
+      ]
+    }
+  }
+}

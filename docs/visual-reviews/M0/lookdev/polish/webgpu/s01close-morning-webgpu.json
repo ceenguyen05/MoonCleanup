@@ -1,0 +1,59 @@
+{
+ "url": "http://localhost:5191/look.html?scene=s01&preset=medium&time=morning&view=close&backend=webgpu&capture=1",
+ "info": {
+  "look": {
+   "scene": "s01",
+   "state": {
+    "sunElevationDeg": 30,
+    "sunAzimuthDeg": 270,
+    "earthElevationDeg": 13,
+    "earthAzimuthDeg": 76,
+    "sunRateDegPerS": 0,
+    "earthDiameterDeg": 4.2
+   },
+   "keyMode": "sun",
+   "ev100": 13.6,
+   "cascades": [
+    {
+     "index": 0,
+     "texelM": 0.02300155612922764,
+     "endM": 10
+    },
+    {
+     "index": 1,
+     "texelM": 0.0971484014333395,
+     "endM": 42.23076211353316
+    },
+    {
+     "index": 2,
+     "texelM": 0.2761260956047685,
+     "endM": 120
+    }
+   ],
+   "preset": "medium",
+   "backend": "webgpu",
+   "postPasses": [
+    "scene",
+    "grade",
+    "bloom",
+    "smaa"
+   ]
+  },
+  "mc": {
+   "backend": "webgpu",
+   "tier": "B",
+   "preset": "medium",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr": 1,
+   "renderScale": 0.85,
+   "frameTimeAvgMs": 111.96470512537395,
+   "frameTimeP95Ms": 962.0999755859375,
+   "drawCalls": 267,
+   "triangles": 707523,
+   "texPoolMB": 0,
+   "placeholderAssets": [],
+   "lossCount": 0
+  }
+ },
+ "errors": []
+}

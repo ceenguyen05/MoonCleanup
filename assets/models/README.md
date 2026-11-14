@@ -24,4 +24,13 @@ Small glTF 2.0 source models (props, rovers, robots, tools, character meshes) be
 
 - Target format: glTF 2.0 / GLB, optimized with glTF-Transform + meshopt. `.blend` files are not committed (CI forbids them outside `assets/source/`); `.fbx` is never shipped in `public/`.
 
-Placeholder: this folder is empty until the first asset lands (`.gitkeep`).
+## Contents (M0-W0-T06 pipeline proof)
+
+- `rocks/rock_boulder_a.py`, `outpost/boreal_hab_module.py`: source scripts, run by headless Blender
+  (`blender --background --python <script> -- --out <raw.glb> --report <json> --texdir <dir>`). Shared generators
+  (rock, kitbash library v0, trim sheet v0, turntable) live in `tools/asset-pipeline/src/blender/`.
+- `proof/`: the two built proof assets (`<id>.<12 hex>.glb`, meshopt) and their `manifest.json`. Both are tagged
+  `placeholder: true`. Production outputs go to `apps/client/public/assets/`, not here.
+- `.cache/` (git-ignored): raw GLB from Blender, baked PNGs, build log, throughput numbers.
+
+Rebuild: `tsx tools/asset-pipeline/src/build.ts`; check: `tsx tools/asset-pipeline/src/check.ts`.

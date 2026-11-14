@@ -1,0 +1,35 @@
+{
+ "base": "scene=s01&view=a&time=dawn&preset=low&backend=webgpu&scale=1",
+ "variants": [
+  {
+   "name": "round3",
+   "query": "shadowkernel=square"
+  },
+  {
+   "name": "round4",
+   "query": ""
+  }
+ ],
+ "result": {
+  "round3": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "shadowkernel=square",
+   "errors": []
+  },
+  "round4": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.798,
+    "max": 145.7,
+    "over2Pct": 3.619,
+    "over8Pct": 2.357
+   }
+  }
+ }
+}

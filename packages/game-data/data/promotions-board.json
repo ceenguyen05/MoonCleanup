@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "hubId": "node.employee_badge",
+  "departments": [
+    {
+      "id": "department.storage",
+      "nodeIds": [
+        "node.dust_cell_desk_duster",
+        "node.dust_cell_crescent_squeegee",
+        "node.dust_cell_bristle_broom",
+        "node.dust_cell_lane_broom",
+        "node.dust_cell_static_rake",
+        "node.dust_cell_ion_curtain",
+        "node.densifier",
+        "node.overflow_former"
+      ]
+    },
+    {
+      "id": "department.technique",
+      "nodeIds": ["node.broad_strokes", "node.scour", "node.telescoping_pole", "node.master_stroke"]
+    },
+    {
+      "id": "department.fitness",
+      "nodeIds": ["node.cadence", "node.loft", "node.second_wind"]
+    },
+    {
+      "id": "department.haulage",
+      "nodeIds": ["node.quick_pour", "node.puck_magnet", "node.strong_arm", "node.smooth_handoff"]
+    },
+    {
+      "id": "department.accounts",
+      "nodeIds": ["node.rate_review", "node.rebate", "node.stamp_premium", "node.golden_handshake"]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node.dust_cell_desk_duster",
+      "departmentId": "department.storage",
+      "kind": "root",
+      "levels": [
+        { "costLm": 90, "effects": [{ "stat": "cellLevel.tool.desk_duster", "op": "set", "value": 1 }] },
+        { "costLm": 160, "effects": [{ "stat": "cellLevel.tool.desk_duster", "op": "set", "value": 2 }] },
+        { "costLm": 300, "effects": [{ "stat": "cellLevel.tool.desk_duster", "op": "set", "value": 3 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.dust_cell_crescent_squeegee",
+      "departmentId": "department.storage",
+      "kind": "root",
+      "levels": [
+        { "costLm": 100, "effects": [{ "stat": "cellLevel.tool.crescent_squeegee", "op": "set", "value": 1 }] },
+        { "costLm": 200, "effects": [{ "stat": "cellLevel.tool.crescent_squeegee", "op": "set", "value": 2 }] },
+        { "costLm": 450, "effects": [{ "stat": "cellLevel.tool.crescent_squeegee", "op": "set", "value": 3 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.dust_cell_bristle_broom",
+      "departmentId": "department.storage",
+      "kind": "root",
+      "levels": [
+        { "costLm": 140, "effects": [{ "stat": "cellLevel.tool.bristle_broom", "op": "set", "value": 1 }] },
+        { "costLm": 320, "effects": [{ "stat": "cellLevel.tool.bristle_broom", "op": "set", "value": 2 }] },
+        { "costLm": 800, "effects": [{ "stat": "cellLevel.tool.bristle_broom", "op": "set", "value": 3 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.dust_cell_lane_broom",
+      "departmentId": "department.storage",
+      "kind": "root",
+      "levels": [
+        { "costLm": 500, "effects": [{ "stat": "cellLevel.tool.lane_broom", "op": "set", "value": 1 }] },
+        { "costLm": 1100, "effects": [{ "stat": "cellLevel.tool.lane_broom", "op": "set", "value": 2 }] },
+        { "costLm": 2700, "effects": [{ "stat": "cellLevel.tool.lane_broom", "op": "set", "value": 3 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.dust_cell_static_rake",
+      "departmentId": "department.storage",
+      "kind": "root",
+      "levels": [
+        { "costLm": 1800, "effects": [{ "stat": "cellLevel.tool.static_rake", "op": "set", "value": 1 }] },
+        { "costLm": 4000, "effects": [{ "stat": "cellLevel.tool.static_rake", "op": "set", "value": 2 }] },
+        { "costLm": 10000, "effects": [{ "stat": "cellLevel.tool.static_rake", "op": "set", "value": 3 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.dust_cell_ion_curtain",
+      "departmentId": "department.storage",
+      "kind": "root",
+      "levels": [
+        { "costLm": 6000, "effects": [{ "stat": "cellLevel.tool.ion_curtain", "op": "set", "value": 1 }] },
+        { "costLm": 13500, "effects": [{ "stat": "cellLevel.tool.ion_curtain", "op": "set", "value": 2 }] },
+        { "costLm": 33000, "effects": [{ "stat": "cellLevel.tool.ion_curtain", "op": "set", "value": 3 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.densifier",
+      "departmentId": "department.storage",
+      "kind": "secondary",
+      "levels": [
+        { "costLm": 4000, "effects": [{ "stat": "cellCapacityBonus", "op": "add", "value": 0.2 }] },
+        { "costLm": 16000, "effects": [{ "stat": "cellCapacityBonus", "op": "add", "value": 0.4 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.dust_cell_desk_duster", "level": 1 }]
+    },
+    {
+      "id": "node.overflow_former",
+      "departmentId": "department.storage",
+      "kind": "capstone",
+      "levels": [{ "costLm": 30000, "effects": [{ "op": "flag", "featureId": "overflow_former" }] }],
+      "prereqs": [
+        { "nodeId": "node.densifier", "level": 2 },
+        {
+          "anyOf": [
+            { "nodeId": "node.dust_cell_desk_duster", "level": 3 },
+            { "nodeId": "node.dust_cell_crescent_squeegee", "level": 3 },
+            { "nodeId": "node.dust_cell_bristle_broom", "level": 3 },
+            { "nodeId": "node.dust_cell_lane_broom", "level": 3 },
+            { "nodeId": "node.dust_cell_static_rake", "level": 3 },
+            { "nodeId": "node.dust_cell_ion_curtain", "level": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "node.broad_strokes",
+      "departmentId": "department.technique",
+      "kind": "root",
+      "levels": [
+        { "costLm": 350, "effects": [{ "stat": "toolWidthBonus", "op": "add", "value": 0.08 }] },
+        { "costLm": 1500, "effects": [{ "stat": "toolWidthBonus", "op": "add", "value": 0.16 }] },
+        { "costLm": 6000, "effects": [{ "stat": "toolWidthBonus", "op": "add", "value": 0.25 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.scour",
+      "departmentId": "department.technique",
+      "kind": "secondary",
+      "levels": [
+        { "costLm": 1000, "effects": [{ "stat": "toolDepthLevels", "op": "add", "value": 1 }] },
+        { "costLm": 5000, "effects": [{ "stat": "toolDepthLevels", "op": "add", "value": 2 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.broad_strokes", "level": 1 }]
+    },
+    {
+      "id": "node.telescoping_pole",
+      "departmentId": "department.technique",
+      "kind": "secondary",
+      "levels": [
+        {
+          "costLm": 750,
+          "effects": [
+            { "stat": "toolReachM", "op": "add", "value": 0.6 },
+            { "stat": "toolRateMult", "op": "mul", "value": 1.03 }
+          ]
+        },
+        {
+          "costLm": 3500,
+          "effects": [
+            { "stat": "toolReachM", "op": "add", "value": 1.2 },
+            { "stat": "toolRateMult", "op": "mul", "value": 1.06 }
+          ]
+        }
+      ],
+      "prereqs": [{ "nodeId": "node.broad_strokes", "level": 1 }]
+    },
+    {
+      "id": "node.master_stroke",
+      "departmentId": "department.technique",
+      "kind": "capstone",
+      "levels": [
+        {
+          "costLm": 40000,
+          "effects": [
+            { "stat": "toolWidthBonus", "op": "add", "value": 0.1 },
+            { "stat": "toolDepthLevels", "op": "add", "value": 1 },
+            { "stat": "toolStrokeSMult", "op": "mul", "value": 0.9 },
+            { "stat": "vehicleWidthMult", "op": "mul", "value": 1.1 }
+          ]
+        }
+      ],
+      "prereqs": [
+        { "nodeId": "node.broad_strokes", "level": 3 },
+        { "nodeId": "node.scour", "level": 2 },
+        { "nodeId": "node.telescoping_pole", "level": 2 }
+      ]
+    },
+    {
+      "id": "node.cadence",
+      "departmentId": "department.fitness",
+      "kind": "root",
+      "levels": [
+        { "costLm": 300, "effects": [{ "stat": "moveSpeedBonus", "op": "add", "value": 0.07 }] },
+        { "costLm": 1200, "effects": [{ "stat": "moveSpeedBonus", "op": "add", "value": 0.14 }] },
+        { "costLm": 5000, "effects": [{ "stat": "moveSpeedBonus", "op": "add", "value": 0.2 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.loft",
+      "departmentId": "department.fitness",
+      "kind": "secondary",
+      "levels": [
+        { "costLm": 900, "effects": [{ "stat": "jumpApexMult", "op": "mul", "value": 1.2 }] },
+        { "costLm": 4000, "effects": [{ "stat": "jumpApexMult", "op": "mul", "value": 1.4 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.cadence", "level": 1 }]
+    },
+    {
+      "id": "node.second_wind",
+      "departmentId": "department.fitness",
+      "kind": "capstone",
+      "levels": [
+        {
+          "costLm": 25000,
+          "effects": [
+            { "stat": "moveSpeedBonus", "op": "add", "value": 0.08 },
+            { "stat": "hopRechargeRateMult", "op": "mul", "value": 1.5 },
+            { "stat": "hopBursts", "op": "add", "value": 1 },
+            { "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.95 }
+          ]
+        }
+      ],
+      "prereqs": [
+        { "nodeId": "node.cadence", "level": 3 },
+        { "nodeId": "node.loft", "level": 2 }
+      ]
+    },
+    {
+      "id": "node.quick_pour",
+      "departmentId": "department.haulage",
+      "kind": "root",
+      "levels": [
+        { "costLm": 250, "effects": [{ "stat": "pourTimeMult", "op": "mul", "value": 0.75 }] },
+        { "costLm": 1100, "effects": [{ "stat": "pourTimeMult", "op": "mul", "value": 0.55 }] },
+        { "costLm": 4500, "effects": [{ "stat": "pourTimeMult", "op": "mul", "value": 0.4 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.puck_magnet",
+      "departmentId": "department.haulage",
+      "kind": "secondary",
+      "levels": [
+        { "costLm": 750, "effects": [{ "stat": "pickupReachM", "op": "add", "value": 1.5 }] },
+        { "costLm": 3500, "effects": [{ "stat": "pickupReachM", "op": "add", "value": 3 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.quick_pour", "level": 1 }]
+    },
+    {
+      "id": "node.strong_arm",
+      "departmentId": "department.haulage",
+      "kind": "secondary",
+      "levels": [
+        { "costLm": 600, "effects": [{ "stat": "throwSpeedMult", "op": "mul", "value": 1.3 }] },
+        { "costLm": 3000, "effects": [{ "stat": "throwSpeedMult", "op": "mul", "value": 1.6 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.quick_pour", "level": 1 }]
+    },
+    {
+      "id": "node.smooth_handoff",
+      "departmentId": "department.haulage",
+      "kind": "capstone",
+      "levels": [
+        {
+          "costLm": 22000,
+          "effects": [
+            { "stat": "pourTimeMult", "op": "mul", "value": 0.5 },
+            { "op": "flag", "featureId": "smooth_handoff_rail_snap" },
+            { "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.8 }
+          ]
+        }
+      ],
+      "prereqs": [
+        { "nodeId": "node.quick_pour", "level": 3 },
+        { "nodeId": "node.puck_magnet", "level": 2 },
+        { "nodeId": "node.strong_arm", "level": 2 }
+      ]
+    },
+    {
+      "id": "node.rate_review",
+      "departmentId": "department.accounts",
+      "kind": "root",
+      "levels": [
+        { "costLm": 2000, "effects": [{ "stat": "payoutBonus", "op": "add", "value": 0.05 }] },
+        { "costLm": 9000, "effects": [{ "stat": "payoutBonus", "op": "add", "value": 0.1 }] },
+        { "costLm": 35000, "effects": [{ "stat": "payoutBonus", "op": "add", "value": 0.15 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.employee_badge", "level": 1 }]
+    },
+    {
+      "id": "node.rebate",
+      "departmentId": "department.accounts",
+      "kind": "secondary",
+      "levels": [
+        { "costLm": 3000, "effects": [{ "stat": "purchaseDiscountFrac", "op": "add", "value": 0.05 }] },
+        { "costLm": 15000, "effects": [{ "stat": "purchaseDiscountFrac", "op": "add", "value": 0.1 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.rate_review", "level": 1 }]
+    },
+    {
+      "id": "node.stamp_premium",
+      "departmentId": "department.accounts",
+      "kind": "secondary",
+      "levels": [
+        { "costLm": 2500, "effects": [{ "stat": "stampPremiumLevel", "op": "set", "value": 1 }] },
+        { "costLm": 12000, "effects": [{ "stat": "stampPremiumLevel", "op": "set", "value": 2 }] }
+      ],
+      "prereqs": [{ "nodeId": "node.rate_review", "level": 1 }]
+    },
+    {
+      "id": "node.golden_handshake",
+      "departmentId": "department.accounts",
+      "kind": "capstone",
+      "levels": [
+        {
+          "costLm": 250000,
+          "effects": [
+            { "stat": "payoutBonus", "op": "add", "value": 0.08 },
+            { "op": "flag", "featureId": "golden_handshake_credit" }
+          ]
+        }
+      ],
+      "prereqs": [
+        { "nodeId": "node.rate_review", "level": 3 },
+        { "nodeId": "node.rebate", "level": 2 },
+        { "nodeId": "node.stamp_premium", "level": 2 }
+      ]
+    }
+  ]
+}

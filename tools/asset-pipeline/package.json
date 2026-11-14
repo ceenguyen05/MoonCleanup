@@ -6,10 +6,10 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "assets:build": "echo asset-pipeline build placeholder: Fable replaces with tsx src/build.ts",
-    "assets:check": "echo asset-pipeline budget check placeholder: Fable replaces with tsx src/check.ts",
-    "lint": "echo asset-pipeline lint: placeholder until sources land - see README",
-    "typecheck": "echo asset-pipeline typecheck: placeholder until sources land - see README",
+    "assets:build": "tsx src/build.ts",
+    "assets:check": "tsx src/check.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

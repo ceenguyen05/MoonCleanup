@@ -1,0 +1,4 @@
+{
+  "$comment": "WebGPU driver blocklist (rendering-pipeline.md section 2.1 step 5). An adapter whose description matches an entry runs the webgl2 backend instead. Each entry: { pattern: case-insensitive regular expression tested against 'vendor architecture device description', reason: why (issue link or measured failure) }. Empty until a real driver failure is recorded: do not add entries without evidence.",
+  "entries": []
+}

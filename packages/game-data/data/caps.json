@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "caps": { "roost": 24, "albatross": 24, "machines": 14 },
+  "hardCaps": { "robots": 48, "machines": 14 },
+  "mvpRoostCap": 3
+}

@@ -1,0 +1,260 @@
+{
+ "url": "http://localhost:5193/?scene=s05&preset=medium&backend=webgpu&scale=1&sun=60&az=250&view=wide&slope=toward&capture=1",
+ "meta": {
+  "look": {
+   "scene": "s05",
+   "state": {
+    "sunElevationDeg": 60,
+    "sunAzimuthDeg": 250,
+    "earthElevationDeg": 32,
+    "earthAzimuthDeg": 60,
+    "sunRateDegPerS": 0,
+    "earthDiameterDeg": 4.2
+   },
+   "keyMode": "sun",
+   "ev100": 14.3,
+   "cascades": [
+    {
+     "index": 0,
+     "texelM": 0.02300155612922764,
+     "endM": 10
+    },
+    {
+     "index": 1,
+     "texelM": 0.0971484014333395,
+     "endM": 42.23076211353316
+    },
+    {
+     "index": 2,
+     "texelM": 0.2761260956047685,
+     "endM": 120
+    }
+   ],
+   "preset": "medium",
+   "backend": "webgpu",
+   "postPasses": [
+    "scene",
+    "grade",
+    "bloom",
+    "smaa"
+   ],
+   "knobs": "default",
+   "skyDome": "baked",
+   "shadowFilter": "pcf3+pcf5"
+  },
+  "mc": {
+   "backend": "webgpu",
+   "tier": "B",
+   "preset": "medium",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr": 1,
+   "renderScale": 1,
+   "frameTimeAvgMs": 799.9333457946777,
+   "frameTimeP95Ms": 1849.800048828125,
+   "drawCalls": 177,
+   "triangles": 390891,
+   "texPoolMB": 0,
+   "placeholderAssets": [],
+   "lossCount": 0
+  }
+ },
+ "az": 250,
+ "slope": "toward",
+ "suns": [
+  4,
+  1
+ ],
+ "targets": [
+  "post"
+ ],
+ "nbias": "shipped",
+ "dbias": "shipped",
+ "dbt": "source",
+ "heights": {
+  "mc:look-post@0,0": 1,
+  "mc:look-boulder@0,8": 0.38037380218505856,
+  "mc:look-post@-22,0": 0.9567936282070167,
+  "mc:look-boulder@-22,8": 0.46865140695413915
+ },
+ "rows": [
+  {
+   "target": "post",
+   "sun": 4,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 5.3,
+   "expectedEdgeCm": 5.3,
+   "fFull": 0.617,
+   "shadowStartCm": 5.4,
+   "gapCm": 0,
+   "gapPx": 0,
+   "litLuma": 157.4,
+   "shadowLuma": 63,
+   "note": ""
+  },
+  {
+   "target": "post",
+   "sun": 1,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 5.3,
+   "expectedEdgeCm": 5.3,
+   "fFull": 0.817,
+   "shadowStartCm": 5.4,
+   "gapCm": 0,
+   "gapPx": 0,
+   "litLuma": 92.9,
+   "shadowLuma": 18.9,
+   "note": ""
+  }
+ ],
+ "tips": [],
+ "acne": [],
+ "sweep": [
+  {
+   "start": 4,
+   "target": "post",
+   "seq": [
+    {
+     "sun": 4,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.617
+    },
+    {
+     "sun": 4.1,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.616
+    },
+    {
+     "sun": 4.2,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.612
+    },
+    {
+     "sun": 4.3,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.61
+    },
+    {
+     "sun": 4.4,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.607
+    },
+    {
+     "sun": 4.5,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.606
+    },
+    {
+     "sun": 4.6,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.603
+    },
+    {
+     "sun": 4.7,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.601
+    },
+    {
+     "sun": 4.8,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.599
+    },
+    {
+     "sun": 4.9,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.596
+    },
+    {
+     "sun": 5,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.596
+    }
+   ]
+  },
+  {
+   "start": 1,
+   "target": "post",
+   "seq": [
+    {
+     "sun": 1,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.817
+    },
+    {
+     "sun": 1.1,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.803
+    },
+    {
+     "sun": 1.2,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.789
+    },
+    {
+     "sun": 1.3,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.777
+    },
+    {
+     "sun": 1.4,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.766
+    },
+    {
+     "sun": 1.5,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.754
+    },
+    {
+     "sun": 1.6,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.744
+    },
+    {
+     "sun": 1.7,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.735
+    },
+    {
+     "sun": 1.8,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.726
+    },
+    {
+     "sun": 1.9,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.72
+    },
+    {
+     "sun": 2,
+     "gapCm": 0,
+     "shadowStartCm": 5.4,
+     "fFull": 0.713
+    }
+   ]
+  }
+ ],
+ "errors": []
+}

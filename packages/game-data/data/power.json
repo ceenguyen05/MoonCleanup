@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "pieces": [
+    { "id": "piece.sun_sprig", "priceLm": 900, "peakKw": 3, "radiusM": 20, "storageKwh": 0, "tracksSun": false },
+    { "id": "piece.sun_fan", "priceLm": 2400, "peakKw": 8, "radiusM": 30, "storageKwh": 4, "tracksSun": false },
+    { "id": "piece.heliostat", "priceLm": 6000, "peakKw": 18, "radiusM": 45, "storageKwh": 8, "tracksSun": true },
+    { "id": "piece.night_cell", "priceLm": 2800, "peakKw": 0, "radiusM": 30, "storageKwh": 15, "tracksSun": false }
+  ],
+  "fixedPanelModel": "sinElevation",
+  "trackerFullAtElevationDeg": 20,
+  "batteryRoundTripFrac": 0.92
+}

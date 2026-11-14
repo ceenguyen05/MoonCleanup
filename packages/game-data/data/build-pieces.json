@@ -1,0 +1,1623 @@
+{
+  "schemaVersion": 1,
+  "pieces": [
+    {
+      "id": "piece.motor_pool",
+      "tab": "services",
+      "priceLm": 1000,
+      "footprint": {
+        "widthM": 12,
+        "depthM": 10
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.dump_plate",
+      "tab": "services",
+      "priceLm": 200,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.dust_vault",
+      "tab": "services",
+      "priceLm": 1500,
+      "footprint": {
+        "widthM": 6,
+        "depthM": 6
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.roost",
+      "tab": "services",
+      "priceLm": 4500,
+      "footprint": {
+        "widthM": 6,
+        "depthM": 6
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.nest",
+      "tab": "services",
+      "priceLm": 30000,
+      "footprint": {
+        "widthM": 8,
+        "depthM": 8
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.field_gate",
+      "tab": "services",
+      "priceLm": 60000,
+      "footprint": {
+        "widthM": 10,
+        "depthM": 8
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.lamp_pylon",
+      "tab": "services",
+      "priceLm": 300,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 1
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.puck_former",
+      "tab": "logistics",
+      "priceLm": 300,
+      "footprint": {
+        "widthM": 3,
+        "depthM": 3
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.glide_rail_straight",
+      "tab": "logistics",
+      "priceLm": 8,
+      "footprint": {
+        "widthM": 0.6,
+        "depthM": 4
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.glide_rail_short",
+      "tab": "logistics",
+      "priceLm": 2,
+      "footprint": {
+        "widthM": 0.6,
+        "depthM": 1
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.glide_rail_curve_45",
+      "tab": "logistics",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.glide_rail_curve_90",
+      "tab": "logistics",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 3,
+        "depthM": 3
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.glide_rail_ramp",
+      "tab": "logistics",
+      "priceLm": 12,
+      "footprint": {
+        "widthM": 0.6,
+        "depthM": 4
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.glide_rail_lift",
+      "tab": "logistics",
+      "priceLm": 40,
+      "footprint": {
+        "widthM": 1.5,
+        "depthM": 1.5
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.rail_fork",
+      "tab": "logistics",
+      "priceLm": 25,
+      "footprint": {
+        "widthM": 1.5,
+        "depthM": 1.5
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.rail_join",
+      "tab": "logistics",
+      "priceLm": 25,
+      "footprint": {
+        "widthM": 1.5,
+        "depthM": 1.5
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.rail_stop",
+      "tab": "logistics",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 0.6,
+        "depthM": 0.6
+      },
+      "snap": "rail",
+      "finishes": []
+    },
+    {
+      "id": "piece.bead_kiln",
+      "tab": "production",
+      "priceLm": 15000,
+      "footprint": {
+        "widthM": 8,
+        "depthM": 6
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.tile_sinterer",
+      "tab": "production",
+      "priceLm": 50000,
+      "footprint": {
+        "widthM": 12,
+        "depthM": 6
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.sun_sprig",
+      "tab": "power",
+      "priceLm": 900,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.sun_fan",
+      "tab": "power",
+      "priceLm": 2400,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.heliostat",
+      "tab": "power",
+      "priceLm": 6000,
+      "footprint": {
+        "widthM": 6,
+        "depthM": 6
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.night_cell",
+      "tab": "power",
+      "priceLm": 2800,
+      "footprint": {
+        "widthM": 3,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": []
+    },
+    {
+      "id": "piece.deck_hex_s_t025",
+      "tab": "structures",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.732
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_s_t050",
+      "tab": "structures",
+      "priceLm": 15,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.732
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_s_t100",
+      "tab": "structures",
+      "priceLm": 20,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.732
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_m_t025",
+      "tab": "structures",
+      "priceLm": 20,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 3.464
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_m_t050",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 3.464
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_m_t100",
+      "tab": "structures",
+      "priceLm": 40,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 3.464
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_l_t025",
+      "tab": "structures",
+      "priceLm": 50,
+      "footprint": {
+        "widthM": 8,
+        "depthM": 6.928
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_l_t050",
+      "tab": "structures",
+      "priceLm": 75,
+      "footprint": {
+        "widthM": 8,
+        "depthM": 6.928
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_hex_l_t100",
+      "tab": "structures",
+      "priceLm": 100,
+      "footprint": {
+        "widthM": 8,
+        "depthM": 6.928
+      },
+      "snap": "hex",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_1m_t025",
+      "tab": "structures",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 1
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_1m_t050",
+      "tab": "structures",
+      "priceLm": 15,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 1
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_1m_t100",
+      "tab": "structures",
+      "priceLm": 20,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 1
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_2m_t025",
+      "tab": "structures",
+      "priceLm": 15,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_2m_t050",
+      "tab": "structures",
+      "priceLm": 23,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_2m_t100",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_4m_t025",
+      "tab": "structures",
+      "priceLm": 40,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_4m_t050",
+      "tab": "structures",
+      "priceLm": 60,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_square_4m_t100",
+      "tab": "structures",
+      "priceLm": 80,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_triangle_t025",
+      "tab": "structures",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.732
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_triangle_t050",
+      "tab": "structures",
+      "priceLm": 15,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.732
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_triangle_t100",
+      "tab": "structures",
+      "priceLm": 20,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.732
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_quarter_round_t025",
+      "tab": "structures",
+      "priceLm": 15,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_quarter_round_t050",
+      "tab": "structures",
+      "priceLm": 23,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_quarter_round_t100",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_1m_t025",
+      "tab": "structures",
+      "priceLm": 15,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_1m_t050",
+      "tab": "structures",
+      "priceLm": 23,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_1m_t100",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_2m_t025",
+      "tab": "structures",
+      "priceLm": 25,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_2m_t050",
+      "tab": "structures",
+      "priceLm": 38,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_2m_t100",
+      "tab": "structures",
+      "priceLm": 50,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_4m_t025",
+      "tab": "structures",
+      "priceLm": 60,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_4m_t050",
+      "tab": "structures",
+      "priceLm": 90,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp15_4m_t100",
+      "tab": "structures",
+      "priceLm": 120,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp30_1m_t025",
+      "tab": "structures",
+      "priceLm": 20,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp30_1m_t050",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp30_2m_t025",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp30_2m_t050",
+      "tab": "structures",
+      "priceLm": 45,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp30_4m_t025",
+      "tab": "structures",
+      "priceLm": 60,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.deck_ramp30_4m_t050",
+      "tab": "structures",
+      "priceLm": 90,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 2
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_straight_2m",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_straight_4m",
+      "tab": "structures",
+      "priceLm": 50,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_corner_2m",
+      "tab": "structures",
+      "priceLm": 35,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_corner_4m",
+      "tab": "structures",
+      "priceLm": 55,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_t_2m",
+      "tab": "structures",
+      "priceLm": 40,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_t_4m",
+      "tab": "structures",
+      "priceLm": 60,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_cross_2m",
+      "tab": "structures",
+      "priceLm": 45,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_catwalk_cross_4m",
+      "tab": "structures",
+      "priceLm": 70,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_stairs_2m",
+      "tab": "structures",
+      "priceLm": 60,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_stairs_4m",
+      "tab": "structures",
+      "priceLm": 90,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_ladder_2m",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_ladder_4m",
+      "tab": "structures",
+      "priceLm": 45,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_post_2m",
+      "tab": "structures",
+      "priceLm": 30,
+      "footprint": {
+        "widthM": 0.4,
+        "depthM": 0.4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_post_4m",
+      "tab": "structures",
+      "priceLm": 40,
+      "footprint": {
+        "widthM": 0.4,
+        "depthM": 0.4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_post_6m",
+      "tab": "structures",
+      "priceLm": 50,
+      "footprint": {
+        "widthM": 0.4,
+        "depthM": 0.4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_post_8m",
+      "tab": "structures",
+      "priceLm": 60,
+      "footprint": {
+        "widthM": 0.4,
+        "depthM": 0.4
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_landing_2m",
+      "tab": "structures",
+      "priceLm": 50,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_landing_4m",
+      "tab": "structures",
+      "priceLm": 80,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 4
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_bridge_8m",
+      "tab": "structures",
+      "priceLm": 150,
+      "footprint": {
+        "widthM": 8,
+        "depthM": 1.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.gantry_spiral_stairs",
+      "tab": "structures",
+      "priceLm": 120,
+      "footprint": {
+        "widthM": 2.5,
+        "depthM": 2.5
+      },
+      "snap": "grid",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.handrail_2m",
+      "tab": "structures",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 0.1
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.handrail_4m",
+      "tab": "structures",
+      "priceLm": 20,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 0.1
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.handrail_corner_post",
+      "tab": "structures",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 0.1,
+        "depthM": 0.1
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.handrail_swing_gate",
+      "tab": "structures",
+      "priceLm": 40,
+      "footprint": {
+        "widthM": 1,
+        "depthM": 0.1
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.handrail_end_post",
+      "tab": "structures",
+      "priceLm": 10,
+      "footprint": {
+        "widthM": 0.1,
+        "depthM": 0.1
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.handrail_grab_bar",
+      "tab": "structures",
+      "priceLm": 15,
+      "footprint": {
+        "widthM": 0.6,
+        "depthM": 0.1
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_solid_2m",
+      "tab": "structures",
+      "priceLm": 25,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_solid_4m",
+      "tab": "structures",
+      "priceLm": 45,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_porthole_2m",
+      "tab": "structures",
+      "priceLm": 35,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_porthole_4m",
+      "tab": "structures",
+      "priceLm": 55,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_archway_2m",
+      "tab": "structures",
+      "priceLm": 40,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_archway_4m",
+      "tab": "structures",
+      "priceLm": 65,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_louvre_2m",
+      "tab": "structures",
+      "priceLm": 35,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_louvre_4m",
+      "tab": "structures",
+      "priceLm": 55,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.panel_shine_display_4m",
+      "tab": "structures",
+      "priceLm": 80,
+      "footprint": {
+        "widthM": 4,
+        "depthM": 0.2
+      },
+      "snap": "edge",
+      "finishes": [
+        "finish.brushed",
+        "finish.regolith_cast",
+        "finish.anodised",
+        "finish.enamel",
+        "finish.patina",
+        "finish.chrome"
+      ]
+    },
+    {
+      "id": "piece.brightside_banner",
+      "tab": "structures",
+      "priceLm": 100,
+      "footprint": {
+        "widthM": 2,
+        "depthM": 0.3
+      },
+      "snap": "grid",
+      "finishes": []
+    }
+  ],
+  "finishes": [
+    {
+      "id": "finish.brushed"
+    },
+    {
+      "id": "finish.regolith_cast"
+    },
+    {
+      "id": "finish.anodised"
+    },
+    {
+      "id": "finish.enamel"
+    },
+    {
+      "id": "finish.patina"
+    },
+    {
+      "id": "finish.chrome"
+    }
+  ],
+  "noBuildRadiusM": 15,
+  "tempBuildTabs": ["logistics", "structures"]
+}

@@ -1,0 +1,35 @@
+{
+ "base": "scene=s05&view=slope&sun=60&preset=low&backend=webgpu&scale=1",
+ "variants": [
+  {
+   "name": "pcf3",
+   "query": ""
+  },
+  {
+   "name": "far5",
+   "query": "shadowfilter=pcf5&shadowfilter0=pcf3"
+  }
+ ],
+ "result": {
+  "pcf3": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3",
+   "knobs": "default",
+   "errors": []
+  },
+  "far5": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "shadowfilter=pcf5 shadowfilter0=pcf3",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.039,
+    "max": 31.9,
+    "over2Pct": 0.491,
+    "over8Pct": 0.182
+   }
+  }
+ }
+}

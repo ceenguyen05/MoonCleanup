@@ -2,6 +2,9 @@
 
 Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
+> **Priority note (owner 2026-11-13): solo first.** Automation, robot and logistics scale tests are judged first on solo frame time and sim cost, multiplayer second.
+> Multiplayer criteria stay but are best-effort on Render free and never cost solo feel.
+
 Execution: `docs/handoff/MODEL_POLICY.md`; stages are checkpoints, not usage-window promises.
 
 Owner: lead (structure) · Lead alone maintains task rows from actual progress ([backlog rules](README.md)).
@@ -19,7 +22,7 @@ Full reference-system parity in reference mode ([REFERENCE_TARGET](../design/REF
 | --- | --- | --- |
 | E1 | Every scope-tiers §2 row implemented; mechanics-parity-matrix rows marked v1.0 = done | qa parity pass (W12-T04) |
 | E2 | `tools/balance-sim` meets every `pacing-targets.json` row (solo contract 30–35 h, milestones to 75 %) | `/balance-check` |
-| E3 | 16 bots + 64 robots: room tick p95 ≤ 3.5 ms, CPU ≤ 60 % of 0.1 quota, ≤ 6.5 KB/s/client in the local CPU-limited container (hosted window when authorized) | `/bot-test` |
+| E3 | 6 bots + 64 robots: room tick p95 ≤ 3.5 ms, CPU ≤ 60 % of 0.1 quota, ≤ 6.5 KB/s/client in the local CPU-limited container (best-effort on Render free; solo feel has priority) | `/bot-test` |
 | E4 | 400 robots + 4 bots, 30 min: dust ≤ 10 % of 0.1 CPU, RSS ≤ 300 MB (world-and-dust §10 S5) | qa scenario |
 | E5 | Save size and DB growth fit the 1 GB plan (data-model §4) with 4,000 structures and max permits | backend report |
 | E6 | VT-M2-01…22: all V1 pass, ≤ 3 V2 open; Safari 26 gating (VT-M2-20); Ultra preset (VT-M2-17) | `/visual-check M2` |
@@ -278,7 +281,7 @@ M2-S8 · `animation-engineer` · 3 · `todo` · M2-W3-T02
 #### M2-W3-T04 — Multi-seat vehicle sync + fast-vehicle interest
 M2-S7 · `netcode-engineer` · 4 · `todo` · M2-W2-T06
 - **Owned:** `packages/protocol/**`, `apps/server/src/net/**`, `apps/client/src/net/**`.
-- **Acceptance:** seat ownership/handover authoritative; interest radii for 20 m/s vehicles; bandwidth within §14 at 16 players.
+- **Acceptance:** seat ownership/handover authoritative; interest radii for 20 m/s vehicles; bandwidth within §14 at 6 players.
 - **Visual:** n/a · **Review lenses:** code-reviewer, netcode-security-reviewer, performance-reviewer · **DoD:** Standard.
 
 #### M2-W3-T05 — Motor Pool UI, trick callouts
@@ -500,7 +503,7 @@ M2-S20 · `ui-ux-motion-designer` · 3 · `todo` · M2-W9-T01, M2-W9-T02
 #### M2-W9-T04 — Full pacing tables, balance-sim all rows
 M2-S19 · `game-designer` · 4 · `todo` · M2-W8-T06
 - **Owned:** `packages/game-data/**`, `tools/balance-sim/**`.
-- **Acceptance:** balance-sim meets every `pacing-targets.json` row (30–35 h solo; milestones to 75 %; co-op scaling 1–16).
+- **Acceptance:** balance-sim meets every `pacing-targets.json` row (30–35 h solo; milestones to 75 %; co-op scaling 1–6).
 - **Visual:** n/a · **Review lenses:** code-reviewer, balance-reviewer · **DoD:** Standard.
 
 #### M2-W9-T05 — Music layers per Shine milestone, new SFX
@@ -627,6 +630,6 @@ M2-S26 · `integrator` · 9 · `todo` · T01–T05
 
 ## 7. Notes
 
-1. **Offline Solo (Web Worker host)**: OPEN_QUESTIONS Q16 plans it for v1.0, scope-tiers lists it post-launch. This roadmap follows scope-tiers (M4). If Cee picks v1.0, add a W13 (gameplay-systems-engineer + netcode-engineer + backend-data-engineer upload path).
+1. **Offline Solo (Web Worker host)**: **Superseded 2026-11-13 by [ADR-0031](../adr/0031-local-first-solo.md): local-first Solo is in scope now (player cap is 6, not 16).** Older text: OPEN_QUESTIONS Q16 plans it for v1.0, scope-tiers lists it post-launch. This roadmap followed scope-tiers (M4). If Cee picks v1.0, add a W13 (gameplay-systems-engineer + netcode-engineer + backend-data-engineer upload path).
 2. Free-text chat vs quick-chat (netcode §18 item 4) must be decided before M2-W10.
 3. Robot catch-up while the room is idle (world-and-dust §12 item 11): v1.0 default = none; Night Shift is M4.

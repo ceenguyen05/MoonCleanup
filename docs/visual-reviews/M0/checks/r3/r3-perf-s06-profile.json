@@ -1,0 +1,573 @@
+{
+ "base": "scene=s06&preset=low&backend=webgpu&scale=ceil&lampres=1024",
+ "variants": [
+  {
+   "name": "base",
+   "query": ""
+  },
+  {
+   "name": "lampres512",
+   "query": "lampres=512"
+  },
+  {
+   "name": "nolampshadow",
+   "query": "off=lampshadow"
+  },
+  {
+   "name": "nolamp",
+   "query": "off=lamp"
+  },
+  {
+   "name": "noflood",
+   "query": "off=flood"
+  },
+  {
+   "name": "noglow",
+   "query": "off=glow"
+  },
+  {
+   "name": "nolights",
+   "query": "off=lamp,flood,glow"
+  },
+  {
+   "name": "nocsm",
+   "query": "cascades=0"
+  },
+  {
+   "name": "nostars",
+   "query": "skyoff=stars"
+  },
+  {
+   "name": "nobloom",
+   "query": "bloom=off"
+  }
+ ],
+ "warm": 6,
+ "seconds": 8,
+ "rounds": 2,
+ "rows": [
+  {
+   "round": 0,
+   "variant": "base",
+   "frames": 222,
+   "fps": 27.6,
+   "avg": 36.18,
+   "p50": 35.4,
+   "p95": 43.3,
+   "p99": 52.4,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "lampres512",
+   "frames": 223,
+   "fps": 27.7,
+   "avg": 36.06,
+   "p50": 35.4,
+   "p95": 41.6,
+   "p99": 47,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "nolampshadow",
+   "frames": 196,
+   "fps": 24,
+   "avg": 41.66,
+   "p50": 40,
+   "p95": 75.1,
+   "p99": 147.3,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "nolamp",
+   "frames": 242,
+   "fps": 30.1,
+   "avg": 33.18,
+   "p50": 32.4,
+   "p95": 43.5,
+   "p99": 80.5,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "noflood",
+   "frames": 188,
+   "fps": 16.1,
+   "avg": 62.22,
+   "p50": 36.9,
+   "p95": 83.6,
+   "p99": 176.2,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "noglow",
+   "frames": 206,
+   "fps": 17.7,
+   "avg": 56.56,
+   "p50": 36,
+   "p95": 58.3,
+   "p99": 84.3,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "nolights",
+   "frames": 268,
+   "fps": 33.3,
+   "avg": 30.07,
+   "p50": 28.4,
+   "p95": 51,
+   "p99": 81.1,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 1,
+   "firstError": "THREE.Object3D.add: object not an instance of THREE.Object3D. undefined"
+  },
+  {
+   "round": 0,
+   "variant": "nocsm",
+   "frames": 249,
+   "fps": 31,
+   "avg": 32.31,
+   "p50": 31.8,
+   "p95": 37.5,
+   "p99": 45.9,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "cascades=0",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "nostars",
+   "frames": 223,
+   "fps": 27.8,
+   "avg": 36.03,
+   "p50": 35.6,
+   "p95": 40.1,
+   "p99": 45.2,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "skyoff=stars",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "nobloom",
+   "frames": 241,
+   "fps": 30,
+   "avg": 33.36,
+   "p50": 32.9,
+   "p95": 39.8,
+   "p99": 48.3,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>fxaa",
+   "knobs": "bloom=off",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "base",
+   "frames": 216,
+   "fps": 26.8,
+   "avg": 37.29,
+   "p50": 36.8,
+   "p95": 43.9,
+   "p99": 56.2,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "nobloom",
+   "frames": 232,
+   "fps": 28.9,
+   "avg": 34.56,
+   "p50": 33.3,
+   "p95": 43.1,
+   "p99": 72.6,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>fxaa",
+   "knobs": "bloom=off",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "nostars",
+   "frames": 228,
+   "fps": 28.4,
+   "avg": 35.24,
+   "p50": 34.2,
+   "p95": 47,
+   "p99": 51.1,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "skyoff=stars",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "nocsm",
+   "frames": 251,
+   "fps": 31.2,
+   "avg": 32.01,
+   "p50": 31.5,
+   "p95": 39.1,
+   "p99": 49,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "cascades=0",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "nolights",
+   "frames": 298,
+   "fps": 36.8,
+   "avg": 27.19,
+   "p50": 26.6,
+   "p95": 33.1,
+   "p99": 50.2,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 1,
+   "firstError": "THREE.Object3D.add: object not an instance of THREE.Object3D. undefined"
+  },
+  {
+   "round": 1,
+   "variant": "noglow",
+   "frames": 251,
+   "fps": 31.3,
+   "avg": 31.91,
+   "p50": 32,
+   "p95": 34.5,
+   "p99": 35.6,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "noflood",
+   "frames": 254,
+   "fps": 31.7,
+   "avg": 31.56,
+   "p50": 31.5,
+   "p95": 34.6,
+   "p99": 37.4,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "nolamp",
+   "frames": 256,
+   "fps": 31.8,
+   "avg": 31.43,
+   "p50": 30.9,
+   "p95": 39.7,
+   "p99": 51.2,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "nolampshadow",
+   "frames": 243,
+   "fps": 30.3,
+   "avg": 33.04,
+   "p50": 32.6,
+   "p95": 36.9,
+   "p99": 48.1,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "lampres512",
+   "frames": 243,
+   "fps": 30.3,
+   "avg": 33.01,
+   "p50": 33.1,
+   "p95": 35.6,
+   "p99": 38.5,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  }
+ ],
+ "summary": {
+  "base": {
+   "pages": 2,
+   "fps": 27.2,
+   "p50": 36.1,
+   "p50All": [
+    35.4,
+    36.8
+   ],
+   "p95": 43.6,
+   "p95All": [
+    43.3,
+    43.9
+   ],
+   "avg": 36.73
+  },
+  "lampres512": {
+   "pages": 2,
+   "fps": 29,
+   "p50": 34.25,
+   "p50All": [
+    35.4,
+    33.1
+   ],
+   "p95": 38.6,
+   "p95All": [
+    41.6,
+    35.6
+   ],
+   "avg": 34.53,
+   "deltaP50": -1.85
+  },
+  "nolampshadow": {
+   "pages": 2,
+   "fps": 27.1,
+   "p50": 36.3,
+   "p50All": [
+    40,
+    32.6
+   ],
+   "p95": 56,
+   "p95All": [
+    75.1,
+    36.9
+   ],
+   "avg": 37.35,
+   "deltaP50": 0.2
+  },
+  "nolamp": {
+   "pages": 2,
+   "fps": 31,
+   "p50": 31.65,
+   "p50All": [
+    32.4,
+    30.9
+   ],
+   "p95": 41.6,
+   "p95All": [
+    43.5,
+    39.7
+   ],
+   "avg": 32.3,
+   "deltaP50": -4.45
+  },
+  "noflood": {
+   "pages": 2,
+   "fps": 23.9,
+   "p50": 34.2,
+   "p50All": [
+    36.9,
+    31.5
+   ],
+   "p95": 59.1,
+   "p95All": [
+    83.6,
+    34.6
+   ],
+   "avg": 46.89,
+   "deltaP50": -1.9
+  },
+  "noglow": {
+   "pages": 2,
+   "fps": 24.5,
+   "p50": 34,
+   "p50All": [
+    36,
+    32
+   ],
+   "p95": 46.4,
+   "p95All": [
+    58.3,
+    34.5
+   ],
+   "avg": 44.23,
+   "deltaP50": -2.1
+  },
+  "nolights": {
+   "pages": 2,
+   "fps": 35,
+   "p50": 27.5,
+   "p50All": [
+    28.4,
+    26.6
+   ],
+   "p95": 42.05,
+   "p95All": [
+    51,
+    33.1
+   ],
+   "avg": 28.63,
+   "deltaP50": -8.6
+  },
+  "nocsm": {
+   "pages": 2,
+   "fps": 31.1,
+   "p50": 31.65,
+   "p50All": [
+    31.8,
+    31.5
+   ],
+   "p95": 38.3,
+   "p95All": [
+    37.5,
+    39.1
+   ],
+   "avg": 32.16,
+   "deltaP50": -4.45
+  },
+  "nostars": {
+   "pages": 2,
+   "fps": 28.1,
+   "p50": 34.9,
+   "p50All": [
+    35.6,
+    34.2
+   ],
+   "p95": 43.55,
+   "p95All": [
+    40.1,
+    47
+   ],
+   "avg": 35.64,
+   "deltaP50": -1.2
+  },
+  "nobloom": {
+   "pages": 2,
+   "fps": 29.4,
+   "p50": 33.1,
+   "p50All": [
+    32.9,
+    33.3
+   ],
+   "p95": 41.45,
+   "p95All": [
+    39.8,
+    43.1
+   ],
+   "avg": 33.96,
+   "deltaP50": -3
+  }
+ }
+}

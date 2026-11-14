@@ -10,8 +10,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "lint": "echo protocol lint: placeholder until sources land - see README",
-    "typecheck": "echo protocol typecheck: placeholder until sources land - see README",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

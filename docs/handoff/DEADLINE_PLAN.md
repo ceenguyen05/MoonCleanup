@@ -18,5 +18,5 @@ and forecast ON TRACK/AT RISK/BLOCKED with evidence. If full parity is at risk, 
 never silently substitute an MVP or call it v1.0. Request Blender/device/deploy inputs early; preserve owner gates.
 Spend effort on mechanics/feel, art/world/animation and integrated playtesting. Keep docs/coordination small. Protect the final
 day for fixes; reuse materials/motion/tool families. Screenshots cannot prove action timing; keep clips/frame sequences.
-Optional custom progression/M4 extras stay backlog. Do not remove core systems, 16-player/persistence/backend scope or
+Optional custom progression/M4 extras stay backlog. Do not remove core systems, 6-player/persistence/backend scope or
 declared quality/performance bars just to claim the deadline. No unapproved spending or unavailable-hardware claims.

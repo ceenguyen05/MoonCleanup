@@ -49,6 +49,7 @@ tools/screenshots/output/
 tools/screenshots/diff/
 tools/bots/reports/
 tools/perf/captures/
+tools/.bin/
 tools/balance-sim/out/
 
 # Deploy tooling local state
@@ -104,3 +105,7 @@ $RECYCLE.BIN/
 .history/
 .fleet/
 .zed/
+
+# Bulk M0 visual-check capture frames (430 PNG, ~277 MB). Reports, JSON sidecars and driver scripts stay tracked;
+# regenerate frames with docs/visual-reviews/M0/checks/driver. Remove this line to commit the frames.
+docs/visual-reviews/M0/checks/**/*.png

@@ -1,0 +1,1069 @@
+{
+ "base": "http://localhost:4183/",
+ "query": "scene=s06&view=wide&preset=low&backend=webgpu",
+ "scale": 0.75,
+ "warm": 10,
+ "windows": 6,
+ "rounds": 5,
+ "hold": true,
+ "vsync": false,
+ "heap": false,
+ "rows": [
+  {
+   "round": 0,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 30.193,
+   "frameAvgMs": 27.509,
+   "frameP95Ms": 30.4,
+   "fps": 36.352,
+   "rafFrames": 1098,
+   "rafP50Ms": 27.6,
+   "rafP95Ms": 30.3,
+   "rafP99Ms": 33.1,
+   "rafMaxMs": 47.3,
+   "offScaleFrames": 0,
+   "holdFrames": 1099,
+   "polls": [
+    {
+     "avg": 27.75458334684372,
+     "p95": 30.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.027916622161865,
+     "p95": 30.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.822916706403095,
+     "p95": 30.299999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.77000002861023,
+     "p95": 30.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.442083390553794,
+     "p95": 29.799999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.175416668256123,
+     "p95": 29.799999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 858.399,
+   "taskMsPerS": 989.397,
+   "scriptMsPerFrame": 23.604,
+   "taskMsPerFrame": 27.207,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 14.881,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 30.399999618530273,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 0,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 30.19,
+   "frameAvgMs": 26.601,
+   "frameP95Ms": 29.25,
+   "fps": 37.593,
+   "rafFrames": 1135,
+   "rafP50Ms": 26.6,
+   "rafP95Ms": 29.5,
+   "rafP99Ms": 31.4,
+   "rafMaxMs": 40.3,
+   "offScaleFrames": 0,
+   "holdFrames": 1136,
+   "polls": [
+    {
+     "avg": 26.406666644414265,
+     "p95": 29.299999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.42333337465922,
+     "p95": 28.700000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.949166655540466,
+     "p95": 29.200000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.61041666989525,
+     "p95": 29.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.24958334763845,
+     "p95": 28.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.855833307902017,
+     "p95": 29.700000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 863.922,
+   "taskMsPerS": 991.295,
+   "scriptMsPerFrame": 22.98,
+   "taskMsPerFrame": 26.368,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 25.459,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 1,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 30.18,
+   "frameAvgMs": 27.867,
+   "frameP95Ms": 30.85,
+   "fps": 35.884,
+   "rafFrames": 1083,
+   "rafP50Ms": 27.8,
+   "rafP95Ms": 31.1,
+   "rafP99Ms": 34.5,
+   "rafMaxMs": 43.2,
+   "offScaleFrames": 0,
+   "holdFrames": 1084,
+   "polls": [
+    {
+     "avg": 27.85833335717519,
+     "p95": 32.20000076293945,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.274583355585733,
+     "p95": 30,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.369999980926515,
+     "p95": 30.200000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.755833292007445,
+     "p95": 30.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.254166730244954,
+     "p95": 31.200000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.53750007947286,
+     "p95": 31.600000381469727,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 844.185,
+   "taskMsPerS": 989.253,
+   "scriptMsPerFrame": 23.525,
+   "taskMsPerFrame": 27.568,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 26.536,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 1,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 30.162,
+   "frameAvgMs": 27.325,
+   "frameP95Ms": 30.05,
+   "fps": 36.597,
+   "rafFrames": 1104,
+   "rafP50Ms": 27.1,
+   "rafP95Ms": 30.4,
+   "rafP99Ms": 37.6,
+   "rafMaxMs": 60.2,
+   "offScaleFrames": 2,
+   "holdFrames": 1105,
+   "polls": [
+    {
+     "avg": 27.899166623751324,
+     "p95": 30.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.01708333492279,
+     "p95": 29.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.77166667779287,
+     "p95": 29.200000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.629166666666666,
+     "p95": 29.200000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.11208334763845,
+     "p95": 30.200000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.458750034372013,
+     "p95": 36.70000076293945,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 869.451,
+   "taskMsPerS": 990.11,
+   "scriptMsPerFrame": 23.754,
+   "taskMsPerFrame": 27.05,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 22.771,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 36,
+    "steps": 2
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 2,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 30.202,
+   "frameAvgMs": 26.652,
+   "frameP95Ms": 29.3,
+   "fps": 37.521,
+   "rafFrames": 1133,
+   "rafP50Ms": 26.5,
+   "rafP95Ms": 29.9,
+   "rafP99Ms": 32.7,
+   "rafMaxMs": 44.6,
+   "offScaleFrames": 1,
+   "holdFrames": 1134,
+   "polls": [
+    {
+     "avg": 26.30500005086263,
+     "p95": 29,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.291666658719382,
+     "p95": 29.299999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.273750003178915,
+     "p95": 32.599998474121094,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.616666706403098,
+     "p95": 29.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.617916695276897,
+     "p95": 29.299999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.371666701634727,
+     "p95": 28.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 875.771,
+   "taskMsPerS": 991.068,
+   "scriptMsPerFrame": 23.345,
+   "taskMsPerFrame": 26.419,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 21.545,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "gpu",
+    "p90Ms": 24.35270118713379,
+    "steps": 1
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 2,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 30.171,
+   "frameAvgMs": 27.76,
+   "frameP95Ms": 31.05,
+   "fps": 36.023,
+   "rafFrames": 1087,
+   "rafP50Ms": 27.6,
+   "rafP95Ms": 31,
+   "rafP99Ms": 34.7,
+   "rafMaxMs": 37.4,
+   "offScaleFrames": 0,
+   "holdFrames": 1088,
+   "polls": [
+    {
+     "avg": 28.079166690508526,
+     "p95": 31.700000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.589166657129923,
+     "p95": 30.600000381469727,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.942083326975503,
+     "p95": 30.700000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.175833296775817,
+     "p95": 31.399999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.593749952316283,
+     "p95": 31.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.738333296775817,
+     "p95": 30.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 840.655,
+   "taskMsPerS": 989.338,
+   "scriptMsPerFrame": 23.333,
+   "taskMsPerFrame": 27.46,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 16.581,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 3,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 30.17,
+   "frameAvgMs": 27.304,
+   "frameP95Ms": 29.8,
+   "fps": 36.625,
+   "rafFrames": 1105,
+   "rafP50Ms": 27.1,
+   "rafP95Ms": 30.1,
+   "rafP99Ms": 32.1,
+   "rafMaxMs": 255.7,
+   "offScaleFrames": 0,
+   "holdFrames": 1106,
+   "polls": [
+    {
+     "avg": 27.677083309491476,
+     "p95": 30.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.91375000476837,
+     "p95": 30.299999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.909166669845582,
+     "p95": 29.100000381469727,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.115000035365423,
+     "p95": 29.700000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.17499996026357,
+     "p95": 29.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.929999955495198,
+     "p95": 29.100000381469727,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 859.288,
+   "taskMsPerS": 990.577,
+   "scriptMsPerFrame": 23.461,
+   "taskMsPerFrame": 27.046,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 25.766,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 3,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 30.244,
+   "frameAvgMs": 27.694,
+   "frameP95Ms": 31,
+   "fps": 36.109,
+   "rafFrames": 1092,
+   "rafP50Ms": 27.6,
+   "rafP95Ms": 31.3,
+   "rafP99Ms": 35.5,
+   "rafMaxMs": 55.7,
+   "offScaleFrames": 0,
+   "holdFrames": 1093,
+   "polls": [
+    {
+     "avg": 27.30000001589457,
+     "p95": 30,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.005833355585732,
+     "p95": 29.799999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.120833349227905,
+     "p95": 29.700000762939453,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.349583344658217,
+     "p95": 32,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.36125003993511,
+     "p95": 32.599998474121094,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 28.044583308696748,
+     "p95": 32.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 848.567,
+   "taskMsPerS": 989.077,
+   "scriptMsPerFrame": 23.502,
+   "taskMsPerFrame": 27.393,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 15.149,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 29.399999618530273,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 4,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 30.166,
+   "frameAvgMs": 26.765,
+   "frameP95Ms": 29.5,
+   "fps": 37.362,
+   "rafFrames": 1127,
+   "rafP50Ms": 26.7,
+   "rafP95Ms": 29.6,
+   "rafP99Ms": 31.8,
+   "rafMaxMs": 35.2,
+   "offScaleFrames": 0,
+   "holdFrames": 1128,
+   "polls": [
+    {
+     "avg": 26.750416668256126,
+     "p95": 29.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.878333322207133,
+     "p95": 29.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.802500025431314,
+     "p95": 29.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.73333334128062,
+     "p95": 29.799999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.58250002861023,
+     "p95": 29.299999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.764583333333334,
+     "p95": 29.299999237060547,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 875.433,
+   "taskMsPerS": 991.059,
+   "scriptMsPerFrame": 23.432,
+   "taskMsPerFrame": 26.527,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 22.058,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 25.784427642822266,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  },
+  {
+   "round": 4,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 30.239,
+   "frameAvgMs": 27.115,
+   "frameP95Ms": 30.05,
+   "fps": 36.88,
+   "rafFrames": 1116,
+   "rafP50Ms": 27,
+   "rafP95Ms": 30.3,
+   "rafP99Ms": 33.1,
+   "rafMaxMs": 44.7,
+   "offScaleFrames": 0,
+   "holdFrames": 1117,
+   "polls": [
+    {
+     "avg": 27.917083382606506,
+     "p95": 31.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.567500058809916,
+     "p95": 30.899999618530273,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.473333311080932,
+     "p95": 29,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.438333423932395,
+     "p95": 29,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 26.755000058809916,
+     "p95": 29.600000381469727,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    },
+    {
+     "avg": 27.57791663010915,
+     "p95": 30.5,
+     "scale": 0.75,
+     "draws": 228,
+     "tris": 398964
+    }
+   ],
+   "scriptMsPerS": 842.259,
+   "taskMsPerS": 990.177,
+   "scriptMsPerFrame": 22.822,
+   "taskMsPerFrame": 26.83,
+   "allocKBPerS": null,
+   "allocBytesPerFrame": null,
+   "heapUsedMB": 23.07,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [],
+   "errors": []
+  }
+ ],
+ "summary": {
+  "on": {
+   "frameAvgMs": {
+    "median": 27.325,
+    "all": [
+     27.509,
+     27.325,
+     26.652,
+     27.694,
+     26.765
+    ]
+   },
+   "frameP95Ms": {
+    "median": 30.05,
+    "all": [
+     30.4,
+     30.05,
+     29.3,
+     31,
+     29.5
+    ]
+   },
+   "fps": {
+    "median": 36.597,
+    "all": [
+     36.352,
+     36.597,
+     37.521,
+     36.109,
+     37.362
+    ]
+   },
+   "rafP50Ms": {
+    "median": 27.1,
+    "all": [
+     27.6,
+     27.1,
+     26.5,
+     27.6,
+     26.7
+    ]
+   },
+   "rafP95Ms": {
+    "median": 30.3,
+    "all": [
+     30.3,
+     30.4,
+     29.9,
+     31.3,
+     29.6
+    ]
+   },
+   "rafP99Ms": {
+    "median": 33.1,
+    "all": [
+     33.1,
+     37.6,
+     32.7,
+     35.5,
+     31.8
+    ]
+   },
+   "offScaleFrames": {
+    "median": 0,
+    "all": [
+     0,
+     2,
+     1,
+     0,
+     0
+    ]
+   },
+   "scriptMsPerFrame": {
+    "median": 23.502,
+    "all": [
+     23.604,
+     23.754,
+     23.345,
+     23.502,
+     23.432
+    ]
+   },
+   "taskMsPerFrame": {
+    "median": 27.05,
+    "all": [
+     27.207,
+     27.05,
+     26.419,
+     27.393,
+     26.527
+    ]
+   },
+   "scriptMsPerS": {
+    "median": 869.451,
+    "all": [
+     858.399,
+     869.451,
+     875.771,
+     848.567,
+     875.433
+    ]
+   },
+   "allocKBPerS": {
+    "median": null,
+    "all": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "allocBytesPerFrame": {
+    "median": null,
+    "all": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   }
+  },
+  "off": {
+   "frameAvgMs": {
+    "median": 27.304,
+    "all": [
+     26.601,
+     27.867,
+     27.76,
+     27.304,
+     27.115
+    ]
+   },
+   "frameP95Ms": {
+    "median": 30.05,
+    "all": [
+     29.25,
+     30.85,
+     31.05,
+     29.8,
+     30.05
+    ]
+   },
+   "fps": {
+    "median": 36.625,
+    "all": [
+     37.593,
+     35.884,
+     36.023,
+     36.625,
+     36.88
+    ]
+   },
+   "rafP50Ms": {
+    "median": 27.1,
+    "all": [
+     26.6,
+     27.8,
+     27.6,
+     27.1,
+     27
+    ]
+   },
+   "rafP95Ms": {
+    "median": 30.3,
+    "all": [
+     29.5,
+     31.1,
+     31,
+     30.1,
+     30.3
+    ]
+   },
+   "rafP99Ms": {
+    "median": 33.1,
+    "all": [
+     31.4,
+     34.5,
+     34.7,
+     32.1,
+     33.1
+    ]
+   },
+   "offScaleFrames": {
+    "median": 0,
+    "all": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "scriptMsPerFrame": {
+    "median": 23.333,
+    "all": [
+     22.98,
+     23.525,
+     23.333,
+     23.461,
+     22.822
+    ]
+   },
+   "taskMsPerFrame": {
+    "median": 27.046,
+    "all": [
+     26.368,
+     27.568,
+     27.46,
+     27.046,
+     26.83
+    ]
+   },
+   "scriptMsPerS": {
+    "median": 844.185,
+    "all": [
+     863.922,
+     844.185,
+     840.655,
+     859.288,
+     842.259
+    ]
+   },
+   "allocKBPerS": {
+    "median": null,
+    "all": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "allocBytesPerFrame": {
+    "median": null,
+    "all": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   }
+  }
+ }
+}

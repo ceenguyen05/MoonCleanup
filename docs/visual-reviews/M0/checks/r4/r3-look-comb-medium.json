@@ -1,0 +1,35 @@
+{
+ "base": "scene=s05&view=slope&sun=60&preset=medium&backend=webgpu&scale=1",
+ "variants": [
+  {
+   "name": "round3",
+   "query": "shadowkernel=square"
+  },
+  {
+   "name": "round4",
+   "query": ""
+  }
+ ],
+ "result": {
+  "round3": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "filter": "pcf3+pcf5",
+   "knobs": "shadowkernel=square",
+   "errors": []
+  },
+  "round4": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.002,
+    "max": 10,
+    "over2Pct": 0.024,
+    "over8Pct": 0.001
+   }
+  }
+ }
+}

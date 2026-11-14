@@ -1,0 +1,9 @@
+{
+  "name": "dust-sim-p2-stroke-atlas-ledger",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Approach P2: stroke atlas plus plot ledger (the ADR-0009 baseline).",
+  "license": "UNLICENSED",
+  "scripts": {}
+}

@@ -6,7 +6,7 @@
 
 ## Context
 
-Up to 16 players per room need an authoritative server with rooms, lobby listing, private invite codes, reconnection with seat holding, graceful shutdown and test tooling. The host is Render Free: 0.1 CPU / 512 MB, **TCP only** (no UDP), restarts at any time. Effort matters: a custom layer costs 9-11 agent-days of plumbing alone. The 163,842-sector dust field cannot go through Schema at that size (about 6 bytes per changed cell; ~1 MB join snapshot).
+Up to 6 players per room need an authoritative server with rooms, lobby listing, private invite codes, reconnection with seat holding, graceful shutdown and test tooling. The host is Render Free: 0.1 CPU / 512 MB, **TCP only** (no UDP), restarts at any time. Effort matters: a custom layer costs 9-11 agent-days of plumbing alone. The 163,842-sector dust field cannot go through Schema at that size (about 6 bytes per changed cell; ~1 MB join snapshot).
 
 ## Options considered
 

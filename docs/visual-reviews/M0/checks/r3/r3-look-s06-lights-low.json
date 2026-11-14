@@ -1,0 +1,35 @@
+{
+ "base": "scene=s06&view=pool&preset=low&backend=webgpu&scale=1",
+ "variants": [
+  {
+   "name": "plain",
+   "query": "lights=plain"
+  },
+  {
+   "name": "culled",
+   "query": ""
+  }
+ ],
+ "result": {
+  "plain": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3",
+   "knobs": "default",
+   "errors": []
+  },
+  "culled": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0,
+    "max": 0,
+    "over2Pct": 0,
+    "over8Pct": 0
+   }
+  }
+ }
+}

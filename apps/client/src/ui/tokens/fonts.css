@@ -1,0 +1,26 @@
+/* Self-hosted OFL variable fonts (assets/ui/fonts, ledger rows in docs/ASSET_LICENSES.md). Latin subset, woff2, swap.
+   Vite fingerprints these URLs; module.ts preloads the two text faces so the first panel never reflows. */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../../../../assets/ui/fonts/inter-latin-wght.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("../../../../../assets/ui/fonts/space-grotesk-latin-wght.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("../../../../../assets/ui/fonts/jetbrains-mono-latin-wght.woff2") format("woff2");
+}

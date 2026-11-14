@@ -1,0 +1,50 @@
+{
+ "preset": "medium",
+ "backend": "webgpu",
+ "scenes": {
+  "s01-a-noon": {
+   "filter": "pcf3+tent4",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 184.9,
+    "grime": 144.2
+   },
+   "errors": []
+  },
+  "s01-a-dawn": {
+   "filter": "pcf3+tent4",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 232.1,
+    "grime": 123.7
+   },
+   "errors": []
+  },
+  "s01-b-noon": {
+   "filter": "pcf3+tent4",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 181.2,
+    "grime": 195
+   },
+   "errors": []
+  },
+  "s01-wide-morning": {
+   "filter": "pcf3+tent4",
+   "knobs": "default",
+   "probeLuma": {
+    "clean": 183.1,
+    "grime": 109.9
+   },
+   "errors": []
+  },
+  "s01-close-noon": {
+   "filter": "pcf3+tent4",
+   "knobs": "default",
+   "probeLuma": {
+    "grime": 212.9
+   },
+   "errors": []
+  }
+ }
+}

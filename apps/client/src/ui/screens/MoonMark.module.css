@@ -1,0 +1,153 @@
+.frame {
+  position: relative;
+  flex: none;
+}
+
+.moon {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 var(--mc-hairline) rgba(255, 255, 255, 0.18),
+    0 10px 28px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(255, 243, 218, 0.12);
+  isolation: isolate;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* The wipe sweeps in from the left, holds clean, then fades back to grime: 6 s loop, transform and opacity only. */
+.wipe {
+  overflow: hidden;
+  will-change: transform, opacity;
+  animation: wipeSlide 6s linear infinite;
+}
+
+.wipeInner {
+  will-change: transform;
+  animation: wipeCounter 6s linear infinite;
+}
+
+.edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.85));
+  mix-blend-mode: soft-light;
+  opacity: 0.9;
+}
+
+.rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, transparent 62%, rgba(10, 14, 22, 0.34) 100%);
+  pointer-events: none;
+}
+
+@keyframes wipeSlide {
+  0% {
+    transform: translateX(-100%);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  66% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  86% {
+    transform: translateX(0);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+
+@keyframes wipeCounter {
+  0% {
+    transform: translateX(100%);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  66%,
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.spark {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  color: var(--mc-state-polished);
+  opacity: 0;
+  animation: twinkle 6s linear infinite;
+}
+
+.sparkA {
+  top: -4px;
+  right: -6px;
+}
+
+.sparkB {
+  bottom: 14px;
+  left: -12px;
+  width: 12px;
+  height: 12px;
+  animation-delay: 0.45s;
+}
+
+@keyframes twinkle {
+  0%,
+  60% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  84%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* Reduced motion: the moon is static and half clean. */
+:global(#mc-ui[data-motion="reduced"]) .wipe {
+  animation: none;
+  transform: translateX(-50%);
+  will-change: auto;
+}
+
+:global(#mc-ui[data-motion="reduced"]) .wipeInner {
+  animation: none;
+  transform: translateX(50%);
+  will-change: auto;
+}
+
+:global(#mc-ui[data-motion="reduced"]) .spark {
+  animation: none;
+  opacity: 0.9;
+  transform: none;
+}
+
+:global(#mc-ui[data-motion="reduced"]) .sparkB {
+  opacity: 0.6;
+}
+
+/* Hidden tab: pause the loop (the UI root toggles data-hidden). */
+:global(#mc-ui[data-hidden="true"]) .wipe,
+:global(#mc-ui[data-hidden="true"]) .wipeInner,
+:global(#mc-ui[data-hidden="true"]) .spark {
+  animation-play-state: paused;
+}

@@ -6,10 +6,11 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "balance": "echo balance-sim placeholder: Fable replaces with tsx src/run.ts",
-    "lint": "echo balance-sim lint: placeholder until sources land - see README",
-    "typecheck": "echo balance-sim typecheck: placeholder until sources land - see README",
-    "test": "vitest run --passWithNoTests"
+    "balance": "tsx src/cli.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "balance:assert": "tsx src/cli.ts --assert"
   },
   "dependencies": {
     "@moon-cleanup/game-data": "workspace:*",

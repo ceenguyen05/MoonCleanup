@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "generator": "@moon-cleanup/asset-pipeline assets:build",
+  "assets": {
+    "boreal_hab_module": {
+      "file": "boreal_hab_module.18cb4367927f.glb",
+      "class": "outpostModule",
+      "bytes": 1153876,
+      "sha256": "18cb4367927fb2353392f6b9303dc010ec5ccced60393da8cf117bd02c89280b",
+      "source": "assets/models/outpost/boreal_hab_module.py",
+      "textureFormat": "ktx2",
+      "placeholder": true,
+      "replaceBy": "M1-W6 (Boreal outpost kit, art-direction 13.5)"
+    },
+    "rock_boulder_a": {
+      "file": "rock_boulder_a.8f9c955a76af.glb",
+      "class": "rock",
+      "bytes": 1505416,
+      "sha256": "8f9c955a76af918c00b5866884c9e11f276ffe1484283fbaf7271382b5dc9620",
+      "source": "assets/models/rocks/rock_boulder_a.py",
+      "textureFormat": "ktx2",
+      "placeholder": true,
+      "replaceBy": "M1-W7 (rocks final, art-direction 13.5)"
+    }
+  }
+}

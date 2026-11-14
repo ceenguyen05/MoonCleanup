@@ -1,0 +1,61 @@
+{
+ "url": "http://localhost:5191/look.html?scene=s01&preset=high&time=dawn&view=a&backend=webgl2&capture=1",
+ "info": {
+  "look": {
+   "scene": "s01",
+   "state": {
+    "sunElevationDeg": 4,
+    "sunAzimuthDeg": 100,
+    "earthElevationDeg": 17,
+    "earthAzimuthDeg": 48,
+    "sunRateDegPerS": 0,
+    "earthDiameterDeg": 4.2
+   },
+   "keyMode": "sun",
+   "ev100": 11.5,
+   "cascades": [
+    {
+     "index": 0,
+     "texelM": 0.009200557347415882,
+     "endM": 8
+    },
+    {
+     "index": 1,
+     "texelM": 0.06441483895014039,
+     "endM": 56
+    },
+    {
+     "index": 2,
+     "texelM": 0.23017018394581418,
+     "endM": 200
+    }
+   ],
+   "preset": "high",
+   "backend": "webgl2",
+   "postPasses": [
+    "scene",
+    "prepass",
+    "gtao",
+    "traa",
+    "grade",
+    "bloom"
+   ]
+  },
+  "mc": {
+   "backend": "webgl2",
+   "tier": "C",
+   "preset": "high",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr": 1.0000000298023224,
+   "renderScale": 1,
+   "frameTimeAvgMs": 552.820054769516,
+   "frameTimeP95Ms": 17.700000762939453,
+   "drawCalls": 325,
+   "triangles": 886701,
+   "texPoolMB": 0,
+   "placeholderAssets": [],
+   "lossCount": 0
+  }
+ },
+ "errors": []
+}

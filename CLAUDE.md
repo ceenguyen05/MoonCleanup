@@ -1,6 +1,6 @@
 # Clean The Moon!
 
-Browser co-op lunar-cleaning game, 1–16 players. Exact game title: **Clean The Moon!**
+Browser co-op lunar-cleaning game, 1–6 players per room (owner cap 2026-11-12; mostly single-player, multiplayer for demos). Exact game title: **Clean The Moon!**
 Keep existing `@moon-cleanup/*`, save IDs and service/repo identifiers stable. Item names are flexible.
 
 ## Resume and read narrowly
@@ -16,6 +16,9 @@ Continue M0 from disk; never restart the scaffold, reinstall unnecessarily or du
 Closely recreate Moon Sweepers' gameplay, graphics, animation, equipment, automation and world/map progression.
 Author our own code/assets/text/branding. Common names/styles are allowed; no forced visual divergence.
 REFERENCE_TARGET governs RF/VT acceptance and optional custom progression. Protect playable feel and world detail.
+**Product priority (owner, 2026-11-13): SOLO PLAY FIRST.** Graphics, animation, fps and game feel in solo play come first and must never lag; multiplayer
+is a real, secondary objective that must exist and work, but it may feel laggy on the free Render service and must never cost solo feel
+(no solo input delay, no solo frame-time or allocation cost from netcode). Cee plays/demos on the deployed Vercel + Render build; local is development only.
 Deadline: **November 17, 2026, America/Chicago**; report risk honestly, never silently reduce core scope.
 
 ## Continuous build
@@ -26,11 +29,12 @@ No commit plans, mandatory wave-planning files, per-task review swarm or stop-at
 ## Execution
 
 Sonnet 5.5 leads. Pinned role defaults: `.claude/agents/`; task model/effort choices: MODEL_POLICY.
-Default one implementer, max two workers total, one Opus/Fable worker combined. No nested delegation or reviewer swarm.
+Run independent ready work in parallel: up to five regular (Sonnet/Opus) workers plus up to two Fable workers at once; the first two reviewers count toward the regular cap, further reviewers don't (owner relaxed, 2026-11-12). No nested delegation or reviewer swarm.
 One writer per path; brief narrows `docs/architecture/module-boundaries.md` ownership. Lead alone edits task rows/STATUS.
 Contracts via contracts-architect; root configs/installs via designated devops writer, sequentially when needed.
 Routine project-local dependencies do not each need an ADR; review lifecycle scripts and record changes.
 Checkpoint compactly at coherent deliverables/interruptions; continue across milestones. Ask only for actual decisions/access.
+Health-check long agents and background tasks periodically (alive, progressing, stale, orphaned servers/stray output); see WORKFLOW.md "Long-running agents".
 Missing cloud/tool/hardware inputs block that check, not all independent local development.
 
 ## Non-negotiables and checks

@@ -1,0 +1,110 @@
+{
+ "preset": "medium",
+ "backend": "webgpu",
+ "s02": {
+  "chips": {
+   "a010": 130.1,
+   "a033": 180.3,
+   "a080": 212.4,
+   "grime": 119.8,
+   "clean": 181.9
+  },
+  "facts": {
+   "variant": "noon",
+   "sunLux": 115874.19902635788,
+   "ev100": 14.3,
+   "fetches": 9,
+   "textureBindings": 2,
+   "maskTexelCm": 0.78125
+  },
+  "errors": []
+ },
+ "s05": {
+  "shade": {
+   "flatLit": {
+    "luma": 183.6,
+    "labB": -0.58
+   },
+   "flatShadow": {
+    "luma": 85,
+    "labB": 1.34
+   },
+   "wallShadow": {
+    "luma": 170.3,
+    "labB": 1.28
+   },
+   "wallLit": {
+    "luma": 170.3,
+    "labB": 1.28
+   }
+  },
+  "shadeSlope": {
+   "slopeLit": {
+    "luma": 181.1,
+    "labB": 3.32
+   },
+   "slopeShadow": {
+    "luma": 88.5,
+    "labB": 0.15
+   }
+  },
+  "wall": {
+   "flatLit": {
+    "luma": 144,
+    "labB": 0
+   },
+   "flatShadow": {
+    "luma": 84.8,
+    "labB": 1.12
+   },
+   "wallShadow": {
+    "luma": 144,
+    "labB": 0
+   },
+   "wallLit": {
+    "luma": 144,
+    "labB": 0
+   }
+  }
+ },
+ "debug": [
+  {
+   "name": "s05-wide",
+   "knobs": "debug=cascades",
+   "cascades": [
+    [
+     2.3,
+     10
+    ],
+    [
+     9.7,
+     42.2
+    ],
+    [
+     27.6,
+     120
+    ]
+   ],
+   "errors": []
+  },
+  {
+   "name": "typical-wide",
+   "knobs": "debug=cascades",
+   "cascades": [
+    [
+     2.3,
+     10
+    ],
+    [
+     9.7,
+     42.2
+    ],
+    [
+     27.6,
+     120
+    ]
+   ],
+   "errors": []
+  }
+ ]
+}

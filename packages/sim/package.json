@@ -10,9 +10,10 @@
   },
   "sideEffects": false,
   "scripts": {
-    "lint": "echo sim lint: placeholder until sources land - see README",
-    "typecheck": "echo sim typecheck: placeholder until sources land - see README",
-    "test": "vitest run --passWithNoTests"
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "test:golden": "vitest run --passWithNoTests golden"
   },
   "dependencies": {
     "@moon-cleanup/game-data": "workspace:*",

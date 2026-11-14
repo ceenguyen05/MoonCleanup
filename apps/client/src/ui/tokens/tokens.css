@@ -1,0 +1,172 @@
+/* Design tokens v0 (art-direction section 8; ui-screens-and-flows section 5.5).
+   Everything is a CSS custom property on the UI root (#mc-ui) so panels, modules and tests share one source.
+   Three values are written by JS (tokens/display-metrics.ts) and never by hand:
+     --mc-dpr          window.devicePixelRatio (includes browser zoom)
+     --mc-px           exactly one device pixel in CSS px (1 / dpr)
+     --mc-hud-scale    clamp(1, viewportHeight / 1080, 1.5) x the player's HUD scale setting
+   Sizes are px multiplied by --mc-hud-scale and rounded to whole device pixels, so text never sits on a
+   fractional position and no transform is used for sizing.
+   Snap rules (VT-M0-10): --mc-dpr is normalised (float32 noise such as 1.0000000298 removed); every length that
+   positions or sizes a box (spacing, line-height, hit size, panel widths) is round()ed to --mc-px; nothing is
+   centred with translate or with an odd leftover (grid/flex rows use align-self: start where the leftover could be a
+   half device pixel); a panel's width is a rounded token, never its text width. Intrinsic widths (buttons, toasts)
+   only move their right edge, never a text start or a hairline. */
+
+#mc-ui {
+  /* ---- Display metrics (defaults match DPR 1 / 1080p until JS runs) ---- */
+  --mc-dpr: 1;
+  --mc-px: 1px;
+  --mc-hud-scale: 1;
+  --mc-hairline: var(--mc-px);
+
+  /* ---- Colour: brand and surfaces ---- */
+  --mc-ivory: #f3ecdd;
+  --mc-teal: #17a398;
+  --mc-teal-hi: #35e0d2;
+  --mc-yellow: #ffc629;
+  --mc-graphite: #24282d;
+  --mc-dot-amber: #ffb02e;
+  --mc-lumen-gold: #ffd36b;
+
+  /* Plot states: umber / cyan / ivory, always paired with a glyph or pattern (never colour alone). */
+  --mc-state-grimy: #5a4433;
+  --mc-state-opened: #5ed3e8;
+  --mc-state-polished: #fff3da;
+
+  --mc-ok: #43d69b;
+  --mc-warn: #ffc629;
+  --mc-danger: #ff5c61;
+  --mc-info: #5ed3e8;
+
+  /* Glass. 0.72 is the minimum opacity (contrast verified against a pure white backdrop). */
+  --mc-glass-bg: rgba(12, 16, 20, 0.72);
+  --mc-glass-bg-strong: rgba(12, 16, 20, 0.88);
+  --mc-glass-border: rgba(255, 255, 255, 0.14);
+  --mc-glass-highlight: rgba(255, 255, 255, 0.07);
+  --mc-glass-blur: blur(16px) saturate(140%);
+  --mc-scrim: rgba(4, 7, 12, 0.6);
+
+  /* Text. text-3 only on strong glass or text >= 19 px bold. */
+  --mc-text-1: #f5f7fa;
+  --mc-text-2: #c9d1d9;
+  --mc-text-3: #9aa5b1;
+
+  /* Focus */
+  --mc-focus: #35e0d2;
+  --mc-focus-width: 2px;
+  --mc-focus-offset: 2px;
+
+  /* ---- Type ---- */
+  --mc-font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mc-font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --mc-font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --mc-step: 1px; /* rounding step for scaled sizes: whole CSS px */
+
+  /* size / line-height pairs from art-direction 8.2 (caption 14 is the gameplay minimum at scale 100%) */
+  --mc-fs-caption: round(calc(14px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-caption: round(calc(20px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-fs-body: round(calc(16px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-body: round(calc(24px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-fs-value-s: round(calc(18px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-value-s: round(calc(22px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-fs-value: round(calc(22px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-value: round(calc(26px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-fs-title: round(calc(28px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-title: round(calc(34px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-fs-wallet: round(calc(36px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-wallet: round(calc(40px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-fs-callout: round(calc(48px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-callout: round(calc(52px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-fs-banner: round(calc(64px * var(--mc-hud-scale)), var(--mc-step));
+  --mc-lh-banner: round(calc(68px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-caption-tracking: 0.06em;
+
+  /* ---- Spacing (4-pt), radii, elevation ---- */
+  --mc-sp-0-5: round(calc(2px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-1: round(calc(4px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-2: round(calc(8px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-3: round(calc(12px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-4: round(calc(16px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-5: round(calc(20px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-6: round(calc(24px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-8: round(calc(32px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-10: round(calc(40px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-12: round(calc(48px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-sp-16: round(calc(64px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-safe: var(--mc-sp-8); /* HUD safe area: 32 px at 1080p */
+  --mc-hit: round(calc(40px * var(--mc-hud-scale)), var(--mc-px)); /* minimum hit target */
+
+  --mc-r-xs: 4px;
+  --mc-r-sm: 6px;
+  --mc-r-md: 10px;
+  --mc-r-lg: 14px;
+  --mc-r-xl: 20px;
+  --mc-r-pill: 999px;
+
+  --mc-e-1: 0 8px 32px rgba(0, 0, 0, 0.45); /* glass panel lift */
+  --mc-e-2: 0 16px 48px rgba(0, 0, 0, 0.55); /* modal */
+
+  /* ---- Motion: tween durations and easings (springs live in motion/presets.ts, same names) ---- */
+  --mc-ease-out: cubic-bezier(0.33, 1, 0.68, 1); /* out-cubic */
+  --mc-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --mc-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --mc-dur-hover-in: 100ms;
+  --mc-dur-hover-out: 140ms;
+  --mc-dur-press: 80ms;
+  --mc-dur-fade-in: 200ms;
+  --mc-dur-fade-out: 160ms;
+  --mc-dur-reduced: 120ms;
+
+  font-family: var(--mc-font-ui);
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+  font-weight: 400;
+  font-feature-settings:
+    "tnum" 1,
+    "cv11" 1,
+    "ss01" 1;
+  font-kerning: normal;
+  color: var(--mc-text-1);
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: auto;
+}
+
+/* Reduce transparency (OS setting), "reduce transparency" in-game and Tier B/C devices use strong glass, no blur. */
+#mc-ui[data-glass="solid"] {
+  --mc-glass-bg: var(--mc-glass-bg-strong);
+  --mc-glass-blur: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  #mc-ui[data-glass="auto"] {
+    --mc-glass-bg: var(--mc-glass-bg-strong);
+    --mc-glass-blur: none;
+  }
+}
+
+/* Reduced motion: UiProvider (OS setting or ?uimotion=) sets data-motion; CSS animations key off it, and Motion (JS)
+   gets the same decision through MotionConfig. */
+#mc-ui[data-motion="reduced"] {
+  --mc-dur-hover-in: 0ms;
+  --mc-dur-hover-out: 0ms;
+  --mc-dur-press: 0ms;
+}
+
+#mc-ui *,
+#mc-ui *::before,
+#mc-ui *::after {
+  box-sizing: border-box;
+}
+
+/* Visible focus ring for keyboard and gamepad navigation (focus-visible only; mouse clicks stay clean). */
+#mc-ui :focus-visible {
+  outline: var(--mc-focus-width) solid var(--mc-focus);
+  outline-offset: var(--mc-focus-offset);
+}
+
+#mc-ui svg {
+  shape-rendering: geometricPrecision;
+}

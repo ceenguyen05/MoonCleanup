@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "roost": {
+    "basePriceLm": 4500,
+    "priceGrowthMult": 1.15,
+    "railAllowanceLm": 200,
+    "resiteDowntimeS": 60,
+    "resiteMaxM": 600
+  },
+  "units": [
+    {
+      "id": "robot.sandpiper",
+      "rateM2ps": 1.8,
+      "binKg": 15,
+      "storeKg": 300,
+      "rings": 2,
+      "uptimeManualFrac": 0.64
+    },
+    {
+      "id": "robot.plover",
+      "rateM2ps": 4.5,
+      "binKg": 40,
+      "storeKg": 800,
+      "rings": 3,
+      "uptimeManualFrac": 0.64,
+      "upgradePriceLm": 10000
+    }
+  ],
+  "albatross": {
+    "basePriceLm": 200000,
+    "priceGrowthMult": 1.18,
+    "baleKg": 20,
+    "uptimeFrac": 0.9,
+    "nestPerUnits": 3,
+    "rateM2ps": 11
+  },
+  "nest": { "priceLm": 30000, "capacityBales": 40, "groupRadiusM": 100, "fullFrac": 0.8 },
+  "states": [
+    "foraging",
+    "flying",
+    "inbound",
+    "molting",
+    "patch_picked_clean",
+    "roost_brimming",
+    "crop_full",
+    "grounded",
+    "resting"
+  ]
+}

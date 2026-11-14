@@ -6,12 +6,13 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "dev": "echo client dev placeholder: Fable replaces with vite --port 5173",
-    "build": "echo client build placeholder: Fable replaces with tsc --noEmit and vite build to dist",
-    "preview": "echo client preview placeholder: Fable replaces with vite preview",
-    "lint": "echo client lint: placeholder until sources land - see README",
-    "typecheck": "echo client typecheck: placeholder until sources land - see README",
-    "test": "vitest run --passWithNoTests"
+    "dev": "vite --port 5173",
+    "build": "tsc -p tsconfig.json && vite build",
+    "preview": "vite preview --port 5173",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "size:check": "node ../../.github/scripts/size-check.mjs dist"
   },
   "dependencies": {
     "@colyseus/sdk": "0.18.10",

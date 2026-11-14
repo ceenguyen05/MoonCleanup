@@ -29,4 +29,9 @@ pnpm test:e2e                                             # turbo run test:e2e -
 pnpm --filter @moon-cleanup/e2e install:browsers
 ```
 
-`test:e2e` is an echo placeholder until specs exist.
+
+## Run (v0)
+
+```
+MC_PORT_OFFSET=5 pnpm test:e2e      # MC_LANE=gpu for headed Chrome/WebGPU; MC_CLIENT_URL / MC_SERVER_URL override targets; MC_REQUIRE_CANVAS=1 once the client renders
+```

@@ -1,11 +1,12 @@
-// @contract protocol/close-codes v0
+// @contract protocol/close-codes v1
 // @consumers apps/server/src/net, apps/client/src/net, apps/client/src/ui (one message per code), tools/bots
 //
 // WebSocket close codes owned by this project. Specification: docs/architecture/netcode.md section 12.
 //
-// - Our codes stay inside CLOSE_CODE_RANGE (4100-4199). Codes below 4100 belong to WebSocket (1000, 1001, 1006) and
-//   to Colyseus (4000 consented, 4001 server shutdown); they are not redefined here because their exact values must
-//   be checked against the Colyseus 0.18 `CloseCode` enum by the netcode owner (netcode.md section 18, item 1).
+// - Our codes stay inside CLOSE_CODE_RANGE (4100-4199). Codes below 4100 belong to WebSocket and to Colyseus.
+//   v1 (M1-W0-T02) records them in `FOREIGN_CLOSE_CODES`, VERIFIED on 2026-11-13 against the installed
+//   `@colyseus/shared-types@0.18.3` (`build/Protocol.d.ts`, `CloseCode`) and the SDK `@colyseus/sdk@0.18.10`
+//   (`build/Room.mjs`); this closes netcode.md section 18 item 1 (the 4002 / 4003 / 4010 rows are new).
 // - M0 code uses PROTOCOL_MISMATCH (4100) and ROOM_FULL (4105). The other codes of the section 12 table are listed
 //   so that no consumer invents a number; their flows land in later milestones.
 // - A code is never reused for another meaning.
@@ -41,3 +42,31 @@ export type CloseCode = (typeof CloseCode)[keyof typeof CloseCode];
 
 /** Inclusive range every close code of this project must stay in. */
 export const CLOSE_CODE_RANGE = { min: 4100, max: 4199 } as const;
+
+/**
+ * Close codes that are not ours, with their Colyseus 0.18 names. Verified against node_modules (see the header).
+ * 4002, 4003 and 4010 are missing from the netcode.md section 12 table; they do not clash with 4100-4199.
+ */
+export const FOREIGN_CLOSE_CODES = {
+  NORMAL_CLOSURE: 1000,
+  GOING_AWAY: 1001,
+  NO_STATUS_RECEIVED: 1005,
+  ABNORMAL_CLOSURE: 1006,
+  /** Colyseus: the client left on purpose (`room.leave(true)`). No reconnect. */
+  CONSENTED: 4000,
+  /** Colyseus: server shutdown (SIGTERM drain). The SDK does not reconnect; our client rejoins with restore. */
+  SERVER_SHUTDOWN: 4001,
+  /** Colyseus: the room closed the connection because of an error. */
+  WITH_ERROR: 4002,
+  /** Colyseus SDK: reconnection ran out of retries. */
+  FAILED_TO_RECONNECT: 4003,
+  /** Colyseus: dev-mode restart or "may try to reconnect". The SDK reconnects. */
+  MAY_TRY_RECONNECT: 4010,
+} as const;
+
+/**
+ * Codes after which the Colyseus 0.18 SDK runs its own reconnection (`Room.mjs`: 1005, 1006, 1001 and 4010). Every
+ * other code, including all of ours and 4001, ends the room without SDK reconnection; the client's own flows
+ * (netcode.md section 12 "Client behaviour" column) take over.
+ */
+export const SDK_RECONNECT_CLOSE_CODES = [1005, 1006, 1001, 4010] as const;

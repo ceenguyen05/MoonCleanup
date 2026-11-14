@@ -17,7 +17,7 @@ Roblox titles and unofficial remakes are secondary context, not the target. Neve
 Primary pages checked 2026-11-12:
 
 - [Official Steam store](https://store.steampowered.com/app/5335510/Moon_Sweepers/): tiny starter brush, collecting/selling
-  dust, reinvestment into equipment, vehicles and depots, visible cleaning, and solo/up-to-16 co-op.
+  dust, reinvestment into equipment, vehicles and depots, visible cleaning, and solo/up-to-6 co-op.
 - [Developer announcements and 1.0.4/1.0.5 notes](https://steamcommunity.com/app/5335510/): shared cleaned ground;
   off-screen robot work and field deliveries; map/waypoints/discovered-station travel; flexible building/moving/full refunds;
   improved delivery balancing, input handling and save recovery.
@@ -31,6 +31,8 @@ does not claim a fresh screenshot/trailer inspection. Before visual sign-off, in
 
 ## What must feel close
 
+Solo first (owner 2026-11-13): solo graphics, animation, fps and feel are judged first and must never lag; multiplayer is best-effort on Render free and never costs solo feel.
+
 | Layer | Required direction | Acceptance / evidence |
 | --- | --- | --- |
 | First minutes | Absurdly small usable toothbrush/brush, visible surface removal, limited capacity, a short depot return, clear first purchase | New player can clean → fill → sell → buy without a custom mission gate; timed playtest |
@@ -40,7 +42,7 @@ does not claim a fresh screenshot/trailer inspection. Before visual sign-off, in
 | Expanding operation | Hand work → hauling/packing → vehicles → dock/global robots → connected logistics/processing | A real connected route with material, capacity and payment behavior; no decorative fake automation |
 | World / map | Traversable curved Moon, distant terrain/landmarks, a useful globe/sector overview, stations, explored destinations and ever-larger cleaned territory | Ground/hilltop/map travel sequence; recognizable workfronts and expanding clean patches |
 | Progression | Income + equipment prerequisites + discovery motivate expansion; better tools and routes open bigger jobs | Purchases/unlocks are data-driven; no percentage-cleaned or bespoke task gate added solely by our redesign |
-| Co-op / persistence | Shared world progress and readable activity while each player can work; recover the operation reliably | Existing 16-player/network/save gates; no dust returning or unpaid completed cells |
+| Co-op / persistence | Shared world progress and readable activity while each player can work; recover the operation reliably | Existing 6-player/network/save gates; no dust returning or unpaid completed cells |
 
 ## Presentation: use the reference as a style guide
 

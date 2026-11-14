@@ -1,0 +1,744 @@
+{
+ "base": "http://localhost:4183/",
+ "query": "scene=typical&preset=low&backend=webgpu",
+ "scale": 0.75,
+ "warm": 8,
+ "windows": 5,
+ "rounds": 3,
+ "rows": [
+  {
+   "round": 0,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 25.167,
+   "frameAvgMs": 20.985,
+   "frameP95Ms": 24.9,
+   "fps": 47.652,
+   "polls": [
+    {
+     "avg": 20.241249952216943,
+     "p95": 34.900001525878906,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 21.22833334306876,
+     "p95": 24.899999618530273,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 20.98541667262713,
+     "p95": 23.299999237060547,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 20.806249982118608,
+     "p95": 23.100000381469727,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 20.99083335051934,
+     "p95": 27.200000762939453,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    }
+   ],
+   "scriptMsPerS": 797.965,
+   "taskMsPerS": 987.381,
+   "scriptMsPerFrame": 16.746,
+   "taskMsPerFrame": 20.721,
+   "allocKBPerS": 4264.66,
+   "allocBytesPerFrame": 91643.554,
+   "heapUsedMB": 12.776,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 22.600000381469727,
+    "steps": 0
+   },
+   "topAlloc": [
+    [
+     "gre index-DgSoD4T8.js:77:104237",
+     10682004
+    ],
+    [
+     "customCacheKey index-DgSoD4T8.js:56:32849",
+     7687812
+    ],
+    [
+     "getOwnPropertyNames :-1:-1",
+     7418692
+    ],
+    [
+     "project index-DgSoD4T8.js:82:42378",
+     7273748
+    ],
+    [
+     "update index-DgSoD4T8.js:77:88469",
+     7256392
+    ],
+    [
+     "getCacheKey index-DgSoD4T8.js:56:7254",
+     6816856
+    ],
+    [
+     "get index-DgSoD4T8.js:77:108559",
+     6250152
+    ],
+    [
+     "sort :-1:-1",
+     5810512
+    ]
+   ],
+   "errors": []
+  },
+  {
+   "round": 0,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 25.16,
+   "frameAvgMs": 19.792,
+   "frameP95Ms": 35.6,
+   "fps": 50.526,
+   "polls": [
+    {
+     "avg": 20.290000017980734,
+     "p95": 33.20000076293945,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 19.791666621218123,
+     "p95": 35.599998474121094,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 19.72750003139178,
+     "p95": 35.599998474121094,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 20.068333332985638,
+     "p95": 33.099998474121094,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 19.60499997312824,
+     "p95": 35.900001525878906,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    }
+   ],
+   "scriptMsPerS": 556.425,
+   "taskMsPerS": 988.591,
+   "scriptMsPerFrame": 11.013,
+   "taskMsPerFrame": 19.566,
+   "allocKBPerS": 4324.324,
+   "allocBytesPerFrame": 87639.643,
+   "heapUsedMB": 12.456,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [
+    [
+     "gre index-DgSoD4T8.js:77:104237",
+     11296848
+    ],
+    [
+     "update index-DgSoD4T8.js:77:88469",
+     8883680
+    ],
+    [
+     "getOwnPropertyNames :-1:-1",
+     8358536
+    ],
+    [
+     "getCacheKey index-DgSoD4T8.js:56:7254",
+     7596040
+    ],
+    [
+     "customCacheKey index-DgSoD4T8.js:56:32849",
+     7244792
+    ],
+    [
+     "project index-DgSoD4T8.js:82:42378",
+     7160620
+    ],
+    [
+     "get index-DgSoD4T8.js:77:108559",
+     6643764
+    ],
+    [
+     "sort :-1:-1",
+     6262240
+    ]
+   ],
+   "errors": []
+  },
+  {
+   "round": 1,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 25.185,
+   "frameAvgMs": 21.061,
+   "frameP95Ms": 24,
+   "fps": 47.482,
+   "polls": [
+    {
+     "avg": 21.605000005165735,
+     "p95": 24.399999618530273,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 20.768333328763642,
+     "p95": 23.799999237060547,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 20.385416707893214,
+     "p95": 22.600000381469727,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 21.06083327929179,
+     "p95": 24,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 21.72458336055279,
+     "p95": 24.399999618530273,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    }
+   ],
+   "scriptMsPerS": 610.616,
+   "taskMsPerS": 986.58,
+   "scriptMsPerFrame": 12.86,
+   "taskMsPerFrame": 20.778,
+   "allocKBPerS": 4090.3,
+   "allocBytesPerFrame": 88212.614,
+   "heapUsedMB": 12.511,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [
+    [
+     "gre index-DgSoD4T8.js:77:104237",
+     10477056
+    ],
+    [
+     "update index-DgSoD4T8.js:77:88469",
+     8217976
+    ],
+    [
+     "getOwnPropertyNames :-1:-1",
+     7789560
+    ],
+    [
+     "customCacheKey index-DgSoD4T8.js:56:32849",
+     7294080
+    ],
+    [
+     "project index-DgSoD4T8.js:82:42378",
+     6927424
+    ],
+    [
+     "getCacheKey index-DgSoD4T8.js:56:7254",
+     6456000
+    ],
+    [
+     "get index-DgSoD4T8.js:77:108559",
+     6258312
+    ],
+    [
+     "sort :-1:-1",
+     6213100
+    ]
+   ],
+   "errors": []
+  },
+  {
+   "round": 1,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 25.136,
+   "frameAvgMs": 15.458,
+   "frameP95Ms": 20,
+   "fps": 64.69,
+   "polls": [
+    {
+     "avg": 20.31458334848285,
+     "p95": 35.79999923706055,
+     "scale": 0.55,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 16.300416686013342,
+     "p95": 33.400001525878906,
+     "scale": 0.5,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 15.458333336934448,
+     "p95": 20,
+     "scale": 0.5,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 15.434166702628136,
+     "p95": 17.899999618530273,
+     "scale": 0.5,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 15.042916658769052,
+     "p95": 18,
+     "scale": 0.5,
+     "draws": 189,
+     "tris": 332382
+    }
+   ],
+   "scriptMsPerS": 776.659,
+   "taskMsPerS": 984.284,
+   "scriptMsPerFrame": 12.006,
+   "taskMsPerFrame": 15.215,
+   "allocKBPerS": 5505.372,
+   "allocBytesPerFrame": 87146.369,
+   "heapUsedMB": 12.894,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.5,
+    "signal": "interval",
+    "p90Ms": 12.3264741897583,
+    "steps": 3
+   },
+   "topAlloc": [
+    [
+     "gre index-DgSoD4T8.js:77:104237",
+     13871016
+    ],
+    [
+     "getOwnPropertyNames :-1:-1",
+     10188608
+    ],
+    [
+     "update index-DgSoD4T8.js:77:88469",
+     10058828
+    ],
+    [
+     "customCacheKey index-DgSoD4T8.js:56:32849",
+     9099144
+    ],
+    [
+     "getCacheKey index-DgSoD4T8.js:56:7254",
+     8728120
+    ],
+    [
+     "project index-DgSoD4T8.js:82:42378",
+     8240328
+    ],
+    [
+     "get index-DgSoD4T8.js:77:108559",
+     8218776
+    ],
+    [
+     "sort :-1:-1",
+     7518812
+    ]
+   ],
+   "errors": []
+  },
+  {
+   "round": 2,
+   "variant": "on",
+   "appliedScale": 0.75,
+   "seconds": 25.147,
+   "frameAvgMs": 16.222,
+   "frameP95Ms": 27,
+   "fps": 61.646,
+   "polls": [
+    {
+     "avg": 19.368750050415596,
+     "p95": 35.70000076293945,
+     "scale": 0.55,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 15.699166655540466,
+     "p95": 18,
+     "scale": 0.55,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 15.85541662350297,
+     "p95": 27,
+     "scale": 0.55,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 16.847500020017225,
+     "p95": 34.099998474121094,
+     "scale": 0.55,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 16.221666662891707,
+     "p95": 18,
+     "scale": 0.55,
+     "draws": 189,
+     "tris": 332382
+    }
+   ],
+   "scriptMsPerS": 773.016,
+   "taskMsPerS": 985.61,
+   "scriptMsPerFrame": 12.54,
+   "taskMsPerFrame": 15.988,
+   "allocKBPerS": 5416.179,
+   "allocBytesPerFrame": 89968.079,
+   "heapUsedMB": 11.811,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": true,
+    "pinned": false,
+    "scale": 0.55,
+    "signal": "gpu",
+    "p90Ms": 14.045448303222656,
+    "steps": 2
+   },
+   "topAlloc": [
+    [
+     "gre index-DgSoD4T8.js:77:104237",
+     13239768
+    ],
+    [
+     "update index-DgSoD4T8.js:77:88469",
+     10190284
+    ],
+    [
+     "getOwnPropertyNames :-1:-1",
+     9957620
+    ],
+    [
+     "customCacheKey index-DgSoD4T8.js:56:32849",
+     9804420
+    ],
+    [
+     "project index-DgSoD4T8.js:82:42378",
+     8638552
+    ],
+    [
+     "getCacheKey index-DgSoD4T8.js:56:7254",
+     8547704
+    ],
+    [
+     "sort :-1:-1",
+     8074032
+    ],
+    [
+     "get index-DgSoD4T8.js:77:108559",
+     8062736
+    ]
+   ],
+   "errors": []
+  },
+  {
+   "round": 2,
+   "variant": "off",
+   "appliedScale": 0.75,
+   "seconds": 25.293,
+   "frameAvgMs": 21.59,
+   "frameP95Ms": 41.8,
+   "fps": 46.317,
+   "polls": [
+    {
+     "avg": 20.274583304673435,
+     "p95": 39.5,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 21.590416642278434,
+     "p95": 41.79999923706055,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 21.779583337157966,
+     "p95": 42.5,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 21.673333356529476,
+     "p95": 42,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    },
+    {
+     "avg": 21.136250011374553,
+     "p95": 41.099998474121094,
+     "scale": 0.75,
+     "draws": 189,
+     "tris": 332382
+    }
+   ],
+   "scriptMsPerS": 652.712,
+   "taskMsPerS": 984.683,
+   "scriptMsPerFrame": 14.092,
+   "taskMsPerFrame": 21.26,
+   "allocKBPerS": 4087.346,
+   "allocBytesPerFrame": 90365.443,
+   "heapUsedMB": 13.465,
+   "backend": "webgpu",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "debugModule": false,
+   "dynres": {
+    "enabled": false,
+    "pinned": false,
+    "scale": 0.75,
+    "signal": "interval",
+    "p90Ms": 0,
+    "steps": 0
+   },
+   "topAlloc": [
+    [
+     "gre index-DgSoD4T8.js:77:104237",
+     10755780
+    ],
+    [
+     "update index-DgSoD4T8.js:77:88469",
+     8242676
+    ],
+    [
+     "getOwnPropertyNames :-1:-1",
+     8069672
+    ],
+    [
+     "customCacheKey index-DgSoD4T8.js:56:32849",
+     7400504
+    ],
+    [
+     "project index-DgSoD4T8.js:82:42378",
+     6634372
+    ],
+    [
+     "getCacheKey index-DgSoD4T8.js:56:7254",
+     6611428
+    ],
+    [
+     "get index-DgSoD4T8.js:77:108559",
+     6020488
+    ],
+    [
+     "sort :-1:-1",
+     5882896
+    ]
+   ],
+   "errors": []
+  }
+ ],
+ "summary": {
+  "on": {
+   "frameAvgMs": {
+    "median": 16.222,
+    "all": [
+     20.985,
+     15.458,
+     16.222
+    ]
+   },
+   "frameP95Ms": {
+    "median": 24.9,
+    "all": [
+     24.9,
+     20,
+     27
+    ]
+   },
+   "fps": {
+    "median": 61.646,
+    "all": [
+     47.652,
+     64.69,
+     61.646
+    ]
+   },
+   "scriptMsPerFrame": {
+    "median": 12.54,
+    "all": [
+     16.746,
+     12.006,
+     12.54
+    ]
+   },
+   "taskMsPerFrame": {
+    "median": 15.988,
+    "all": [
+     20.721,
+     15.215,
+     15.988
+    ]
+   },
+   "scriptMsPerS": {
+    "median": 776.659,
+    "all": [
+     797.965,
+     776.659,
+     773.016
+    ]
+   },
+   "allocKBPerS": {
+    "median": 5416.179,
+    "all": [
+     4264.66,
+     5505.372,
+     5416.179
+    ]
+   },
+   "allocBytesPerFrame": {
+    "median": 89968.079,
+    "all": [
+     91643.554,
+     87146.369,
+     89968.079
+    ]
+   }
+  },
+  "off": {
+   "frameAvgMs": {
+    "median": 21.061,
+    "all": [
+     19.792,
+     21.061,
+     21.59
+    ]
+   },
+   "frameP95Ms": {
+    "median": 35.6,
+    "all": [
+     35.6,
+     24,
+     41.8
+    ]
+   },
+   "fps": {
+    "median": 47.482,
+    "all": [
+     50.526,
+     47.482,
+     46.317
+    ]
+   },
+   "scriptMsPerFrame": {
+    "median": 12.86,
+    "all": [
+     11.013,
+     12.86,
+     14.092
+    ]
+   },
+   "taskMsPerFrame": {
+    "median": 20.778,
+    "all": [
+     19.566,
+     20.778,
+     21.26
+    ]
+   },
+   "scriptMsPerS": {
+    "median": 610.616,
+    "all": [
+     556.425,
+     610.616,
+     652.712
+    ]
+   },
+   "allocKBPerS": {
+    "median": 4090.3,
+    "all": [
+     4324.324,
+     4090.3,
+     4087.346
+    ]
+   },
+   "allocBytesPerFrame": {
+    "median": 88212.614,
+    "all": [
+     87639.643,
+     88212.614,
+     90365.443
+    ]
+   }
+  }
+ }
+}

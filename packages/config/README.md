@@ -40,7 +40,7 @@ The sources are `.ts` files loaded directly by Node 26 (native type stripping), 
 ## Commands
 
 ```
-pnpm --filter @moon-cleanup/config lint typecheck test
+pnpm turbo run lint typecheck test --filter=@moon-cleanup/config
 pnpm exec eslint packages/config
 pnpm exec tsc -p packages/config/tsconfig.json
 ```

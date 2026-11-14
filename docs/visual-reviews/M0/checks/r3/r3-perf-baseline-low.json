@@ -1,0 +1,239 @@
+{
+ "base": "preset=low&backend=webgpu&scale=ceil",
+ "variants": [
+  {
+   "name": "s01",
+   "query": "scene=s01"
+  },
+  {
+   "name": "s05",
+   "query": "scene=s05"
+  },
+  {
+   "name": "s06",
+   "query": "scene=s06&lampres=1024"
+  }
+ ],
+ "warm": 6,
+ "seconds": 8,
+ "rounds": 3,
+ "rows": [
+  {
+   "round": 0,
+   "variant": "s01",
+   "frames": 355,
+   "fps": 44.2,
+   "avg": 22.62,
+   "p50": 20.6,
+   "p95": 39.5,
+   "p99": 92,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "s05",
+   "frames": 354,
+   "fps": 43.4,
+   "avg": 23.05,
+   "p50": 22.4,
+   "p95": 34,
+   "p99": 45.3,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 0,
+   "variant": "s06",
+   "frames": 216,
+   "fps": 26.9,
+   "avg": 37.2,
+   "p50": 37,
+   "p95": 45.5,
+   "p99": 50.9,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "s01",
+   "frames": 343,
+   "fps": 34.9,
+   "avg": 28.64,
+   "p50": 19.5,
+   "p95": 79.4,
+   "p99": 125.6,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "s06",
+   "frames": 215,
+   "fps": 26.6,
+   "avg": 37.57,
+   "p50": 36.7,
+   "p95": 46.9,
+   "p99": 63.4,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 1,
+   "variant": "s05",
+   "frames": 340,
+   "fps": 41.9,
+   "avg": 23.86,
+   "p50": 22.8,
+   "p95": 36.1,
+   "p99": 56.4,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 2,
+   "variant": "s06",
+   "frames": 205,
+   "fps": 25.5,
+   "avg": 39.25,
+   "p50": 38.2,
+   "p95": 49.8,
+   "p99": 65.8,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 2,
+   "variant": "s01",
+   "frames": 363,
+   "fps": 45.4,
+   "avg": 22.04,
+   "p50": 21.5,
+   "p95": 29.9,
+   "p99": 48.6,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  },
+  {
+   "round": 2,
+   "variant": "s05",
+   "frames": 362,
+   "fps": 44.5,
+   "avg": 22.46,
+   "p50": 22.1,
+   "p95": 25.9,
+   "p99": 32.6,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0
+  }
+ ],
+ "summary": {
+  "s01": {
+   "pages": 3,
+   "fps": 44.2,
+   "p50": 20.6,
+   "p50All": [
+    20.6,
+    19.5,
+    21.5
+   ],
+   "p95": 39.5,
+   "p95All": [
+    39.5,
+    79.4,
+    29.9
+   ],
+   "avg": 22.62
+  },
+  "s05": {
+   "pages": 3,
+   "fps": 43.4,
+   "p50": 22.4,
+   "p50All": [
+    22.4,
+    22.8,
+    22.1
+   ],
+   "p95": 34,
+   "p95All": [
+    34,
+    36.1,
+    25.9
+   ],
+   "avg": 23.05,
+   "deltaP50": 1.8
+  },
+  "s06": {
+   "pages": 3,
+   "fps": 26.6,
+   "p50": 37,
+   "p50All": [
+    37,
+    36.7,
+    38.2
+   ],
+   "p95": 46.9,
+   "p95All": [
+    45.5,
+    46.9,
+    49.8
+   ],
+   "avg": 37.57,
+   "deltaP50": 16.4
+  }
+ }
+}

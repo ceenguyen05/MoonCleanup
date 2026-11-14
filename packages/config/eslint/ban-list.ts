@@ -5,7 +5,8 @@
 //
 // Two mechanisms, because `no-restricted-imports` cannot see `THREE.Clock` or `material.onBeforeCompile`:
 //   1. import-source bans (this file: bannedImportPaths / bannedImportPatterns), merged into every layer;
-//   2. AST selectors (bannedSyntax) for named imports from three*, property access and object/class members.
+//   2. AST selectors: bannedSyntax (every file: named imports, onBeforeCompile members) and bannedThreeMemberSyntax
+//      (client/tools/e2e only: THREE.X members, type positions, destructuring).
 
 /** Class, constant and method names that must never appear (see rendering-pipeline.md section 18). */
 export const BANNED_THREE_NAMES = [
@@ -45,33 +46,31 @@ function message(name: (typeof BANNED_THREE_NAMES)[number]): string {
 // esquery regex literals cannot contain "/", so the module-path boundary is written as \x2f.
 const THREE_SOURCE = String.raw`/^three($|\x2f)/`;
 
-/** Names that are banned as property names everywhere. `Clock` is handled separately (too generic as a bare name). */
+/** Names that are banned as member / type / destructured names. `Clock` is handled separately (too generic as a bare name). */
 const PROPERTY_BANNED = BANNED_THREE_NAMES.filter((n) => n !== "Clock");
-const propertyRegex = `/^(${PROPERTY_BANNED.join("|")})$/`;
-const importedRegex = `/^(${BANNED_THREE_NAMES.filter((n) => n !== "renderAsync" && n !== "onBeforeCompile").join("|")})$/`;
+/** Names that three.js actually exports (renderAsync and onBeforeCompile are members, not exports). */
+const IMPORTED_BANNED = BANNED_THREE_NAMES.filter((n) => n !== "renderAsync" && n !== "onBeforeCompile");
+/** Identifiers that conventionally hold the three.js namespace; `Clock` is only banned on these. */
+const NAMESPACE = String.raw`/^(THREE|three|Three)$/`;
 
-/** `no-restricted-syntax` entries enforcing the ban-list. */
+/**
+ * `no-restricted-syntax` entries that apply in EVERY linted file: named imports / re-exports from three*, and
+ * object / class members called onBeforeCompile. One selector per name so each fixture fails for its own reason
+ * (T02 review finding 12).
+ */
 export const bannedSyntax: { selector: string; message: string }[] = [
-  {
-    // import { WebGLRenderer, Clock, ... } from "three" | "three/webgpu" | "three/addons/..."
-    selector: `ImportDeclaration[source.value=${THREE_SOURCE}] > ImportSpecifier[imported.name=${importedRegex}]`,
-    message: `three.js ban-list: this named import from three is banned (${BANNED_THREE_NAMES.filter((n) => n !== "renderAsync" && n !== "onBeforeCompile").join(", ")}). See ${BAN_LIST_DOC}.`,
-  },
-  {
-    // export { Clock } from "three"
-    selector: `ExportNamedDeclaration[source.value=${THREE_SOURCE}] > ExportSpecifier[local.name=${importedRegex}]`,
-    message: `three.js ban-list: re-exporting a banned three.js name. See ${BAN_LIST_DOC}.`,
-  },
-  {
-    // THREE.WebGLRenderer, renderer.renderAsync(), material.onBeforeCompile = ...
-    selector: `MemberExpression[computed=false][property.name=${propertyRegex}]`,
-    message: `three.js ban-list: banned member (${PROPERTY_BANNED.join(", ")}). See ${BAN_LIST_DOC}.`,
-  },
-  {
-    // new THREE.Clock()
-    selector: `NewExpression > MemberExpression.callee[computed=false][property.name="Clock"]`,
-    message: message("Clock"),
-  },
+  ...IMPORTED_BANNED.flatMap((name) => [
+    {
+      // import { WebGLRenderer, Clock, ... } from "three" | "three/webgpu" | "three/addons/..."
+      selector: `ImportDeclaration[source.value=${THREE_SOURCE}] > ImportSpecifier[imported.name="${name}"]`,
+      message: message(name),
+    },
+    {
+      // export { Clock } from "three"
+      selector: `ExportNamedDeclaration[source.value=${THREE_SOURCE}] > ExportSpecifier[local.name="${name}"]`,
+      message: message(name),
+    },
+  ]),
   {
     // { onBeforeCompile() {} } and { onBeforeCompile: fn }
     selector: `Property[computed=false][key.name="onBeforeCompile"]`,
@@ -81,6 +80,38 @@ export const bannedSyntax: { selector: string; message: string }[] = [
     // class X { onBeforeCompile() {} } and class X { onBeforeCompile = fn }
     selector: `:matches(MethodDefinition, PropertyDefinition)[computed=false][key.name="onBeforeCompile"]`,
     message: message("onBeforeCompile"),
+  },
+];
+
+/**
+ * Member / type / destructuring forms. Applied only where three.js can be imported (apps/client, tools, tests/e2e):
+ * the server and the environment-agnostic packages cannot import three, so a bare member such as
+ * `hooks.onBeforeCompile` or `report.renderAsync()` there is not a three.js use (T02 review finding 3).
+ */
+export const bannedThreeMemberSyntax: { selector: string; message: string }[] = [
+  ...PROPERTY_BANNED.flatMap((name) => [
+    // THREE.WebGLRenderer, renderer.renderAsync(), material.onBeforeCompile = ...
+    { selector: `MemberExpression[computed=false][property.name="${name}"]`, message: message(name) },
+    // THREE["WebGLRenderer"]
+    { selector: `MemberExpression[computed=true][property.value="${name}"]`, message: message(name) },
+    // let r: THREE.WebGLRenderer; type T = typeof THREE.WebGLRenderer
+    { selector: `TSQualifiedName[right.name="${name}"]`, message: message(name) },
+    // const { WebGLRenderer } = THREE; const { renderAsync } = r
+    { selector: `ObjectPattern > Property[key.name="${name}"]`, message: message(name) },
+  ]),
+  // Clock only on the three namespace (new THREE.Clock(), extends THREE.Clock, THREE.Clock, type positions, destructuring).
+  {
+    selector: `MemberExpression[computed=false][property.name="Clock"][object.name=${NAMESPACE}]`,
+    message: message("Clock"),
+  },
+  {
+    selector: `MemberExpression[computed=true][property.value="Clock"][object.name=${NAMESPACE}]`,
+    message: message("Clock"),
+  },
+  { selector: `TSQualifiedName[left.name=${NAMESPACE}][right.name="Clock"]`, message: message("Clock") },
+  {
+    selector: `VariableDeclarator[init.name=${NAMESPACE}] > ObjectPattern > Property[key.name="Clock"]`,
+    message: message("Clock"),
   },
 ];
 
@@ -106,6 +137,11 @@ export const bannedImportPatterns: { group: string[]; message: string }[] = [
     group: ["three/examples/jsm/loaders/RGBELoader*", "three/addons/loaders/RGBELoader*"],
     message: `three.js ban-list: ${message("RGBELoader")}`,
   },
+  // default imports of the class file itself: import W from "three/src/renderers/WebGLRenderer.js"
+  ...(["WebGLRenderer", "ShaderMaterial", "RawShaderMaterial", "Clock"] as const).map((name) => ({
+    group: [`three/src/**/${name}*`],
+    message: `three.js ban-list: ${message(name)}`,
+  })),
   {
     group: ["postprocessing/**"],
     message: `The pmndrs "postprocessing" library is banned. See ${BAN_LIST_DOC}.`,

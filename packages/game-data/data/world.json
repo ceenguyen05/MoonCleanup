@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "moonRadiusM": 2000,
+  "gridFrequency": 128,
+  "plotCount": 163842,
+  "gravityMps2": 1.62,
+  "dayLengthS": 3600,
+  "daylightFrac": 0.5,
+  "contractStartSunPhase": 0,
+  "terrainClasses": [
+    { "id": "terrain.highland", "plotShareFrac": 0.55, "dustLevel": 5 },
+    { "id": "terrain.mare", "plotShareFrac": 0.35, "dustLevel": 8 },
+    { "id": "terrain.crater_floor", "plotShareFrac": 0.1, "dustLevel": 13 }
+  ],
+  "dustKgPerM2PerLevel": 0.062,
+  "openedThresholdFrac": 0.001,
+  "polishedThresholdFrac": 0.01,
+  "steepSlopeDeg": 25,
+  "steepSweepMult": 0.6,
+  "outpostMix": {
+    "radiusM": 600,
+    "shares": [
+      { "terrainId": "terrain.highland", "frac": 0.9 },
+      { "terrainId": "terrain.mare", "frac": 0.08 },
+      { "terrainId": "terrain.crater_floor", "frac": 0.02 }
+    ]
+  },
+  "compoundRings": 1,
+  "landingApron": { "plotsPerOutpost": 6, "coverageFrac": 0.2, "dustLevel": 2 }
+}

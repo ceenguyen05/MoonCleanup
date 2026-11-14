@@ -4,5 +4,5 @@
     "lib": ["ES2024", "DOM"],
     "types": ["node"]
   },
-  "include": ["specs", "fixtures"]
+  "include": ["specs", "playwright.config.ts"]
 }

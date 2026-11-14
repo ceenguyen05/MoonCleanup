@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "onBreakAfterS": 600,
+  "tempRemoveOnBreakS": 1800,
+  "idleCloseS": 1800,
+  "openShiftAdmitRequiresLeadOnlineS": 600,
+  "tempVoteKick": { "minVotes": 3 },
+  "cleanupOrder": { "nearestAlbatrossNext": true, "holderOrSupervisorOnly": true, "maxFlaggedPlots": 10 },
+  "serviceCall": { "durationS": 60, "maxPerDay": 3 },
+  "loanerKit": { "maxVehiclesOut": 4 }
+}

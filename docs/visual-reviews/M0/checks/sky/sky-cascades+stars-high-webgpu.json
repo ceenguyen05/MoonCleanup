@@ -1,0 +1,508 @@
+{
+ "preset": "high",
+ "backend": "webgpu",
+ "cascades": {
+  "sidecar": [
+   {
+    "index": 0,
+    "texelM": 0.009200557347415882,
+    "endM": 8
+   },
+   {
+    "index": 1,
+    "texelM": 0.06441483895014039,
+    "endM": 56
+   },
+   {
+    "index": 2,
+    "texelM": 0.23017018394581418,
+    "endM": 200
+   }
+  ],
+  "shadowFilter": "vogel5",
+  "live": [
+   {
+    "light": "mc:key-light",
+    "castShadow": true,
+    "cascades": 3,
+    "maps": [
+     {
+      "mapPx": [
+       2048,
+       2048
+      ],
+      "widthM": 18.84,
+      "normalBiasM": 0.0117,
+      "radius": 1.5
+     },
+     {
+      "mapPx": [
+       2048,
+       2048
+      ],
+      "widthM": 131.92,
+      "normalBiasM": 0.0818,
+      "radius": 1.5
+     },
+     {
+      "mapPx": [
+       2048,
+       2048
+      ],
+      "widthM": 471.39,
+      "normalBiasM": 0.2924,
+      "radius": 1.5
+     }
+    ],
+    "fade": true,
+    "maxFar": 200
+   }
+  ],
+  "errors": []
+ },
+ "stars": {
+  "panDegPerS": 2,
+  "frames": 90,
+  "pxPerFrameAtCentre": 0.54,
+  "tracked": 39,
+  "unsaturated": 39,
+  "peakVariationMedian": 0.338,
+  "peakVariationWorst": 0.462,
+  "shareWithin10pct": 0,
+  "fluxVariationMedian": 0.449,
+  "sigmaMedianPx": 1.11,
+  "roundnessMedian": 0.81,
+  "rows": [
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 201,
+    "peakMin": 168.1,
+    "peakVariation": 0.164,
+    "fluxVariation": 0.288,
+    "sigmaX": 1.44,
+    "sigmaY": 1.26,
+    "roundness": 0.87
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 167.1,
+    "peakMin": 124.2,
+    "peakVariation": 0.257,
+    "fluxVariation": 0.378,
+    "sigmaX": 1.29,
+    "sigmaY": 1.08,
+    "roundness": 0.83
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 166.1,
+    "peakMin": 133.2,
+    "peakVariation": 0.198,
+    "fluxVariation": 0.313,
+    "sigmaX": 1.38,
+    "sigmaY": 1.18,
+    "roundness": 0.86
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 164.1,
+    "peakMin": 123,
+    "peakVariation": 0.251,
+    "fluxVariation": 0.373,
+    "sigmaX": 1.27,
+    "sigmaY": 1.05,
+    "roundness": 0.83
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 154.1,
+    "peakMin": 115.1,
+    "peakVariation": 0.253,
+    "fluxVariation": 0.357,
+    "sigmaX": 1.27,
+    "sigmaY": 1.05,
+    "roundness": 0.83
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 154.1,
+    "peakMin": 115.1,
+    "peakVariation": 0.253,
+    "fluxVariation": 0.357,
+    "sigmaX": 1.27,
+    "sigmaY": 1.05,
+    "roundness": 0.83
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 145.8,
+    "peakMin": 106.6,
+    "peakVariation": 0.269,
+    "fluxVariation": 0.401,
+    "sigmaX": 1.25,
+    "sigmaY": 1.03,
+    "roundness": 0.82
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 133.9,
+    "peakMin": 95.1,
+    "peakVariation": 0.29,
+    "fluxVariation": 0.385,
+    "sigmaX": 1.28,
+    "sigmaY": 1.04,
+    "roundness": 0.81
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 133.3,
+    "peakMin": 88.3,
+    "peakVariation": 0.338,
+    "fluxVariation": 0.454,
+    "sigmaX": 1.2,
+    "sigmaY": 0.97,
+    "roundness": 0.81
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 131.8,
+    "peakMin": 87.2,
+    "peakVariation": 0.338,
+    "fluxVariation": 0.474,
+    "sigmaX": 1.23,
+    "sigmaY": 0.98,
+    "roundness": 0.79
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 131.7,
+    "peakMin": 94.8,
+    "peakVariation": 0.28,
+    "fluxVariation": 0.456,
+    "sigmaX": 1.26,
+    "sigmaY": 1.03,
+    "roundness": 0.82
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 131.6,
+    "peakMin": 90.6,
+    "peakVariation": 0.311,
+    "fluxVariation": 0.409,
+    "sigmaX": 1.18,
+    "sigmaY": 0.97,
+    "roundness": 0.82
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 131,
+    "peakMin": 89.1,
+    "peakVariation": 0.32,
+    "fluxVariation": 0.456,
+    "sigmaX": 1.24,
+    "sigmaY": 0.99,
+    "roundness": 0.8
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 130.3,
+    "peakMin": 80.3,
+    "peakVariation": 0.384,
+    "fluxVariation": 0.474,
+    "sigmaX": 1.16,
+    "sigmaY": 0.92,
+    "roundness": 0.79
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 127.2,
+    "peakMin": 90.3,
+    "peakVariation": 0.29,
+    "fluxVariation": 0.448,
+    "sigmaX": 1.36,
+    "sigmaY": 1.09,
+    "roundness": 0.8
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 127.8,
+    "peakMin": 88.3,
+    "peakVariation": 0.31,
+    "fluxVariation": 0.397,
+    "sigmaX": 1.18,
+    "sigmaY": 0.96,
+    "roundness": 0.82
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 122.6,
+    "peakMin": 86.8,
+    "peakVariation": 0.292,
+    "fluxVariation": 0.444,
+    "sigmaX": 1.37,
+    "sigmaY": 1.1,
+    "roundness": 0.81
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 117,
+    "peakMin": 67.2,
+    "peakVariation": 0.426,
+    "fluxVariation": 0.494,
+    "sigmaX": 1.15,
+    "sigmaY": 0.95,
+    "roundness": 0.83
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 116.2,
+    "peakMin": 68.4,
+    "peakVariation": 0.412,
+    "fluxVariation": 0.493,
+    "sigmaX": 1.1,
+    "sigmaY": 0.85,
+    "roundness": 0.78
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 114.9,
+    "peakMin": 75.6,
+    "peakVariation": 0.342,
+    "fluxVariation": 0.441,
+    "sigmaX": 1.22,
+    "sigmaY": 0.97,
+    "roundness": 0.8
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 111.4,
+    "peakMin": 70.3,
+    "peakVariation": 0.369,
+    "fluxVariation": 0.505,
+    "sigmaX": 1.16,
+    "sigmaY": 0.92,
+    "roundness": 0.79
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 110.5,
+    "peakMin": 60.5,
+    "peakVariation": 0.453,
+    "fluxVariation": 0.525,
+    "sigmaX": 1.1,
+    "sigmaY": 0.87,
+    "roundness": 0.79
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 110.1,
+    "peakMin": 72.1,
+    "peakVariation": 0.345,
+    "fluxVariation": 0.49,
+    "sigmaX": 1.2,
+    "sigmaY": 0.96,
+    "roundness": 0.8
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 108.8,
+    "peakMin": 65.4,
+    "peakVariation": 0.399,
+    "fluxVariation": 0.449,
+    "sigmaX": 1.11,
+    "sigmaY": 0.88,
+    "roundness": 0.79
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 108,
+    "peakMin": 74.8,
+    "peakVariation": 0.307,
+    "fluxVariation": 0.419,
+    "sigmaX": 1.33,
+    "sigmaY": 1.07,
+    "roundness": 0.8
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 108.1,
+    "peakMin": 60.8,
+    "peakVariation": 0.437,
+    "fluxVariation": 0.449,
+    "sigmaX": 1.2,
+    "sigmaY": 1.05,
+    "roundness": 0.88
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 107.4,
+    "peakMin": 66,
+    "peakVariation": 0.385,
+    "fluxVariation": 0.498,
+    "sigmaX": 1.25,
+    "sigmaY": 0.97,
+    "roundness": 0.78
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 106.6,
+    "peakMin": 78.3,
+    "peakVariation": 0.265,
+    "fluxVariation": 0.387,
+    "sigmaX": 1.29,
+    "sigmaY": 1.06,
+    "roundness": 0.82
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 105.5,
+    "peakMin": 71.6,
+    "peakVariation": 0.322,
+    "fluxVariation": 0.461,
+    "sigmaX": 1.23,
+    "sigmaY": 1.01,
+    "roundness": 0.82
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 105.2,
+    "peakMin": 61.1,
+    "peakVariation": 0.419,
+    "fluxVariation": 0.415,
+    "sigmaX": 1.48,
+    "sigmaY": 1.14,
+    "roundness": 0.77
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 105.1,
+    "peakMin": 62.3,
+    "peakVariation": 0.408,
+    "fluxVariation": 0.475,
+    "sigmaX": 1.17,
+    "sigmaY": 0.96,
+    "roundness": 0.82
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 103.6,
+    "peakMin": 72.1,
+    "peakVariation": 0.305,
+    "fluxVariation": 0.439,
+    "sigmaX": 1.27,
+    "sigmaY": 1,
+    "roundness": 0.78
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 103.9,
+    "peakMin": 60.1,
+    "peakVariation": 0.422,
+    "fluxVariation": 0.456,
+    "sigmaX": 1.13,
+    "sigmaY": 0.91,
+    "roundness": 0.81
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 103.9,
+    "peakMin": 60.1,
+    "peakVariation": 0.422,
+    "fluxVariation": 0.456,
+    "sigmaX": 1.13,
+    "sigmaY": 0.91,
+    "roundness": 0.81
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 102.9,
+    "peakMin": 67.9,
+    "peakVariation": 0.34,
+    "fluxVariation": 0.404,
+    "sigmaX": 1.23,
+    "sigmaY": 1.03,
+    "roundness": 0.84
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 102.8,
+    "peakMin": 55.3,
+    "peakVariation": 0.462,
+    "fluxVariation": 0.536,
+    "sigmaX": 1.07,
+    "sigmaY": 0.81,
+    "roundness": 0.76
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 102.3,
+    "peakMin": 61.1,
+    "peakVariation": 0.402,
+    "fluxVariation": 0.466,
+    "sigmaX": 1.09,
+    "sigmaY": 0.87,
+    "roundness": 0.79
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 97.9,
+    "peakMin": 53.1,
+    "peakVariation": 0.457,
+    "fluxVariation": 0.531,
+    "sigmaX": 1.06,
+    "sigmaY": 0.81,
+    "roundness": 0.77
+   },
+   {
+    "frames": 91,
+    "saturated": false,
+    "peakMax": 97.5,
+    "peakMin": 63.3,
+    "peakVariation": 0.35,
+    "fluxVariation": 0.463,
+    "sigmaX": 1.25,
+    "sigmaY": 0.97,
+    "roundness": 0.78
+   }
+  ],
+  "errors": []
+ }
+}

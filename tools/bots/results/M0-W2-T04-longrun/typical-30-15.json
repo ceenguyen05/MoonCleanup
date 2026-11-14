@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "scenario": "spike-16",
+    "milestone": "M0-W2-T04-longrun",
+    "url": "http://localhost:2571",
+    "profile": "typical",
+    "seed": 1,
+    "tickHz": 30,
+    "snapshotHz": 15,
+    "startedAt": "2026-11-13T11:56:35.552Z",
+    "durationS": 600,
+    "node": "v26.13.1"
+  },
+  "bots": {
+    "bots": 6,
+    "elapsedS": 600,
+    "snapshotHzTarget": 15,
+    "snapshotHzAchievedPerBot": 14.99,
+    "frameInterArrivalMs": {
+      "n": 54006,
+      "p50": 65.4,
+      "p95": 95.21,
+      "p99": 271.35,
+      "max": 520.3
+    },
+    "rttMs": {
+      "n": 1794,
+      "p50": 140,
+      "p95": 320,
+      "p99": 393,
+      "max": 564
+    },
+    "bytesInPerBotPerS": {
+      "FRAME": 2254,
+      "DUST": 601,
+      "PONG": 4,
+      "statePatch": 158,
+      "stateFull": 0,
+      "other": 0
+    },
+    "bytesInPerBotPerSTotal": 3017,
+    "inputsSent": 117064,
+    "inputMessages": 105508,
+    "skippedSends": 2548,
+    "resyncs": 17,
+    "joins": 7,
+    "disconnects": 7,
+    "unexpectedDrops": 0,
+    "reconnects": 1,
+    "serverBufferDepth": {
+      "n": 54013,
+      "p50": 2,
+      "p95": 3,
+      "p99": 3,
+      "max": 6
+    },
+    "botProcessHeapGrowthMB": 5.2
+  },
+  "server": {
+    "lines": 69,
+    "roomStatsLines": 62,
+    "tickMs": {
+      "p50Median": 0.24,
+      "p95Max": 0.935,
+      "maxMs": 17.009
+    },
+    "cpuPercentOfQuota": {
+      "median": 34.4,
+      "max": 74.9
+    },
+    "eventLoopP99MaxMs": 187.56,
+    "bytesOutPerClientPerS": {
+      "SPIKE_FRAME": 2308,
+      "schema_patch": 188,
+      "SPIKE_DUST": 631,
+      "PONG": 6,
+      "other": 0,
+      "schema_full": 0,
+      "control": 0
+    },
+    "rssMB": null,
+    "heapUsedMB": null,
+    "counters": null,
+    "lastSpikeLoop": null
+  },
+  "netsim": null,
+  "desync": {
+    "count": null,
+    "note": "n/a in spike: synthetic world has no client prediction to compare (arrives with M1 sim)"
+  },
+  "rejectedInputs": {
+    "late": null,
+    "rateLimited": null,
+    "malformed": null,
+    "substituted": null
+  }
+}

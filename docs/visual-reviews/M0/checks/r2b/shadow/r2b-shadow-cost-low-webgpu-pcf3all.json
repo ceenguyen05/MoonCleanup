@@ -1,0 +1,172 @@
+{
+ "backend": "webgpu",
+ "preset": "low",
+ "variants": {
+  "before": "&shadowfilter=tent4&pcf=1.5",
+  "pcf3all": "&shadowfilter=pcf3",
+  "tent4r1": "&shadowfilter=tent4"
+ },
+ "cost": {
+  "rows": [
+   {
+    "round": 0,
+    "variant": "before",
+    "filter": "tent4",
+    "knobs": "shadowfilter=tent4 pcf=1.5",
+    "frames": 298,
+    "frameAvg": 26.23,
+    "frameP50": 26.2,
+    "frameP95": 30.6,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 0,
+    "variant": "pcf3all",
+    "filter": "pcf3",
+    "knobs": "shadowfilter=pcf3",
+    "frames": 304,
+    "frameAvg": 26.5,
+    "frameP50": 26.1,
+    "frameP95": 31.3,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 0,
+    "variant": "tent4r1",
+    "filter": "tent4",
+    "knobs": "shadowfilter=tent4",
+    "frames": 310,
+    "frameAvg": 25.74,
+    "frameP50": 25.5,
+    "frameP95": 30.2,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 1,
+    "variant": "before",
+    "filter": "tent4",
+    "knobs": "shadowfilter=tent4 pcf=1.5",
+    "frames": 311,
+    "frameAvg": 25.76,
+    "frameP50": 25.5,
+    "frameP95": 29.5,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 1,
+    "variant": "tent4r1",
+    "filter": "tent4",
+    "knobs": "shadowfilter=tent4",
+    "frames": 280,
+    "frameAvg": 28.65,
+    "frameP50": 26.6,
+    "frameP95": 39.7,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 1,
+    "variant": "pcf3all",
+    "filter": "pcf3",
+    "knobs": "shadowfilter=pcf3",
+    "frames": 278,
+    "frameAvg": 28.92,
+    "frameP50": 28.9,
+    "frameP95": 34.8,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 2,
+    "variant": "tent4r1",
+    "filter": "tent4",
+    "knobs": "shadowfilter=tent4",
+    "frames": 305,
+    "frameAvg": 25.87,
+    "frameP50": 25.5,
+    "frameP95": 30.6,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 2,
+    "variant": "before",
+    "filter": "tent4",
+    "knobs": "shadowfilter=tent4 pcf=1.5",
+    "frames": 314,
+    "frameAvg": 25.58,
+    "frameP50": 25.4,
+    "frameP95": 29.4,
+    "renderScale": 0.75,
+    "errors": 0
+   },
+   {
+    "round": 2,
+    "variant": "pcf3all",
+    "filter": "pcf3",
+    "knobs": "shadowfilter=pcf3",
+    "frames": 307,
+    "frameAvg": 26.02,
+    "frameP50": 25.4,
+    "frameP95": 30.5,
+    "renderScale": 0.75,
+    "errors": 0
+   }
+  ],
+  "summary": {
+   "before": {
+    "p50Median": 25.5,
+    "p50All": [
+     26.2,
+     25.5,
+     25.4
+    ],
+    "avgMedian": 25.76,
+    "avgAll": [
+     26.23,
+     25.76,
+     25.58
+    ],
+    "p95Median": 29.5
+   },
+   "pcf3all": {
+    "p50Median": 26.1,
+    "p50All": [
+     26.1,
+     28.9,
+     25.4
+    ],
+    "avgMedian": 26.5,
+    "avgAll": [
+     26.5,
+     28.92,
+     26.02
+    ],
+    "p95Median": 31.3,
+    "deltaP50Ms": 0.6,
+    "deltaAvgMs": 0.74
+   },
+   "tent4r1": {
+    "p50Median": 25.5,
+    "p50All": [
+     25.5,
+     26.6,
+     25.5
+    ],
+    "avgMedian": 25.87,
+    "avgAll": [
+     25.74,
+     28.65,
+     25.87
+    ],
+    "p95Median": 30.6,
+    "deltaP50Ms": 0,
+    "deltaAvgMs": 0.11
+   }
+  }
+ }
+}

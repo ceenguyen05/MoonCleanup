@@ -1,0 +1,233 @@
+{
+ "url": "http://localhost:5195/?scene=s05&preset=low&backend=webgpu&scale=1&sun=60&az=250&view=wide&slope=toward&shadowkernel=square&capture=1",
+ "meta": {
+  "look": {
+   "scene": "s05",
+   "state": {
+    "sunElevationDeg": 60,
+    "sunAzimuthDeg": 250,
+    "earthElevationDeg": 32,
+    "earthAzimuthDeg": 60,
+    "sunRateDegPerS": 0,
+    "earthDiameterDeg": 4.2
+   },
+   "keyMode": "sun",
+   "ev100": 14.3,
+   "cascades": [
+    {
+     "index": 0,
+     "texelM": 0.02300155612922763,
+     "endM": 10
+    },
+    {
+     "index": 1,
+     "texelM": 0.18405802202644278,
+     "endM": 80
+    }
+   ],
+   "preset": "low",
+   "backend": "webgpu",
+   "postPasses": [
+    "scene",
+    "grade",
+    "bloom",
+    "fxaa"
+   ],
+   "knobs": "shadowkernel=square",
+   "skyDome": "baked",
+   "shadowFilter": "pcf3+pcf5"
+  },
+  "mc": {
+   "backend": "webgpu",
+   "tier": "B",
+   "preset": "low",
+   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "dpr": 1,
+   "renderScale": 1,
+   "frameTimeAvgMs": 849.8666667938232,
+   "frameTimeP95Ms": 2083,
+   "drawCalls": 125,
+   "triangles": 295080,
+   "texPoolMB": 0,
+   "placeholderAssets": [],
+   "lossCount": 0
+  }
+ },
+ "az": 250,
+ "slope": "toward",
+ "suns": [
+  4,
+  1
+ ],
+ "targets": [
+  "post",
+  "boulder",
+  "boot"
+ ],
+ "nbias": "shipped",
+ "dbias": "shipped",
+ "dbt": "source",
+ "heights": {
+  "mc:look-post@0,0": 1,
+  "mc:look-boulder@0,8": 0.38037380218505856,
+  "mc:look-post@-22,0": 0.9567936282070167,
+  "mc:look-boulder@-22,8": 0.46865140695413915
+ },
+ "rows": [
+  {
+   "target": "post",
+   "sun": 4,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 5.3,
+   "expectedEdgeCm": 5.3,
+   "fFull": 0.614,
+   "shadowStartCm": 5.4,
+   "gapCm": 0,
+   "gapPx": 0,
+   "litLuma": 157.4,
+   "shadowLuma": 63,
+   "note": ""
+  },
+  {
+   "target": "boulder",
+   "sun": 4,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 41.4,
+   "expectedEdgeCm": null,
+   "fFull": 0.616,
+   "shadowStartCm": 41.5,
+   "gapCm": 0,
+   "gapPx": 0,
+   "litLuma": 153.8,
+   "shadowLuma": 63,
+   "note": ""
+  },
+  {
+   "target": "boot",
+   "sun": 4,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 16.6,
+   "expectedEdgeCm": null,
+   "fFull": 0.641,
+   "shadowStartCm": 16.7,
+   "gapCm": 0,
+   "gapPx": 0,
+   "litLuma": 157.3,
+   "shadowLuma": 63,
+   "note": ""
+  },
+  {
+   "target": "post",
+   "sun": 1,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 5.3,
+   "expectedEdgeCm": 5.3,
+   "fFull": 0.812,
+   "shadowStartCm": 5.4,
+   "gapCm": 0,
+   "gapPx": 0,
+   "litLuma": 92.9,
+   "shadowLuma": 19.1,
+   "note": ""
+  },
+  {
+   "target": "boulder",
+   "sun": 1,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 41.4,
+   "expectedEdgeCm": null,
+   "fFull": 0.804,
+   "shadowStartCm": 41.7,
+   "gapCm": 0.2,
+   "gapPx": 0.6,
+   "litLuma": 80.8,
+   "shadowLuma": 19.1,
+   "note": ""
+  },
+  {
+   "target": "boot",
+   "sun": 1,
+   "pose": "3m",
+   "pxPerCm": 2.87,
+   "contactEdgeCm": 16.6,
+   "expectedEdgeCm": null,
+   "fFull": 0.833,
+   "shadowStartCm": 16.7,
+   "gapCm": 0,
+   "gapPx": 0,
+   "litLuma": 98,
+   "shadowLuma": 18.9,
+   "note": ""
+  }
+ ],
+ "tips": [
+  {
+   "target": "post",
+   "sun": 4,
+   "heightM": 1,
+   "expectedM": 14.35,
+   "scannedToM": 20.4,
+   "fFull": 0.574,
+   "attachedRunEndM": 0.12,
+   "lastShadowedM": 6.62,
+   "objectLitPx": 545,
+   "objectFalseShadowShare": 0.0312,
+   "objectMeanLossCodes": 16.9,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0.01
+  },
+  {
+   "target": "boulder",
+   "sun": 4,
+   "heightM": 0.38,
+   "expectedM": 5.44,
+   "scannedToM": 8.3,
+   "fFull": 0.606,
+   "attachedRunEndM": 0.6,
+   "lastShadowedM": 5.3,
+   "objectLitPx": 24493,
+   "objectFalseShadowShare": 0.0216,
+   "objectMeanLossCodes": 23,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0.11
+  },
+  {
+   "target": "post",
+   "sun": 1,
+   "heightM": 1,
+   "expectedM": 57.34,
+   "scannedToM": 40,
+   "fFull": 0.661,
+   "attachedRunEndM": 0.12,
+   "lastShadowedM": 6.64,
+   "objectLitPx": 783,
+   "objectFalseShadowShare": 0.0511,
+   "objectMeanLossCodes": 10.4,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0
+  },
+  {
+   "target": "boulder",
+   "sun": 1,
+   "heightM": 0.38,
+   "expectedM": 21.79,
+   "scannedToM": 30.4,
+   "fFull": 0.776,
+   "attachedRunEndM": 0.6,
+   "lastShadowedM": 6.54,
+   "objectLitPx": 25348,
+   "objectFalseShadowShare": 0.0243,
+   "objectMeanLossCodes": 18.8,
+   "sunwardFalseShadowCm": 0,
+   "attachedShare": 0.03
+  }
+ ],
+ "acne": [],
+ "sweep": [],
+ "errors": []
+}

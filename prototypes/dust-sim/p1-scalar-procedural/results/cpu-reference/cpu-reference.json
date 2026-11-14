@@ -1,0 +1,13 @@
+{
+  "edgeWidthPx.opacity.B01-edge-2m-noon": 20.5625,
+  "edgeWidthPx.mask.B01-edge-2m-noon": 2.0625,
+  "edgeWidthPx.opacity.B02-edge-10m-noon": 1.1875,
+  "edgeWidthPx.mask.B02-edge-10m-noon": 1,
+  "edgeWidthPx.opacity.B03-edge-50m-noon": 1,
+  "edgeWidthPx.mask.B03-edge-50m-noon": 1,
+  "edgeWidthPx.opacity.B04-edge-2m-lowsun": 20.5625,
+  "edgeWidthPx.mask.B04-edge-2m-lowsun": 2.0625,
+  "edgeWidthPx.opacity.B05-edge-10m-lowsun": 1.1875,
+  "edgeWidthPx.mask.B05-edge-10m-lowsun": 1,
+  "plotsNonDefault": 23
+}

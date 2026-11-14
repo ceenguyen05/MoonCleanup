@@ -14,7 +14,7 @@ Do not read this directory end to end. Start with [STATUS](STATUS.md); use only 
 | Rendering / world / budgets | [render pipeline](architecture/rendering-pipeline.md), [world/dust](architecture/world-and-dust-simulation.md), [budgets](architecture/performance-budgets.md) |
 | Network / data / security / env | [netcode](architecture/netcode.md), [data](architecture/data-model.md), [security](architecture/security.md), [env](architecture/environments.md) |
 | Setup / owner handoff | [setup](SETUP_CHECKLIST.md), [questions](OPEN_QUESTIONS.md), [workflow](handoff/WORKFLOW.md), [deadline](handoff/DEADLINE_PLAN.md) |
-| Local play / hosting connections | [localhost and tests](../README.md#run-on-localhost), [Aiven → Render → Vercel guide](HOSTING_GUIDE.md) (read when setting up, not every resume) |
+| Local play / hosting connections | [localhost and tests](../README.md#run-on-localhost), [Neon → Render → Vercel guide](HOSTING_GUIDE.md) (read when setting up, not every resume) |
 | Licensing / evidence | [asset ledger](ASSET_LICENSES.md), [research index](research/README.md), [review log](REVIEW_LOG.md) |
 
 Detailed specs, technical research and vendored r187 API docs remain available by exact section/API lookup. Tests,

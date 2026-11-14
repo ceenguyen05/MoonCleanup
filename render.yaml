@@ -9,7 +9,7 @@ services:
     name: moon-cleanup-server
     runtime: node
     plan: free
-    region: oregon
+    region: ohio # Owner decision 2026-11-13: Ohio, nearest Render region to Texas. Cannot change after creation.
     branch: main
     buildCommand: >-
       npm install --global pnpm@11.28.9 &&
@@ -39,8 +39,11 @@ services:
         value: "10000"
       - key: ENV_NAME
         value: production
+      # Neon Free Postgres: paste the DIRECT connection string (no -pooler host, sslmode=require). Same string for the
+      # build-time migration and the server. Neon scale-to-zero wakes in ~1-5 s; migrate and the server retry through it.
       - key: DATABASE_URL
         sync: false
+      # Optional private-CA PEM. Leave empty for Neon (verified against the system CA store). Never disable TLS verification.
       - key: DATABASE_CA_CERT
         sync: false
       - key: DB_SCHEMA
@@ -49,6 +52,8 @@ services:
         generateValue: true
       - key: REFRESH_TOKEN_PEPPER
         generateValue: true
+      # PLACEHOLDER origin: replace with the real Vercel production origin (no path, no trailing slash) after the
+      # first Vercel deploy, here and in the Render dashboard (docs/HOSTING_GUIDE.md section 4).
       - key: ALLOWED_ORIGINS
         value: https://moon-cleanup.vercel.app
       - key: SENTRY_DSN
@@ -74,12 +79,14 @@ services:
       - key: SENTRY_TRACES_SAMPLE_RATE
         value: "0.01"
       - key: MAX_CLIENTS
-        value: "24"
+        value: "12"
       - key: CHECKPOINT_INTERVAL_S
         value: "30"
       - key: SEAT_HOLD_S
         value: "60"
       - key: NODE_OPTIONS
         value: --max-old-space-size=384
+      # Env validation refuses NET_SPIKE=1 while ENV_NAME=production; hosted spike recipe: HOSTING_GUIDE section 5.
       - key: NET_SPIKE
         value: "0"
+      # Optional TRANSPORT=auto|uws|ws (default auto: uWebSockets.js, falls back to ws). Not set here; add in the dashboard to force.

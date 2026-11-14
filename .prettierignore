@@ -16,3 +16,12 @@ packages/db/migrations/
 
 # Prose is maintained manually; do not reflow design docs, reports or Claude instructions.
 **/*.md
+
+# Generated bot run results (JSON/MD written by tools/bots)
+tools/bots/results/
+
+# Generated evidence (agent captures, sweep results, sidecars, driver scratch)
+docs/visual-reviews/
+docs/agent-reports/*-evidence/
+docs/agent-reports/*-previews/
+tools/perf/results/

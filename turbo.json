@@ -8,7 +8,7 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env.production", "!**/*.md", "!**/*.test.*"],
       "outputs": ["dist/**"],
-      "env": ["VITE_*"],
+      "env": ["VITE_*", "MC_SOURCEMAP"],
       "passThroughEnv": [
         "SENTRY_AUTH_TOKEN",
         "SENTRY_ORG",

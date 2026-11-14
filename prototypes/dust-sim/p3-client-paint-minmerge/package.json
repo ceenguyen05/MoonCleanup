@@ -1,0 +1,9 @@
+{
+  "name": "dust-sim-p3-client-paint-minmerge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Approach P3: client-side paint with min-merge.",
+  "license": "UNLICENSED",
+  "scripts": {}
+}

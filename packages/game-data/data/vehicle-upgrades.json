@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "lines": [
+    {
+      "id": "vehicle_upgrade.gear_ratio",
+      "levels": [
+        { "costMultOfVehiclePrice": 0.2, "effects": [{ "stat": "vehicleSpeedMult", "op": "mul", "value": 1.08 }] },
+        { "costMultOfVehiclePrice": 0.5, "effects": [{ "stat": "vehicleSpeedMult", "op": "mul", "value": 1.16 }] },
+        { "costMultOfVehiclePrice": 1, "effects": [{ "stat": "vehicleSpeedMult", "op": "mul", "value": 1.24 }] }
+      ]
+    },
+    {
+      "id": "vehicle_upgrade.cargo_expander",
+      "levels": [
+        { "costMultOfVehiclePrice": 0.15, "effects": [{ "stat": "payloadKgMult", "op": "mul", "value": 1.4 }] },
+        { "costMultOfVehiclePrice": 0.4, "effects": [{ "stat": "payloadKgMult", "op": "mul", "value": 1.8 }] },
+        { "costMultOfVehiclePrice": 0.8, "effects": [{ "stat": "payloadKgMult", "op": "mul", "value": 2.2 }] }
+      ]
+    },
+    {
+      "id": "vehicle_upgrade.afterburner",
+      "levels": [
+        {
+          "costMultOfVehiclePrice": 0.15,
+          "effects": [
+            { "stat": "boostMult", "op": "set", "value": 1.45 },
+            { "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.94 }
+          ]
+        },
+        {
+          "costMultOfVehiclePrice": 0.4,
+          "effects": [
+            { "stat": "boostMult", "op": "set", "value": 1.6 },
+            { "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.88 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vehicle_upgrade.throttle_lock",
+      "levels": [
+        {
+          "costMultOfVehiclePrice": 0.05,
+          "effects": [
+            { "stat": "cruiseControl", "op": "set", "value": 1 },
+            { "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.97 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vehicle_upgrade.wide_mouth",
+      "levels": [
+        {
+          "costMultOfVehiclePrice": 0.25,
+          "effects": [
+            { "stat": "vehicleWidthMult", "op": "mul", "value": 1.2 },
+            { "stat": "vehicleSpeedMult", "op": "mul", "value": 0.92 }
+          ]
+        },
+        {
+          "costMultOfVehiclePrice": 0.6,
+          "effects": [
+            { "stat": "vehicleWidthMult", "op": "mul", "value": 1.4 },
+            { "stat": "vehicleSpeedMult", "op": "mul", "value": 0.85 }
+          ]
+        },
+        {
+          "costMultOfVehiclePrice": 1.2,
+          "effects": [
+            { "stat": "vehicleWidthMult", "op": "mul", "value": 1.6 },
+            { "stat": "vehicleSpeedMult", "op": "mul", "value": 0.78 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vehicle_upgrade.fast_tip",
+      "levels": [
+        { "costMultOfVehiclePrice": 0.1, "effects": [{ "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.6 }] },
+        { "costMultOfVehiclePrice": 0.3, "effects": [{ "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.3 }] }
+      ]
+    },
+    {
+      "id": "vehicle_upgrade.running_lamps",
+      "levels": [
+        {
+          "costMultOfVehiclePrice": 0.05,
+          "effects": [
+            { "stat": "vehicleLampRangeM", "op": "set", "value": 30 },
+            { "stat": "vehicleNightPenaltyRelief", "op": "set", "value": 0.1 }
+          ]
+        },
+        {
+          "costMultOfVehiclePrice": 0.15,
+          "effects": [
+            { "stat": "vehicleLampRangeM", "op": "set", "value": 45 },
+            { "stat": "vehicleNightPenaltyRelief", "op": "set", "value": 0.2 }
+          ]
+        }
+      ]
+    }
+  ]
+}

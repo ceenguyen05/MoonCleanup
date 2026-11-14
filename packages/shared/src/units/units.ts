@@ -1,4 +1,4 @@
-// @contract units/units v0
+// @contract units/units v1
 // @consumers every package and app that names a quantity (M0: this package's own contracts, apps/client/src/render,
 //   apps/client/src/net, apps/server/src/net)
 //
@@ -26,3 +26,17 @@ export type Hertz = number;
 
 /** Index of a simulation tick. u32 on the wire (netcode.md section 2). */
 export type Tick = number;
+
+// v1 (additive): units named by the sim, protocol and component contracts.
+
+/** Mass in integer grams (dust, Dust Cell contents; world-and-dust-simulation.md section 4.1). UI shows kg. */
+export type Grams = number;
+
+/** Angle in radians. */
+export type Radians = number;
+
+/** Angle in degrees (UI and docs only; the sim works in radians). */
+export type Degrees = number;
+
+/** Speed in metres per second. */
+export type MetresPerSecond = number;

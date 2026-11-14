@@ -1,0 +1,562 @@
+.page {
+  --mc-compass-w: round(calc(360px * var(--mc-hud-scale)), calc(var(--mc-px) * 6));
+  position: absolute;
+  inset: 0;
+  padding: var(--mc-safe);
+  pointer-events: none;
+}
+
+.page > div {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-3);
+}
+
+.page button,
+.page [role="radiogroup"],
+.page section,
+.page aside,
+.page header {
+  pointer-events: auto;
+}
+
+.topLeft {
+  /* Clears the dev text overlay (3 lines at top-left, about 58 px tall); production hides it. */
+  top: calc(var(--mc-safe) + var(--mc-sp-6) + var(--mc-sp-1));
+  left: var(--mc-safe);
+  align-items: flex-start;
+}
+
+.topCenter {
+  top: var(--mc-safe);
+  /* Centred without a transform: the compass is 3 whole-device-pixel columns wide, the left edge is rounded. */
+  left: round(down, calc(50% - var(--mc-compass-w) / 2), var(--mc-px));
+  width: var(--mc-compass-w);
+  align-items: center;
+}
+
+.topRight {
+  top: var(--mc-safe);
+  right: var(--mc-safe);
+  align-items: flex-end;
+}
+
+.bottomLeft {
+  bottom: var(--mc-safe);
+  left: var(--mc-safe);
+}
+
+.bottomRight {
+  bottom: var(--mc-safe);
+  right: var(--mc-safe);
+  align-items: flex-end;
+}
+
+.caption {
+  margin: 0;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 500;
+  letter-spacing: var(--mc-caption-tracking);
+  text-transform: uppercase;
+  color: var(--mc-text-2);
+}
+
+/* ---- Wallet ---- */
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-sp-4);
+  width: round(calc(440px * var(--mc-hud-scale)), var(--mc-px));
+  padding: var(--mc-sp-3) var(--mc-sp-4);
+  border-radius: var(--mc-r-xl);
+}
+
+.walletIcon {
+  display: inline-grid;
+  place-items: center;
+  width: round(calc(48px * var(--mc-hud-scale)), var(--mc-px));
+  height: round(calc(48px * var(--mc-hud-scale)), var(--mc-px));
+  color: #3a2a00;
+  background: var(--mc-lumen-gold);
+  border-radius: 50%;
+}
+
+.wallet > .chipButton {
+  flex: none;
+  width: round(calc(128px * var(--mc-hud-scale)), var(--mc-px));
+  padding-inline: 0;
+}
+
+.walletBody {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.walletValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--mc-sp-2);
+  font-family: var(--mc-font-display);
+  font-size: var(--mc-fs-wallet);
+  line-height: var(--mc-lh-wallet);
+  font-weight: 700;
+  min-width: 8ch;
+}
+
+.unit {
+  font-size: var(--mc-fs-value-s);
+  line-height: var(--mc-lh-value-s);
+  font-weight: 600;
+  color: var(--mc-lumen-gold);
+}
+
+.floaters {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.floater {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: var(--mc-fs-value-s);
+  color: var(--mc-lumen-gold);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* ---- Shine ---- */
+.shine {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-2);
+  width: round(calc(200px * var(--mc-hud-scale)), var(--mc-px));
+  padding: var(--mc-sp-3) var(--mc-sp-4);
+}
+
+.shineHead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-sp-2);
+  color: var(--mc-state-polished);
+}
+
+.shineValue {
+  font-family: var(--mc-font-display);
+  font-size: var(--mc-fs-wallet);
+  line-height: var(--mc-lh-wallet);
+  font-weight: 700;
+  color: var(--mc-state-polished);
+}
+
+.meter {
+  display: block;
+  height: var(--mc-sp-2);
+  overflow: hidden;
+  border-radius: var(--mc-r-pill);
+  background: var(--mc-state-grimy);
+  box-shadow: inset 0 0 0 var(--mc-hairline) rgba(255, 255, 255, 0.18);
+}
+
+.meterFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--mc-state-opened), var(--mc-state-polished));
+}
+
+/* ---- Holster ---- */
+.holster {
+  display: flex;
+  align-items: stretch;
+  gap: var(--mc-sp-2);
+  padding: var(--mc-sp-2);
+}
+
+.slot {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  align-items: center;
+  gap: var(--mc-sp-1);
+  width: round(calc(72px * var(--mc-hud-scale)), var(--mc-px));
+  height: round(calc(88px * var(--mc-hud-scale)), var(--mc-px));
+  padding: var(--mc-sp-2);
+  font: inherit;
+  color: var(--mc-text-2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 0;
+  border-radius: var(--mc-r-lg);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-glass-border);
+  cursor: pointer;
+}
+
+.slot:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.slotActive {
+  width: round(calc(168px * var(--mc-hud-scale)), var(--mc-px));
+  color: var(--mc-text-1);
+  background: rgba(53, 224, 210, 0.14);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-teal-hi);
+}
+
+.slotKey {
+  position: absolute;
+  top: var(--mc-sp-1);
+  left: var(--mc-sp-2);
+  font-family: var(--mc-font-mono);
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-text-2);
+}
+
+.slotName {
+  min-height: var(--mc-lh-caption);
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-sp-1);
+  width: 100%;
+  color: var(--mc-text-2);
+}
+
+.cellBar {
+  flex: 1;
+  height: round(calc(6px * var(--mc-hud-scale)), var(--mc-px));
+  overflow: hidden;
+  border-radius: var(--mc-r-pill);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.cellFill {
+  display: block;
+  height: 100%;
+  background: var(--mc-ok);
+}
+
+/* ---- Gear row ---- */
+.gear {
+  display: flex;
+  gap: var(--mc-sp-2);
+  pointer-events: auto;
+}
+
+.gearButton {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--mc-hit);
+  height: var(--mc-hit);
+  color: var(--mc-text-2);
+  background: var(--mc-glass-bg-strong);
+  border: 0;
+  border-radius: var(--mc-r-md);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-glass-border);
+  cursor: pointer;
+  transition:
+    background-color var(--mc-dur-hover-in) var(--mc-ease-out),
+    transform var(--mc-dur-press) var(--mc-ease-out);
+}
+
+.gearButton:hover {
+  background: rgba(40, 52, 62, 0.95);
+}
+
+.gearButton:active {
+  transform: translateY(var(--mc-px));
+}
+
+.gearOn {
+  color: #04201d;
+  background: var(--mc-teal-hi);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-teal-hi);
+}
+
+.gearTick {
+  position: absolute;
+  right: var(--mc-sp-1);
+  bottom: var(--mc-sp-1);
+  width: var(--mc-sp-2);
+  height: var(--mc-sp-2);
+  border-radius: 50%;
+  background: #04201d;
+  box-shadow: 0 0 0 var(--mc-hairline) var(--mc-teal-hi);
+}
+
+/* ---- Compass ---- */
+.compass {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  justify-items: center;
+  width: var(--mc-compass-w);
+  height: var(--mc-sp-8);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--mc-r-pill);
+  background: var(--mc-glass-bg-strong);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-glass-border);
+}
+
+.compassTicks {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: var(--mc-sp-2);
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.4) 0 var(--mc-px),
+    transparent var(--mc-px) calc(var(--mc-px) * 12)
+  );
+}
+
+.compassLetter {
+  position: relative;
+  font-weight: 700;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-text-1);
+}
+
+.compassCaret {
+  position: absolute;
+  left: round(down, calc(50% - var(--mc-sp-1) - var(--mc-sp-1)), var(--mc-px));
+  top: 0;
+  width: 0;
+  height: 0;
+  border-left: var(--mc-sp-2) solid transparent;
+  border-right: var(--mc-sp-2) solid transparent;
+  border-top: var(--mc-sp-2) solid var(--mc-teal-hi);
+}
+
+/* ---- Bench ---- */
+.bench {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-3);
+  width: round(calc(420px * var(--mc-hud-scale)), var(--mc-px));
+  padding: var(--mc-sp-4);
+  border-radius: var(--mc-r-xl);
+}
+
+.benchTitle {
+  margin: 0;
+  font-family: var(--mc-font-display);
+  font-size: var(--mc-fs-value);
+  line-height: var(--mc-lh-value);
+  font-weight: 700;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-1);
+}
+
+.group p {
+  margin: 0;
+  color: var(--mc-text-1);
+}
+
+.sample14 {
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+}
+
+.sample16 {
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+}
+
+.sample18 {
+  font-size: var(--mc-fs-value-s);
+  line-height: var(--mc-lh-value-s);
+  font-weight: 600;
+}
+
+.sample22 {
+  font-size: var(--mc-fs-value);
+  line-height: var(--mc-lh-value);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.hairlines {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--mc-sp-1) var(--mc-sp-4);
+  align-items: start;
+}
+
+/* Left column: three 1-device-pixel lines on an 8 css px pitch (a multiple of 4 device px at DPR 1 and 2). Chrome
+   rasterises on the physical pixel grid, so on a 150 % display that emulates DPR 1 or 2 a line is only crisp when its
+   offset is a whole physical pixel: 2 device px at DPR 1, 4 at DPR 2. Row pitch and every height above it keep that. */
+.hairStack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.hairH {
+  display: block;
+  height: var(--mc-px);
+  margin-bottom: calc(var(--mc-sp-2) - var(--mc-px));
+  background: var(--mc-text-1);
+}
+
+.hairChecker {
+  grid-column: 2;
+  height: var(--mc-sp-6);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--mc-text-1) 0 var(--mc-px),
+    transparent var(--mc-px) calc(var(--mc-px) * 2)
+  );
+}
+
+.hairBox {
+  grid-column: 1 / span 2;
+  height: var(--mc-sp-5);
+  border: 0;
+  border-radius: var(--mc-r-sm);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-text-1);
+}
+
+.iconRow {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-sp-3);
+  color: var(--mc-text-1);
+}
+
+.divider {
+  width: var(--mc-hairline);
+  height: var(--mc-sp-5);
+  background: var(--mc-glass-border);
+}
+
+.readout {
+  display: grid;
+  /* Fixed column starts: every label and value starts on a whole device pixel. */
+  grid-template-columns:
+    round(calc(120px * var(--mc-hud-scale)), var(--mc-px))
+    round(calc(40px * var(--mc-hud-scale)), var(--mc-px))
+    round(calc(96px * var(--mc-hud-scale)), var(--mc-px))
+    auto;
+  gap: 0 var(--mc-sp-2);
+  margin: 0;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+}
+
+.readout dt {
+  white-space: nowrap;
+  color: var(--mc-text-2);
+}
+
+.readout dd {
+  margin: 0;
+  font-family: var(--mc-font-mono);
+  color: var(--mc-text-1);
+}
+
+.glassRow {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-sp-3);
+}
+
+.glassRow > .caption {
+  flex: none;
+  width: round(calc(56px * var(--mc-hud-scale)), var(--mc-px));
+}
+
+.segmented {
+  display: inline-flex;
+  padding: var(--mc-sp-0-5);
+  border: 0;
+  border-radius: var(--mc-r-pill);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-glass-border);
+}
+
+.segment {
+  min-width: round(calc(64px * var(--mc-hud-scale)), var(--mc-px));
+  min-height: calc(var(--mc-hit) - var(--mc-sp-3));
+  padding: 0 var(--mc-sp-3);
+  font: inherit;
+  font-size: var(--mc-fs-caption);
+  font-weight: 600;
+  color: var(--mc-text-2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--mc-r-pill);
+  cursor: pointer;
+}
+
+.segmentOn {
+  color: #04201d;
+  background: var(--mc-teal-hi);
+}
+
+.probe,
+.note {
+  margin: 0;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+}
+
+.probe {
+  font-family: var(--mc-font-mono);
+  color: var(--mc-text-1);
+}
+
+.note {
+  color: var(--mc-text-2);
+}
+
+.chipButton {
+  min-height: var(--mc-hit);
+  padding: 0 var(--mc-sp-4);
+  font: inherit;
+  font-size: var(--mc-fs-caption);
+  font-weight: 600;
+  color: var(--mc-text-1);
+  background: var(--mc-glass-bg-strong);
+  border: 0;
+  border-radius: var(--mc-r-pill);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-glass-border);
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background-color var(--mc-dur-hover-in) var(--mc-ease-out),
+    transform var(--mc-dur-press) var(--mc-ease-out);
+}
+
+.chipButton:hover:not(:disabled) {
+  background: rgba(40, 52, 62, 0.95);
+}
+
+.chipButton:active:not(:disabled) {
+  transform: translateY(var(--mc-px));
+}
+
+.chipButton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}

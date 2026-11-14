@@ -6,10 +6,11 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "screenshots": "echo screenshots placeholder: Fable replaces with tsx src/capture.ts",
+    "screenshots": "tsx src/capture.ts",
+    "measure": "tsx src/measure/cli.ts",
     "install:browsers": "playwright install chromium",
-    "lint": "echo screenshots lint: placeholder until sources land - see README",
-    "typecheck": "echo screenshots typecheck: placeholder until sources land - see README",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

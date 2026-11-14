@@ -1,0 +1,35 @@
+{
+ "base": "scene=s06&view=pool&preset=low&backend=webgpu&scale=1",
+ "variants": [
+  {
+   "name": "before",
+   "query": "lights=plain&lampres=1024&lampshadow=plain&cap=dense&shadowfilter=pcf3"
+  },
+  {
+   "name": "after",
+   "query": ""
+  }
+ ],
+ "result": {
+  "before": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3",
+   "knobs": "shadowfilter=pcf3",
+   "errors": []
+  },
+  "after": {
+   "backend": "webgpu",
+   "preset": "low",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.051,
+    "max": 25.8,
+    "over2Pct": 0.669,
+    "over8Pct": 0.037
+   }
+  }
+ }
+}

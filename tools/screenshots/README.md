@@ -31,3 +31,25 @@ through the lead; module-boundaries "Contract change process").
 pnpm --filter @moon-cleanup/screenshots install:browsers
 pnpm --filter @moon-cleanup/screenshots screenshots   # placeholder -> tsx src/capture.ts
 ```
+
+## Run (v0)
+
+```
+pnpm --filter @moon-cleanup/screenshots screenshots -- S02 --lane ci --port-offset 5 --out docs/visual-reviews/M0/W1   # --lane gpu for real GPU; --step 64, --turntable
+pnpm --filter @moon-cleanup/screenshots measure -- <capture-dir>   # re-measure PNGs into sidecars and regenerate index.md
+```
+
+Client contract (URL params and `window.__mcReady/__mcStep/__mcInfo`): see `src/harness.ts`.
+
+## Run (VT-M0-12 additions)
+
+```
+pnpm --filter @moon-cleanup/screenshots screenshots -- S01,S02,S03,S05,S06 --lane gpu --preview --build --port-offset 9 --tod noon --step 30 --tier B --preset medium --scale floor --out docs/visual-reviews/M0/final
+pnpm --filter @moon-cleanup/screenshots screenshots -- S12 --lane gpu --preview --tod noon --step 10 --preset low --scale floor --out <dir>
+pnpm --filter @moon-cleanup/screenshots screenshots -- --path P4 --frames 12 --lane gpu --preview --out <dir>   # stepped camera path
+```
+
+- `--preview` (+ `--build`) builds the client and runs `vite preview` on port 5173+N; without it the harness attaches to `--url`. The sidecar records `serve.mode` (`dev` or `production`).
+- `--out` accepts `/c/...`, `/mnt/c/...` or Windows paths; relative paths resolve against the directory you typed the command in.
+- `tod` is mapped to each scene's own knobs (`src/scenes/registry.ts`) and the sun is verified after load; an unsupported scene/tod pair throws. `--allow-unverified-tod` passes unknown scenes through.
+- Scene `S12` is the HUD page (`?scene=hud-test`). Sidecars carry ROI measures (`measure.rois`), knobs, sun, EV100, Earth phase.

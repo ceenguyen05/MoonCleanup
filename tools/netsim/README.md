@@ -2,31 +2,41 @@
 
 **Path:** `tools/netsim` - **Owner role:** `qa-test-engineer`
 
-## Purpose
+Network conditioner for netcode tests (netcode.md section 17). v0 is a seeded local TCP proxy: point a client at the
+proxy port instead of the server and every connection gets latency, jitter and loss in both directions.
 
-Network conditions for testing netcode: an in-process conditioner (latency, jitter, loss, reordering, bandwidth caps) that
-wraps a transport in unit/integration tests, and Toxiproxy configurations (Toxiproxy server v2.13.0 binary or Docker, driven with
-`toxiproxy-node-client` 4.1.0) for TCP-level faults between bots and a real server. Presets mirror target players: good, typical
-cable, bad wifi, cold-start stall.
+## Run
 
-## What Fable will build here
+```
+pnpm --filter @moon-cleanup/netsim netsim -- --listen 2581 --target 2571 --profile typical --seed 1
+```
 
-`src/conditioner/` (conditioner + presets, deterministic seeded randomness) and `toxiproxy/` (JSON proxy/toxic definitions and
-helper docs). Tests prove the conditioner is deterministic for a seed.
+`tools/bots` starts this itself for `--netsim <profile>` (listen = server port + 10).
 
-## Key contracts consumed
+## Profiles (`src/conditioner/profiles.ts`)
 
-`@moon-cleanup/shared` (protocol catalog, units). It stays transport-agnostic: no dependency on Colyseus.
+Latency and jitter are round-trip values (half applied per direction).
 
-## Notes
+| Profile | RTT | Jitter | Loss | Extra |
+| --- | --- | --- | --- | --- |
+| clean | 0 | 0 | 0 | none |
+| good | 40 ms | +/- 6 | 0 | none |
+| typical (the /bot-test standard) | 120 ms | +/- 30 | 1 % | none |
+| bad (harsh) | 250 ms | +/- 50 | 5 % | none |
+| outage | as typical | | | 5 s blackhole starting 30 s after proxy start (traffic held, not dropped) |
+| coldstart | as typical | | | first client chunk of each connection held 8 s (server cold start) |
 
-Toxiproxy is a separate binary (not an npm package): note its install in the PR that first uses it. `toxiproxy-node-client` is
-community-maintained (slow cadence): verify it still works before relying on it.
+Loss is modelled as TCP: a "lost" chunk is held for one retransmission timeout (max(200 ms, 2 RTT)) and delays all
+bytes behind it (head-of-line blocking); ordering is always preserved. Randomness is seeded (mulberry32), per connection
+and direction, so the injected delays are reproducible; wall-clock timing still depends on the host.
 
-## Commands
+## Not yet
+
+Toxiproxy configs (`toxiproxy/`) are not written: the in-process proxy covers the spike. Reordering and bandwidth caps
+are not modelled. UDP/WebTransport is out of scope (the game uses WebSocket).
+
+## Tests
 
 ```
 pnpm --filter @moon-cleanup/netsim test
 ```
-
-`lint` / `typecheck` are echo placeholders until sources land.

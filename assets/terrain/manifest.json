@@ -1,0 +1,240 @@
+{
+  "schema": 1,
+  "generator": "@moon-cleanup/terrain-bake (M0-W2-T05 spike)",
+  "credit": "Elevation: NASA LRO Lunar Orbiter Laser Altimeter (LOLA) Science Team, NASA/GSFC; data via NASA Planetary Data System.",
+  "sources": [
+    {
+      "id": "ldem_16",
+      "role": "data",
+      "product": "LDEM_16",
+      "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_16.img",
+      "bytes": 33177600,
+      "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb"
+    },
+    {
+      "id": "ldem_16-label",
+      "role": "label",
+      "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_16.lbl",
+      "bytes": 5121,
+      "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579"
+    }
+  ],
+  "notDownloaded": [
+    {
+      "product": "LDEM_64",
+      "url": "https://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_64.img",
+      "bytes": 530841600,
+      "reason": "531 MB: go/no-go in the M0-W2-T05 report"
+    }
+  ],
+  "decode": {
+    "sampleType": "LSB_INTEGER",
+    "sampleBits": 16,
+    "scalingFactor": 0.5,
+    "referenceRadiusM": 1737400,
+    "lines": 2880,
+    "lineSamples": 5760,
+    "pixelsPerDegree": 16
+  },
+  "parameters": {
+    "radiusM": 2000,
+    "verticalScale": 0.001151145,
+    "eLow": 6,
+    "eHigh": 2,
+    "eHighNote": "world-and-dust 3.3 starts at E_high 3; stepped down 3 -> 2.5 -> 2 until the slope acceptance (<= 5 % above 30 deg, <= 1 % above 45 deg) passed; see tools/terrain-bake/src/sweep.ts",
+    "sigmaRealM": 30000,
+    "lowpass": "3-pass box (Gaussian), longitude width scaled by 1/cos(lat), then latitude; edge-clamped",
+    "supersample": "4x4 bilinear taps per texel",
+    "pads": {
+      "radiusM": 60,
+      "blendM": 20,
+      "sites": [
+        {
+          "id": "boreal",
+          "dir": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "id": "austral",
+          "dir": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "id": "dawnside",
+          "dir": [
+            0,
+            0,
+            -1
+          ]
+        },
+        {
+          "id": "duskside",
+          "dir": [
+            0,
+            0,
+            1
+          ]
+        }
+      ],
+      "placeholder": true,
+      "results": [
+        {
+          "id": "boreal",
+          "heightM": -5.6296,
+          "texelsInPad": 1200
+        },
+        {
+          "id": "austral",
+          "heightM": -3.9284,
+          "texelsInPad": 1200
+        },
+        {
+          "id": "dawnside",
+          "heightM": -25.9319,
+          "texelsInPad": 1200
+        },
+        {
+          "id": "duskside",
+          "heightM": 6.998,
+          "texelsInPad": 1200
+        }
+      ]
+    },
+    "slopeRelaxation": {
+      "maxSlopeDeg": 50,
+      "texelsRelaxedFirstPass": 189,
+      "iterations": 11
+    }
+  },
+  "cube": {
+    "layout": "equal-angle spherified cube, layout v1",
+    "faces": [
+      "px",
+      "nx",
+      "py",
+      "ny",
+      "pz",
+      "nz"
+    ],
+    "mapping": "dir = normalize(n + tan(pi/4 a) u + tan(pi/4 b) v); a = 4/pi atan(u.d / n.d); face = major axis (ties X, Y, Z)",
+    "faceSize": 1024,
+    "gutter": 1,
+    "paddedFaceSize": 1026,
+    "format": "CTMH v1: 32-byte header + deflate-raw(row-delta, byte-planar uint16); see src/cubemap/codec.ts",
+    "quantisation": {
+      "offsetM": -48.05232238769531,
+      "scaleM": 0.0016359483621809314,
+      "minM": -48.0523,
+      "maxM": 59.1596,
+      "maxErrorM": 0.000818
+    },
+    "previewQuantisation": {
+      "faceSize": 256,
+      "offsetM": -47.220985412597656,
+      "scaleM": 0.00160538468288504
+    }
+  },
+  "horizon": {
+    "faceSize": 512,
+    "azimuths": 8,
+    "azimuthConvention": "k * 45 degrees from local north toward east; poles use east = (0,0,-1)",
+    "angleRangeDeg": [
+      -16,
+      60
+    ],
+    "minOccluderM": 20,
+    "stepRatio": 1.1,
+    "maxDistanceM": 3000,
+    "clampedLow": 0,
+    "clampedHigh": 0,
+    "format": "CTMW v1: 32-byte header + deflate-raw(row-delta uint8 planes: face, azimuth, row-major)"
+  },
+  "validation": {
+    "slope1024": {
+      "texels": 6291456,
+      "fractionAbove30": 0.03279940287272135,
+      "fractionAbove45": 0.00048605600992838543,
+      "fractionAbove50": 0,
+      "maxDeg": 49.997657775878906,
+      "meanDeg": 9.548234435441115,
+      "p99Deg": 36,
+      "padMaxDeg": 1.581175684928894,
+      "padRingMaxDeg": 43.5112419128418,
+      "pass": true
+    },
+    "slope256": {
+      "texels": 393216,
+      "fractionAbove30": 0.00144195556640625,
+      "fractionAbove45": 0,
+      "fractionAbove50": 0,
+      "maxDeg": 44.945308685302734,
+      "meanDeg": 6.650549867897639,
+      "p99Deg": 25,
+      "padMaxDeg": 6.594764232635498,
+      "padRingMaxDeg": 27.04479217529297,
+      "pass": false
+    },
+    "accuracyVsSourceM": {
+      "samples": 20000,
+      "maxAbsM": 0.9500380138411799,
+      "rmsM": 0.09529074932813027,
+      "p99AbsM": 0.3459592307592274
+    },
+    "seamAgreementM": {
+      "samples": 20000,
+      "maxAbsM": 1.7743365879011748,
+      "rmsM": 0.1161347154526947,
+      "p99AbsM": 0.5103263372340194,
+      "texelBand": 1
+    }
+  },
+  "outputs": {
+    "height-cube-1024": {
+      "file": "height-cube-1024.0d70550a0d75.bin",
+      "bytes": 7918107,
+      "sha256": "0d70550a0d7558063a8b8c00c2e2ffd681ac7d421242fbee09fd468c84dc599a",
+      "rawBytes": 12632112,
+      "rawSha256": "d3bf4354e4758c52a7be32ff0a2da9d727da356d60df320a035a8ab826e5690e"
+    },
+    "height-cube-256": {
+      "file": "height-cube-256.3b5aa9176cde.bin",
+      "bytes": 601663,
+      "sha256": "3b5aa9176cdefb1065973bc1a0530f2d956934f51f6edd2fa606250504341f2a",
+      "rawBytes": 798768,
+      "rawSha256": "446e6041b9082ae3f3f519b91a99f5fb12af9025d0fa427181cf3a05ec786813"
+    },
+    "horizon-map": {
+      "file": "horizon-map.0600f54d4815.bin",
+      "bytes": 6977254,
+      "sha256": "0600f54d48153d03d37f2b609da961349984b22495402ef8638ac987aa79e139",
+      "rawBytes": 12582912,
+      "rawSha256": "9c73b35a1babfde28a2a920ba2d78763b5e69b0770f2be6a5aa49feaf97c5cb1"
+    }
+  },
+  "fixtures": {
+    "dir": "fixtures",
+    "cube": {
+      "file": "height-cube-fixture-64.bin",
+      "format": "uint16 little-endian, 6 faces (+X,-X,+Y,-Y,+Z,-Z), each (faceSize+2)^2 row-major with a 1-texel gutter; no header",
+      "faceSize": 64,
+      "padded": 66,
+      "gutter": 1,
+      "offsetM": -46.001129150390625,
+      "scaleM": 0.0015496543627577643,
+      "sha256": "ab021a4f53e7780cd70c5ed4a9a1f62c61bba633807a6304e09b0456f0820fc4",
+      "note": "Same pipeline and parameters as height-cube-1024 at 64^2 per face (fixture for packages/world unit tests)."
+    },
+    "goldenFile": "golden-height-samples-1024.json"
+  },
+  "grid": {
+    "goldenHash": null,
+    "status": "deferred: step 8 (per-plot dust class, grid golden hash) needs the M1 plot grid"
+  },
+  "bakeHash": "8b10f7e29b3ab47cd312c556a18b8b954056d44d74ee3c657673394095bff470"
+}

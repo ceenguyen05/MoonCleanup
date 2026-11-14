@@ -9,13 +9,15 @@ commands, entity component shapes, the `RoomSim` interface, plot grid / stroke f
 module interface and service registry keys, UI store shape, audio cue IDs, render quality presets, balance config zod
 schemas, REST DTOs and the save format. Pure types, constants and zod schemas only - no logic, no I/O.
 
-## What Fable will build here (Wave 0, contracts)
+## Layout (contracts v0, M0-W0-T01)
 
-Each contract file starts with a version header comment. Planned layout (see `docs/architecture/module-boundaries.md` section 2):
-`src/ids/` and `units`, `src/protocol/{messages,channels}`, `src/sim/{input,components,room-sim}`,
-`src/world/{plot-grid,dust,stroke}`, `src/events/catalog`, `src/client/module`, `src/ui/store`, `src/audio/cues`,
-`src/render/quality`, `src/config/*.schema`, `src/api/rest`, `src/save/format`, plus the `index.ts` barrel. The empty
-folders already exist with `.gitkeep`. `PROTOCOL_VERSION` and `SAVE_FORMAT_VERSION` live here.
+Each contract file starts with `// @contract <path> v<n>` and `// @consumers ...` (checked by `src/index.test.ts`).
+One sub-barrel per folder of `docs/architecture/module-boundaries.md` section 2, re-exported by `src/index.ts`:
+`ids`, `units`, `protocol` (catalog, channels, close codes, M0 payloads, golden vectors, `PROTOCOL_VERSION = 0`),
+`sim` (RoomSim placeholder), `world` (grid constants, plot states, PlotGrid placeholder), `events` (typed bus + M0
+events), `client` (ClientModule, FrameInfo, service registry), `ui` (store v0), `audio` (cue id placeholder), `render`
+(quality presets), `config` (common game-data schemas), `api` (Health/Ready DTOs, HttpRouteDef), `save` (header
+envelope layout, `SAVE_FORMAT_VERSION = 0`, golden vector). M1-W0 extends sim/world/events/ui/audio/config.
 
 ## Key contracts consumed
 

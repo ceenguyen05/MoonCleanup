@@ -42,9 +42,10 @@ Usage is available again. Continue Clean The Moon! from the last checkpoint in t
 Check actual files and worker/process state; a limit may have interrupted work before notes were saved. Resume useful
 existing context, never duplicate a live writer, restart M0 or repeat completed setup. Reload instructions only if changed
 or no longer in context; read only the task sections/findings needed now. Reuse valid evidence and rerun invalidated checks.
+Resume all interrupted agents and background tasks
 
 Keep the documented Sonnet/Opus/Fable routing, effort and usage limits. Continue implementation, integration, testing and
-fixes through M0–M3 toward November 17, protecting mechanics, graphics, animation and world/gameplay fidelity.
+fixes through M0–M3, protecting mechanics, graphics, animation and world/gameplay fidelity.
 No stage/commit stops or extra planning paperwork. Preserve the git safeguard; I choose when to commit/publish.
 Checkpoint compactly at meaningful progress or interruptions. Ask only for actual decisions/inputs while continuing ready work.
 Start the next unfinished, dependency-ready deliverable now.

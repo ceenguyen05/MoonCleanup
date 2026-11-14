@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "rail": { "speedMps": 1.5, "spacingM": 0.75, "unitsPerS": 2 },
+  "puckKg": 1,
+  "stackMaxKg": 20,
+  "stackReleaseS": 10,
+  "baleKg": 20,
+  "pieces": [
+    { "id": "piece.puck_former", "priceLm": 300, "params": { "bufferKg": 100 } },
+    { "id": "piece.glide_rail_straight", "priceLm": 8, "params": { "lengthM": 4 } },
+    { "id": "piece.glide_rail_short", "priceLm": 2, "params": { "lengthM": 1 } },
+    { "id": "piece.glide_rail_curve_45", "priceLm": 10, "params": { "turnDeg": 45 } },
+    { "id": "piece.glide_rail_curve_90", "priceLm": 10, "params": { "turnDeg": 90 } },
+    { "id": "piece.glide_rail_ramp", "priceLm": 12 },
+    { "id": "piece.glide_rail_lift", "priceLm": 40, "params": { "liftM": 8 } },
+    { "id": "piece.rail_fork", "priceLm": 25, "params": { "overflowMode": true } },
+    { "id": "piece.rail_join", "priceLm": 25 },
+    { "id": "piece.rail_stop", "priceLm": 10 }
+  ],
+  "gate": { "railInputs": 3, "baleChuteFaces": 1 },
+  "fieldGate": { "priceLm": 60000, "railInputs": 2, "railshotKg": 500, "baleChuteFaces": 1 },
+  "assayCounter": { "pourSlots": 4, "pourS": 6 },
+  "railshotEveryKg": 2000,
+  "baleAcceptors": ["piece.field_gate", "piece.bead_kiln", "piece.tile_sinterer"]
+}

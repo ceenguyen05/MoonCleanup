@@ -1,6 +1,6 @@
 # ADR-0025: Netcode model revision - entities in bytes frames, horizon-aware interest, one room per Contract
 
-- **Status:** Accepted (2026-11-12). **Supersedes ADR-0015.** Release-order bullet superseded by [ADR-0029](0029-single-deploy-branch-main.md) (no deploy gate; newer-client flow is a tested path)
+- **Status:** Accepted (2026-11-12). **Supersedes ADR-0015.** Release-order bullet superseded by [ADR-0029](0029-single-deploy-branch-main.md) (no deploy gate; newer-client flow is a tested path). **Solo Shifts amended by [ADR-0031](0031-local-first-solo.md)** (local-first: sim in a Web Worker; this ADR governs server rooms only)
 - **Deciders:** lead/orchestrator, netcode-engineer (after the principal-engineer planning review, findings B1, M4, M5, M8, M10, M11, m2, m3)
 - **Canonical source:** [tech-stack.md](../architecture/tech-stack.md) section 3; details in [netcode.md](../architecture/netcode.md); dust semantics in [world-and-dust-simulation.md](../architecture/world-and-dust-simulation.md)
 
@@ -38,7 +38,7 @@ ADR-0015 was accepted before the netcode and dust specs were written. Review fou
 ## Revisit trigger
 
 - M0-W2 spike: one 16-bot room > 50 % of the 0.1-CPU budget at 20 Hz → replace the Colyseus edge with the custom uWS adapter (tech-stack §3).
-- Egress per 16-player room-hour > 400 MB in bot tests (the ≈ 337 MB budget plus margin).
+- Egress per 16-player room-hour > 400 MB in bot tests (the ≈ 337 MB budget plus margin). (Superseded 2026-11-12: cap is 6; not rescaled.)
 - A paid instance becomes available: raise rates to 30 / 15 and revisit `MAX_ROOMS`.
 
 ## Evidence

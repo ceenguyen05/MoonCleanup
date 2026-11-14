@@ -6,9 +6,10 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "bake": "echo terrain-bake placeholder: Fable replaces with tsx src/bake.ts",
-    "lint": "echo terrain-bake lint: placeholder until sources land - see README",
-    "typecheck": "echo terrain-bake typecheck: placeholder until sources land - see README",
+    "bake": "tsx src/bake.ts",
+    "bake:sweep": "tsx src/sweep.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

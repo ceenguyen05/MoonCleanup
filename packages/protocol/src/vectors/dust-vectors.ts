@@ -1,0 +1,34 @@
+// Golden bytes of the dust bytes messages (layouts: header of codec/dust-messages.ts). Each vector was produced by the
+// codec, then verified by hand and by the independent reference bit packer in dust-messages.test.ts. Changing a byte is
+// a PROTOCOL_VERSION change. Shared with terrain-dust-engineer (stroke chain bytes are inside DUST_LOG).
+
+export const DUST_REQUEST_PLOTS_VECTOR = {
+  /** plotIds [1, 163841] */
+  bytes: [0x03, 0x24, 0x00, 0x80, 0x00, 0x40, 0x01],
+} as const;
+export const DUST_REQUEST_CHUNK_VECTOR = {
+  /** chunkId 640 (the pole chunk) */
+  bytes: [0x03, 0x01, 0x05],
+} as const;
+export const DUST_CHECK_CHUNKS_VECTOR = {
+  /** chunks [{5, 0xdeadbeef}, {640, 1}] */
+  bytes: [0x24, 0x04, 0x0a, 0x78, 0xf7, 0x6d, 0xf5, 0x06, 0x34, 0x00, 0x00, 0x00, 0x00],
+} as const;
+export const DUST_CHECK_DETAIL_VECTOR = {
+  /** chunk 3, plot 77, ledgerVersion 0x01020304, hash 0xa0b0c0d0 */
+  bytes: [0x24, 0x07, 0x08, 0xd0, 0x04, 0x00, 0xc1, 0x80, 0x40, 0x00, 0x34, 0x30, 0x2c, 0x28],
+} as const;
+export const DUST_SNAPSHOT_SLICE_VECTOR = {
+  /** slice 0 of 1, snapshotVersion 0x0a0b0c0d, data [9, 8, 7] */
+  bytes: [0x21, 0x00, 0x00, 0x01, 0x00, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07],
+} as const;
+export const DUST_LOG_VECTOR = {
+  /**
+   * plot 0x0102, refTick 100, one chain: anchor 10, start (1, -2) mm, end (3, -4) mm, widthCm 20, depth16 80,
+   * toolCode 1, actorSlot 2, tick 98 (offset 2), inputSeq 0x1234, one continuation (dx 5, dy -5).
+   */
+  bytes: [
+    0x23, 0x02, 0x01, 0x00, 0x64, 0x00, 0x00, 0x00, 0x01, 0x00, 0x0a, 0x00, 0x04, 0x00, 0xf8, 0xff, 0x0f, 0x00, 0xf0,
+    0xff, 0x53, 0x00, 0x15, 0x08, 0x02, 0x34, 0x12, 0x01, 0x42, 0x01, 0xd8, 0xff,
+  ],
+} as const;

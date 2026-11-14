@@ -23,7 +23,7 @@ Check model availability and whether environment overrides defeat the profiles; 
 
 ## Usage controls
 
-Default one implementer; **max two workers total including reviewers**, **one Opus/Fable worker combined**.
+Run independent ready work in parallel; **up to five regular (Sonnet/Opus) workers plus up to two Fable workers at once; the first two reviewers count toward the regular cap, additional reviewers do not** (owner relaxed 2026-11-12).
 Installs/contracts/root edits/migrations are sequential. A second worker must unblock independent critical-path work.
 No nested agents, worktrees, team mode, automatic prototype contest or polling loops. `maxTurns` is a checkpoint, not a token cap.
 Brief ≤500 words plus paths; initially read ≤3 focused spec sections when practical. Read more source when correctness needs it.

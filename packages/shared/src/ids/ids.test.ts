@@ -1,5 +1,18 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import type { Brand, ContractId, EntityId, PlayerId, PlotId } from "./ids";
+import {
+  ContractIdSchema,
+  EntityIdSchema,
+  PLOT_ID_WIRE_MAX,
+  PlayerIdSchema,
+  PlotIdSchema,
+  RequestIdSchema,
+  type Brand,
+  type ContractId,
+  type EntityId,
+  type PlayerId,
+  type PlotId,
+  type RequestId,
+} from "./ids";
 
 describe("branded ids (type level)", () => {
   it("are assignable to their base type", () => {
@@ -41,5 +54,32 @@ describe("branded ids (type level)", () => {
     const asString: string = player;
     expect([unbranded, wrongBrand, asNumber]).toEqual([7, 7, 7]);
     expect([wrongStringBrand, asString]).toEqual([player, player]);
+  });
+});
+
+describe("id schemas (v1)", () => {
+  const uuid7 = "0190a6c4-7d3e-7b1a-9c55-2f8e4d6a1b00";
+
+  it("parse and brand uuids", () => {
+    expect(PlayerIdSchema.parse(uuid7)).toBe(uuid7);
+    expect(ContractIdSchema.parse(uuid7)).toBe(uuid7);
+    expect(RequestIdSchema.parse(uuid7)).toBe(uuid7);
+    expectTypeOf(PlayerIdSchema.parse(uuid7)).toEqualTypeOf<PlayerId>();
+    expectTypeOf(ContractIdSchema.parse(uuid7)).toEqualTypeOf<ContractId>();
+    expectTypeOf(RequestIdSchema.parse(uuid7)).toEqualTypeOf<RequestId>();
+    expect(PlayerIdSchema.safeParse("not-a-uuid").success).toBe(false);
+    expect(ContractIdSchema.safeParse("").success).toBe(false);
+  });
+
+  it("bound plot and entity ids to their wire widths", () => {
+    expect(PLOT_ID_WIRE_MAX).toBe(262_143);
+    expect(PlotIdSchema.parse(163_841)).toBe(163_841);
+    expect(PlotIdSchema.safeParse(PLOT_ID_WIRE_MAX + 1).success).toBe(false);
+    expect(PlotIdSchema.safeParse(-1).success).toBe(false);
+    expect(PlotIdSchema.safeParse(1.5).success).toBe(false);
+    expectTypeOf(PlotIdSchema.parse(1)).toEqualTypeOf<PlotId>();
+    expect(EntityIdSchema.parse(0xffff_ffff)).toBe(0xffff_ffff);
+    expect(EntityIdSchema.safeParse(0x1_0000_0000).success).toBe(false);
+    expectTypeOf(EntityIdSchema.parse(1)).toEqualTypeOf<EntityId>();
   });
 });

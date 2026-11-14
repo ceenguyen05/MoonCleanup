@@ -1,0 +1,35 @@
+{
+ "base": "scene=s05&view=slope&sun=60&preset=medium&backend=webgpu&scale=1",
+ "variants": [
+  {
+   "name": "before",
+   "query": "shadowfilter=pcf3&cap=dense"
+  },
+  {
+   "name": "after",
+   "query": ""
+  }
+ ],
+ "result": {
+  "before": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "filter": "pcf3",
+   "knobs": "shadowfilter=pcf3",
+   "errors": []
+  },
+  "after": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "filter": "pcf3+pcf5",
+   "knobs": "default",
+   "errors": [],
+   "diffToFirst": {
+    "mean": 0.023,
+    "max": 31.8,
+    "over2Pct": 0.28,
+    "over8Pct": 0.101
+   }
+  }
+ }
+}

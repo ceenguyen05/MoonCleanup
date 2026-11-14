@@ -18,67 +18,157 @@
 //   invalid JSON                      -> allow, unless the raw text coarsely looks like a mutating git call -> block
 //   tool other than Bash/PowerShell   -> allow
 //   payload without a command string  -> allow  (nothing can run)
-//   parser exception / absurd nesting -> coarse regex on the raw command: block only if it looks like mutating git
+//   parser exception / work budget exceeded / over-long command
+//                                     -> coarse regex on the raw command: block only if it looks like mutating git
+//   nesting deeper than MAX_DEPTH     -> block when the command mentions git at all (even read-only), else allow
 //   git subcommand not on the read-only allowlist, or not determinable (`git $x`, aliases, `git -c ...`)
 //                                     -> block   (cannot verify read-only; fail closed for git only)
 //   anything that contains no git invocation is never blocked, even if the parser is unsure about it.
 
-import { pathToFileURL } from 'node:url';
+import { realpathSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 
 /** Mutating subcommands from the M0-W0-T04 brief (same list as the permissions deny rules). */
 export const DENIED_SUBCOMMANDS = new Set([
-  'add', 'commit', 'push', 'pull', 'fetch', 'checkout', 'switch', 'restore', 'branch', 'worktree',
-  'reset', 'rebase', 'merge', 'cherry-pick', 'revert', 'stash', 'tag', 'init', 'remote', 'clean',
-  'rm', 'mv', 'am',
+  "add",
+  "commit",
+  "push",
+  "pull",
+  "fetch",
+  "checkout",
+  "switch",
+  "restore",
+  "branch",
+  "worktree",
+  "reset",
+  "rebase",
+  "merge",
+  "cherry-pick",
+  "revert",
+  "stash",
+  "tag",
+  "init",
+  "remote",
+  "clean",
+  "rm",
+  "mv",
+  "am",
 ]);
 
 /** Read-only subcommands. Everything else (aliases, plumbing that writes, `clone`, `gc`, ...) is refused. */
 export const READ_ONLY_SUBCOMMANDS = new Set([
-  'status', 'diff', 'log', 'show', 'rev-parse', 'ls-files',
-  'blame', 'annotate', 'describe', 'ls-tree', 'cat-file', 'grep', 'shortlog', 'rev-list', 'diff-tree',
-  'diff-index', 'diff-files', 'show-ref', 'for-each-ref', 'ls-remote', 'check-ignore', 'check-attr',
-  'count-objects', 'merge-base', 'name-rev', 'cherry', 'whatchanged', 'version', 'help', 'var',
-  'show-branch', 'range-diff', 'verify-commit', 'verify-tag', 'stripspace',
+  "status",
+  "diff",
+  "log",
+  "show",
+  "rev-parse",
+  "ls-files",
+  "blame",
+  "annotate",
+  "describe",
+  "ls-tree",
+  "cat-file",
+  "grep",
+  "shortlog",
+  "rev-list",
+  "diff-tree",
+  "diff-index",
+  "diff-files",
+  "show-ref",
+  "for-each-ref",
+  "ls-remote",
+  "check-ignore",
+  "check-attr",
+  "count-objects",
+  "merge-base",
+  "name-rev",
+  "cherry",
+  "whatchanged",
+  "version",
+  "help",
+  "var",
+  "show-branch",
+  "range-diff",
+  "verify-commit",
+  "verify-tag",
+  "stripspace",
 ]);
 
 const MAX_DEPTH = 6;
 const MAX_LENGTH = 200_000;
+// Work budget (review finding T04-4): crafted 200 KB inputs made some scans quadratic and exceeded the 10 s hook
+// timeout. Every scan charges roughly one unit per word or character it touches; running out throws, and `evaluate`
+// then falls back to the (linear-time) coarse regex.
+const MAX_WORK = 4_000_000;
+
+function charge(ctx, units) {
+  ctx.work.n += units;
+  if (ctx.work.n > MAX_WORK) throw new Error("work budget exceeded");
+}
 
 // Global git options that consume the next word.
-const GIT_ARG_OPTIONS = new Set(['-C', '--git-dir', '--work-tree', '--namespace', '--super-prefix']);
+const GIT_ARG_OPTIONS = new Set(["-C", "--git-dir", "--work-tree", "--namespace", "--super-prefix"]);
 // Options of otherwise read-only subcommands that write files or run programs.
 const GIT_DANGEROUS_FLAGS = /^(--output(=|$)|--open-files-in-pager|--ext-diff$)/;
 
-const SH_SHELLS = new Set(['bash', 'sh', 'zsh', 'dash', 'ksh', 'ash', 'fish', 'csh', 'tcsh']);
-const PS_SHELLS = new Set(['pwsh', 'powershell']);
-const BOTH_SHELLS = new Set(['cmd', 'wsl']);
-const EVAL_WORDS = new Set(['eval', 'iex', 'invoke-expression']);
+const SH_SHELLS = new Set(["bash", "sh", "zsh", "dash", "ksh", "ash", "fish", "csh", "tcsh"]);
+const PS_SHELLS = new Set(["pwsh", "powershell"]);
+const BOTH_SHELLS = new Set(["cmd", "wsl"]);
+const EVAL_WORDS = new Set(["eval", "iex", "invoke-expression"]);
 const START_WORDS = new Set([
-  'start-process', 'saps', 'start', 'start-job', 'sajb', 'invoke-command', 'icm', 'foreach-object', 'foreach',
-  '%',
+  "start-process",
+  "saps",
+  "start",
+  "start-job",
+  "sajb",
+  "invoke-command",
+  "icm",
+  "foreach-object",
+  "foreach",
+  "%",
 ]);
-const RUNNERS = new Set(['pnpm', 'npm', 'npx', 'pnpx', 'yarn', 'bunx', 'bun', 'corepack']);
-const INTERPRETERS = new Set(['python', 'python3', 'py', 'node', 'nodejs', 'deno', 'perl', 'ruby', 'php', 'lua']);
+const RUNNERS = new Set(["pnpm", "npm", "npx", "pnpx", "yarn", "bunx", "bun", "corepack"]);
+const INTERPRETERS = new Set(["python", "python3", "py", "node", "nodejs", "deno", "perl", "ruby", "php", "lua"]);
 const KEYWORDS = new Set([
-  'if', 'then', 'else', 'elif', 'elseif', 'do', 'while', 'until', '!', 'time', 'nohup', 'exec', 'noglob',
-  'setsid', 'call', '&', 'try', 'catch', 'finally',
+  "if",
+  "then",
+  "else",
+  "elif",
+  "elseif",
+  "do",
+  "while",
+  "until",
+  "!",
+  "time",
+  "nohup",
+  "exec",
+  "noglob",
+  "setsid",
+  "call",
+  "&",
+  "try",
+  "catch",
+  "finally",
 ]);
 // Wrapper commands whose own options and positionals are skipped before the real command.
 const WRAPPERS = {
-  nice: { argOpts: ['-n', '--adjustment'], positional: 0 },
-  ionice: { argOpts: ['-c', '-n', '-p', '-P', '-u'], positional: 0 },
-  timeout: { argOpts: ['-s', '-k', '--signal', '--kill-after'], positional: 1 },
-  stdbuf: { argOpts: ['-i', '-o', '-e'], positional: 0 },
-  xargs: { argOpts: ['-I', '-n', '-P', '-d', '-L', '-s', '-E', '-a', '-J', '-R', '-S'], positional: 0 },
-  sudo: { argOpts: ['-u', '-g', '-h', '-p', '-C', '-r', '-t', '-U', '-D', '-R', '-T'], positional: 0 },
-  doas: { argOpts: ['-u', '-C'], positional: 0 },
-  watch: { argOpts: ['-n', '-d'], positional: 0 },
+  nice: { argOpts: ["-n", "--adjustment"], positional: 0 },
+  ionice: { argOpts: ["-c", "-n", "-p", "-P", "-u"], positional: 0 },
+  timeout: { argOpts: ["-s", "-k", "--signal", "--kill-after"], positional: 1 },
+  stdbuf: { argOpts: ["-i", "-o", "-e"], positional: 0 },
+  xargs: { argOpts: ["-I", "-n", "-P", "-d", "-L", "-s", "-E", "-a", "-J", "-R", "-S"], positional: 0 },
+  sudo: { argOpts: ["-u", "-g", "-h", "-p", "-C", "-r", "-t", "-U", "-D", "-R", "-T"], positional: 0 },
+  doas: { argOpts: ["-u", "-C"], positional: 0 },
+  watch: { argOpts: ["-n", "-d"], positional: 0 },
 };
+
+const PS_OPERATOR =
+  /^-(?:[ci])?(?:match|notmatch|replace|eq|ne|like|notlike|contains|notcontains|in|notin|gt|ge|lt|le|split|join|and|or|xor|is|isnot|as|f)$/i;
 
 const SPAWN_HINT = /(exec|spawn|system|popen|subprocess|child_process|run\s*\()/i;
 const COARSE_GIT = new RegExp(
-  String.raw`\bgit(?:\.exe)?\b['"]?(?:\s+\S+){0,5}?\s+['"]?(?:${[...DENIED_SUBCOMMANDS].join('|')})\b`,
-  'i',
+  String.raw`\bgit(?:\.exe)?\b['"]?(?:\s+\S+){0,5}?\s+['"]?(?:${[...DENIED_SUBCOMMANDS].join("|")})\b`,
+  "i",
 );
 const GIT_WORD = /\bgit(?:\.exe)?\b/i;
 
@@ -90,6 +180,7 @@ const GIT_WORD = /\bgit(?:\.exe)?\b/i;
 /** Index of the `)` matching the `(` at `open` (quote and heredoc aware); `src.length` when unterminated. */
 function findCloseParen(src, open, ps) {
   let depth = 0;
+  const arith = !ps && src[open + 1] === "("; // `$(( ... ))` / `(( ... ))`: `<<` is a shift, never a heredoc
   for (let k = open; k < src.length; k++) {
     const ch = src[k];
     if (ch === "'") {
@@ -98,20 +189,20 @@ function findCloseParen(src, open, ps) {
       k = e;
     } else if (ch === '"') {
       k = skipDoubleQuoted(src, k, ps);
-    } else if (!ps && ch === '\\') {
+    } else if (!ps && ch === "\\") {
       k++;
-    } else if (ps && ch === '`') {
+    } else if (ps && ch === "`") {
       k++;
-    } else if (!ps && ch === '<' && src[k + 1] === '<' && src[k + 2] !== '<') {
+    } else if (!ps && !arith && isHeredocStart(src, k)) {
       const h = parseHeredocHeader(src, k);
       if (h) {
-        const eol = src.indexOf('\n', h.end);
+        const eol = src.indexOf("\n", h.end);
         if (eol < 0) return src.length;
         k = consumeHeredocBody(src, eol + 1, h).end - 1;
       }
-    } else if (ch === '(') {
+    } else if (ch === "(") {
       depth++;
-    } else if (ch === ')') {
+    } else if (ch === ")") {
       depth--;
       if (depth === 0) return k;
     }
@@ -123,24 +214,29 @@ function findCloseParen(src, open, ps) {
 function skipDoubleQuoted(src, start, ps) {
   for (let k = start + 1; k < src.length; k++) {
     const ch = src[k];
-    if (!ps && ch === '\\') k++;
-    else if (ps && ch === '`') k++;
-    else if (ch === '$' && src[k + 1] === '(') k = findCloseParen(src, k + 1, ps);
+    if (!ps && ch === "\\") k++;
+    else if (ps && ch === "`") k++;
+    else if (ch === "$" && src[k + 1] === "(") k = findCloseParen(src, k + 1, ps);
     else if (ch === '"') return k;
   }
   return src.length;
+}
+
+/** True for `<<` that opens a heredoc: not part of a `<<<` here-string. */
+function isHeredocStart(src, k) {
+  return src[k] === "<" && src[k + 1] === "<" && src[k + 2] !== "<" && src[k - 1] !== "<";
 }
 
 /** Parses `<<[-]DELIM` at index k; returns { delim, dash, expand, end } or null. */
 function parseHeredocHeader(src, k) {
   let j = k + 2;
   let dash = false;
-  if (src[j] === '-') {
+  if (src[j] === "-") {
     dash = true;
     j++;
   }
-  while (src[j] === ' ' || src[j] === '\t') j++;
-  let delim = '';
+  while (src[j] === " " || src[j] === "\t") j++;
+  let delim = "";
   let expand = true;
   const q = src[j];
   if (q === "'" || q === '"') {
@@ -152,8 +248,8 @@ function parseHeredocHeader(src, k) {
   } else {
     const m = /^[A-Za-z0-9_.\-\\]+/.exec(src.slice(j, j + 200));
     if (!m) return null;
-    delim = m[0].replace(/\\/g, '');
-    if (m[0].includes('\\')) expand = false;
+    delim = m[0].replace(/\\/g, "");
+    if (m[0].includes("\\")) expand = false;
     j += m[0].length;
   }
   return delim ? { delim, dash, expand, end: j } : null;
@@ -161,14 +257,14 @@ function parseHeredocHeader(src, k) {
 
 /** Reads heredoc lines from `pos` up to and including the terminator line. */
 function consumeHeredocBody(src, pos, h) {
-  let body = '';
+  let body = "";
   while (pos < src.length) {
-    let eol = src.indexOf('\n', pos);
+    let eol = src.indexOf("\n", pos);
     if (eol < 0) eol = src.length;
-    const line = src.slice(pos, eol).replace(/\r$/, '');
+    const line = src.slice(pos, eol).replace(/\r$/, "");
     pos = eol + 1;
-    if ((h.dash ? line.replace(/^\t+/, '') : line) === h.delim) return { body, end: Math.min(pos, src.length) };
-    body += line + '\n';
+    if ((h.dash ? line.replace(/^\t+/, "") : line) === h.delim) return { body, end: Math.min(pos, src.length) };
+    body += line + "\n";
   }
   return { body, end: src.length };
 }
@@ -177,14 +273,14 @@ function consumeHeredocBody(src, pos, h) {
 function extractSubs(body, ps, subs) {
   for (let k = 0; k < body.length; k++) {
     const ch = body[k];
-    if (!ps && ch === '\\') k++;
-    else if (ps && ch === '`') k++;
-    else if (ch === '$' && body[k + 1] === '(') {
+    if (!ps && ch === "\\") k++;
+    else if (ps && ch === "`") k++;
+    else if (ch === "$" && body[k + 1] === "(") {
       const close = findCloseParen(body, k + 1, ps);
       subs.push(body.slice(k + 2, close));
       k = close;
-    } else if (!ps && ch === '`') {
-      const e = body.indexOf('`', k + 1);
+    } else if (!ps && ch === "`") {
+      const e = body.indexOf("`", k + 1);
       if (e > 0) {
         subs.push(body.slice(k + 1, e));
         k = e;
@@ -194,25 +290,28 @@ function extractSubs(body, ps, subs) {
 }
 
 function unescapeDoubleQuoted(body, ps) {
-  return ps ? body.replace(/`(.)/gs, '$1').replace(/""/g, '"') : body.replace(/\\(["\\$`])/g, '$1');
+  return ps ? body.replace(/`(.)/gs, "$1").replace(/""/g, '"') : body.replace(/\\(["\\$`])/g, "$1");
 }
+
+/** Word text that ends in the `@` opening a PowerShell here-string: `@` alone or after `=` / `(` / `,`. */
+const HERE_AT = /(?:^|[=(,])@$/;
 
 /** Splits `src` into simple commands. Each word is { t: text, dyn: contains an expansion }. */
 function tokenize(src, dialect) {
-  const ps = dialect === 'ps';
+  const ps = dialect === "ps";
   const commands = [];
   const subs = [];
   const pending = [];
   const n = src.length;
   let cmd = [];
-  let text = '';
+  let text = "";
   let has = false;
   let dyn = false;
   let i = 0;
 
   const endWord = () => {
     if (has) cmd.push({ t: text, dyn });
-    text = '';
+    text = "";
     has = false;
     dyn = false;
   };
@@ -225,7 +324,7 @@ function tokenize(src, dialect) {
   while (i < n) {
     const c = src[i];
 
-    if (c === '\n') {
+    if (c === "\n") {
       endCmd();
       i++;
       for (const h of pending) {
@@ -236,22 +335,42 @@ function tokenize(src, dialect) {
       pending.length = 0;
       continue;
     }
-    if (c === ' ' || c === '\t' || c === '\r') {
+    if (c === " " || c === "\t" || c === "\r") {
       endWord();
       i++;
       continue;
     }
-    if (c === ';' || c === '|' || c === '&' || c === '(' || c === ')' || c === '}' || (c === '{' && !has)) {
+    if (!ps && c === "(" && src[i + 1] === "(" && !has) {
+      // `(( expr ))` arithmetic command: skip it whole (a `<<` inside is a shift, not a heredoc).
       endCmd();
+      const close = findCloseParen(src, i, false);
+      extractSubs(src.slice(i + 2, close), false, subs);
+      i = close + 1;
+      continue;
+    }
+    if (c === ";" || c === "|" || c === "&" || c === "(" || c === ")" || c === "}" || (c === "{" && !has)) {
+      const before = commands.length;
+      endCmd();
+      // Remember that a single `|` feeds the next stage (used to judge `"text" | iex`).
+      if (c === "|" && src[i + 1] !== "|" && src[i - 1] !== "|" && commands.length > before) {
+        commands[commands.length - 1].pipe = true;
+      }
       i++;
       continue;
     }
-    if (c === '#' && !has) {
-      const e = src.indexOf('\n', i);
+    if (ps && c === "<" && src[i + 1] === "#") {
+      // PowerShell block comment <# ... #>
+      const e = src.indexOf("#>", i + 2);
+      i = e < 0 ? n : e + 2;
+      endWord();
+      continue;
+    }
+    if (c === "#" && !has) {
+      const e = src.indexOf("\n", i);
       i = e < 0 ? n : e;
       continue;
     }
-    if (!ps && c === '<' && src[i + 1] === '<' && src[i + 2] !== '<') {
+    if (!ps && isHeredocStart(src, i)) {
       const h = parseHeredocHeader(src, i);
       if (h) {
         pending.push(h);
@@ -261,10 +380,11 @@ function tokenize(src, dialect) {
       }
     }
     if (c === "'") {
-      if (ps && has && text === '@' && /^[ \t]*\r?\n/.test(src.slice(i + 1, i + 40))) {
+      if (ps && has && HERE_AT.test(text) && /^[ \t]*\r?\n/.test(src.slice(i + 1, i + 40))) {
         // PowerShell here-string @'...'@ : literal text until a line that is exactly '@
+        // (also after an assignment: `$plan=@'`, review finding T04-7)
         const e = src.indexOf("\n'@", i + 1);
-        text = e < 0 ? src.slice(i + 1) : src.slice(i + 1, e);
+        text = text.slice(0, -1) + (e < 0 ? src.slice(i + 1) : src.slice(i + 1, e));
         i = e < 0 ? n : e + 3;
         continue;
       }
@@ -276,11 +396,11 @@ function tokenize(src, dialect) {
     }
     if (c === '"') {
       let body;
-      if (ps && has && text === '@' && /^[ \t]*\r?\n/.test(src.slice(i + 1, i + 40))) {
+      if (ps && has && HERE_AT.test(text) && /^[ \t]*\r?\n/.test(src.slice(i + 1, i + 40))) {
         const e = src.indexOf('\n"@', i + 1);
         body = e < 0 ? src.slice(i + 1) : src.slice(i + 1, e);
         i = e < 0 ? n : e + 3;
-        text = '';
+        text = text.slice(0, -1);
       } else {
         const k = skipDoubleQuoted(src, i, ps);
         body = src.slice(i + 1, k);
@@ -289,21 +409,23 @@ function tokenize(src, dialect) {
       extractSubs(body, ps, subs);
       text += unescapeDoubleQuoted(body, ps);
       has = true;
-      if (body.includes('$')) dyn = true;
+      if (body.includes("$")) dyn = true;
       continue;
     }
-    if (c === '$') {
+    if (c === "$") {
       const nx = src[i + 1];
-      if (nx === '(') {
+      if (nx === "(") {
         const close = findCloseParen(src, i + 1, ps);
-        subs.push(src.slice(i + 2, close));
-        text += '$(...)';
+        if (!ps && src[i + 2] === "(")
+          extractSubs(src.slice(i + 3, close), false, subs); // $(( arithmetic ))
+        else subs.push(src.slice(i + 2, close));
+        text += "$(...)";
         has = dyn = true;
         i = close + 1;
         continue;
       }
-      if (nx === '{') {
-        const close = src.indexOf('}', i + 2);
+      if (nx === "{") {
+        const close = src.indexOf("}", i + 2);
         const e = close < 0 ? n : close + 1;
         text += src.slice(i, e);
         has = dyn = true;
@@ -311,42 +433,47 @@ function tokenize(src, dialect) {
         continue;
       }
       if (nx === "'" && !ps) {
-        i++; // $'...' ANSI-C quoting: parse the quoted part as an ordinary single-quoted string
+        // $'...' ANSI-C quoting: backslash escapes (including \') stay inside the string.
+        let k = i + 2;
+        while (k < n && src[k] !== "'") k += src[k] === "\\" ? 2 : 1;
+        text += src.slice(i + 2, Math.min(k, n)).replace(/\\(['"\\])/g, "$1");
+        has = true;
+        i = k + 1;
         continue;
       }
-      text += '$';
+      text += "$";
       has = dyn = true;
       i++;
       continue;
     }
-    if (c === '`') {
-      if (src[i + 1] === '\n' || (src[i + 1] === '\r' && src[i + 2] === '\n')) {
+    if (c === "`") {
+      if (src[i + 1] === "\n" || (src[i + 1] === "\r" && src[i + 2] === "\n")) {
         endWord(); // PowerShell line continuation
-        i += src[i + 1] === '\r' ? 3 : 2;
+        i += src[i + 1] === "\r" ? 3 : 2;
         continue;
       }
       if (!ps) {
-        const e = src.indexOf('`', i + 1);
+        const e = src.indexOf("`", i + 1);
         if (e > 0) {
           subs.push(src.slice(i + 1, e));
-          text += '`...`';
+          text += "`...`";
           has = dyn = true;
           i = e + 1;
           continue;
         }
       }
-      text += src[i + 1] ?? '';
+      text += src[i + 1] ?? "";
       has = true;
       i += 2;
       continue;
     }
-    if (!ps && c === '\\') {
+    if (!ps && c === "\\") {
       const nx = src[i + 1];
-      if (nx === '\n') {
+      if (nx === "\n") {
         i += 2;
         continue;
       }
-      if (nx === '\r' && src[i + 2] === '\n') {
+      if (nx === "\r" && src[i + 2] === "\n") {
         i += 3;
         continue;
       }
@@ -356,7 +483,7 @@ function tokenize(src, dialect) {
         text += nx;
         i += 2;
       } else {
-        text += '\\';
+        text += "\\";
         i++;
       }
       has = true;
@@ -376,61 +503,80 @@ function tokenize(src, dialect) {
 
 /** Lower-cased command basenames for a word: [path-split, backslashes-removed]. Extension stripped. */
 function cmdNames(t) {
-  const norm = (s) => s.toLowerCase().replace(/\.(exe|cmd|bat|com|ps1)$/, '');
-  const a = t.split(/[\\/]/).pop() ?? '';
-  const b = t.replace(/\\/g, '').split('/').pop() ?? '';
+  const norm = (s) => s.toLowerCase().replace(/\.(exe|cmd|bat|com|ps1)$/, "");
+  const a = t.split(/[\\/]/).pop() ?? "";
+  const b = t.replace(/\\/g, "").split("/").pop() ?? "";
   return [norm(a), norm(b)];
 }
 
 function dialectOfShell(name) {
-  if (SH_SHELLS.has(name)) return 'sh';
-  if (PS_SHELLS.has(name)) return 'ps';
-  return 'both';
+  if (SH_SHELLS.has(name)) return "sh";
+  if (PS_SHELLS.has(name)) return "ps";
+  return "both";
 }
 
 function mutating(sub) {
-  return `\`git ${sub}\` changes repository state. Cee runs all git; do not retry it in another form. ` +
-    'Leave the change in the working tree and describe it; Cee does all git (CLAUDE.md, docs/handoff/WORKFLOW.md).';
+  return (
+    `\`git ${sub}\` changes repository state. Cee runs all git; do not retry it in another form. ` +
+    "Leave the change in the working tree and describe it; Cee does all git (CLAUDE.md, docs/handoff/WORKFLOW.md)."
+  );
 }
 
 /** Judges one git invocation. `words[k]` is the first word after `git`. Returns a reason or null. */
-function analyzeGit(words, k) {
+function analyzeGit(words, k, ctx) {
+  charge(ctx, words.length - k + 1);
   for (; k < words.length; k++) {
     const t = words[k].t;
-    if (!t.startsWith('-')) break;
-    if (t[1] === 'c') { // -c key=value (also the attached form -ckey=value); `--...` and `-C` do not match
-      return '`git -c ...` is refused: config overrides can run arbitrary programs (core.fsmonitor, core.sshCommand, alias.*).';
+    if (!t.startsWith("-")) break;
+    if (t[1] === "c") {
+      // -c key=value (also the attached form -ckey=value); `--...` and `-C` do not match
+      return "`git -c ...` is refused: config overrides can run arbitrary programs (core.fsmonitor, core.sshCommand, alias.*).";
     }
-    if (t === '--config-env' || t.startsWith('--config-env=')) {
-      return '`git --config-env` is refused: config overrides can run arbitrary programs.';
+    if (t === "--config-env" || t.startsWith("--config-env=")) {
+      return "`git --config-env` is refused: config overrides can run arbitrary programs.";
     }
     if (GIT_ARG_OPTIONS.has(t)) k++;
   }
   if (k >= words.length) return null; // bare `git`, `git --version`, `git --help`
   const sub = words[k];
   const s = sub.t.toLowerCase();
-  if (sub.dyn) return 'git subcommand is computed at runtime (`git $x`); cannot verify it is read-only. Write the subcommand literally.';
+  if (sub.dyn)
+    return "git subcommand is computed at runtime (`git $x`); cannot verify it is read-only. Write the subcommand literally.";
   if (DENIED_SUBCOMMANDS.has(s)) return mutating(s);
   const rest = words.slice(k + 1).map((w) => w.t);
-  if (s === 'config') {
-    const reads = rest.some((a) => /^(--get(-all|-regexp|-urlmatch|-color(bool)?)?|--list|-l|--show-origin|get|list)$/.test(a));
-    const writes = rest.some((a) => /^(--add|--unset(-all)?|--replace-all|--edit|-e|--rename-section|--remove-section|--global|--system|set|unset|edit)$/.test(a));
-    return reads && !writes ? null : '`git config` is only allowed with --get/--list style read flags and without --global/--system/--add/--unset.';
+  if (s === "config") {
+    const reads = rest.some((a) =>
+      /^(--get(-all|-regexp|-urlmatch|-color(bool)?)?|--list|-l|--show-origin|get|list)$/.test(a),
+    );
+    const writes = rest.some((a) =>
+      /^(--add|--unset(-all)?|--replace-all|--edit|-e|--rename-section|--remove-section|--global|--system|set|unset|edit)$/.test(
+        a,
+      ),
+    );
+    return reads && !writes
+      ? null
+      : "`git config` is only allowed with --get/--list style read flags and without --global/--system/--add/--unset.";
   }
   if (READ_ONLY_SUBCOMMANDS.has(s)) {
     const bad = rest.find((a) => GIT_DANGEROUS_FLAGS.test(a));
     return bad ? `\`git ${s} ${bad}\` writes files or runs programs; refused.` : null;
   }
-  return `\`git ${s}\` is not on the read-only allowlist (status, diff, log, show, rev-parse, ls-files and similar), so it cannot be verified as safe. ` +
-    'Aliases and plumbing that writes are refused; Cee runs all git.';
+  return (
+    `\`git ${s}\` is not on the read-only allowlist (status, diff, log, show, rev-parse, ls-files and similar), so it cannot be verified as safe. ` +
+    "Aliases and plumbing that writes are refused; Cee runs all git."
+  );
 }
 
 /** Scans words starting at `start` for a literal `git` word and judges everything after it. */
-function findGitWord(words, start) {
+function findGitWord(words, start, ctx) {
   for (let j = start; j < words.length; j++) {
+    charge(ctx, 1);
     const names = cmdNames(words[j].t);
-    if (names.includes('git')) {
-      const v = analyzeGit(words, j + 1);
+    // A relative path such as `tools/git` is a folder argument, not the program (review finding T04-6).
+    const t = words[j].t;
+    const relativePath = /[\\/]/.test(t) && !/^([\\/~]|[A-Za-z]:)/.test(t) && !/\.exe$/i.test(t);
+    if (names.includes("git") && !relativePath) {
+      const v = analyzeGit(words, j + 1, ctx);
       if (v) return v;
     }
   }
@@ -442,10 +588,10 @@ function scanShellArgs(args, dialect, depth, ctx) {
   const kept = [];
   for (let j = 0; j < args.length; j++) {
     const t = args[j].t;
-    if (dialect === 'ps' && /^-(e|ec|enc|encodedcommand)$/i.test(t) && args[j + 1]) {
+    if (dialect === "ps" && /^-(e|ec|enc|encodedcommand)$/i.test(t) && args[j + 1]) {
       // PowerShell -EncodedCommand carries base64 UTF-16LE text; decode it and judge it as a script.
-      const decoded = Buffer.from(args[j + 1].t, 'base64').toString('utf16le');
-      const v = scan(decoded, 'ps', depth + 1, ctx);
+      const decoded = Buffer.from(args[j + 1].t, "base64").toString("utf16le");
+      const v = scan(decoded, "ps", depth + 1, ctx);
       if (v) return v;
       continue;
     }
@@ -453,9 +599,9 @@ function scanShellArgs(args, dialect, depth, ctx) {
     kept.push(t);
   }
   if (kept.length === 0 && ctx.rawGit) {
-    return 'a shell reads its script from stdin (`... | sh`) in a command that mentions git; cannot verify it.';
+    return "a shell reads its script from stdin (`... | sh`) in a command that mentions git; cannot verify it.";
   }
-  return scan(kept.join(' '), dialect, depth + 1, ctx);
+  return scan(kept.join(" "), dialect, depth + 1, ctx);
 }
 
 /** Judges one simple command (list of words). Returns a reason or null. */
@@ -466,30 +612,51 @@ function analyze(words, dialect, depth, ctx) {
     if (!w) return null;
     const t = w.t;
 
-    if (/^\d*(>>?|<|>\||&>>?)$/.test(t)) { i += 2; continue; } // bare redirection operator + its target
-    if (/^\d*(>>?|<|>\||&>>?)./.test(t)) { i++; continue; } // redirection with attached target
-    if (/^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(t)) { i++; continue; } // VAR=value prefix
-    if (/^\$[\w:.]+\+?=/.test(t)) { i++; continue; } // PowerShell $x=...
-    if (t.startsWith('$') && words[i + 1] && /^([-+*/%]|\?\?)?=$/.test(words[i + 1].t)) { i += 2; continue; } // $x = ...
+    if (/^\d*(>>?|<{1,3}|>\||&>>?)$/.test(t)) {
+      i += 2;
+      continue;
+    } // bare redirection operator + its target
+    if (/^\d*(>>?|<|>\||&>>?)./.test(t)) {
+      i++;
+      continue;
+    } // redirection with attached target
+    if (/^[A-Za-z_][A-Za-z0-9_]*\+?=/.test(t)) {
+      i++;
+      continue;
+    } // VAR=value prefix
+    if (/^\$[\w:.]+\+?=/.test(t)) {
+      i++;
+      continue;
+    } // PowerShell $x=...
+    if (t.startsWith("$") && words[i + 1] && /^([-+*/%]|\?\?)?=$/.test(words[i + 1].t)) {
+      i += 2;
+      continue;
+    } // $x = ...
 
     const [name, alt] = cmdNames(t);
 
-    if (KEYWORDS.has(name)) { i++; continue; }
-    if (name === 'command' || name === 'builtin') {
+    if (KEYWORDS.has(name)) {
       i++;
-      while (words[i] && words[i].t.startsWith('-')) {
+      continue;
+    }
+    if (name === "command" || name === "builtin") {
+      i++;
+      while (words[i] && words[i].t.startsWith("-")) {
         if (/^-[vV]/.test(words[i].t)) return null; // lookup only
         i++;
       }
       continue;
     }
-    if (name === 'env') {
+    if (name === "env") {
       i++;
       for (; words[i]; i++) {
         const o = words[i].t;
-        if (o === '-S' || o === '--split-string') return scanShellArgs(words.slice(i + 1), dialect, depth, ctx);
-        if (['-u', '-C', '--unset', '--chdir'].includes(o)) { i++; continue; }
-        if (o.startsWith('-') || /^[A-Za-z_][A-Za-z0-9_]*=/.test(o)) continue;
+        if (o === "-S" || o === "--split-string") return scanShellArgs(words.slice(i + 1), dialect, depth, ctx);
+        if (["-u", "-C", "--unset", "--chdir"].includes(o)) {
+          i++;
+          continue;
+        }
+        if (o.startsWith("-") || /^[A-Za-z_][A-Za-z0-9_]*=/.test(o)) continue;
         break;
       }
       continue;
@@ -497,16 +664,19 @@ function analyze(words, dialect, depth, ctx) {
     if (Object.hasOwn(WRAPPERS, name)) {
       const spec = WRAPPERS[name];
       i++;
-      while (words[i] && words[i].t.startsWith('-')) i += spec.argOpts.includes(words[i].t) ? 2 : 1;
+      while (words[i] && words[i].t.startsWith("-")) i += spec.argOpts.includes(words[i].t) ? 2 : 1;
       i += spec.positional;
       continue;
     }
 
     // --- the command proper ---
-    if (name === 'git' || alt === 'git') return analyzeGit(words, i + 1);
+    if (name === "git" || alt === "git") return analyzeGit(words, i + 1, ctx);
     const dashed = /^git-(.+)$/.exec(name);
     if (dashed) {
       if (DENIED_SUBCOMMANDS.has(dashed[1])) return mutating(dashed[1]);
+      // `./tools/git-hooks-check.sh`: a path-qualified script that merely starts with "git-" is not a git builtin
+      // (review finding T04-6); only bare `git-<sub>` names must be on the allowlist.
+      if (/[\\/]/.test(t)) return null;
       if (!READ_ONLY_SUBCOMMANDS.has(dashed[1])) return `\`git-${dashed[1]}\` is not on the read-only allowlist.`;
       return null;
     }
@@ -521,40 +691,47 @@ function analyze(words, dialect, depth, ctx) {
       return scanShellArgs(rest, dialect, depth, ctx);
     }
     if (START_WORDS.has(name)) {
-      const v = findGitWord(rest, 0);
+      const v = findGitWord(rest, 0, ctx);
       if (v) return v;
       return rest.some((a) => /\s/.test(a.t)) ? scanShellArgs(rest, dialect, depth, ctx) : null;
     }
-    if (name === 'alias' || name === 'set-alias' || name === 'new-alias' || name === 'sal') {
+    if (name === "alias" || name === "set-alias" || name === "new-alias" || name === "sal") {
       // Aliasing git would hide later calls from this parser.
-      if (rest.some((a) => /(^|=|\s)git(\.exe)?(\s|$)/i.test(a.t))) return 'aliasing git is refused; call `git <subcommand>` directly.';
+      if (rest.some((a) => /(^|=|\s)git(\.exe)?(\s|$)/i.test(a.t)))
+        return "aliasing git is refused; call `git <subcommand>` directly.";
       return null;
     }
-    if (name === 'find') {
+    if (name === "find") {
       for (let j = 0; j < rest.length; j++) {
-        if (['-exec', '-execdir', '-ok', '-okdir'].includes(rest[j].t)) {
+        if (["-exec", "-execdir", "-ok", "-okdir"].includes(rest[j].t)) {
+          charge(ctx, rest.length - j);
           const v = analyze(rest.slice(j + 1), dialect, depth, ctx);
           if (v) return v;
         }
       }
       return null;
     }
-    if (RUNNERS.has(name)) return findGitWord(rest, 0);
+    if (RUNNERS.has(name)) return findGitWord(rest, 0, ctx);
     if (INTERPRETERS.has(name)) {
       const k = rest.findIndex((a) => /^-(c|e|p|pe|r|E|-eval|-print)$/.test(a.t));
       if (k >= 0) {
-        const code = rest.slice(k + 1).map((a) => a.t).join(' ');
+        const code = rest
+          .slice(k + 1)
+          .map((a) => a.t)
+          .join(" ");
         if (SPAWN_HINT.test(code) && COARSE_GIT.test(code)) {
-          return 'inline script appears to spawn a mutating git command; refused.';
+          return "inline script appears to spawn a mutating git command; refused.";
         }
       }
       return null;
     }
-    if (/^[$`]/.test(t) && ctx.rawGit && rest.some((a) => DENIED_SUBCOMMANDS.has(a.t.toLowerCase()))) {
-      return 'command name is computed at runtime next to a mutating git subcommand word; cannot verify. Write `git <subcommand>` literally.';
+    // PowerShell `$s -match "add"`: a variable followed by a comparison operator is data, not a command name.
+    const psOperand = dialect === "ps" && rest[0] && PS_OPERATOR.test(rest[0].t);
+    if (/^[$`]/.test(t) && !psOperand && ctx.rawGit && rest.some((a) => DENIED_SUBCOMMANDS.has(a.t.toLowerCase()))) {
+      return "command name is computed at runtime next to a mutating git subcommand word; cannot verify. Write `git <subcommand>` literally.";
     }
-    // PowerShell/sh: a quoted command string used as pipeline input to iex (`"git commit" | iex`).
-    if (i === 0 && /\s/.test(t) && !w.dyn && words.length === 1 && ctx.rawGit) {
+    // A lone quoted string is a script only when the next pipeline stage evaluates it (`"git commit" | iex`).
+    if (i === 0 && /\s/.test(t) && !w.dyn && words.length === 1 && ctx.rawGit && ctx.feedsEval) {
       return scan(t, dialect, depth + 1, ctx);
     }
     return null;
@@ -563,15 +740,24 @@ function analyze(words, dialect, depth, ctx) {
 
 function scan(src, dialect, depth, ctx) {
   // Too deep to judge: refuse only when git is mentioned at all; a git-free command is never blocked.
-  if (depth > MAX_DEPTH) return ctx.rawGit ? 'command nesting is too deep to verify and it mentions git.' : null;
-  if (dialect === 'both') return scan(src, 'sh', depth, ctx) ?? scan(src, 'ps', depth, ctx);
+  if (depth > MAX_DEPTH) return ctx.rawGit ? "command nesting is too deep to verify and it mentions git." : null;
+  charge(ctx, src.length);
+  if (dialect === "both") return scan(src, "sh", depth, ctx) ?? scan(src, "ps", depth, ctx);
   const { commands, subs } = tokenize(src, dialect);
   for (const s of subs) {
     const v = scan(s, dialect, depth + 1, ctx);
     if (v) return v;
   }
-  for (const words of commands) {
-    const v = analyze(words, dialect, depth, ctx);
+  for (let idx = 0; idx < commands.length; idx++) {
+    const words = commands[idx];
+    const next = words.pipe ? commands[idx + 1]?.[0] : undefined;
+    const nextName = next ? cmdNames(next.t)[0] : "";
+    const sub = {
+      ...ctx,
+      feedsEval:
+        EVAL_WORDS.has(nextName) || SH_SHELLS.has(nextName) || PS_SHELLS.has(nextName) || BOTH_SHELLS.has(nextName),
+    };
+    const v = analyze(words, dialect, depth, sub);
     if (v) return v;
   }
   return null;
@@ -583,9 +769,9 @@ function scan(src, dialect, depth, ctx) {
  * @param {string} command
  * @param {'sh'|'ps'|'both'} [dialect]
  */
-export function checkCommand(command, dialect = 'both') {
-  if (command.length > MAX_LENGTH) throw new Error('command too long to parse');
-  return scan(command, dialect, 0, { rawGit: GIT_WORD.test(command) });
+export function checkCommand(command, dialect = "both") {
+  if (command.length > MAX_LENGTH) throw new Error("command too long to parse");
+  return scan(command, dialect, 0, { rawGit: GIT_WORD.test(command), work: { n: 0 } });
 }
 
 /**
@@ -594,40 +780,48 @@ export function checkCommand(command, dialect = 'both') {
  * @returns {{ block: boolean, reason?: string, note: string }}
  */
 export function evaluate(stdinText) {
-  const text = typeof stdinText === 'string' ? stdinText : '';
-  if (!text.trim()) return { block: false, note: 'empty stdin' };
+  const text = typeof stdinText === "string" ? stdinText : "";
+  if (!text.trim()) return { block: false, note: "empty stdin" };
 
   let payload;
   try {
     payload = JSON.parse(text);
   } catch {
     return COARSE_GIT.test(text)
-      ? { block: true, reason: 'hook input was not valid JSON and looks like a mutating git call; refused.', note: 'invalid JSON, coarse match' }
-      : { block: false, note: 'invalid JSON, no git' };
+      ? {
+          block: true,
+          reason: "hook input was not valid JSON and looks like a mutating git call; refused.",
+          note: "invalid JSON, coarse match",
+        }
+      : { block: false, note: "invalid JSON, no git" };
   }
-  if (payload === null || typeof payload !== 'object') return { block: false, note: 'payload is not an object' };
+  if (payload === null || typeof payload !== "object") return { block: false, note: "payload is not an object" };
 
-  const tool = typeof payload.tool_name === 'string' ? payload.tool_name : '';
+  const tool = typeof payload.tool_name === "string" ? payload.tool_name : "";
   if (tool && !/^(bash|powershell)$/i.test(tool)) return { block: false, note: `tool ${tool} is not a shell tool` };
 
-  const command = payload.tool_input && typeof payload.tool_input === 'object' ? payload.tool_input.command : undefined;
-  if (typeof command !== 'string') return { block: false, note: 'no command string' };
+  const command = payload.tool_input && typeof payload.tool_input === "object" ? payload.tool_input.command : undefined;
+  if (typeof command !== "string") return { block: false, note: "no command string" };
 
-  const dialect = /^bash$/i.test(tool) ? 'sh' : /^powershell$/i.test(tool) ? 'ps' : 'both';
+  const dialect = /^bash$/i.test(tool) ? "sh" : /^powershell$/i.test(tool) ? "ps" : "both";
   try {
     const reason = checkCommand(command, dialect);
-    return reason ? { block: true, reason, note: 'blocked' } : { block: false, note: 'allowed' };
+    return reason ? { block: true, reason, note: "blocked" } : { block: false, note: "allowed" };
   } catch {
     return COARSE_GIT.test(command)
-      ? { block: true, reason: 'could not parse the command and it looks like a mutating git call; refused.', note: 'parser error, coarse match' }
-      : { block: false, note: 'parser error, no git' };
+      ? {
+          block: true,
+          reason: "could not parse the command and it looks like a mutating git call; refused.",
+          note: "parser error, coarse match",
+        }
+      : { block: false, note: "parser error, no git" };
   }
 }
 
 async function main() {
-  let input = '';
+  let input = "";
   if (!process.stdin.isTTY) {
-    process.stdin.setEncoding('utf8');
+    process.stdin.setEncoding("utf8");
     for await (const chunk of process.stdin) input += chunk;
   }
   const result = evaluate(input);
@@ -637,7 +831,17 @@ async function main() {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+/** True when this file is the entry point; compares real paths so junctions and symlinks still run the hook. */
+function isMain() {
+  if (!process.argv[1]) return false;
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+  } catch {
+    return import.meta.url === pathToFileURL(process.argv[1]).href;
+  }
+}
+
+if (isMain()) {
   main().catch((err) => {
     // A hook bug must not block unrelated commands: report and let the call through (exit 0).
     process.stderr.write(`block-git hook internal error (allowed the call): ${err?.message ?? err}\n`);

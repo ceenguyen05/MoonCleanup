@@ -1,0 +1,113 @@
+{
+ "backend": "webgpu",
+ "preset": "medium",
+ "variants": {
+  "before": "&shadowfilter=tent4&pcf=1.5",
+  "new": "",
+  "tent4r1": "&shadowfilter=tent4"
+ },
+ "look": {
+  "post:before": {
+   "filter": "tent4",
+   "knobs": "shadowfilter=tent4 pcf=1.5",
+   "cascades": [
+    "2.3 cm to 10 m",
+    "9.71 cm to 42.2 m",
+    "27.61 cm to 120 m"
+   ],
+   "edgeWidthCm": 4.33,
+   "flatRunCm": 0.98,
+   "lo": 86,
+   "hi": 180,
+   "width1090": 22,
+   "flatRun": 5,
+   "pxPerM": 254.1,
+   "errors": []
+  },
+  "post:new": {
+   "filter": "pcf3+tent4",
+   "knobs": "default",
+   "cascades": [
+    "2.3 cm to 10 m",
+    "9.71 cm to 42.2 m",
+    "27.61 cm to 120 m"
+   ],
+   "edgeWidthCm": 4.13,
+   "flatRunCm": 0,
+   "lo": 86,
+   "hi": 180,
+   "width1090": 21,
+   "flatRun": 0,
+   "pxPerM": 254.1,
+   "errors": []
+  },
+  "post:tent4r1": {
+   "filter": "tent4",
+   "knobs": "shadowfilter=tent4",
+   "cascades": [
+    "2.3 cm to 10 m",
+    "9.71 cm to 42.2 m",
+    "27.61 cm to 120 m"
+   ],
+   "edgeWidthCm": 3.15,
+   "flatRunCm": 0,
+   "lo": 86,
+   "hi": 180.1,
+   "width1090": 16,
+   "flatRun": 0,
+   "pxPerM": 254.1,
+   "errors": []
+  },
+  "wall:before": {
+   "filter": "tent4",
+   "knobs": "shadowfilter=tent4 pcf=1.5",
+   "cascades": [
+    "2.3 cm to 10 m",
+    "9.71 cm to 42.2 m",
+    "27.61 cm to 120 m"
+   ],
+   "edgeWidthCm": 0,
+   "flatRunCm": 0,
+   "lo": 194.2,
+   "hi": 194.2,
+   "width1090": 0,
+   "flatRun": 0,
+   "pxPerM": 19.8,
+   "errors": []
+  },
+  "wall:new": {
+   "filter": "pcf3+tent4",
+   "knobs": "default",
+   "cascades": [
+    "2.3 cm to 10 m",
+    "9.71 cm to 42.2 m",
+    "27.61 cm to 120 m"
+   ],
+   "edgeWidthCm": 0,
+   "flatRunCm": 0,
+   "lo": 194.2,
+   "hi": 194.2,
+   "width1090": 0,
+   "flatRun": 0,
+   "pxPerM": 19.8,
+   "errors": []
+  },
+  "wall:tent4r1": {
+   "filter": "tent4",
+   "knobs": "shadowfilter=tent4",
+   "cascades": [
+    "2.3 cm to 10 m",
+    "9.71 cm to 42.2 m",
+    "27.61 cm to 120 m"
+   ],
+   "edgeWidthCm": 0,
+   "flatRunCm": 0,
+   "lo": 194.2,
+   "hi": 194.2,
+   "width1090": 0,
+   "flatRun": 0,
+   "pxPerM": 19.8,
+   "errors": []
+  }
+ }
+}

@@ -13,7 +13,7 @@ Companion docs: [netcode.md](netcode.md) · [data-model.md](data-model.md) · [s
 ```mermaid
 flowchart LR
   subgraph Player["Player's desktop browser"]
-    C["apps/client<br/>Vite SPA · three r187 WebGPU/WebGL2<br/>React HUD · Colyseus SDK"]
+    C["apps/client<br/>Vite SPA · three r187 WebGPU/WebGL2<br/>React HUD · Colyseus SDK<br/>Solo: RoomSim in a Web Worker + IndexedDB (ADR-0031)"]
   end
   subgraph Vercel["Vercel Hobby (static only)"]
     CDN["CDN: index.html, hashed JS/CSS,<br/>KTX2/meshopt assets, /hub/*"]
@@ -21,7 +21,7 @@ flowchart LR
   subgraph Render["Render Free web service (0.1 CPU / 512 MB, 1 instance)"]
     S["apps/server (Node 26)<br/>Colyseus 0.18 + uWS transport<br/>REST /v1/* · /healthz · /readyz · /status<br/>RoomSim (packages/sim) per room"]
   end
-  subgraph Aiven["Aiven PostgreSQL Free (1 GB)"]
+  subgraph Neon["Neon PostgreSQL Free (1 GB)"]
     DBP[("schema prod")]
   end
   Hub["Games hub site<br/>(separate project)"]
@@ -42,15 +42,15 @@ flowchart LR
 
 | Component | Hosted on | Responsibility | Never does |
 | --- | --- | --- | --- |
-| Client (`apps/client`) | Vercel Hobby CDN | Rendering, input, prediction of own avatar/vehicle, interpolation of others, UI, audio, cold-start UX | Authoritative state, DB access, secrets |
-| Game server (`apps/server`) | Render Free (one instance per environment) | Auth/REST, joins, exactly one Colyseus room per live Contract, authoritative `RoomSim`, dust authority, checkpoints, admission control | Physics engine, three.js, static asset serving |
-| Database | Aiven PostgreSQL Free, one service, two logical DBs | Players, profiles, Contracts, saves, achievements, abuse log, usage log | Anything per tick |
+| Client (`apps/client`) | Vercel Hobby CDN | Rendering, input, prediction of own avatar/vehicle, interpolation of others, UI, audio, cold-start UX; **Solo Shift: authoritative `RoomSim` in a Web Worker, local checkpoints (IndexedDB), background checkpoint sync** (ADR-0031) | Authoritative state of server rooms, DB access, secrets |
+| Game server (`apps/server`) | Render Free (one instance per environment) | Auth/REST, joins, exactly one Colyseus room per live multiplayer Contract, authoritative `RoomSim` + dust authority **for rooms**, checkpoints, admission control; **Solo: stores and sanity-checks uploaded checkpoints, serves restore** ([data-model.md §3.7c](data-model.md)) | Physics engine, three.js, static asset serving, trusting solo state for correctness |
+| Database | Neon PostgreSQL Free, one service, one schema (`prod`; ADR-0029 dropped staging) | Players, profiles, Contracts, saves, achievements, abuse log, usage log | Anything per tick |
 | Sentry | Sentry Developer | Errors and ≤1% sampled REST traces from client and server | Per-tick spans |
 | Games hub | External site (not in this repo) | Lists the game, links to the production URL, reads the hub metadata kit | Embeds the game (link only) |
 
 Single-instance rule: Render Free cannot scale beyond one instance, so there is no Redis/presence layer ([netcode-case-colyseus.md §7.5](../research/tech/netcode-case-colyseus.md)). All live rooms of an environment share one 0.1-CPU process.
 
-**Capacity, stated plainly:** the free tier hosts **only a few live Contracts at once**. Admission is decided by the measured tick budget with `MAX_ROOMS` (default **3**) as a hard ceiling ([netcode.md §15](netcode.md)); in practice that is one busy shared shift plus a couple of Solo or small shifts. Every Solo Shift is a server room in the MVP. When the server is at capacity, players are pointed at **existing Open Shifts, which share rooms**, instead of starting new ones; the v1.0 Worker-based offline Solo removes Solo rooms from the server.
+**Capacity, stated plainly:** the free tier hosts **only a few live Contracts at once**. Admission is decided by the measured tick budget with `MAX_ROOMS` (default **3**) as a hard ceiling ([netcode.md §15](netcode.md)); in practice that is one busy shared shift plus a couple of small shifts. **Solo Shifts use no server room** ([ADR-0031](../adr/0031-local-first-solo.md)): they run in the browser and only upload checkpoints, so capacity limits apply to multiplayer only. When the server is at capacity, players are pointed at **existing Open Shifts, which share rooms**, instead of starting new ones.
 
 ## 2. Request surfaces
 
@@ -75,6 +75,8 @@ All JSON bodies are validated with zod schemas from `packages/shared/src/api/res
 | `POST /v1/contracts/:id/invite-code/rotate` | Bearer, Holder | New invite code; old one stops working | `api` |
 | `POST /v1/contracts/join-by-code` | Bearer, rate-limited | Redeem invite code → `staff` membership → `contractId` | `api` |
 | `POST /v1/contracts/:id/join` | Bearer, rate-limited | **The only way into a room**: membership/ban check (Open Shift → `temp` membership), room registry lookup by `contractId`, admission control, lease CAS, seat reservation + join ticket ([netcode.md §9.3](netcode.md)). 4105 when full or at capacity, 409 `CONTRACT_BUSY` during deploy overlap | `apps/server/src/net` (handler registered by `api`) |
+| `POST /v1/contracts/:id/solo-checkpoints` (+ `/:uploadId/parts/:n`, `/:uploadId/commit` for > 1 MB) | Bearer, Holder, rate-limited (≥ 20 s per Contract) | Upload a local-first Solo checkpoint; verify + fast-forward write or 409 `SAVE_CONFLICT` ([data-model.md §3.7c](data-model.md), ADR-0031) | `api` + `persistence` |
+| `GET /v1/contracts/:id/save/head` · `GET /v1/contracts/:id/save` | Bearer, Holder | Newest save summary (conflict check) · download newest save package for restore / "Return to solo" | `api` + `persistence` |
 | `GET /v1/contracts/:id/members` · `POST/DELETE /v1/contracts/:id/bans[/:playerId]` | Bearer, Holder (bans also Supervisor, 24 h) | Member list, persistent per-Contract bans | `api` |
 | `POST /matchmake/*` (Colyseus) | **disabled for clients** (`exposedMethods` empty) | Only the server-side `matchMaker` API is used | `net` |
 | `WSS /<processId>/<roomId>?sessionId=…` (Colyseus) | single-use seat reservation + join ticket | Room connection | `net` |
@@ -83,14 +85,16 @@ All JSON bodies are validated with zod schemas from `packages/shared/src/api/res
 
 | Room name | Naming-bible label | Max clients | How joined | Listed in lobby |
 | --- | --- | --- | --- | --- |
-| `shift` | Solo / Private / Open Shift (`shiftType` is room state, changeable live by the Holder) | 1 (solo) or 16 | `POST /v1/contracts/:id/join` only. Solo: Holder only. Private: members (`holder`, `supervisor`, `staff`; invite code redeemed first). Open: anyone authenticated and not banned; first join creates a `temp` membership | Only when `shiftType = open` (metadata: Contract name, Holder display name, players, free seats, Shine Index %) |
+| `shift` | Private / Open Shift, or a Solo Shift opened to friends (`shiftType` is room state, changeable live by the Holder) | 6 | `POST /v1/contracts/:id/join` only. A plain Solo Shift has no room (local-first, ADR-0031); "Open to friends" uploads its checkpoint, switches `shiftType` and joins. Private: members (`holder`, `supervisor`, `staff`; invite code redeemed first). Open: anyone authenticated and not banned; first join creates a `temp` membership | Only when `shiftType = open` (metadata: Contract name, Holder display name, players, free seats, Shine Index %) |
 | `lobby` (Colyseus built-in) | — (Open Shifts list screen) | n/a | Client connects only while the Open Shifts screen is visible | — |
 
-**Exactly one live room per Contract** (M4): an in-process `contractId → roomId` registry, REST-only joins (no client `joinOrCreate`), one room name so a shift-type change never spawns a second room, and a compare-and-set DB lease keyed by room id ([netcode.md §9.3](netcode.md)). Solo Shift rooms run on the server in the MVP; `RoomSim` stays environment-agnostic so v1.0 can run Solo in a Web Worker with no server.
+**Exactly one live room per Contract** (M4): an in-process `contractId → roomId` registry, REST-only joins (no client `joinOrCreate`), one room name so a shift-type change never spawns a second room, and a compare-and-set DB lease keyed by room id ([netcode.md §9.3](netcode.md)). Solo Shifts run `RoomSim` in a browser Web Worker from M1 (ADR-0031, §4.1); `RoomSim` stays environment-agnostic so both hosts run identical code.
 
 ## 3. Boot and cold-start sequence
 
 Render Free spins the server down after 15 minutes without inbound traffic, and waking takes about a minute ([platform-limits.md §B2](../research/tech/platform-limits.md)). Assets start streaming at page load, but the client wakes the server only on the **first user interaction on the title screen** (pointer down, key press, or hovering Clock In). A wake costs at least 15 instance-minutes, so waking on every page load would let hub visitors who bounce keep production up ≈ 744 h/month, past the 600 h plan and close to the 750 h workspace limit (M9). The probe is never sent by bots or crawlers (`navigator.webdriver`, bot user-agent list, prerendering, hidden tab), and automated tests never target production.
+
+**Solo (ADR-0031):** Clock In on a Solo Shift never waits for the server. The client boots the local sim from IndexedDB, while the probe, guest refresh and checkpoint sync run in the background. The "Waking the moon…" screen appears only for multiplayer joins, "Open to friends", and restoring a Contract that has no local copy (§4.1). The sequence below is the server-room path.
 
 ```mermaid
 sequenceDiagram
@@ -99,7 +103,7 @@ sequenceDiagram
   participant V as Vercel CDN
   participant R as Render proxy
   participant S as Game server
-  participant D as Aiven PG
+  participant D as Neon PG
   B->>V: GET / (index.html, short TTL)
   V-->>B: index.html + hashed boot JS
   B->>B: title screen shown; asset streaming starts
@@ -150,7 +154,7 @@ sequenceDiagram
   participant M as Matchmaker / Room (net)
   participant W as RoomSim + world (sim, world)
   participant Q as Persistence
-  participant D as Aiven PG
+  participant D as Neon PG
   P->>A: POST /v1/contracts {name, shiftType}
   A->>D: insert contracts + contract_members(owner) (no save row yet)
   A-->>P: contractId (+ inviteCode for private/open)
@@ -189,6 +193,39 @@ sequenceDiagram
 | Spin-down | 15 min without inbound traffic | Render stops instance | — |
 | Restart / deploy | SIGTERM | Drain: notice → checkpoint all rooms → close code 4001 → exit ≤ 25 s | All dirty rooms saved |
 
+### 4.1 Solo session, local-first (ADR-0031)
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant P as Player client (main thread)
+  participant K as Sim worker (LocalRoom: sim + world)
+  participant I as IndexedDB
+  participant A as REST (api + persistence)
+  P->>I: newest local checkpoint for the Contract?
+  par Background (after first user interaction; skipped when unreachable)
+    P->>A: GET /v1/contracts/:id/save/head
+    A-->>P: server generation + summary (conflict rules, data-model §3.7c)
+  end
+  P->>K: boot(checkpoint or new moon from seed)
+  loop Play (fixed step in the worker; no network)
+    P->>K: input (pooled transferable buffer)
+    K-->>P: FRAME bytes + events (pooled transferable buffers)
+    K->>I: local checkpoint ≤ every 10 s if dirty, and on hide
+  end
+  P->>A: POST solo-checkpoints (newest only, ≤ every 120 s if dirty, pause, Clock Out)
+  A-->>P: accepted generation · 409 SAVE_CONFLICT → "Which copy?" prompt
+```
+
+| Phase | Trigger | Client | Server |
+| --- | --- | --- | --- |
+| Clock In (solo) | Player picks a Solo Contract | Web Locks lock `contract:<id>`; load local checkpoint, or download if the server copy is newer/the only one; boot worker | Optional: head check, download |
+| Play | — | Worker fixed step; main-thread prediction + render; local checkpoints | None |
+| Sync | Timer/pause/Clock Out, server reachable | Upload newest checkpoint; on conflict show the prompt | Verify, fast-forward write, flags ([data-model.md §3.7c](data-model.md)) |
+| Open to friends | Holder action | Final checkpoint + upload; `PATCH shiftType`; join via REST; suspend worker | Normal room-create path from that save |
+| Return to solo | Holder action in the room | Download newest save; resume worker | Final checkpoint, dispose, release lease |
+| Server asleep / offline | Probe fails | Keep playing; queue newest checkpoint; sync indicator only | — |
+
 ## 5. Hub metadata kit (`apps/client/public/hub/`)
 
 Owner: devops-engineer (per [module-boundaries.md §3](module-boundaries.md)). Published at `https://<production client origin>/hub/…` by the normal Vercel deploy. `vercel.json` must serve `/hub/*` with `Access-Control-Allow-Origin: *` and `Cache-Control: public, max-age=3600` (the hub site fetches it cross-origin). The hub **links** to the game; the game is not embedded (CSP `frame-ancestors 'self'`, see [security.md](security.md)).
@@ -213,7 +250,7 @@ Owner: devops-engineer (per [module-boundaries.md §3](module-boundaries.md)). P
 | `platforms` | array | `["desktop-web"]` (mobile post-launch, ADR-0021) |
 | `controls` | array | `["keyboard-mouse", "gamepad"]` |
 | `requirements` | object | `{graphics: "WebGPU preferred, WebGL2 fallback", minRamGb: 8, browsers: ["Chrome 113+", "Edge 113+", "Firefox 141+ (Windows)", "Safari 26"]}` |
-| `onlineRequired` | boolean | `true` in MVP (offline Solo arrives in v1.0) |
+| `onlineRequired` | boolean | `false` for Solo Shifts (local-first Web Worker sim and IndexedDB, [ADR-0031](../adr/0031-local-first-solo.md)); `true` only for multiplayer rooms, restore on a new device and explicit sync |
 | `coldStartNote` | string | "First visit after a quiet spell can take about a minute while the server wakes." |
 | `thumbnails` | array of `{path, width, height, purpose, format}` | See §5.2; paths relative to `/hub/` |
 | `screenshots` | array of `{path, width, height, caption}` | 3–6 images, 1920×1080 WebP |

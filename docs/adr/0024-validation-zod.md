@@ -38,7 +38,7 @@ Untrusted input reaches the server through REST, join options and gameplay messa
 
 ## Revisit trigger
 
-- Profiling shows validation costs > 5% of server CPU at 16 players.
+- Profiling shows validation costs > 5% of server CPU at 6 players.
 - Client bundle exceeds budget because of zod: switch client-side to valibot or `zod/mini`.
 
 ## Evidence

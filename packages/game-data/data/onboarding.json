@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "induction": [
+    { "id": "onboarding.first_stroke", "trigger": "firstStroke", "rewardLm": 0 },
+    { "id": "onboarding.fill_cell", "trigger": "cellFull", "rewardLm": 0 },
+    { "id": "onboarding.pour_at_counter", "trigger": "assayPour", "rewardLm": 0 },
+    { "id": "onboarding.open_plot_card", "trigger": "plotCardOpened", "rewardLm": 0 },
+    { "id": "onboarding.polish_apron_plot", "trigger": "plotPolished", "rewardLm": 0 },
+    { "id": "onboarding.buy_crescent_squeegee", "trigger": "boughtCrescentSqueegee", "rewardLm": 0 },
+    { "id": "onboarding.buy_dust_cell", "trigger": "boughtDustCell", "rewardLm": 0 },
+    { "id": "onboarding.find_near_parcel", "trigger": "nearParcelFound", "rewardLm": 0 }
+  ],
+  "probation": [
+    { "id": "onboarding.buy_assembly_gun", "trigger": "itemPurchased", "suggestsId": "tool.assembly_gun" },
+    { "id": "onboarding.build_puck_former", "trigger": "piecePlaced", "suggestsId": "piece.puck_former" },
+    { "id": "onboarding.lay_glide_rail", "trigger": "railDeliveryToGate", "suggestsId": "piece.glide_rail_straight" },
+    { "id": "onboarding.build_motor_pool", "trigger": "piecePlaced", "suggestsId": "piece.motor_pool" },
+    { "id": "onboarding.buy_trundle", "trigger": "itemPurchased", "suggestsId": "vehicle.trundle" },
+    { "id": "onboarding.buy_roost", "trigger": "piecePlaced", "suggestsId": "piece.roost" },
+    { "id": "onboarding.set_flare_beacon", "trigger": "flareBeaconSet" }
+  ]
+}

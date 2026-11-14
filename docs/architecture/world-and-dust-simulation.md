@@ -309,7 +309,7 @@ The previous rule (remove `floor(d·E/A)` of what is left, clear only at ≥ 90 
    - if C_t ≥ C_min = A/64 = 10,000 mm² then r_t = max(r_t, 1) (**minimum per-pass removal**);
    - u_t ← max(0, u_t − r_t); removed_t = old u_t − new u_t.
 5. **Plot totals:** remainingUnits −= Σ removed_t; contributions[actor] += Σ removed_t; state thresholds re-checked (§4.2); ledger version +1; ledger hash updated (§5.5).
-6. **Cost [D]:** 60–600 lattice points per stroke (hand ≈100, vehicle ≈600) → ≈5–20 µs in V8. 160 strokes/s (16 players) ≈ 2–3 ms CPU per second.
+6. **Cost [D]:** 60–600 lattice points per stroke (hand ≈100, vehicle ≈600) → ≈5–20 µs in V8. 160 strokes/s (16 players) ≈ 2–3 ms CPU per second. Superseded 2026-11-12: cap is 6 (scale linearly).
 
 **Why it works (the math the tests must hold):**
 
@@ -406,8 +406,11 @@ Robots never send per-stroke traffic to distant clients (TDT §4.4).
 | Scenario | Per client in | Server out total |
 | --- | --- | --- |
 | Typical (4 players, 2 cleaning near each other, 50 robots) | strokes 2 × 10 × 4 B = 80 B/s; L0 ≈150 B/s; checks ≈5 B/s; robot intents ≈20 B/s → **≈0.26 KB/s** | ≈1.0 KB/s ≈ 3.8 MB/h |
-| Worst (16 players clustered, all cleaning, incl. own echoes, 400 robots) | strokes 16 × 10 × 4 B = 640 B/s + headers ≈100 B/s; L0 ≈200 B/s; checks ≈10 B/s; robot intents ≈20 B/s → **≈0.97 KB/s** | ≈16 KB/s ≈ **56 MB/h** |
-| Budget context | Render 5 GB/month outbound shared with entity snapshots ([platform-limits §A8](../research/tech/platform-limits.md)); worst-case dust alone ≈ 86 h/month of 16-player clustered play |
+| **Worst at cap (6 players clustered, all cleaning, incl. own echoes, 400 robots) — est. (derived from 4/8-player rows, re-measure locally in M0-W2)** | strokes 6 × 10 × 4 B = 240 B/s + headers ≈100 B/s; L0 ≈200 B/s; checks ≈10 B/s; robot intents ≈20 B/s → **≈0.57 KB/s** | ≈3.4 KB/s ≈ **12 MB/h** |
+| ~~Worst (16 players clustered, …)~~ superseded | ~~strokes 640 B/s + headers 100; L0 200; checks 10; intents 20 → ≈0.97 KB/s~~ | ~~≈16 KB/s ≈ 56 MB/h~~ |
+| Budget context | Render 5 GB/month outbound shared with entity snapshots ([platform-limits §A8](../research/tech/platform-limits.md)); worst-case dust alone ≈ 400 h/month of 6-player clustered play est. (5,000 MB ÷ 12.3 MB/h; was ≈ 86 h at 16, superseded) |
+
+> Superseded 2026-11-12: cap is 6. Arithmetic: 570 B/s × 6 clients = 3.42 KB/s × 3,600 s ≈ 12.3 MB/h. Stroke bytes are linear in player count; L0, checks and intents are per-client constants. The 16-player row is struck and not binding.
 
 ### 5.4 Join snapshot sizes [D]
 
@@ -432,7 +435,7 @@ Order: states + remaining first (player may move once these and the ledgers with
 
 ---
 
-## 6. Persistence (Aiven PostgreSQL Free, 1 GB total)
+## 6. Persistence (Neon PostgreSQL Free, 1 GB total; was Aiven until 2026-11-13)
 
 **Canonical storage is [data-model.md §3.7/§3.7b](data-model.md)** (lead decision): per Contract, a header blob in two alternating slots (A/B) plus per-chunk dust rows, each chunk kept in **two versions** stamped with the header `save_seq` that wrote them; header slot and dirty chunk versions are written in **one transaction**, and the load rule picks the newest valid header and, per chunk, the newest version with `save_seq` ≤ that header. Tables, columns, guards, load rule and the capacity policy live there only. This section defines only the **dust chunk payload** (section `DUST_CHUNK` of `shared/save/format.ts`, owner contracts-architect; serialised by `apps/server/src/world`).
 
@@ -504,6 +507,8 @@ Semantics (identical on both paths, **order-independent**): R ← max(0, R − s
 | Why | No atomics needed; analytic coverage; scratch-then-copy avoids read/write hazards and the same-frame storage visibility issue #33795 | No compute on WebGL2; the blend equations give exactly the same commutative result |
 | Scratch | 1024² (64 slots of 128²) or 512² (64 of 64²) | none |
 | Cost target | ≤ 0.3 ms Tier A / ≤ 0.6 ms Tier B per frame, steady state | same |
+
+r187 matrix (2026-11-12, provisional, UHD 620 only): `textureStore`/storage textures are **not implemented on `webgl2`**, so the compute-written scratch texture exists only on WebGPU and the fragment path is **mandatory** on `webgl2` ([rendering-pipeline §21](rendering-pipeline.md), row 13).
 
 P2 must also benchmark the fragment path **on WebGPU**; if it is as fast and looks the same, keep one path (Open issues).
 

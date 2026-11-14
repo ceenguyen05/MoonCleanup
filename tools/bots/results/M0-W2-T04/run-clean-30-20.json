@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "scenario": "spike-16",
+    "milestone": "M0-W2-T04",
+    "url": "http://localhost:2571",
+    "profile": "clean",
+    "seed": 1,
+    "tickHz": 30,
+    "snapshotHz": 20,
+    "startedAt": "2026-11-13T03:10:29.965Z",
+    "durationS": 90,
+    "node": "v26.13.1"
+  },
+  "bots": {
+    "bots": 6,
+    "elapsedS": 90,
+    "snapshotHzTarget": 20,
+    "snapshotHzAchievedPerBot": 20.03,
+    "frameInterArrivalMs": {
+      "n": 10814,
+      "p50": 47.74,
+      "p95": 79.36,
+      "p99": 93.84,
+      "max": 106.46
+    },
+    "rttMs": {
+      "n": 264,
+      "p50": 31,
+      "p95": 32,
+      "p99": 33,
+      "max": 33
+    },
+    "bytesInPerBotPerS": {
+      "FRAME": 4241,
+      "DUST": 602,
+      "PONG": 4,
+      "statePatch": 208,
+      "stateFull": 1,
+      "other": 0
+    },
+    "bytesInPerBotPerSTotal": 5056,
+    "inputsSent": 16584,
+    "inputMessages": 16206,
+    "skippedSends": 0,
+    "resyncs": 5,
+    "joins": 6,
+    "disconnects": 6,
+    "unexpectedDrops": 0,
+    "reconnects": 0,
+    "serverBufferDepth": {
+      "n": 10820,
+      "p50": 2,
+      "p95": 3,
+      "p99": 3,
+      "max": 4
+    },
+    "botProcessHeapGrowthMB": -1.5
+  },
+  "server": {
+    "lines": 21,
+    "roomStatsLines": 10,
+    "tickMs": {
+      "p50Median": 0.23,
+      "p95Max": 0.427,
+      "maxMs": 1.684
+    },
+    "cpuPercentOfQuota": {
+      "median": 23.5,
+      "max": 34.4
+    },
+    "eventLoopP99MaxMs": 34.11,
+    "bytesOutPerClientPerS": {
+      "SPIKE_FRAME": 4278,
+      "schema_patch": 248,
+      "SPIKE_DUST": 632,
+      "PONG": 6
+    },
+    "rssMB": {
+      "first": 119.9,
+      "last": 92.1,
+      "growth": -27.8
+    },
+    "heapUsedMB": {
+      "first": 33.5,
+      "last": 28.2,
+      "growth": -5.3
+    },
+    "counters": {
+      "inputsAccepted": 16470,
+      "inputsLate": 16,
+      "inputsSubstituted": 16,
+      "inputsRingOverflow": 0,
+      "rateLimited": 0,
+      "malformed": 0,
+      "frames": 10742,
+      "dust": 4027
+    },
+    "lastSpikeLoop": {
+      "level": "info",
+      "time": "2026-11-13T03:11:59.767Z",
+      "service": "moon-cleanup-server",
+      "env": "local",
+      "build": "spike",
+      "kind": "spike-loop",
+      "roomId": "ZF8WnVxmB",
+      "clients": 6,
+      "heapUsedMB": 28.2,
+      "rssMB": 92.1,
+      "gcMinor": {
+        "count": 3,
+        "maxMs": 0.21
+      },
+      "gcMajor": {
+        "count": 0,
+        "maxMs": 0
+      },
+      "counters": {
+        "inputsAccepted": 16470,
+        "inputsLate": 16,
+        "inputsSubstituted": 16,
+        "inputsRingOverflow": 0,
+        "rateLimited": 0,
+        "malformed": 0,
+        "frames": 10742,
+        "dust": 4027
+      },
+      "ticks": 300,
+      "overruns": 0,
+      "catchUpSteps": 0,
+      "latenessP50Ms": 8.653,
+      "latenessP95Ms": 15.097,
+      "latenessMaxMs": 16.755,
+      "socketWrites": 1380,
+      "msg": "spike loop"
+    }
+  },
+  "netsim": null,
+  "desync": {
+    "count": null,
+    "note": "n/a in spike: synthetic world has no client prediction to compare (arrives with M1 sim)"
+  },
+  "rejectedInputs": {
+    "late": 16,
+    "rateLimited": 0,
+    "malformed": 0,
+    "substituted": 16
+  }
+}

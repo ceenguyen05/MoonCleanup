@@ -1,0 +1,603 @@
+{
+ "base": "scene=s06&view=wide",
+ "variants": [
+  {
+   "name": "lowgpu",
+   "query": "preset=low&backend=webgpu&scale=ceil"
+  },
+  {
+   "name": "medgpu",
+   "query": "preset=medium&backend=webgpu&scale=ceil"
+  },
+  {
+   "name": "lowgl",
+   "query": "preset=low&backend=webgl2&scale=ceil"
+  },
+  {
+   "name": "medgl",
+   "query": "preset=medium&backend=webgl2&scale=ceil"
+  },
+  {
+   "name": "poollowgpu",
+   "query": "view=pool&preset=low&backend=webgpu&scale=ceil"
+  }
+ ],
+ "warm": 6,
+ "seconds": 8,
+ "rounds": 3,
+ "rows": [
+  {
+   "round": 0,
+   "variant": "lowgpu",
+   "frames": 275,
+   "fps": 34.5,
+   "avg": 28.98,
+   "p50": 29,
+   "p95": 31.7,
+   "p99": 32.7,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 274,
+    "med": 29.1,
+    "over33": 7,
+    "over50": 0,
+    "max": 38.8,
+    "hitches": 0,
+    "hitchMs": 0,
+    "hitchAt": []
+   }
+  },
+  {
+   "round": 0,
+   "variant": "medgpu",
+   "frames": 219,
+   "fps": 27.3,
+   "avg": 36.58,
+   "p50": 36.6,
+   "p95": 41.3,
+   "p99": 43.9,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 218,
+    "med": 36.8,
+    "over33": 153,
+    "over50": 45,
+    "max": 71.2,
+    "hitches": 2,
+    "hitchMs": 57,
+    "hitchAt": [
+     4.71,
+     6.31
+    ]
+   }
+  },
+  {
+   "round": 0,
+   "variant": "lowgl",
+   "frames": 376,
+   "fps": 46.6,
+   "avg": 21.44,
+   "p50": 21,
+   "p95": 32.8,
+   "p99": 33.9,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 375,
+    "med": 23.3,
+    "over33": 17,
+    "over50": 0,
+    "max": 39.2,
+    "hitches": 1,
+    "hitchMs": 16,
+    "hitchAt": [
+     0.67
+    ]
+   }
+  },
+  {
+   "round": 0,
+   "variant": "medgl",
+   "frames": 289,
+   "fps": 36.2,
+   "avg": 27.64,
+   "p50": 27.7,
+   "p95": 30.9,
+   "p99": 50.2,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 288,
+    "med": 27.6,
+    "over33": 24,
+    "over50": 0,
+    "max": 46.5,
+    "hitches": 7,
+    "hitchMs": 123,
+    "hitchAt": [
+     0,
+     1.07,
+     1.51,
+     2.24,
+     3,
+     5.91,
+     7.37
+    ]
+   }
+  },
+  {
+   "round": 0,
+   "variant": "poollowgpu",
+   "frames": 300,
+   "fps": 37.4,
+   "avg": 26.75,
+   "p50": 26.7,
+   "p95": 29,
+   "p99": 29.8,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 299,
+    "med": 26.7,
+    "over33": 3,
+    "over50": 0,
+    "max": 37.2,
+    "hitches": 0,
+    "hitchMs": 0,
+    "hitchAt": []
+   }
+  },
+  {
+   "round": 1,
+   "variant": "lowgpu",
+   "frames": 264,
+   "fps": 35.5,
+   "avg": 28.16,
+   "p50": 28.1,
+   "p95": 31.4,
+   "p99": 33.2,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 263,
+    "med": 28.1,
+    "over33": 10,
+    "over50": 2,
+    "max": 583.8,
+    "hitches": 3,
+    "hitchMs": 633,
+    "hitchAt": [
+     0,
+     0.68,
+     0.79
+    ]
+   }
+  },
+  {
+   "round": 1,
+   "variant": "poollowgpu",
+   "frames": 303,
+   "fps": 37.9,
+   "avg": 26.38,
+   "p50": 26.2,
+   "p95": 28.7,
+   "p99": 31,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 302,
+    "med": 26.5,
+    "over33": 3,
+    "over50": 0,
+    "max": 35.3,
+    "hitches": 0,
+    "hitchMs": 0,
+    "hitchAt": []
+   }
+  },
+  {
+   "round": 1,
+   "variant": "medgl",
+   "frames": 291,
+   "fps": 36.2,
+   "avg": 27.61,
+   "p50": 27.5,
+   "p95": 34.1,
+   "p99": 51.2,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 290,
+    "med": 27.6,
+    "over33": 25,
+    "over50": 1,
+    "max": 65.8,
+    "hitches": 6,
+    "hitchMs": 133,
+    "hitchAt": [
+     1.69,
+     3.15,
+     3.82,
+     4.64,
+     6.08,
+     7.58
+    ]
+   }
+  },
+  {
+   "round": 1,
+   "variant": "lowgl",
+   "frames": 355,
+   "fps": 42.8,
+   "avg": 23.35,
+   "p50": 22.4,
+   "p95": 34.4,
+   "p99": 37.9,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 354,
+    "med": 24.3,
+    "over33": 40,
+    "over50": 1,
+    "max": 50.9,
+    "hitches": 10,
+    "hitchMs": 220,
+    "hitchAt": [
+     0.67,
+     2.32,
+     2.79,
+     3.67,
+     4.27,
+     4.57,
+     5.77,
+     5.96,
+     6.51,
+     7.27
+    ]
+   }
+  },
+  {
+   "round": 1,
+   "variant": "medgpu",
+   "frames": 221,
+   "fps": 27.5,
+   "avg": 36.4,
+   "p50": 36.3,
+   "p95": 40.4,
+   "p99": 44.9,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 220,
+    "med": 36.1,
+    "over33": 147,
+    "over50": 52,
+    "max": 68.1,
+    "hitches": 2,
+    "hitchMs": 62,
+    "hitchAt": [
+     0.2,
+     2.44
+    ]
+   }
+  },
+  {
+   "round": 2,
+   "variant": "lowgl",
+   "frames": 343,
+   "fps": 42.5,
+   "avg": 23.51,
+   "p50": 22.6,
+   "p95": 34.8,
+   "p99": 38.5,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 342,
+    "med": 25.9,
+    "over33": 48,
+    "over50": 1,
+    "max": 53.6,
+    "hitches": 8,
+    "hitchMs": 160,
+    "hitchAt": [
+     1.46,
+     2.94,
+     4.36,
+     4.44,
+     5.02,
+     5.47,
+     5.95,
+     7.45
+    ]
+   }
+  },
+  {
+   "round": 2,
+   "variant": "medgl",
+   "frames": 275,
+   "fps": 34.2,
+   "avg": 29.25,
+   "p50": 29,
+   "p95": 34.9,
+   "p99": 51.7,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 274,
+    "med": 29.3,
+    "over33": 30,
+    "over50": 3,
+    "max": 53.7,
+    "hitches": 6,
+    "hitchMs": 123,
+    "hitchAt": [
+     0.32,
+     1.88,
+     2.63,
+     3.62,
+     4.98,
+     5.44
+    ]
+   }
+  },
+  {
+   "round": 2,
+   "variant": "poollowgpu",
+   "frames": 286,
+   "fps": 35.8,
+   "avg": 27.95,
+   "p50": 28,
+   "p95": 30.1,
+   "p99": 32.9,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 285,
+    "med": 28,
+    "over33": 5,
+    "over50": 0,
+    "max": 44.1,
+    "hitches": 0,
+    "hitchMs": 0,
+    "hitchAt": []
+   }
+  },
+  {
+   "round": 2,
+   "variant": "lowgpu",
+   "frames": 288,
+   "fps": 35.9,
+   "avg": 27.87,
+   "p50": 27.8,
+   "p95": 30.6,
+   "p99": 34.2,
+   "gpuP50": null,
+   "scale": 0.75,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>fxaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 287,
+    "med": 27.7,
+    "over33": 5,
+    "over50": 0,
+    "max": 44.4,
+    "hitches": 1,
+    "hitchMs": 17,
+    "hitchAt": [
+     2.59
+    ]
+   }
+  },
+  {
+   "round": 2,
+   "variant": "medgpu",
+   "frames": 223,
+   "fps": 27.7,
+   "avg": 36.09,
+   "p50": 35.9,
+   "p95": 40.9,
+   "p99": 50.3,
+   "gpuP50": null,
+   "scale": 0.85,
+   "filter": "pcf3+pcf5",
+   "passes": "scene>grade>bloom>smaa",
+   "knobs": "default",
+   "draws": null,
+   "tris": null,
+   "errors": 0,
+   "raf": {
+    "n": 222,
+    "med": 35.6,
+    "over33": 161,
+    "over50": 42,
+    "max": 70.7,
+    "hitches": 5,
+    "hitchMs": 163,
+    "hitchAt": [
+     0.06,
+     0.22,
+     0.65,
+     2.26,
+     7.2
+    ]
+   }
+  }
+ ],
+ "summary": {
+  "lowgpu": {
+   "pages": 3,
+   "fps": 35.5,
+   "p50": 28.1,
+   "p50All": [
+    29,
+    28.1,
+    27.8
+   ],
+   "p95": 31.4,
+   "p95All": [
+    31.7,
+    31.4,
+    30.6
+   ],
+   "avg": 28.16
+  },
+  "medgpu": {
+   "pages": 3,
+   "fps": 27.5,
+   "p50": 36.3,
+   "p50All": [
+    36.6,
+    36.3,
+    35.9
+   ],
+   "p95": 40.9,
+   "p95All": [
+    41.3,
+    40.4,
+    40.9
+   ],
+   "avg": 36.4,
+   "deltaP50": 8.2
+  },
+  "lowgl": {
+   "pages": 3,
+   "fps": 42.8,
+   "p50": 22.4,
+   "p50All": [
+    21,
+    22.4,
+    22.6
+   ],
+   "p95": 34.4,
+   "p95All": [
+    32.8,
+    34.4,
+    34.8
+   ],
+   "avg": 23.35,
+   "deltaP50": -5.7
+  },
+  "medgl": {
+   "pages": 3,
+   "fps": 36.2,
+   "p50": 27.7,
+   "p50All": [
+    27.7,
+    27.5,
+    29
+   ],
+   "p95": 34.1,
+   "p95All": [
+    30.9,
+    34.1,
+    34.9
+   ],
+   "avg": 27.64,
+   "deltaP50": -0.4
+  },
+  "poollowgpu": {
+   "pages": 3,
+   "fps": 37.4,
+   "p50": 26.7,
+   "p50All": [
+    26.7,
+    26.2,
+    28
+   ],
+   "p95": 29,
+   "p95All": [
+    29,
+    28.7,
+    30.1
+   ],
+   "avg": 26.75,
+   "deltaP50": -1.4
+  }
+ }
+}

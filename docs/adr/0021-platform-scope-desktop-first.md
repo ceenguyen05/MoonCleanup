@@ -6,7 +6,7 @@
 
 ## Context
 
-The visual bar and the 16-player co-op are heavy. Mobile faces Android WebGPU fragmentation (vendor and OS gating), iOS Safari terminating or looping heavy WebGL pages with no way to query a memory budget, thermal throttling (a native case study fell from 60 to 32 FPS in 30 minutes), a full touch-control redesign and a 300-500 MB memory ceiling. Desktop reference hardware is well characterized: Steam October 2026 shows 1920x1080 as 50% of displays, 8 GB VRAM most common and RTX 4060 Laptop the top laptop GPU.
+The visual bar and the 6-player co-op are heavy. Mobile faces Android WebGPU fragmentation (vendor and OS gating), iOS Safari terminating or looping heavy WebGL pages with no way to query a memory budget, thermal throttling (a native case study fell from 60 to 32 FPS in 30 minutes), a full touch-control redesign and a 300-500 MB memory ceiling. Desktop reference hardware is well characterized: Steam October 2026 shows 1920x1080 as 50% of displays, 8 GB VRAM most common and RTX 4060 Laptop the top laptop GPU.
 
 ## Options considered
 

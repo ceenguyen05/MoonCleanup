@@ -118,7 +118,7 @@ Revisit trigger (tech-stack §2): WebGPU-path CPU frame time > **6 ms on Tier B*
 | 13 | Bloom | Mip chain from ¼ (or ½) res | 0.5 | 0.8 |
 | 14 | Exposure | Histogram or mip chain (§8.4) | 0.1 | 0.2 |
 | 15 | Tone map + grade + output | AgX, LUT, visor grade, sRGB | 0.3 | 0.4 |
-| 16 | SMAA (Low/Medium) | Display-referred | — | 0.8 |
+| 16 | FXAA (Low) / SMAA (Medium) | Display-referred; Low defaults to the one-pass FXAA (SMAA is three full-resolution passes), `?aa=smaa` restores it | — | 0.8 |
 | 17 | Sharpen + upscale to canvas | CAS-style sharpen; bilinear/FSR1-style when not TAAU | 0.2 | 0.5 |
 | — | Headroom | Driver, compositor, spikes | 1.7 | 5.8 |
 
@@ -164,9 +164,11 @@ Cascade count, map size, max far, cascade-0 split and texel size per preset: **�
 | Item | Rule |
 | --- | --- |
 | Splits | `custom` mode: cascade 0 ends at the §14 split, remaining cascades practical λ 0.75 (Ultra 0.8). Cascade-0 texel t is quoted for the third-person camera (vFOV 60°, 16:9) |
-| Filtering | `PCFShadowMap` with bilinear taps, kernel chosen so the **filter's own 10–90 % width is ≈ 1.5 texels** on every preset and cascade. Sharpness is set by the cascade texel, not by the kernel |
+| Filtering | `PCFShadowMap` with bilinear taps; target: the filter's own 10–90 % width is ≈ 1.5 texels. **Shipped (Low / Medium, M0 look-polish r2b): `pcf3` on every cascade**, the exact tent from 4 bilinear comparisons, filter width **2.2 texels** (computed in `shadow-filter.test.ts`; the earlier `tent4` at radius 1.5 was 2.6 texels and left a half-texel hole that drew doubled, stair-stepped edges; `tent4` at radius 1 is 1.6 texels but shows a texel-period comb on the far cascades, so it is capped at radius 1 and not used by default). Frame cost of `pcf3` against the old kernel: +0.6 ms p50 on UHD 620 (Low and Medium, noise control -0.2 / 0.0 ms). High / Ultra keep three's rotated Vogel disk (`vogel5`) under TRAA, unchanged and not re-measured. Sharpness is set by the cascade texel, not by the kernel. Knobs: `?shadowfilter=`, `?shadowfilter0=` (cascade 0 alone), `?pcf=` |
 | Edge model (used by every acceptance bar) | 10–90 % world edge width **W = 0.00925 · d + 1.5 · t**, where d is the occluder-to-receiver distance (physical 0.53° penumbra ≈ 9.25 mm per m) and t the cascade texel. Screen bar = W ÷ pixel footprint + 1 px (AA/upscale). Derived bars per preset live in [visual-target VT-M0-04](../design/visual-target.md#41-m0-render-spike-and-foundations-v010) |
-| Grazing sun | Normal-offset bias scaled by 1 / max(sin(elevation), 0.05) plus slope-scaled depth bias; receiver-plane bias on terrain. Tested at sun 60°, 15°, 4° and 1° (VT-M0-04b) for acne, peter-panning and contact gaps |
+| Grazing sun | **Normal offset 1.1 texel, depth bias +0.5 texel** (per cascade, independent of sun elevation; constants in `apps/client/src/visuals/lighting/shadow-bias.ts`). three renders shadow maps with caster back faces, so lit surfaces are never in the map and there is no self-shadow acne to push away. The superseded rule (normal offset ÷ max(sin(elevation), 0.05) plus slope-scaled depth bias) was defective: two bias errors hid each other, lifted the lookup above the caster and shortened low-sun shadows (1 m post at 4°: 6.64 m vs 14.35 m expected). Tested at sun 60°, 15°, 4° and 1° (VT-M0-04b) for acne, peter-panning and contact gaps |
+| Bias verification | **Verified 2026-11-13, UHD 620 provisional** (Medium, webgpu): 1 m post at 4° 10.94 m (remaining shortfall = Medium cascade-1 resolution limit); 0.42 m boulder at 4° 5.88 m vs 6.01 m expected; post/boot contact gap ≤ 0.5 cm; open-ground acne 0 px. Source: [M0-visual-checks](../agent-reports/M0-visual-checks.md) item 1a and Fix |
+| Known look defects (M0) | **Fixed and measured on UHD 620, Medium webgpu, provisional** ([r2](../agent-reports/M0-look-polish-r2.md), [r2b](../agent-reports/M0-look-polish-r2b.md)): black patches at grazing sun (detail-normal fade; black share at sun 1° from 15.9 % to 0.5 % on the real regolith; small dark crescents inside the nearest craters remain, 0.5 % of the frame); stair-stepped Low / Medium shadow edges (`pcf3`, see Filtering); boulder contact gap (3.5 / 5.2 cm at 4° / 1° to 0.0 / 0.2 cm; the rock base is now buried); egg-shaped Earth near the frame corner (the Earth is a clip-space **disk**, round anywhere in the frame; 70.6 × 52 px at the corner against 70.5 × 52 px on axis); VT-M0-13 stars dim under TRAA when panning (**post-AA star layer** on High / Ultra: moving / still peak 0.999, was 0.72; Low / Medium keep the stars in the scene pass, 0.999). **Open:** VT-M0-14 Earth 4.27° by design; VT-M0-15 edge-width ratio is judged in **screen pixels** (owner decision, [visual-target](../design/visual-target.md)): 1.44 at t = 0.25 and 0.30 at t = 0.75, inside 2×; the same ratio in metres, 2.86 / 0.58, is informational (horizon-term edges are wider than cascade edges at t = 0.25); the check is weak in this scene (16 to 54 edges per sample); the S05 shadow b\* margin against the "never blue" rule is 0.5 (shadow 2.5 b\* bluer than lit on the real ground); clean-ground glint grains stay visible inside cast shadows; ivory post and canopy clip to flat white at 1° and 4°; unlit terrain slopes are near black with polygonal edges; S06 (night, lamp shadow) runs 21.9 fps on Low. Not run: High / Ultra for the `pcf3` / contact / ground items, WebGL2 frame cost and contact gaps, Tier A / B hardware |
 | Cascade fade | on (`fade: true`), blend band ≥ 10 % of cascade depth; `lightMargin` 300 m (tall crater rims at grazing sun) |
 | Contact-hardening | off |
 | Stabilisation | Cascade texel snapping; sun direction updated every frame but cascade fit re-quantised (sun moves 0.1°/s → shimmer risk, §18) |
@@ -212,7 +214,7 @@ With a black sky, metals and the visor reflect nothing unless we give them an en
 | Content | Rendered, not authored: a cube capture at a probe point near the local player containing **terrain only** (CDLOD at coarse LOD, dust shading on, lit by the current key and fill), the **Earth disk** (phase-correct), and a black sky. The **sun disk is excluded** (the directional light's analytic specular already gives the sun highlight; including it would double-count and break FP16). Stars excluded |
 | Format | Cube 128² per face (Low 64²), RGBA16F, prefiltered with PMREM (r187 cube-render-target path; verify, §21) → ≈ 0.8 MB |
 | Refresh | When the key-light elevation changes by > 2° (Low 5°), at the day/night swap, or when the player moves > 100 m from the probe point. One face per frame (6 frames), then PMREM; cross-fade old → new over 0.5 s. Never re-rendered every frame |
-| Use | `MeshStandardNodeMaterial` / `MeshPhysicalNodeMaterial` **specular IBL only**; the diffuse/irradiance part is disabled (fill comes from §5.1), so nothing is double-lit. Applies to hardware, visors, smoked glass, Glow/Brushed finishes. Terrain does not sample it |
+| Use | `MeshStandardNodeMaterial` / `MeshPhysicalNodeMaterial` **specular IBL only**; the diffuse/irradiance part is disabled (fill comes from §5.1), so nothing is double-lit. r187 has no native switch to drop irradiance: use a small custom `LightingNode` set as `material.envNode` (works on `webgpu` and `webgl2`; `setup()` must return a node; §21 row 5). Applies to hardware, visors, smoked glass, Glow/Brushed finishes. Terrain does not sample it |
 | Interiors / outposts | One extra static probe per outpost (baked at load, refreshed with the TOD rule) used inside its bounds |
 | Budget | GPU 0.1 ms amortised (§3.2 row 3), memory ≈ 1 MB per probe; same on every preset (only the face size differs) |
 | Exempt from | The "no fog, no haze" rule does not apply: the probe contains no atmosphere, only terrain and Earth |
@@ -228,9 +230,9 @@ With a black sky, metals and the visor reflect nothing unless we give them an en
 | Stars — data | **HYG Database v4.x, CC BY-SA 4.0**; stars with V ≤ 6.5 (naked-eye set) baked offline (technical-artist, `tools/asset-pipeline`) into `stars_hyg.bin`: direction in the world frame (ecliptic north ≈ +Y), magnitude, B−V colour. The bake reads **only** the position, `mag` and `ci` columns (for V ≤ 6.5 these come from Hipparcos/Yale/Gliese) and **never** a Gaia cross-identifier or Gaia-derived column; the bake script asserts this. **No NASA SVS Deep Star Maps.** Gaia is excluded by policy; the Gaia licence wording in [licensing §5](../research/asset-and-data-licensing.md) is under verification by docs-keeper from the primary source. Alternative under evaluation: Yale Bright Star Catalogue 5th ed. (≈ 9,100 stars, V ≤ 6.5) if its terms verify as unrestricted, which would remove share-alike |
 | Stars — licence | The baked file ships as a **separate file under CC BY-SA 4.0** with its own notice. Credits and `docs/ASSET_LICENSES.md`: "Star data: HYG Database (astronexus.com), CC BY-SA 4.0; derived star file © Clean The Moon! contributors, CC BY-SA 4.0." Share-alike on screenshots/trailers: open question for docs-keeper (same check as above) |
 | Stars — visibility model (one model) | Limiting magnitude from the scripted exposure: **m_lim = clamp(6.5 − (EV100 − 7.3) × 4/7, 2.0, 6.5)** → night 6.5, dawn ≈ 4.2, noon (EV 14.3) 2.5. Stars with V ≤ m_lim are drawn; a 0.5-mag soft fade avoids pops. Setting "Realistic" sets m_lim = −2 whenever the sun is up (no daytime stars). Preset caps (§14) can only lower m_lim |
-| Stars — render | Drawn **after AA and upscaling, at output resolution**, as analytic Gaussian disks with radius ≥ 1.2 output px (1.2–2.0 px by magnitude, constant at any DPR), depth-tested against the upsampled scene depth (nearest). Brightness ∝ 10^(−0.4·mag). No twinkle. This keeps 1-px stars stable on SMAA presets and under TAAU (§8.1) |
+| Stars — render | Drawn **after AA and upscaling, at output resolution**, as analytic Gaussian disks with radius ≥ 1.2 output px (1.2–2.0 px by magnitude, constant at any DPR), depth-tested against the upsampled scene depth (nearest). Brightness ∝ 10^(−0.4·mag). No twinkle. This keeps 1-px stars stable on SMAA presets and under TAAU (§8.1). **As built (M0 look-polish r2):** on TRAA chains (High / Ultra) the stars are a **post-AA layer**: the star field's own scene is rendered at output resolution after the temporal resolve and added where the prepass depth is the far plane (jitter cancelled in the star vertex stage; `?stars=layer\|scene`), because history reprojection cost the 2 px Gaussians 28 % of their peak when panning. Low / Medium (FXAA / SMAA chains) keep the stars in the scene pass, no extra pass. The bench look (`?scene=bench`) wires the same layer |
 | Earth — texture | **NASA Blue Marble Next Generation** (day, with clouds) and optional Black Marble (night lights), KTX2, **capped at 2048 × 1024** (Low/Medium 1024 × 512; photo-mode telephoto at ≈ 173 px needs no more). Credit "NASA Earth Observatory / NASA Visible Earth" (NASA credit mandatory) |
-| Earth — geometry | Sphere drawn at sky distance; apparent diameter **2.4°** default [R] (real 1.9°, stylised up for readability); fixed over the sub-Earth point (+X) with optional ±1° libration wobble per day cycle |
+| Earth — geometry | **As built:** an analytic **disk** (quad expanded in clip space around the projected centre, per-pixel sphere normal, one-pixel coverage limb), not a sphere mesh: a rectilinear projection stretches a sphere into an egg near the frame corner (1.18 : 1 measured). Spec: sphere drawn at sky distance; apparent diameter **2.4°** default [R] (real 1.9°, stylised up for readability); fixed over the sub-Earth point (+X) with optional ±1° libration wobble per day cycle |
 | Earth — shading | Phase from the sun direction; soft terminator; thin blue Fresnel limb glow; night side shows Black Marble lights at low intensity |
 | Sun disk | 0.53° HDR disk with limb darkening, intensity well above the bloom threshold, small glare sprite; occluded by terrain depth. Lens flare off (Ultra photo mode option) |
 
@@ -245,6 +247,7 @@ With a black sky, metals and the visor reflect nothing unless we give them an en
 | Hardware | `MeshStandardNodeMaterial` / `MeshPhysicalNodeMaterial` (clearcoat for painted panels), KTX2 UASTC normals, ETC1S bulk (ADR-0013). Specular from the environment probe (§5.5) |
 | Dusty hardware | Shared "grime" TSL function: cavity/upward-facing dust from AO + world-up; Brightside signage stays readable |
 | Permutation discipline | Toggles are TSL `uniform`s, not new materials; one material per surface family; target ≤ 60 distinct pipelines in a frame |
+| **Sampled-texture limit (hard)** | **≤ 16 sampled textures per fragment stage** (WebGPU default `maxSampledTexturesPerShaderStage` = 16 even where the adapter offers 48; also the usual WebGL2 unit count). **Target ≤ 12 for the terrain material**, because the CSM cascades (3–4), the environment probe and the lamp shadow map are sampled by the same stage. Found in M0-W2-T02: the unpacked terrain stub (3 detail + ring + atlas + 2 direction + 2 horizon + 4 plot textures = 14, plus 3 cascades) failed pipeline creation on WebGPU. Pack: detail layers share one texture (channels / array layers), the two horizon halves one texture, plot centres + neighbours + table one RGBA32F texture. Fetch count is unaffected by packing. Requesting higher `requiredLimits` is not a design option (adapters differ) |
 
 ---
 
@@ -260,7 +263,7 @@ With a black sky, metals and the visor reflect nothing unless we give them an en
 6. Exposure adaptation multiplier (§8.4).
 7. Tone mapping: **AgX default**, ACES Filmic selectable in Settings; Neutral available in debug only. Then optional 3D LUT grade and Lowlight Visor grade.
 8. `renderOutput()` (tone map + sRGB once). `RenderPipeline.outputColorTransform = false` so steps 9–10 run display-referred (verify property name in r187).
-9. SMAA (Low/Medium).
+9. FXAA (Low, one pass; client default since M0 small-hooks) or SMAA (Medium). `?aa=smaa|fxaa|traa|none` overrides. The `shared` preset table keeps `post.aa = "smaa"` for Low (its schema has no `fxaa`); the client derives FXAA from `preset === "low"` (`effectiveAa` in `visuals/look-knobs.ts`).
 10. Sharpen (CAS-style TSL node) and upscale to the canvas.
 
 No motion blur, DOF or SSR in gameplay; DOF only in photo mode (§16).
@@ -420,12 +423,12 @@ On an out-of-memory error or device loss: recreate the device and drop one prese
 | Target FPS / GPU ms | 30 / 28 | 30 / 28 | 60 / 14 | 60 / 14 |
 | **Render scale range** (× output) | 0.50–0.75 | 0.60–0.85 | 0.75–1.00 | 0.85–1.00 |
 | DPR cap | 1.0 | 1.0 | 1.5 | 2.0 |
-| **AA / upscale** | SMAA / bilinear | SMAA / FSR1-style (`webgpu_upscaling_fsr1`) | TRAA / TAAU | TRAA / TAAU |
+| **AA / upscale** | FXAA (client default; table value `smaa`) / bilinear | SMAA / FSR1-style (`webgpu_upscaling_fsr1`) | TRAA / TAAU | TRAA / TAAU |
 | Sharpen (CAS-style) | 0.30 | 0.25 | 0.20 | 0.15 |
 | **CSM cascades × size** | 2 × 1024² | 3 × 1024² | 3 × 2048² | 4 × 2048² |
 | Shadow max far | 80 m | 120 m | 200 m | 300 m |
 | Cascade-0 split → texel t (vFOV 60°) | 10 m → ≈ 2.4 cm | 10 m → ≈ 2.4 cm | 8 m → ≈ 1.0 cm | 6 m → ≈ 0.7 cm |
-| PCF filter 10–90 % width | ≈ 1.5 texels | ≈ 1.5 texels | ≈ 1.5 texels | ≈ 1.5 texels |
+| PCF filter 10–90 % width | 2.2 texels (`pcf3`, shipped; target ≈ 1.5) | 2.2 texels (`pcf3`, shipped; target ≈ 1.5) | ≈ 1.5 texels (target, `vogel5`) | ≈ 1.5 texels (target, `vogel5`) |
 | Night Earth shadows (CSM re-pointed, §5.2) | on | on | on | on |
 | Horizon map (far terrain shadow, §5.2) | on | on | on | on |
 | Own Crown Lamp shadow map | 512² | 1024² | 1024² | 2048² |
@@ -600,7 +603,7 @@ Every r187 API this plan assumes, with the example to check in `docs/vendor/thre
 | 2 | Re-pointing the CSM light direction at runtime (Earth at night) | same | Night shadows §5.2 | Second `DirectionalLight` with CSM, toggled (one active at a time, same budget) |
 | 3 | `PCFShadowMap` kernel/radius control | `webgpu_shadowmap` | Edge model §5.2 | Custom TSL PCF node (bilinear 3×3 / 4×4) |
 | 4 | GTAO prepass pattern (AO on indirect only) | `webgpu_postprocessing_ao` | §8.1 step 2 | Multiply composite at strength 0.5 (all presets) |
-| 5 | Specular-only environment (PMREM from cube render target, irradiance disabled) | `webgpu_cubemap_dynamic`, PMREM docs | Probe §5.5 | Custom TSL specular IBL node sampling our own prefiltered cube |
+| 5 | Specular-only environment (PMREM from cube render target, irradiance disabled) | `webgpu_cubemap_dynamic`, PMREM docs | Probe §5.5 | Custom `LightingNode` as `material.envNode` (no native irradiance-off switch in r187; works on webgpu + webgl2; `setup()` must return a node) |
 | 6 | `RenderPipeline.outputColorTransform` / `renderOutput()` | `webgpu_postprocessing` family | §8.1 steps 8–10 | Tone map + sRGB in our own final node |
 | 7 | TRAA velocity for static (camera-only), instanced, batched, skinned meshes | `webgpu_postprocessing_traa` | §8.1 step 3 | Custom velocity MRT node; terrain camera-only reprojection |
 | 8 | TAAU and FSR1-style upscaling | `webgpu_upscaling_taau`, `webgpu_upscaling_fsr1` | §14 AA/upscale | Custom EASU + CAS TSL nodes |
@@ -608,8 +611,19 @@ Every r187 API this plan assumes, with the example to check in `docs/vendor/thre
 | 10 | Clustered lighting class and light counts | `webgpu_lights_clustered` | §5.4, §14 | Cap at 16 lights with per-object nearest-N |
 | 11 | Compatibility-mode adapter | renderer init options | §2.1 step 3 | `webgpu-compat` collapses into `webgl2` |
 | 12 | Reversed depth on `webgl2` (clip-control extension) | renderer option `reversedDepthBuffer` | §4 | Fallback depth ranges §4 |
-| 13 | Compute + storage textures, `copyTextureToTexture` | `webgpu_compute_*` | Dust replay (WDS §7.3), particles | Fragment path (WDS §7.3) |
+| 13 | Compute + storage textures, `copyTextureToTexture` | `webgpu_compute_*` | Dust replay (WDS §7.3), particles | Fragment path (WDS §7.3); **mandatory on `webgl2`**: `textureStore`/storage textures are not implemented there (compute-written textures are WebGPU-only); storage-buffer compute with readback and `copyTextureToTexture` do work on `webgl2` |
 | 14 | `BloomNode` threshold/knee | `webgpu_postprocessing_bloom_selective` | §8.1 step 5 | Selective bloom via emissive mask |
 | 15 | Integer texture `textureLoad` on both backends | TSL docs | Plot table (WDS §7.1) | RGBA16F encoding |
+
+**Results (2026-11-12, provisional, UHD 620 only; source: [M0-W2-T07 report](../agent-reports/M0-W2-T07-rendering-engineer.md)):**
+
+| Rows | `webgpu` | `webgl2` |
+| --- | --- | --- |
+| 1–4, 6–10, 12, 14, 15 | PASS | PASS |
+| 5 | PASS (custom `LightingNode` via `material.envNode`) | PASS (same) |
+| 11 | PASS | N/A (`webgpu-compat` collapses into `webgl2`) |
+| 13 | PASS | **FAIL** (no storage textures; fragment-pass fallback mandatory) |
+
+Findings: CSM with 3 cascades works on `webgl2`, so the 2-cascade `SunLight` fallback (row 1) is not needed on this machine. Per-cascade shadow clones: set runtime radius via `csm.lights[i].shadow`. `csm.fade` is fixed at shader build. PCF dither applies at radius ≥ 3. three r187 always requests the compatibility feature level.
 
 Capture for the matrix runs on the real Tier A device and the Tier B reference device (performance-budgets §1), not only on the CI software lane.

@@ -1,0 +1,46 @@
+.panel {
+  position: relative;
+  color: var(--mc-text-1);
+  background: var(--mc-glass-bg);
+  /* The 1-device-pixel edge is an inset ring, not a border: a border's width is snapped by the browser to its own
+     device-pixel idea (0.667 css px on a 150 % display emulating DPR 1) and would move every child off the grid. */
+  border: 0;
+  border-radius: var(--mc-r-xl);
+  box-shadow:
+    var(--mc-e-1),
+    inset 0 0 0 var(--mc-hairline) var(--mc-glass-border),
+    inset 0 var(--mc-hairline) 0 var(--mc-glass-highlight);
+  -webkit-backdrop-filter: var(--mc-glass-blur);
+  backdrop-filter: var(--mc-glass-blur);
+}
+
+.strong {
+  background: var(--mc-glass-bg-strong);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.dotLight {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--mc-dot-amber);
+  box-shadow: 0 0 0 3px rgba(255, 176, 46, 0.22);
+  animation: dotPulse 2.4s var(--mc-ease-in-out) infinite;
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+:global(#mc-ui[data-motion="reduced"]) .dotLight {
+  animation: none;
+}

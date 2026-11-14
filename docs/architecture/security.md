@@ -79,7 +79,7 @@ At upgrade (uWS transport hook) the `Origin` header must be in `ALLOWED_ORIGINS`
 | Hop | TLS |
 | --- | --- |
 | Browser ↔ Vercel / Render | HTTPS / WSS only (both terminate TLS; HTTP redirected) |
-| Server ↔ Aiven PG | TLS with the Aiven project CA from `DATABASE_CA_CERT` (PEM), full verification (CA + hostname); connection refused otherwise. Never `rejectUnauthorized: false` |
+| Server ↔ Neon PG | TLS with full verification (CA + hostname) against the system CA store (Neon uses a publicly trusted CA); `DATABASE_CA_CERT` (PEM) is optional and only for a private CA; `sslmode=require` in production. Never `rejectUnauthorized: false` |
 
 ### 4.4 Client response headers (`vercel.json`, devops-engineer)
 

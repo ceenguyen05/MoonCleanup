@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "vehicles": [
+    {
+      "id": "vehicle.trundle",
+      "tier": 1,
+      "priceLm": 2100,
+      "seats": 0,
+      "widthM": 1.6,
+      "cruiseMps": 3,
+      "boostMult": 1.3,
+      "depthLevels": 7,
+      "payloadKg": 200,
+      "puckSlots": 1,
+      "upgradeLineIds": [
+        "vehicle_upgrade.gear_ratio",
+        "vehicle_upgrade.cargo_expander",
+        "vehicle_upgrade.afterburner",
+        "vehicle_upgrade.throttle_lock",
+        "vehicle_upgrade.wide_mouth",
+        "vehicle_upgrade.fast_tip",
+        "vehicle_upgrade.running_lamps"
+      ]
+    },
+    {
+      "id": "vehicle.skiff",
+      "tier": 2,
+      "priceLm": 12000,
+      "seats": 1,
+      "widthM": 2.2,
+      "cruiseMps": 6.5,
+      "boostMult": 1.4,
+      "depthLevels": 7,
+      "payloadKg": 600,
+      "puckSlots": 2,
+      "upgradeLineIds": [
+        "vehicle_upgrade.gear_ratio",
+        "vehicle_upgrade.cargo_expander",
+        "vehicle_upgrade.afterburner",
+        "vehicle_upgrade.throttle_lock",
+        "vehicle_upgrade.wide_mouth",
+        "vehicle_upgrade.fast_tip",
+        "vehicle_upgrade.running_lamps"
+      ]
+    },
+    {
+      "id": "vehicle.carryall",
+      "tier": 3,
+      "priceLm": 20000,
+      "seats": 8,
+      "widthM": 0,
+      "cruiseMps": 7.5,
+      "boostMult": 1.4,
+      "depthLevels": 0,
+      "payloadKg": 0,
+      "puckSlots": 8,
+      "flatbed": { "pucks": 40, "stacks": 8, "bales": 2 },
+      "upgradeLineIds": [
+        "vehicle_upgrade.gear_ratio",
+        "vehicle_upgrade.afterburner",
+        "vehicle_upgrade.throttle_lock",
+        "vehicle_upgrade.running_lamps"
+      ]
+    },
+    {
+      "id": "vehicle.bulldust",
+      "tier": 4,
+      "priceLm": 28000,
+      "seats": 1,
+      "widthM": 3.4,
+      "cruiseMps": 6.2,
+      "boostMult": 1.35,
+      "depthLevels": 9,
+      "payloadKg": 2000,
+      "puckSlots": 4,
+      "upgradeLineIds": [
+        "vehicle_upgrade.gear_ratio",
+        "vehicle_upgrade.cargo_expander",
+        "vehicle_upgrade.afterburner",
+        "vehicle_upgrade.throttle_lock",
+        "vehicle_upgrade.wide_mouth",
+        "vehicle_upgrade.fast_tip",
+        "vehicle_upgrade.running_lamps"
+      ]
+    },
+    {
+      "id": "vehicle.behemoth",
+      "tier": 5,
+      "priceLm": 120000,
+      "seats": 1,
+      "widthM": 5.6,
+      "cruiseMps": 4.8,
+      "boostMult": 1.25,
+      "depthLevels": 13,
+      "payloadKg": 6000,
+      "puckSlots": 6,
+      "upgradeLineIds": [
+        "vehicle_upgrade.gear_ratio",
+        "vehicle_upgrade.cargo_expander",
+        "vehicle_upgrade.afterburner",
+        "vehicle_upgrade.throttle_lock",
+        "vehicle_upgrade.wide_mouth",
+        "vehicle_upgrade.fast_tip",
+        "vehicle_upgrade.running_lamps"
+      ]
+    }
+  ],
+  "motorPoolParts": [
+    { "id": "piece.motor_pool", "priceLm": 1000, "params": { "includedDumpPlates": 1 } },
+    { "id": "piece.dump_plate", "priceLm": 200 },
+    { "id": "piece.dust_vault", "priceLm": 1500, "params": { "storeKg": 20000 } }
+  ],
+  "vehiclesOutPerMotorPool": 1
+}
