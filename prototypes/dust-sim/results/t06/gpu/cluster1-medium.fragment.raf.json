@@ -1,0 +1,59 @@
+{
+ "label": "cluster-1-medium-frame",
+ "path": "fragment",
+ "pace": "raf",
+ "px": 64,
+ "atlas": "2048x2048",
+ "framesReplayed": 1800,
+ "framesWithEvents": 300,
+ "passes": 300,
+ "uploads": 3,
+ "copies": 0,
+ "instancesPerPass": {
+  "n": 300,
+  "mean": 2.24,
+  "p50": 2,
+  "p95": 3,
+  "p99": 3,
+  "max": 4
+ },
+ "tilesPerComputePass": null,
+ "timestampQuery": true,
+ "gpuPassMs": {
+  "n": 300,
+  "mean": 0.025225426666666682,
+  "p50": 0.025166,
+  "p95": 0.026749,
+  "p99": 0.030167,
+  "max": 0.584158
+ },
+ "gpuPassMsPerFrameAllFrames": 0.004204237777777778,
+ "jsEncodeMs": {
+  "n": 300,
+  "mean": 0.1498999999091029,
+  "p50": 0.12000000104308128,
+  "p95": 0.2749999985098839,
+  "p99": 0.9299999997019768,
+  "max": 1.6849999986588955
+ },
+ "jsEncodeMsPerFrameAllFrames": 0.02498333331818382,
+ "wallMs": 29975.32500000298,
+ "rafIntervalMs": {
+  "n": 1799,
+  "mean": 16.664999999999925,
+  "p50": 16.665000000000873,
+  "p95": 16.709999999999127,
+  "p99": 16.81500000000051,
+  "max": 17.720000000000255
+ },
+ "compare": null,
+ "errors": [],
+ "cpuRefMs": {
+  "p50": 0.006,
+  "p95": 0.037,
+  "p99": 0.368,
+  "max": 21.084
+ },
+ "machineLoadPct": 81.5,
+ "recording": "cluster1-medium"
+}

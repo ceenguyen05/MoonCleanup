@@ -1,0 +1,515 @@
+[
+ {
+  "name": "before-s05-wide-low-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=low&backend=webgpu&view=wide&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "low",
+  "backend": "webgpu",
+  "renderScale": 0.5,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": "not reported",
+  "adaptationMultiplier": "not reported",
+  "notBuilt": "not reported",
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922763,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.18405802202644278,
+    "endM": 80
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "flatLit": {
+    "world": [
+     4,
+     0,
+     -3
+    ],
+    "px": [
+     731,
+     614
+    ],
+    "luma48": 181.8,
+    "luma16": 181.7,
+    "labB16": 0.54
+   },
+   "slopeShadow": {
+    "world": [
+     -19.512,
+     -0.906,
+     3.309
+    ],
+    "px": [
+     1765,
+     596
+    ],
+    "luma48": 170.4,
+    "luma16": 183,
+    "labB16": 0.59
+   },
+   "wallShadow": {
+    "world": [
+     8,
+     1.2,
+     0.17
+    ],
+    "px": [
+     572,
+     525
+    ],
+    "luma48": 170.3,
+    "luma16": 170.3,
+    "labB16": 1.28
+   },
+   "wallLit": {
+    "world": [
+     8,
+     1.2,
+     -0.17
+    ],
+    "px": [
+     565,
+     526
+    ],
+    "luma48": 170.3,
+    "luma16": 170.3,
+    "labB16": 1.28
+   }
+  },
+  "hiddenProbes": [
+   "flatShadow",
+   "slopeLit",
+   "slopeBoots"
+  ],
+  "errors": []
+ },
+ {
+  "name": "before-s05-slope-low-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=low&backend=webgpu&view=slope&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "low",
+  "backend": "webgpu",
+  "renderScale": 0.5,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": "not reported",
+  "adaptationMultiplier": "not reported",
+  "notBuilt": "not reported",
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922763,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.18405802202644278,
+    "endM": 80
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "slopeLit": {
+    "world": [
+     -19.181,
+     -1.026,
+     -5
+    ],
+    "px": [
+     710,
+     764
+    ],
+    "luma48": 181.3,
+    "luma16": 181.3,
+    "labB16": 0.58
+   },
+   "slopeShadow": {
+    "world": [
+     -19.512,
+     -0.906,
+     3.309
+    ],
+    "px": [
+     836,
+     592
+    ],
+    "luma48": 133.8,
+    "luma16": 133,
+    "labB16": -0.36
+   },
+   "slopeBoots": {
+    "world": [
+     -22,
+     0,
+     -8
+    ],
+    "px": [
+     960,
+     792
+    ],
+    "luma48": 130.7,
+    "luma16": 80.3,
+    "labB16": -1.94
+   }
+  },
+  "hiddenProbes": [
+   "flatLit",
+   "flatShadow",
+   "wallShadow",
+   "wallLit"
+  ],
+  "errors": []
+ },
+ {
+  "name": "before-s05-shadeSlope-low-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=low&backend=webgpu&view=shadeSlope&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "low",
+  "backend": "webgpu",
+  "renderScale": 0.5,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": "not reported",
+  "adaptationMultiplier": "not reported",
+  "notBuilt": "not reported",
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922763,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.18405802202644278,
+    "endM": 80
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "slopeLit": {
+    "world": [
+     -19.181,
+     -1.026,
+     -5
+    ],
+    "px": [
+     581,
+     1068
+    ],
+    "luma48": 180.9,
+    "luma16": 180.9,
+    "labB16": 0.57
+   },
+   "slopeShadow": {
+    "world": [
+     -19.512,
+     -0.906,
+     3.309
+    ],
+    "px": [
+     801,
+     586
+    ],
+    "luma48": 87.1,
+    "luma16": 87.2,
+    "labB16": -1.9
+   }
+  },
+  "hiddenProbes": [
+   "flatLit",
+   "flatShadow",
+   "slopeBoots",
+   "wallShadow",
+   "wallLit"
+  ],
+  "errors": []
+ },
+ {
+  "name": "before-s05-wide-medium-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=medium&backend=webgpu&view=wide&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "medium",
+  "backend": "webgpu",
+  "renderScale": 0.6,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": "not reported",
+  "adaptationMultiplier": "not reported",
+  "notBuilt": "not reported",
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922764,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.0971484014333395,
+    "endM": 42.23076211353316
+   },
+   {
+    "index": 2,
+    "texelM": 0.2761260956047685,
+    "endM": 120
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "flatLit": {
+    "world": [
+     4,
+     0,
+     -3
+    ],
+    "px": [
+     731,
+     614
+    ],
+    "luma48": 181.8,
+    "luma16": 181.7,
+    "labB16": 0.55
+   },
+   "slopeShadow": {
+    "world": [
+     -19.512,
+     -0.906,
+     3.309
+    ],
+    "px": [
+     1765,
+     596
+    ],
+    "luma48": 168.7,
+    "luma16": 183,
+    "labB16": 0.59
+   },
+   "wallShadow": {
+    "world": [
+     8,
+     1.2,
+     0.17
+    ],
+    "px": [
+     572,
+     525
+    ],
+    "luma48": 170.3,
+    "luma16": 170.3,
+    "labB16": 1.28
+   },
+   "wallLit": {
+    "world": [
+     8,
+     1.2,
+     -0.17
+    ],
+    "px": [
+     565,
+     526
+    ],
+    "luma48": 170.3,
+    "luma16": 170.3,
+    "labB16": 1.28
+   }
+  },
+  "hiddenProbes": [
+   "flatShadow",
+   "slopeLit",
+   "slopeBoots"
+  ],
+  "errors": []
+ },
+ {
+  "name": "before-s05-slope-medium-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=medium&backend=webgpu&view=slope&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "medium",
+  "backend": "webgpu",
+  "renderScale": 0.6,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": "not reported",
+  "adaptationMultiplier": "not reported",
+  "notBuilt": "not reported",
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922764,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.0971484014333395,
+    "endM": 42.23076211353316
+   },
+   {
+    "index": 2,
+    "texelM": 0.2761260956047685,
+    "endM": 120
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "slopeLit": {
+    "world": [
+     -19.181,
+     -1.026,
+     -5
+    ],
+    "px": [
+     710,
+     764
+    ],
+    "luma48": 181.2,
+    "luma16": 181.3,
+    "labB16": 0.57
+   },
+   "slopeShadow": {
+    "world": [
+     -19.512,
+     -0.906,
+     3.309
+    ],
+    "px": [
+     836,
+     592
+    ],
+    "luma48": 133.8,
+    "luma16": 133.2,
+    "labB16": -0.47
+   },
+   "slopeBoots": {
+    "world": [
+     -22,
+     0,
+     -8
+    ],
+    "px": [
+     960,
+     792
+    ],
+    "luma48": 131,
+    "luma16": 80.6,
+    "labB16": -1.88
+   }
+  },
+  "hiddenProbes": [
+   "flatLit",
+   "flatShadow",
+   "wallShadow",
+   "wallLit"
+  ],
+  "errors": []
+ },
+ {
+  "name": "before-s05-shadeSlope-medium-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=medium&backend=webgpu&view=shadeSlope&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "medium",
+  "backend": "webgpu",
+  "renderScale": 0.6,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": "not reported",
+  "adaptationMultiplier": "not reported",
+  "notBuilt": "not reported",
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922764,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.0971484014333395,
+    "endM": 42.23076211353316
+   },
+   {
+    "index": 2,
+    "texelM": 0.2761260956047685,
+    "endM": 120
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "slopeLit": {
+    "world": [
+     -19.181,
+     -1.026,
+     -5
+    ],
+    "px": [
+     581,
+     1068
+    ],
+    "luma48": 181,
+    "luma16": 180.9,
+    "labB16": 0.57
+   },
+   "slopeShadow": {
+    "world": [
+     -19.512,
+     -0.906,
+     3.309
+    ],
+    "px": [
+     801,
+     586
+    ],
+    "luma48": 87.1,
+    "luma16": 87.2,
+    "labB16": -1.9
+   }
+  },
+  "hiddenProbes": [
+   "flatLit",
+   "flatShadow",
+   "slopeBoots",
+   "wallShadow",
+   "wallLit"
+  ],
+  "errors": []
+ }
+]

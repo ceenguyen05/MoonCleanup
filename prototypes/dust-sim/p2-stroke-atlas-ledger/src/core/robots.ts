@@ -14,6 +14,8 @@ export const ROBOT_ACTOR_SLOT = 63;
 export const ROBOT_TOOL_CODE = 62;
 /** robot.plot record: robotId 16 + plotId 18 + startTick 32 + width 10 + depth16 8 + speed 10 + laneMask 64 bits. */
 export const ROBOT_INTENT_BYTES = 20;
+/** Robot stop record: robotId 16 bits. */
+export const ROBOT_STOP_BYTES = 2;
 
 export class RobotPlans {
   private cap = 0;
@@ -81,6 +83,14 @@ export class RobotPlans {
     this.mask0[id] = mask0;
     this.mask1[id] = mask1;
     this.serial[id] = this.serial[id]! + 1;
+  }
+
+  /** Ends the plan of robot `id` (the server re-assigned it to a plot this peer is not told about). */
+  stop(id: number): void {
+    if (id < this.n && this.active[id] === 1) {
+      this.active[id] = 0;
+      this.activeCount--;
+    }
   }
 
   clear(): void {

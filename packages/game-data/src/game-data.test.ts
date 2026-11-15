@@ -84,6 +84,81 @@ describe("contract v1.1 fields (formerly pending-fields.ts)", () => {
   });
 });
 
+// Contract v1.3: these are the values packages/sim held as MOVEMENT_FEEL / TOOL_FEEL (sim golden replay stateHash
+// 4037918216 was produced with them). Changing one is a feel change that re-baselines the sim golden.
+describe("contract v1.3 feel keys (game-feel section 10)", () => {
+  it("movement carries the sim's validated feel defaults", () => {
+    const m = data.movement;
+    expect([m.groundAccelMps2, m.lopeAccelMps2, m.groundDecelMps2, m.groundReverseAccelMps2]).toEqual([18, 8, 16, 30]);
+    expect([m.facingTurnDegPerS, m.analogMinSpeedFrac]).toEqual([720, 0.15]);
+    expect([m.slopeSlowStartDeg, m.slopeWalkMaxDeg, m.slopeUphillMinMult, m.slopeSlideFrictionFrac]).toEqual([
+      20, 42, 0.5, 0.4,
+    ]);
+    expect(m.slopeProbeM).toBe(0.25);
+    expect([m.jumpCutVelocityMult, m.coyoteS, m.jumpBufferS, m.touchdownGravityMult]).toEqual([0.45, 0.15, 0.15, 2.5]);
+    expect([m.airAccelMps2, m.airBrakeMps2]).toEqual([2.5, 4]);
+    expect([m.groundSnapSweepM, m.groundSnapWalkM, m.groundSnapLopeM, m.groundSnapOffAfterJumpS]).toEqual([
+      0.4, 0.3, 0.15, 0.2,
+    ]);
+    expect([m.landingSoftMps, m.landingHeavyMps, m.faceplantMps]).toEqual([3.2, 5, 8]);
+    expect([
+      m.landingMediumRecoveryS,
+      m.landingHeavyRecoveryS,
+      m.landingMediumAccelMult,
+      m.landingHeavyAccelMult,
+    ]).toEqual([0.1, 0.25, 0.5, 0.3]);
+    expect([m.faceplantMoveLockS, m.faceplantJumpLockS]).toEqual([0.8, 0.5]);
+    expect([m.hopBurstAngleDeg, m.hopMaxUpMps, m.hopMaxHorizontalMps, m.hopMinIntervalS]).toEqual([35, 4.5, 7, 0.25]);
+    expect([m.capsuleRadiusM, m.capsuleHeightM]).toEqual([0.32, 1.8]);
+    expect([m.substepMaxDispM, m.substepsMin, m.substepsMax, m.holsterSwapS]).toEqual([0.15, 2, 8, 0.35]);
+    // The sim used cos/sin(35 deg) literals; Math.cos/sin of hopBurstAngleDeg reproduce them bit-for-bit in V8.
+    const rad = (m.hopBurstAngleDeg * Math.PI) / 180;
+    expect([Math.cos(rad), Math.sin(rad)]).toEqual([0.8191520442889918, 0.573576436351046]);
+  });
+
+  it("tool-feel carries the sim's validated feel defaults and reproduces the section 10.2 push lengths", () => {
+    const t = data["tool-feel"];
+    expect(t).toEqual({
+      schemaVersion: 1,
+      contactFrac: 0.7,
+      strokeLengthStrideFrac: 0.3,
+      strokeLengthPadM: 0.05,
+      strokeLengthMaxSweepMps: 2.96,
+      bootClearanceM: 0.45,
+      headSpeedLiftMps: 5.5,
+      headSpeedResumeMps: 5,
+      sweepFacingTurnDegPerS: 540,
+      detailingMoveMult: 0.3,
+      flickMaxFeetHeightM: 1.2,
+      cellNearFullFrac: 0.9,
+      formPuckHoldS: 0.3,
+      bandPerStackS: 0.15,
+      throwMinMps: 4,
+      throwMaxMps: 8,
+      throwChargeS: 0.8,
+      throwPitchDeg: 30,
+      throwHeightM: 1.2,
+      puckSkidDecelMps2: 3,
+      pickupRadiusM: 1.5,
+      puckMergeRadiusM: 0.3,
+      puckDropForwardM: 0.5,
+    });
+    const laneMult = Number(data.traits.traits.find((r) => r.id === "trait.lane_lock")?.params["sweepSpeedMult"]);
+    const pushCm = data.tools.tools
+      .filter((tool) => tool.tier > 0)
+      .map((tool) => {
+        const vMax = t.strokeLengthMaxSweepMps * (tool.traitId === "trait.lane_lock" ? laneMult : 1);
+        return Math.round((t.strokeLengthStrideFrac * vMax * tool.strokeS + t.strokeLengthPadM) * 100);
+      });
+    expect(pushCm).toEqual([45, 54, 67, 87, 85, 94]);
+  });
+
+  it("Detailing is a 0.5 m diameter disc (stroke widthCm 50)", () => {
+    const detailing = data.traits.traits.find((r) => r.id === "trait.detailing")!;
+    expect(detailing.params).toEqual({ diameterM: 0.5 });
+  });
+});
+
 describe("section 21 structure", () => {
   it("has the locked counts", () => {
     expect(data.tools.tools).toHaveLength(7);

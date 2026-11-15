@@ -1,4 +1,4 @@
-// @contract config/index v1.1
+// @contract config/index v1.2
 // @consumers the root barrel (../index); packages and apps import from "@moon-cleanup/shared" only
 //
 // Sub-barrel of the balance config schemas: shared building blocks, one schema per baseline table file
@@ -28,5 +28,6 @@ export * from "./achievements.schema";
 export * from "./moderation.schema";
 export * from "./features.schema";
 export * from "./pacing-targets.schema";
+export * from "./tool-feel.schema";
 export * from "./bundle.schema";
 export * from "./mvp-scope.schema";

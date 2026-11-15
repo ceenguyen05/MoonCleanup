@@ -29,7 +29,7 @@ No commit plans, mandatory wave-planning files, per-task review swarm or stop-at
 ## Execution
 
 Sonnet 5.5 leads. Pinned role defaults: `.claude/agents/`; task model/effort choices: MODEL_POLICY.
-Run independent ready work in parallel: up to five regular (Sonnet/Opus) workers plus up to two Fable workers at once; the first two reviewers count toward the regular cap, further reviewers don't (owner relaxed, 2026-11-12). No nested delegation or reviewer swarm.
+Run independent ready work in parallel: at all times target 4 regular workers (Opus 5.5 or Sonnet 5.5, medium) + 1 premium worker (Opus 5.5, High) (owner, 2026-11-15; Fable retired, replaces the Fable-only window); reviewers count toward the regular cap. Lead may set any worker's effort per task from low to High on its own judgment, never above High (owner, 2026-11-15). No nested delegation or reviewer swarm.
 One writer per path; brief narrows `docs/architecture/module-boundaries.md` ownership. Lead alone edits task rows/STATUS.
 Contracts via contracts-architect; root configs/installs via designated devops writer, sequentially when needed.
 Routine project-local dependencies do not each need an ADR; review lifecycle scripts and record changes.

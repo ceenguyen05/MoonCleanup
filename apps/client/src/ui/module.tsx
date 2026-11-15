@@ -8,7 +8,21 @@ import interUrl from "../../../../assets/ui/fonts/inter-latin-wght.woff2?url";
 import spaceGroteskUrl from "../../../../assets/ui/fonts/space-grotesk-latin-wght.woff2?url";
 import "./tokens/fonts.css";
 import "./tokens/tokens.css";
-import { installDisplayMetrics, type DisplayMetricsHandle } from "./tokens/display-metrics";
+import { installDisplayMetrics, userScaleFromSetting, type DisplayMetricsHandle } from "./tokens/display-metrics";
+import type { QualityPresetId } from "@moon-cleanup/shared";
+import type { ControlsPort } from "./menus/controls-model";
+import { commitCapture, createUiPrefsStore, type UiPrefsStore } from "./menus/ui-local";
+import { createCompassWriter } from "./hud/CompassStrip";
+import {
+  createParcelsStore,
+  type NearParcelSource,
+  type ParcelBearingFn,
+  type ParcelsStore,
+} from "./hud/parcels-store";
+import { activateFocused, moveFocus, type UiNavAction } from "./menus/focus-nav";
+import { NO_INTENTS, type UiIntentPort } from "./menus/intents";
+import { MENU_NAV_ATTR } from "./menus/MenuHost";
+import type { OnlineEntryPort } from "./online/online-model";
 import { UiProvider } from "./ui-context";
 import { parseUiUrlOptions } from "./ui-options";
 import { UiRoot } from "./UiRoot";
@@ -26,6 +40,25 @@ export interface UiModuleOptions {
   readonly parent?: HTMLElement;
   /** `location.search`. */
   readonly search: string;
+  /**
+   * Online entry (M1): when given, the UI shows a "Play online" launcher / connection chip and a lazy panel. The port is
+   * the only way the UI reaches online code (the app backs it with the dynamic-import hook of app/online-launch.ts), so
+   * solo builds that omit it, and solo play in general, load and run nothing online.
+   */
+  readonly online?: OnlineEntryPort;
+  /** Purchase and settings intents raised by the menus (Requisitions Desk, Ops Console, Settings). Default: no-ops. */
+  readonly intents?: UiIntentPort;
+  /**
+   * The purchase port of the composition root (`PurchasePort.purchase`): `(itemId, priceLm?) => requestId | null`. When
+   * given (and `intents` is not), the Requisitions Desk and Ops Console call it; the sim answers through the store.
+   */
+  readonly purchase?: (itemId: string, priceLm?: number) => string | null;
+  /**
+   * The input module's binding table for the rebinding screen (Settings > Controls): `table()` returns the current
+   * `BindingTable` (device code -> action id), `apply(next)` validates, compiles and persists it, `reset()` restores the
+   * defaults, `subscribe` notifies after any change. Absent: the screen says remapping is not available.
+   */
+  readonly controls?: ControlsPort;
 }
 
 export const UI_HOST_ID = "mc-ui";
@@ -37,6 +70,9 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
   private metrics: DisplayMetricsHandle | null = null;
   private preloads: HTMLLinkElement[] = [];
   private onVisibility: (() => void) | null = null;
+  private readonly prefs: UiPrefsStore = createUiPrefsStore();
+  private readonly parcels: ParcelsStore = createParcelsStore();
+  private readonly teardown: Array<() => void> = [];
 
   constructor(private readonly options: UiModuleOptions) {}
 
@@ -66,7 +102,31 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
     (this.options.parent ?? doc.body).append(host);
     this.host = host;
 
-    this.metrics = installDisplayMetrics(win, host, { userScale: urlOptions.hudScale });
+    // UI size: the settings slice drives the display metrics (`--mc-hud-scale`), so every size, line height and font size
+    // re-snaps to whole device pixels at the new scale; nothing is scaled with `transform`.
+    const metrics = installDisplayMetrics(win, host, {
+      userScale: userScaleFromSetting(store.getState().settings.hudScalePct, urlOptions.hudScale),
+    });
+    this.metrics = metrics;
+    let appliedPct = store.getState().settings.hudScalePct;
+    this.teardown.push(
+      store.subscribe(() => {
+        const pct = store.getState().settings.hudScalePct;
+        if (pct === appliedPct) return;
+        appliedPct = pct;
+        metrics.setUserScale(userScaleFromSetting(pct, urlOptions.hudScale));
+      }),
+    );
+
+    // Render quality: mirror the renderer's real preset (and the highest one the backend offers) into the UI-local store.
+    const quality = ctx.services.has("quality") ? ctx.services.get("quality") : null;
+    if (quality !== null) {
+      const max = (quality as { readonly maxPreset?: QualityPresetId }).maxPreset;
+      this.prefs.setQuality({ preset: quality.current.preset, ...(max !== undefined ? { maxPreset: max } : {}) });
+    }
+    this.teardown.push(
+      ctx.events.on("quality.changed", (event) => this.prefs.setQuality({ preset: event.settings.preset })),
+    );
     this.onVisibility = () => {
       host.dataset["hidden"] = String(doc.visibilityState === "hidden");
     };
@@ -82,9 +142,86 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
         motion={urlOptions.motion}
         glass={urlOptions.glass}
       >
-        <UiRoot options={urlOptions} />
+        <UiRoot
+          options={urlOptions}
+          online={this.options.online ?? null}
+          intents={this.intents()}
+          prefs={this.prefs}
+          parcels={this.parcels}
+          controls={this.options.controls ?? null}
+        />
       </UiProvider>,
     );
+    this.compassWriter = createCompassWriter(host);
+  }
+
+  private intents(): UiIntentPort {
+    const { intents, purchase, store } = this.options;
+    if (intents !== undefined) return intents;
+    if (purchase === undefined) return NO_INTENTS;
+    return {
+      ...NO_INTENTS,
+      purchaseDeskItem: (itemId) => {
+        const item = store.getState().desk.items.find((candidate) => candidate.itemId === itemId);
+        purchase(itemId, item?.priceLm);
+      },
+      purchaseBoardNode: (nodeId) => {
+        const node = store.getState().board.nodes.find((candidate) => candidate.nodeId === nodeId);
+        purchase(nodeId, node?.nextCostLm ?? undefined);
+      },
+    };
+  }
+
+  private compassWriter: ((headingDeg: number) => void) | null = null;
+
+  /**
+   * Near Parcels feed (call at ~10 Hz or on change; allocation-free while nothing changed). `source` is the sim
+   * (`MoonRoomSim.nearParcelCount` / `nearParcel(k, out)`) or any object of that shape; `bearing` maps a parcel's unit
+   * direction to a compass bearing (see `sphereBearingDeg`), omit it for a count-only chip.
+   */
+  setNearParcels(source: NearParcelSource, bearing?: ParcelBearingFn, rewardLm?: number): void {
+    this.parcels.setNearParcels(source, bearing, rewardLm);
+  }
+
+  /** Bearing of an outpost on the compass track (whole degrees, 0 = north); `null` removes the marker. */
+  setOutpostBearing(id: string, bearingDeg: number | null): void {
+    this.parcels.setOutpostBearing(id, bearingDeg);
+  }
+
+  /** Per-frame heading for the compass strip (degrees, 0 = north, clockwise). A direct whole-pixel DOM write, no React render. */
+  setCompassHeading(headingDeg: number): void {
+    this.compassWriter?.(headingDeg);
+  }
+
+  /**
+   * Which kind of input the rebinding screen is waiting for: `"pad"` while the player is choosing a gamepad button (the
+   * input module then routes every pad button press to `offerInput` instead of `navigate`), `"key"` while a key is awaited
+   * (the screen reads it itself), `null` otherwise.
+   */
+  capturing(): "key" | "pad" | null {
+    return this.prefs.getState().capture?.kind ?? null;
+  }
+
+  /** Gives a gamepad button (`Pad<n>`, standard mapping) to a waiting capture. Returns true when it was consumed. */
+  offerInput(code: string): boolean {
+    return commitCapture(this.prefs, this.options.controls ?? null, code);
+  }
+
+  /**
+   * Menu navigation for the input layer (gamepad D-pad / A / B): moves focus inside the open menu, clicks the focused
+   * control on `confirm`, goes back on `back`. Returns true when a menu was open and took the action.
+   */
+  navigate(action: UiNavAction): boolean {
+    const host = this.host;
+    if (host === null || this.options.store.getState().menus.open === null) return false;
+    if (action === "back") {
+      this.options.store.dispatch({ type: "menus.back" });
+      return true;
+    }
+    const root = host.querySelector<HTMLElement>(`[${MENU_NAV_ATTR}]`);
+    if (root === null) return false;
+    if (action === "confirm") return activateFocused(root);
+    return moveFocus(root, action);
   }
 
   update(frame: FrameInfo): void {
@@ -99,6 +236,8 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
     if (this.onVisibility !== null)
       this.options.win.document.removeEventListener("visibilitychange", this.onVisibility);
     this.onVisibility = null;
+    for (const off of this.teardown.splice(0)) off();
+    this.parcels.clear();
     this.metrics?.dispose();
     this.metrics = null;
     this.root?.unmount();

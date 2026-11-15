@@ -15,12 +15,89 @@ import {
   PROMOTION_NODE_LEVEL_COUNTS,
 } from "./promotions-board.schema";
 import { NEST_PIECE_ID, ROBOT_STATE_IDS, ROOST_PIECE_ID, type RobotsTable } from "./robots.schema";
-import { CHARGE_FINISH_STAMP_PARAM, CHARGE_TRAIT_ID } from "./traits.schema";
+import {
+  CHARGE_FINISH_STAMP_PARAM,
+  CHARGE_TRAIT_ID,
+  DETAILING_DIAMETER_PARAM,
+  DETAILING_TRAIT_ID,
+} from "./traits.schema";
+import type { ToolFeelTable } from "./tool-feel.schema";
 import type { FlatbedDef, VehiclesTable } from "./vehicles.schema";
 import type { ToolsTable } from "./tools.schema";
 import { type SunPath, SunPathSchema, type WorldTable, WORLD_SUN_PATH_DEFAULT, WorldSchema } from "./world.schema";
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+/** game-feel section 10.1 keys of movement (v1.3), at the section 10.1 defaults. */
+const FEEL_MOVEMENT = {
+  groundAccelMps2: 18,
+  lopeAccelMps2: 8,
+  groundDecelMps2: 16,
+  groundReverseAccelMps2: 30,
+  facingTurnDegPerS: 720,
+  analogMinSpeedFrac: 0.15,
+  slopeSlowStartDeg: 20,
+  slopeWalkMaxDeg: 42,
+  slopeUphillMinMult: 0.5,
+  slopeSlideFrictionFrac: 0.4,
+  slopeProbeM: 0.25,
+  jumpCutVelocityMult: 0.45,
+  coyoteS: 0.15,
+  jumpBufferS: 0.15,
+  touchdownGravityMult: 2.5,
+  airAccelMps2: 2.5,
+  airBrakeMps2: 4,
+  groundSnapSweepM: 0.4,
+  groundSnapWalkM: 0.3,
+  groundSnapLopeM: 0.15,
+  groundSnapOffAfterJumpS: 0.2,
+  landingSoftMps: 3.2,
+  landingHeavyMps: 5,
+  faceplantMps: 8,
+  landingMediumRecoveryS: 0.1,
+  landingHeavyRecoveryS: 0.25,
+  landingMediumAccelMult: 0.5,
+  landingHeavyAccelMult: 0.3,
+  faceplantMoveLockS: 0.8,
+  faceplantJumpLockS: 0.5,
+  hopBurstAngleDeg: 35,
+  hopMaxUpMps: 4.5,
+  hopMaxHorizontalMps: 7,
+  hopMinIntervalS: 0.25,
+  capsuleRadiusM: 0.32,
+  capsuleHeightM: 1.8,
+  substepMaxDispM: 0.15,
+  substepsMin: 2,
+  substepsMax: 8,
+  holsterSwapS: 0.35,
+} as const;
+
+/** tool-feel table (v1.3), at the game-feel section 10.2 defaults. */
+const FEEL_TOOL = {
+  schemaVersion: 1,
+  contactFrac: 0.7,
+  strokeLengthStrideFrac: 0.3,
+  strokeLengthPadM: 0.05,
+  strokeLengthMaxSweepMps: 2.96,
+  bootClearanceM: 0.45,
+  headSpeedLiftMps: 5.5,
+  headSpeedResumeMps: 5,
+  sweepFacingTurnDegPerS: 540,
+  detailingMoveMult: 0.3,
+  flickMaxFeetHeightM: 1.2,
+  cellNearFullFrac: 0.9,
+  formPuckHoldS: 0.3,
+  bandPerStackS: 0.15,
+  throwMinMps: 4,
+  throwMaxMps: 8,
+  throwChargeS: 0.8,
+  throwPitchDeg: 30,
+  throwHeightM: 1.2,
+  puckSkidDecelMps2: 3,
+  pickupRadiusM: 1.5,
+  puckMergeRadiusM: 0.3,
+  puckDropForwardM: 0.5,
+} as const;
 
 /** A small, internally consistent bundle of every baseline table (numbers are illustrative, not tuning). */
 function validBundle(): GameDataBundle {
@@ -96,6 +173,7 @@ function validBundle(): GameDataBundle {
       nightPenaltyFrac: 0.3,
       lampPenaltyReliefFrac: 0.5,
       carryUnits: 1,
+      ...FEEL_MOVEMENT,
     },
     tools: {
       schemaVersion: 1,
@@ -138,7 +216,7 @@ function validBundle(): GameDataBundle {
     traits: {
       schemaVersion: 1,
       traits: [
-        { id: "trait.detailing", params: { radiusM: 0.5 } },
+        { id: "trait.detailing", params: { diameterM: 0.5 } },
         { id: "trait.flick", params: { airborneSweep: true } },
         { id: "trait.charge", params: { finishStampMult: 1.5 } },
       ],
@@ -411,7 +489,7 @@ function validBundle(): GameDataBundle {
       tempVoteKick: { minVotes: 3 },
       cleanupOrder: { cooldownS: 60 },
       serviceCall: { durationS: 60, maxPerDay: 3 },
-      loanerKit: { maxVehiclesOut: 4 },
+      loanerKit: { maxVehiclesOut: 4, walletFrac: 0.02, capLm: 25_000, windowS: 600 },
     },
     features: {
       schemaVersion: 1,
@@ -434,6 +512,7 @@ function validBundle(): GameDataBundle {
         },
       ],
     },
+    "tool-feel": { ...FEEL_TOOL },
   };
 }
 
@@ -920,5 +999,91 @@ describe("GameDataBundleSchema v1.1: duplicated constants agree", () => {
       "traits.traits.2.params.finishStampMult",
     );
     expect(bundleIssues((b) => b.traits.traits.pop())).toContain("traits.traits");
+  });
+});
+
+describe("config contract v1.3: feel keys and the Detailing diameter", () => {
+  it("movement feel keys and the tool-feel table round-trip with useful types", () => {
+    const parsed = GameDataBundleSchema.parse(clone(validBundle()));
+    for (const [key, value] of Object.entries(FEEL_MOVEMENT)) {
+      expect(parsed.movement[key as keyof MovementTable], key).toBe(value);
+    }
+    expect(clone(parsed["tool-feel"])).toEqual(FEEL_TOOL);
+    expectTypeOf<MovementTable["hopBurstAngleDeg"]>().toEqualTypeOf<number>();
+    expectTypeOf<MovementTable["substepsMax"]>().toEqualTypeOf<number>();
+    expectTypeOf<ToolFeelTable["strokeLengthMaxSweepMps"]>().toEqualTypeOf<number>();
+    expectTypeOf<GameDataBundle["tool-feel"]>().toEqualTypeOf<ToolFeelTable>();
+  });
+
+  it("every new movement key is required", () => {
+    for (const key of Object.keys(FEEL_MOVEMENT)) {
+      expect(
+        missingIssues((b) => delete b.movement![key]),
+        key,
+      ).toContain(`movement.${key}`);
+    }
+    for (const key of Object.keys(FEEL_TOOL)) {
+      if (key === "schemaVersion") continue;
+      expect(
+        missingIssues((b) => delete b["tool-feel"]![key]),
+        key,
+      ).toContain(`tool-feel.${key}`);
+    }
+  });
+
+  it("movement rejects bad feel values and orderings", () => {
+    expect(tableIssues("movement", (t) => Object.assign(t, { groundAccelMps2: 0 }))).toContain("groundAccelMps2");
+    expect(tableIssues("movement", (t) => Object.assign(t, { jumpCutVelocityMult: 1.2 }))).toContain(
+      "jumpCutVelocityMult",
+    );
+    expect(tableIssues("movement", (t) => Object.assign(t, { hopBurstAngleDeg: 95 }))).toContain("hopBurstAngleDeg");
+    expect(tableIssues("movement", (t) => Object.assign(t, { substepsMin: 1.5 }))).toContain("substepsMin");
+    expect(tableIssues("movement", (t) => Object.assign(t, { slopeSlowStartDeg: 45 }))).toContain("slopeSlowStartDeg");
+    expect(tableIssues("movement", (t) => Object.assign(t, { slopeWalkMaxDeg: 90, slopeSlowStartDeg: 20 }))).toContain(
+      "slopeWalkMaxDeg",
+    );
+    expect(tableIssues("movement", (t) => Object.assign(t, { landingSoftMps: 6 }))).toContain("landingSoftMps");
+    expect(tableIssues("movement", (t) => Object.assign(t, { faceplantMps: 4 }))).toContain("landingHeavyMps");
+    expect(tableIssues("movement", (t) => Object.assign(t, { substepsMin: 9 }))).toContain("substepsMin");
+    expect(tableIssues("movement", (t) => Object.assign(t, { capsuleHeightM: 0.5 }))).toContain("capsuleHeightM");
+  });
+
+  it("tool-feel rejects bad values, inverted head hysteresis and a vMax below sweep-walk", () => {
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { contactFrac: 0 }))).toContain("contactFrac");
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { cellNearFullFrac: 1.1 }))).toContain("cellNearFullFrac");
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { detailingMoveMult: 2 }))).toContain("detailingMoveMult");
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { throwMaxMps: 3 }))).toContain("throwMaxMps");
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { throwPitchDeg: 90 }))).toContain("throwPitchDeg");
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { formPuckHoldS: 0 }))).toContain("formPuckHoldS");
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { puckMergeRadiusM: -1 }))).toContain("puckMergeRadiusM");
+    expect(tableIssues("tool-feel", (t) => Object.assign(t, { headSpeedResumeMps: 5.5 }))).toContain(
+      "headSpeedResumeMps",
+    );
+    expect(bundleIssues((b) => Object.assign(b["tool-feel"], { strokeLengthMaxSweepMps: 1 }))).toContain(
+      "tool-feel.strokeLengthMaxSweepMps",
+    );
+  });
+
+  it("Detailing is a 0.5 m DIAMETER disc in diameterM; radiusM and bad sizes are rejected", () => {
+    expect([DETAILING_TRAIT_ID, DETAILING_DIAMETER_PARAM]).toEqual(["trait.detailing", "diameterM"]);
+    const traits = GameDataBundleSchema.parse(clone(validBundle())).traits.traits;
+    expect(traits.find((t) => t.id === DETAILING_TRAIT_ID)?.params[DETAILING_DIAMETER_PARAM]).toBe(0.5);
+    const detailing = (t: GameDataBundle["traits"]) => t.traits[0]!;
+    expect(tableIssues("traits", (t) => (detailing(t).params = { radiusM: 0.5 }))).toEqual([
+      "traits.0.params.radiusM",
+      "traits.0.params.diameterM",
+    ]);
+    expect(tableIssues("traits", (t) => (detailing(t).params = { diameterM: 0.5, radiusM: 0.25 }))).toEqual([
+      "traits.0.params.radiusM",
+    ]);
+    expect(tableIssues("traits", (t) => (detailing(t).params = { diameterM: 0.001 }))).toContain(
+      "traits.0.params.diameterM",
+    );
+    expect(tableIssues("traits", (t) => (detailing(t).params = { diameterM: 10.24 }))).toContain(
+      "traits.0.params.diameterM",
+    );
+    expect(tableIssues("traits", (t) => (detailing(t).params = { diameterM: true }))).toContain(
+      "traits.0.params.diameterM",
+    );
   });
 });

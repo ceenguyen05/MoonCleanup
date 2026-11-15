@@ -31,6 +31,16 @@ export interface McLookLike {
     readonly cascades?: readonly { index: number; texelM: number; endM: number }[];
     readonly preset?: string;
     readonly backend?: string;
+    /** Read-only camera snapshot (absent on older builds). */
+    readonly camera?: {
+      readonly position: readonly number[];
+      readonly quaternion: readonly number[];
+      readonly forward: readonly number[];
+      readonly vfovDeg: number;
+      readonly aspect: number;
+      readonly nearM: number;
+      readonly farM: number;
+    };
     readonly state?: {
       readonly sunElevationDeg: number;
       readonly sunAzimuthDeg: number;
@@ -166,6 +176,8 @@ export function parseArgs(
   const positional: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]!;
+    // pnpm forwards the bare `--` separator; it must not swallow the scene id that follows it.
+    if (a === "--") continue;
     if (a.startsWith("--")) {
       const eq = a.indexOf("=");
       if (eq > 0) flags[a.slice(2, eq)] = a.slice(eq + 1);

@@ -1,0 +1,31 @@
+{
+  "backend": "webgl2",
+  "requestedBackend": "webgl2",
+  "part": "craters",
+  "points": 10000,
+  "pointsReadBack": 10000,
+  "toleranceM": 0.02,
+  "over2cm": 2491,
+  "maxErrorM": 0.5161932142066767,
+  "p50ErrorM": 0.00001611950919055971,
+  "p99ErrorM": 0.2605609675109264,
+  "rmsErrorM": 0.05457630760334844,
+  "worst": {
+    "index": 5452,
+    "errorM": 0.5161932142066767,
+    "gpuM": -4.3720316886901855,
+    "jsM": -4.888224902896862,
+    "dir": [
+      0.5145944952964783,
+      -0.8510555624961853,
+      -0.104388527572155
+    ]
+  },
+  "pass": false,
+  "renderAndReadbackMs": 1028.4000000059605,
+  "cube": "height-cube-1024.0d70550a0d75.bin",
+  "lane": "gpu",
+  "console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}

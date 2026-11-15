@@ -36,6 +36,38 @@ lines: tick ms, CPU, bytes out by type, rejected inputs, RSS and heap growth.
 
 Output: `tools/bots/results/<milestone>/<label>.json` and `.md` (git-ignored status of `results/` is the lead's call).
 
+## Session reconnect cap
+
+Each bot caps the Colyseus SDK session reconnect at 7 retries (100 ms base, 2 s ceiling, about 9 s of waiting) instead of
+the SDK default of 15 retries (about 60 s). After that the bot is reported `dropped` and the scenario's join backoff
+(`--join-retry-max`) rejoins it. Verified live: kill the server, restart, bots log `attempt N of 7` and rejoin.
+
+## Post-deploy smoke (`smoke`)
+
+One command for Cee after Neon, Render and Vercel exist (HOSTING_GUIDE section 5). From the repo root:
+
+```
+pnpm --filter @moon-cleanup/bots smoke --server-url https://<service>.onrender.com --client-origin https://<project>.vercel.app --expect-env production
+```
+
+Options: `--bots 3` (2 to 6) `--hold 60` (seconds) `--wake-max 120` (seconds to wait for a cold server) `--ready-max 60`
+`--expect-env production` `--out results` `--milestone smoke`. Exit code 0 = PASS, 1 = a check failed, 2 = bad arguments.
+Needs Node 26 (`pnpm exec tsx src/smoke/cli.ts ...` from `tools/bots` does the same). Hosted use is the point of this
+tool: it is read-mostly (3 guest joins, pings) and needs no `--allow-hosted`, no secrets and no `NET_SPIKE`.
+
+Checks, each PASS/FAIL with plain-English next steps (CORS, CSP, DB, cold start, wrong build):
+1. `/healthz` with a "server is waking" message while a free Render instance cold-starts (about 1 min); protocol must match.
+2. `/readyz` 200 with the database up (keeps polling a few seconds for Neon to wake).
+3. CORS: preflight from the client origin is allowed and a foreign origin is refused (`ALLOWED_ORIGINS`).
+4. CSP: fetches the Vercel page and checks `connect-src` allows https and wss to the server (SKIP when no CSP header).
+5. Join: N guests `POST /v0/hello/join` (the room a `NET_SPIKE=0` production server has today: HelloRoom) then wss; every
+   bot gets HELLO and all see `state.players == N` in one room.
+6. Hold: pings every 2 s for `--hold` seconds; all stay connected, PONGs keep coming, reports RTT p50/p95.
+7. Reconnect: bot 0 leaves and rejoins with a fresh seat; the room sees the count dip and recover, PONG works again.
+
+Writes `results/<milestone>/smoke-deploy-<timestamp>.json` and `.md`. When the real `shift` room and join route land
+(M1), update `src/smoke/smoke-deploy.ts` (`HELLO_JOIN_PATH`, join body, state check). Unit tests: `src/smoke/analysis.test.ts`.
+
 ## Bot behaviour
 
 Seeded random walk with clean/travel phases at 20 Hz. Inputs are steered from the acked seq in each FRAME so the

@@ -59,7 +59,7 @@ All live in `packages/shared/src/` (one folder per row group: `ids`, `units`, `p
 | Render quality presets (every row of [rendering-pipeline §14.1](rendering-pipeline.md): lights, terrain, dust atlas/ring/residency, particles, sky, budgets, distances, ui) | `render/quality.ts` (v1) | render, visuals, terrain, ui (settings screen) |
 | Balance config schemas (zod) for every table in `packages/game-data` | `config/*.schema.ts` (bundle v1.2) | game-data (data), sim (reads), balance-sim |
 | MVP scope constants (4 tools, 10 board nodes, Cell III, Holster L1 / Lamp L1, Trundle, Sandpiper, Roost cap 3, 3 achievements, 6 Near Parcels, 900 m fence) | `config/mvp-scope.schema.ts` (v1) | sim, balance-sim (policy `mvp`), server/sim, bots, game-data (id coverage test) |
-| REST DTOs (guest auth, contracts list, profile, save metadata, **solo checkpoint** upload/verify/download DTOs, `CHECKPOINT_REJECT_REASONS`, `QUOTA_EXCEEDED`, `PUT` for checkpoint parts, ADR-0031) | `api/rest.ts` (v0.2.0) | server/api, client/net |
+| REST DTOs (guest auth, contracts list, profile, save metadata, **solo checkpoint** upload/verify/download DTOs, `CHECKPOINT_REJECT_REASONS`, `QUOTA_EXCEEDED`, `PUT` for checkpoint parts, ADR-0031) | `api/rest.ts` (v0.5.0) | server/api, client/net |
 | Save format (world blob layout, 92 B header with `generation` / `parentGeneration` / `originKind` / `originId`, **`SAVE_FORMAT_VERSION = 1`**, v0 to v1 migration note), dust chunk codec, `MCCK` checkpoint package (download continuation pages have headerLen 0; upload parts are raw slices), golden vectors | `save/format.ts`, `save/dust-chunk.ts`, `save/checkpoint-package.ts`, `save/{vectors,dust-chunk-vectors,checkpoint-vectors}.ts` (v1) | server/persistence, sim, world, client/sim-host, client/net |
 | Local-first sync vocabulary and the **normative conflict prompt rule** (6 rules: fast-forward by `baseGeneration`, strict descendant wins silently, divergence prompts with no default, `keep_local` / `use_server` back up the loser first, Open to friends needs an accepted upload, offline is not a conflict) | `save/sync-rules.ts` (v1) | client/net (sync module), client/sim-host, ui (prompt), server/api (rules 1 and 4) |
 
@@ -80,7 +80,7 @@ All live in `packages/shared/src/` (one folder per row group: `ids`, `units`, `p
 | `audio` | `cues` v1, `index` v1 |
 | `render` | `quality` v1; `backend` v0, `index` v0 |
 | `config` | `bundle.schema` v1.2, `common`, `economy`, `logistics`, `movement`, `pacing-targets`, `robots` v1.2; `promotions-board`, `traits`, `vehicles`, `index` v1.1; `mvp-scope` v1; the other schemas v1 |
-| `api` | `rest` v0.2.0, `index` v0 |
+| `api` | `rest` v0.5.0, `index` v0 |
 | root | `index` v1 |
 
 **Contract change process:** an agent asks the lead for the needed interface change in a short message (never races another shared writer). The lead assigns `contracts-architect` to apply it when needed, update versions and coordinate affected consumers; no new wave/report is required. Breaking protocol/save changes bump `PROTOCOL_VERSION` / `SAVE_FORMAT_VERSION` and require a migration note.

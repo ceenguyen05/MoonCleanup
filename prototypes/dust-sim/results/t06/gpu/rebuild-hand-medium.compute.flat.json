@@ -1,0 +1,59 @@
+{
+ "label": "rebuild-hand-medium",
+ "path": "compute",
+ "pace": "flat",
+ "px": 64,
+ "atlas": "2048x2048",
+ "framesReplayed": 100,
+ "framesWithEvents": 100,
+ "passes": 100,
+ "uploads": 100,
+ "copies": 100,
+ "instancesPerPass": {
+  "n": 100,
+  "mean": 305,
+  "p50": 305,
+  "p95": 305,
+  "p99": 305,
+  "max": 305
+ },
+ "tilesPerComputePass": {
+  "n": 100,
+  "mean": 1,
+  "p50": 1,
+  "p95": 1,
+  "p99": 1,
+  "max": 1
+ },
+ "timestampQuery": true,
+ "gpuPassMs": {
+  "n": 100,
+  "mean": 0.26564252,
+  "p50": 0.263996,
+  "p95": 0.269246,
+  "p99": 0.405493,
+  "max": 0.405493
+ },
+ "gpuPassMsPerFrameAllFrames": 0.2656425199999999,
+ "jsEncodeMs": {
+  "n": 100,
+  "mean": 0.09895000003278255,
+  "p50": 0.0950000025331974,
+  "p95": 0.12999999895691872,
+  "p99": 0.17999999970197678,
+  "max": 0.17999999970197678
+ },
+ "jsEncodeMsPerFrameAllFrames": 0.09895000003278255,
+ "wallMs": 43.79499999806285,
+ "rafIntervalMs": null,
+ "compare": null,
+ "errors": [],
+ "cpuRefMs": {
+  "p50": 1.341,
+  "p95": 1.883,
+  "p99": 8.133,
+  "max": 8.133
+ },
+ "machineLoadPct": 65.1,
+ "recording": "rebuild-hand-medium"
+}

@@ -1,0 +1,5 @@
+normal priority, 3000 ledgers, budget 2 ms, load 52 -> 49 %: runs 10, slices 1309, over budget 6 (in 3 runs), longest slice 2.88 ms, mean total 204.0 ms
+normal priority, 60 ledgers, budget 2 ms, load 53 -> 44 %: runs 16, slices 282, over budget 4 (in 4 runs), longest slice 6.15 ms, mean total 18.4 ms
+normal priority, 4 ledgers, budget 2 ms, load 62 -> 64 %: runs 16, slices 164, over budget 1 (in 1 runs), longest slice 2.08 ms, mean total 8.1 ms
+normal priority, 3000 ledgers, budget 1 ms, load 67 -> 66 %: runs 6, slices 3048, over budget 34 (in 5 runs), longest slice 39.79 ms, mean total 293.7 ms
+normal priority, 4 ledgers, budget 1 ms, load 84 -> 6 %: runs 16, slices 578, over budget 19 (in 8 runs), longest slice 1.65 ms, mean total 7.8 ms

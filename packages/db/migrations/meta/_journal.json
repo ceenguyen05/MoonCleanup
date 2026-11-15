@@ -22,6 +22,13 @@
       "when": 1794637641248,
       "tag": "0002_w5t07_lease_and_save_generation",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794695838370,
+      "tag": "0003_w5t07_dust_chunks",
+      "breakpoints": true
     }
   ]
 }

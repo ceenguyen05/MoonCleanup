@@ -1,0 +1,7 @@
+| variant | B/tick | B per submitted stroke | ledgers sent | ledgers / polished | hash |
+| --- | ---: | ---: | ---: | --- | --- |
+| 16 clients, frame cadence, checks every 5 s | 13.6 | 0.85 | 48 | 7 / 0 | match |
+| 16 clients, frame cadence, no checks | 26.2 | 1.64 | 48 | 7 / 0 | match |
+| 16 clients, tick cadence, no checks | 16.9 | 1.06 | 48 | 7 / 0 | match |
+| 1 client, frame cadence, no checks | 19.4 | 19.39 | 1 | 5 / 0 | match |
+| 6 clients, frame cadence, checks every 5 s | 14.1 | 2.35 | 18 | 7 / 0 | match |

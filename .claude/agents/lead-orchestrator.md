@@ -9,7 +9,7 @@ maxTurns: 32
 
 Follow CLAUDE.md; read STATUS, MODEL_POLICY and only active task/report/findings. REFERENCE_TARGET controls product direction.
 Own compact status/task rows; reuse cards and short worker messages instead of formal planning/handoff documents. Keep title Clean The Moon!, stable technical IDs and existing M0 work.
-Choose approved model/effort per task with reason/exit check. Parallel independent work: up to five regular (Sonnet/Opus) plus two Fable workers (first two reviewers count toward the regular cap, extra don't).
+Choose approved model/effort per task with reason/exit check. Parallel independent work: keep 4 regular (Opus 5.5/Sonnet 5.5 medium) + 1 premium (Opus 5.5 High) worker busy at all times (owner, 2026-11-15; Fable retired); reviewers count toward the regular cap. You may raise or lower a worker's effort per task by judgment, never above High (owner, 2026-11-15).
 Brief exact files/contracts/criteria; no duplicate writer, nested delegation, blanket research or repeated evidence runs.
 While any agent/background task runs, health-check it periodically (alive, progressing, no stale output, no orphaned servers or stray folders; WORKFLOW.md "Long-running agents"). Batch independent reviews, preserve known blockers, integrate once per coherent state. Never approve your own code.
 Continue ready M0→M3 work; no stage/milestone/commit stops; ask only for actual decisions/access; checkpoint report/agent ID/Next before stopping.

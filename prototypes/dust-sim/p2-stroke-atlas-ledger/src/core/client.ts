@@ -14,6 +14,8 @@ export const SEC_STROKES = 1;
 export const SEC_ROBOT = 2;
 export const SEC_ACK = 3;
 export const SEC_PLOTS = 4;
+/** Prototype addition: robots whose plan ends now (re-assigned to a plot outside this client's dust radius). */
+export const SEC_ROBOT_STOP = 5;
 export const MSG_SNAPSHOT = 0x21;
 export const MSG_LEDGER = 0x22;
 export const MSG_LOG = 0x23;
@@ -69,7 +71,7 @@ export class P2Client {
   badContinuations = 0;
 
   // dust.check scratch
-  private readonly chunkAcc: Uint32Array;
+  private readonly chunkAcc: Int32Array;
   private readonly chunkSeen: Uint8Array;
   private chunkList = new Int32Array(64);
   /** Chunks that mismatched in the last check (the caller requests a resync for them). */
@@ -90,7 +92,7 @@ export class P2Client {
     this.view.member = this.set.member;
     // Clients keep logs only for their resident ledgers: 1 MB is ~250 full rings.
     this.log = new StrokeLog(t.count, 256, 4 * 1024 * 1024);
-    this.chunkAcc = new Uint32Array(t.chunkCount);
+    this.chunkAcc = new Int32Array(t.chunkCount);
     this.chunkSeen = new Uint8Array(t.chunkCount);
   }
 
@@ -213,6 +215,12 @@ export class P2Client {
         for (let k = 0; k < n; k++) {
           this.readIntent(buf, pos, 0);
           pos += 20;
+        }
+      } else if (id === SEC_ROBOT_STOP) {
+        const n = buf[pos++]!;
+        for (let k = 0; k < n; k++) {
+          this.plans.stop(buf[pos]! | (buf[pos + 1]! << 8));
+          pos += 2;
         }
       } else if (id === SEC_ACK) {
         this.ackedGrams = buf[pos]! | (buf[pos + 1]! << 8) | (buf[pos + 2]! << 16);
@@ -383,14 +391,14 @@ export class P2Client {
         }
         this.chunkList[nChunks++] = ch;
       }
-      this.chunkAcc[ch] = (this.chunkAcc[ch]! ^ h) >>> 0;
+      this.chunkAcc[ch] = this.chunkAcc[ch]! ^ h;
     }
     this.driftN = 0;
     const n = buf[1]!;
     let pos = 2;
     for (let k = 0; k < n; k++) {
       const ch = buf[pos]! | (buf[pos + 1]! << 8);
-      const h = (buf[pos + 2]! | (buf[pos + 3]! << 8) | (buf[pos + 4]! << 16) | (buf[pos + 5]! << 24)) >>> 0;
+      const h = buf[pos + 2]! | (buf[pos + 3]! << 8) | (buf[pos + 4]! << 16) | (buf[pos + 5]! << 24);
       pos += 6;
       if (this.chunkAcc[ch] !== h) this.noteDrift(ch);
       this.chunkSeen[ch] = 2;

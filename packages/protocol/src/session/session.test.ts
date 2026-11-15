@@ -192,6 +192,36 @@ describe("waking and connecting", () => {
     }
     expect(h.session.failure?.reason).toBe("connect_failed");
   });
+
+  it("a REST join refusal fails at once with the given reason; ignored outside connecting", () => {
+    const h = new Harness();
+    h.session.onJoinRejected(0, { reason: "forbidden", code: 0, retryable: false, retryAfterMs: 0 });
+    expect(h.session.phase).toBe("idle");
+    h.session.start(0);
+    h.session.onJoinRejected(0, { reason: "at_capacity", code: 4105, retryable: true, retryAfterMs: 30_000 });
+    expect(h.session.phase).toBe("failed");
+    expect(h.session.failure).toMatchObject({ reason: "at_capacity", code: 4105, retryAfterMs: 30_000 });
+    h.advance(60_000);
+    expect(h.host.connects.length).toBe(1);
+  });
+});
+
+describe("expectDustSnapshot: false (server without dust streaming)", () => {
+  it("hello + keyframe alone complete the join and a visible resync", () => {
+    const h = new Harness({ expectDustSnapshot: false });
+    h.session.start(0);
+    h.session.onConnected(0);
+    expect(h.session.dustReady).toBe(true);
+    h.session.onHello(0, HELLO);
+    h.keyframe(100);
+    expect(h.session.phase).toBe("joined");
+    expect(h.host.readies).toBe(1);
+    h.session.onVisibility(10, true);
+    h.session.onVisibility(20, false);
+    expect(h.session.phase).toBe("resyncing");
+    h.keyframe(140);
+    expect(h.session.phase).toBe("joined");
+  });
 });
 
 describe("joining (hello, keyframe, snapshot) and steady state", () => {
@@ -349,6 +379,26 @@ describe("resync", () => {
     expect(h.session.phase).toBe("joined");
     expect(h.host.readies).toBe(1); // ready is once per join
     expect(h.frame(h.server.frame(108, [{ slot: 0, x: 1.3 }]))).toBe(SESSION_FRAME_APPLIED);
+  });
+
+  it("requestSnapshotResync asks for a keyframe + snapshot once, rejoins on both, and does nothing outside the room or while hidden", () => {
+    const h = new Harness();
+    expect(h.session.requestSnapshotResync(0)).toBe(false); // idle
+    h.join();
+    h.now = 3000;
+    expect(h.session.requestSnapshotResync(h.now)).toBe(true);
+    expect(h.session.phase).toBe("resyncing");
+    expect(h.host.resyncs).toEqual(["snapshot"]);
+    expect(h.session.stats.resyncs).toBe(1);
+    expect(h.frame(h.server.frame(110, [{ slot: 0, x: 1.1 }]))).toBe(SESSION_FRAME_AWAITING_KEYFRAME);
+    h.keyframe(112);
+    expect(h.session.phase).toBe("resyncing"); // the snapshot is expected too
+    h.snapshot(3);
+    expect(h.session.phase).toBe("joined");
+    expect(h.host.readies).toBe(1);
+    h.session.onVisibility(h.now, true);
+    expect(h.session.requestSnapshotResync(h.now)).toBe(false); // hidden
+    expect(h.host.resyncs).toEqual(["snapshot"]);
   });
 
   it("accepts a keyframe whose tick is below the last applied one (server restart)", () => {

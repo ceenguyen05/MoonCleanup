@@ -6,10 +6,13 @@ import { QUALITY_PRESET_IDS, type QualityPresetId } from "@moon-cleanup/shared";
 import type { GpuClass } from "../render";
 
 /**
- * Scene ids the visuals module routes itself: the look-dev scenes S01-S03, S05, S06 and the `typical` worksite (M0-W3-T08).
- * Mirrors `LOOKDEV_SCENE_IDS` of the visuals barrel (kept as literals so this file stays free of three imports).
+ * Scene ids the visuals module routes itself: the look-dev scenes S01-S03, S05, S06, the `typical` worksite (M0-W3-T08)
+ * and the `dust` worksite (M1-W3-T02). Mirrors `LOOKDEV_SCENE_IDS` of the visuals barrel (kept as literals so this
+ * file stays free of three imports).
  */
-export const VISUALS_SCENE_IDS: readonly string[] = ["s01", "s02", "s03", "s05", "s06", "typical"];
+export const VISUALS_SCENE_IDS: readonly string[] = ["s01", "s02", "s03", "s05", "s06", "typical", "dust"];
+/** Visuals scenes that show the game's own Solo host state, so the host starts for them by default (`&solo=0`: off). */
+export const SOLO_FED_SCENE_IDS: readonly string[] = ["dust"];
 /** Scenes owned by the render module (it replaces the smoke mesh). */
 export const RENDER_SCENE_IDS: readonly string[] = ["bench", "verify"];
 /** Look-dev scenes that exist but are not routed by any module (none since M0-W3-T08 routed S02 / S03). */
@@ -88,4 +91,31 @@ export function integratedGpuPreset(input: {
 }): QualityPresetId | null {
   if (input.explicit || input.gpuClass !== "integrated") return null;
   return rank(input.current) > rank("low") ? "low" : null;
+}
+
+/**
+ * Whether the composition root starts the Solo LocalRoom host (ADR-0031). Default: on for the game launch (no `?scene=`
+ * or a scene that no module routes, e.g. the hello world and the HUD test page). Off for the harness lanes that must
+ * stay deterministic and cheap: look-dev / bench / verify scenes and `?capture=1`. The `dust` scene is fed by the host
+ * (its strokes are the game's own), so it starts it too. `?solo=0` forces off, `?solo=1` on.
+ */
+export function wantsSoloHost(search: string): boolean {
+  const params = new URLSearchParams(search);
+  const forced = params.get("solo");
+  if (forced === "0") return false;
+  if (forced === "1") return true;
+  if (params.get("capture") === "1") return false;
+  const plan = planScene(search);
+  return plan.smokeScene || SOLO_FED_SCENE_IDS.includes(plan.scene);
+}
+
+/** `?scene=dust` with the Solo host: the scene shows the host's strokes through the main-thread ledger view. */
+export function wantsHostDustFeed(search: string): boolean {
+  return planScene(search).scene === "dust" && wantsSoloHost(search);
+}
+
+/** The audio module is registered unless `?audio=0` or capture mode (the capture lanes never take a gesture). */
+export function wantsAudio(search: string): boolean {
+  const params = new URLSearchParams(search);
+  return params.get("audio") !== "0" && params.get("capture") !== "1";
 }

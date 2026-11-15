@@ -1,8 +1,9 @@
 // `HttpRouteDef[]` on a plain Node `http.Server`: the request handler of the ws fallback transport (./transport).
 //
 // Mirrors ./http-routes (uWS) exactly, through the same `executeRoute` pipeline: exact allowlist CORS (`/healthz`
-// public), preflight for every path, REST body limit (declared or streamed, 16 KB -> 413, then the connection closes
-// so an oversized upload cannot keep streaming), malformed `:param` percent-encoding -> 400, malformed JSON -> 400,
+// public), preflight for every path, REST body limit (declared or streamed, 16 KB or the route's `rawBodyMaxBytes`
+// -> 413, then the connection closes so an oversized upload cannot keep streaming), raw-body pre-checks and binary
+// responses (see ./http-routes), malformed `:param` percent-encoding -> 400, malformed JSON -> 400,
 // handler errors -> 500 INTERNAL, unknown paths and Colyseus' `/matchmake/*` -> 404, client IP from the one trusted
 // edge header (socket mode: the TCP peer). Route precedence follows uWS: a route whose segments are all static beats
 // a `:param` route; otherwise registration order.
@@ -12,13 +13,20 @@ import { STATUS_CODES } from "node:http";
 import type { HttpMethod, HttpResponse, HttpRouteDef } from "@moon-cleanup/shared";
 import { PUBLIC_CORS_PATHS } from "./cors";
 import {
-  MAX_HTTP_BODY_BYTES,
+  BODY_READ_TIMEOUT_MS,
+  BodyBuffer,
+  addHeader,
   errorBody,
   executeRoute,
-  responseBodyText,
+  responseBody,
   responseHeaderPairs,
   routeParamNames,
+  routeRuntime,
   safeDecodeURIComponent,
+  watchBodyRead,
+  type BodyRead,
+  type BodyReadOptions,
+  type BodyReadResult,
   type MountHttpOptions,
   type RouteInput,
 } from "./http-routes";
@@ -76,11 +84,11 @@ function match(compiled: CompiledRoute, pathSegments: readonly string[]): string
   return raw;
 }
 
-/** Lower-case headers from `rawHeaders`; a repeated header keeps its LAST value (what uWS `forEach` yields). */
+/** Lower-case headers from `rawHeaders`; a repeated header is joined with `, ` (same as the uWS copy, `addHeader`). */
 function copyHeaders(req: IncomingMessage): Record<string, string> {
   const headers: Record<string, string> = {};
   const raw = req.rawHeaders;
-  for (let i = 0; i + 1 < raw.length; i += 2) headers[(raw[i] ?? "").toLowerCase()] = raw[i + 1] ?? "";
+  for (let i = 0; i + 1 < raw.length; i += 2) addHeader(headers, raw[i] ?? "", raw[i + 1] ?? "");
   return headers;
 }
 
@@ -91,43 +99,87 @@ function write(
   closeConnection: boolean,
 ): void {
   if (res.headersSent || res.destroyed || res.writableEnded) return;
-  const body = responseBodyText(response);
+  const body = responseBody(response);
   for (const [k, v] of responseHeaderPairs(response, corsHeaders)) res.setHeader(k, v);
-  res.setHeader("content-length", Buffer.byteLength(body));
+  if (typeof body === "string") {
+    res.setHeader("content-length", Buffer.byteLength(body));
+  } else {
+    res.setHeader("content-length", body.byteLength);
+  }
   if (closeConnection) res.setHeader("connection", "close");
   res.writeHead(response.status, STATUS_CODES[response.status] ?? "");
-  res.end(body);
+  // A binary body is written verbatim through a Buffer view of the handler's bytes (no copy, no string conversion).
+  res.end(typeof body === "string" ? body : Buffer.from(body.buffer, body.byteOffset, body.byteLength));
 }
 
-/** Reads the body up to MAX_HTTP_BODY_BYTES; `null` on overflow (`state.overflow` set) or a broken request. */
-function readNodeBody(req: IncomingMessage, state: { overflow: boolean; aborted: boolean }): Promise<Buffer | null> {
+interface NodeReadState {
+  overflow: boolean;
+  aborted: boolean;
+}
+
+/**
+ * Opens the Node request body. Nothing is attached until `read`, so while a pre-check runs the stream is not flowing
+ * (the socket's own backpressure holds the upload). `read` takes the body under `limit` (with a declared length the
+ * chunks are copied into one pre-sized buffer). Overflow pauses the request and resolves `"overflow"` (the 413 closes
+ * the connection); an error or the watchdog (deadline, minimum throughput) resolves `"aborted"` (the watchdog destroys
+ * the socket).
+ */
+function openNodeBody(req: IncomingMessage, state: NodeReadState, timeoutMs: number): BodyRead {
+  return {
+    read: (options) => readNodeBody(req, state, options, timeoutMs),
+    discard: () => undefined,
+  };
+}
+
+function readNodeBody(
+  req: IncomingMessage,
+  state: NodeReadState,
+  options: BodyReadOptions,
+  timeoutMs: number,
+): Promise<BodyReadResult> {
   return new Promise((resolve) => {
-    const chunks: Buffer[] = [];
-    let total = 0;
+    const buffer = new BodyBuffer(options.limit, options.expected, false);
     let settled = false;
-    const finish = (value: Buffer | null): void => {
+    if (req.destroyed || state.aborted) {
+      resolve("aborted");
+      return;
+    }
+    const stopWatch = watchBodyRead(
+      () => buffer.total,
+      () => {
+        state.aborted = true;
+        finish("aborted");
+        req.destroy();
+      },
+      timeoutMs,
+      options.minRate,
+    );
+    const finish = (value: BodyReadResult): void => {
       if (settled) return;
       settled = true;
+      stopWatch();
       req.removeListener("data", onData);
       resolve(value);
     };
     const onData = (chunk: Buffer): void => {
-      total += chunk.byteLength;
-      if (total > MAX_HTTP_BODY_BYTES) {
+      if (!buffer.push(chunk)) {
         state.overflow = true;
-        chunks.length = 0;
         // Stop buffering; the 413 is written with `connection: close`, which ends the upload.
         req.pause();
-        finish(null);
-        return;
+        finish("overflow");
       }
-      chunks.push(chunk);
     };
     req.on("data", onData);
-    req.once("end", () => finish(Buffer.concat(chunks, total)));
+    req.once("end", () => finish(buffer.bytes()));
     req.once("error", () => {
       state.aborted = true;
-      finish(null);
+      finish("aborted");
+    });
+    req.once("close", () => {
+      if (!req.complete) {
+        state.aborted = true;
+        finish("aborted");
+      }
     });
   });
 }
@@ -137,7 +189,9 @@ export function createNodeRequestHandler(
   routes: readonly HttpRouteDef[],
   options: MountHttpOptions,
 ): NodeRequestHandler {
-  const { policy, clientIpHeader, logger } = options;
+  const { policy, clientIpHeader } = options;
+  const rt = routeRuntime(options);
+  const timeoutMs = options.bodyReadTimeoutMs ?? BODY_READ_TIMEOUT_MS;
   const table = compile(routes);
 
   return (req, res) => {
@@ -186,7 +240,7 @@ export function createNodeRequestHandler(
     }
 
     const cors = compiled.isPublic ? { "access-control-allow-origin": "*" } : policy.responseHeaders(origin);
-    const state = { overflow: false, aborted: false };
+    const state: NodeReadState = { overflow: false, aborted: false };
     res.once("close", () => {
       if (!res.writableEnded) state.aborted = true;
     });
@@ -200,10 +254,9 @@ export function createNodeRequestHandler(
     void executeRoute(
       compiled.route,
       input,
-      () => readNodeBody(req, state),
+      () => openNodeBody(req, state, timeoutMs),
       () => state.aborted,
-      clientIpHeader,
-      logger,
+      rt,
     ).then((response) => {
       if (response === undefined || state.aborted) return;
       // An early 413 (declared length) or a streamed overflow: close so the rest of the upload is not read.

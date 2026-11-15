@@ -1,6 +1,7 @@
 {
   "scene": "S01",
   "tod": "noon",
+  "todApplied": "verified: sun elevation 60.00 deg, expected 60",
   "tier": "B",
   "preset": "medium",
   "backend": "webgpu",
@@ -11,22 +12,124 @@
   "hud": "nohud",
   "seed": "vt-standard-01",
   "lane": "gpu",
-  "commit": "60faef9",
+  "commit": "5a7cec4",
+  "treeDirty": true,
+  "serve": {
+    "mode": "production",
+    "url": "http://127.0.0.1:5184/",
+    "how": "preview-started"
+  },
+  "url": "http://127.0.0.1:5184/?scene=s01&time=noon&backend=webgpu&preset=medium&dpr=1&tier=B&tod=noon&seed=vt-standard-01&hud=0&scale=floor&capture=1",
   "browser": "157.0.8103.79",
   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
   "frameTimeSample": {
-    "avgMs": 45.087501510977745,
-    "p95Ms": 217
+    "avgMs": 77.93437537550926,
+    "p95Ms": 485.29998779296875
   },
   "drawCalls": 238,
   "triangles": 501469,
   "texPoolMB": 0,
   "placeholderAssets": [],
+  "knobs": {
+    "renderScale": 0.6,
+    "canvasDpr": 1,
+    "aa": null,
+    "lookKnobs": "default",
+    "csm": [
+      {
+        "index": 0,
+        "texelM": 0.02300155612922764,
+        "endM": 10
+      },
+      {
+        "index": 1,
+        "texelM": 0.0971484014333395,
+        "endM": 42.23076211353316
+      },
+      {
+        "index": 2,
+        "texelM": 0.2761260956047685,
+        "endM": 120
+      }
+    ],
+    "shadowFilter": "pcf3+pcf5",
+    "skyDome": "baked",
+    "postPasses": [
+      "scene",
+      "grade",
+      "bloom",
+      "smaa"
+    ],
+    "dustRingTexelCm": null,
+    "particlePool": null
+  },
+  "camera": {
+    "view": null,
+    "pose": {
+      "positionM": [
+        -3,
+        2.031851233832349,
+        -23
+      ],
+      "quaternion": [
+        -0.00014856198812744918,
+        0.998667914427423,
+        -0.0028798622288549003,
+        -0.05151777378788852
+      ],
+      "forward": [
+        0.10289743973327227,
+        0.005767359177653323,
+        0.9946752507549657
+      ],
+      "aspect": 1.7777777777777777,
+      "nearM": 0.05,
+      "farM": 30000
+    },
+    "vfovDeg": 59.99999999999999
+  },
+  "sun": {
+    "elevationDeg": 60,
+    "azimuthDeg": 100
+  },
+  "ev100": 14.3,
+  "evSource": "sun",
+  "adaptationMultiplier": null,
+  "earth": {
+    "litFraction": 0.2262093389518871,
+    "elevationDeg": 17,
+    "azimuthDeg": 48,
+    "diameterDeg": 4.2
+  },
+  "particlesLive": null,
   "stepFrames": 30,
   "view": null,
+  "lookdevFacts": null,
+  "roiSpecs": [
+    {
+      "kind": "patch",
+      "name": "probe:clean",
+      "rect": {
+        "x": 1096,
+        "y": 650,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "kind": "patch",
+      "name": "probe:grime",
+      "rect": {
+        "x": 1063,
+        "y": 542,
+        "w": 48,
+        "h": 48
+      }
+    }
+  ],
   "measure": {
     "lumaMean": {
-      "value": 86.13216106607693,
+      "value": 86.13240131902026,
       "rect": {
         "x": 0,
         "y": 0,
@@ -35,7 +138,7 @@
       }
     },
     "sobel": {
-      "value": 29.35761983296436,
+      "value": 29.36882703278673,
       "rect": {
         "x": 0,
         "y": 0,
@@ -44,7 +147,7 @@
       }
     },
     "labB": {
-      "value": -9.028616409780945,
+      "value": -9.028604240810708,
       "rect": {
         "x": 0,
         "y": 0,
@@ -53,12 +156,12 @@
       }
     },
     "edgeWidth1090": {
-      "value": 232.4850910915016,
+      "value": null,
       "rect": {
         "x": 0,
         "y": 0,
-        "w": 1920,
-        "h": 1080
+        "w": 0,
+        "h": 0
       }
     },
     "stars": {
@@ -71,6 +174,112 @@
       }
     },
     "nonBlackFraction": 0.9999131944444445,
-    "diskBytes": 559986
+    "diskBytes": 559975,
+    "rois": {
+      "frame:upper": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 216
+        },
+        "lumaMean": 13.15199812792621,
+        "labB": -15.355296804090164,
+        "sobel": 18.224258260528387,
+        "stars": 0
+      },
+      "frame:middle": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 432,
+          "w": 1920,
+          "h": 216
+        },
+        "lumaMean": 95.99962039972989,
+        "labB": -10.475902214985915,
+        "sobel": 53.318823241575075,
+        "stars": 21
+      },
+      "frame:lower": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 720,
+          "w": 1920,
+          "h": 360
+        },
+        "lumaMean": 140.39016846784838,
+        "labB": -0.3216928361294206,
+        "sobel": 22.112135039389898,
+        "stars": 3
+      },
+      "frame:left": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 640,
+          "h": 1080
+        },
+        "lumaMean": 88.51993630177479,
+        "labB": -9.623936521366442,
+        "sobel": 27.459341188598643,
+        "stars": 16
+      },
+      "frame:center": {
+        "kind": "patch",
+        "rect": {
+          "x": 640,
+          "y": 360,
+          "w": 640,
+          "h": 360
+        },
+        "lumaMean": 108.36889955892332,
+        "labB": -6.876592355607322,
+        "sobel": 61.17111194669946,
+        "stars": 9
+      },
+      "frame:right": {
+        "kind": "patch",
+        "rect": {
+          "x": 1280,
+          "y": 0,
+          "w": 640,
+          "h": 1080
+        },
+        "lumaMean": 85.91841257347554,
+        "labB": -10.02083718112058,
+        "sobel": 21.844400239334227,
+        "stars": 1
+      },
+      "probe:clean": {
+        "kind": "patch",
+        "rect": {
+          "x": 1096,
+          "y": 650,
+          "w": 48,
+          "h": 48
+        },
+        "lumaMean": 185.02264684438705,
+        "labB": 1.1830922686395609,
+        "sobel": 1.7671985185188928,
+        "stars": 0
+      },
+      "probe:grime": {
+        "kind": "patch",
+        "rect": {
+          "x": 1063,
+          "y": 542,
+          "w": 48,
+          "h": 48
+        },
+        "lumaMean": 144.29594940609402,
+        "labB": -0.050070304105631694,
+        "sobel": 81.50249382028933,
+        "stars": 0
+      }
+    }
   }
 }

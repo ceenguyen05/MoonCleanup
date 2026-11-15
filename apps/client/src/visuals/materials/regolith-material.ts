@@ -106,11 +106,33 @@ import type { MaskWorldRect } from "./stroke-mask";
 /** Key under which a receiver publishes its far-occluder visibility node for the CSM node (visuals/lighting/sun-rig.ts). */
 const HORIZON_VISIBILITY_KEY = "mcHorizonVisibility";
 
+/** Five taps in the mask contract (r grime, g berm height, b polish) around a world point, `stepM` metres apart. */
+export interface MaskTaps {
+  readonly centre: TslNode;
+  readonly px: TslNode;
+  readonly nx: TslNode;
+  readonly pz: TslNode;
+  readonly nz: TslNode;
+  readonly stepM: number;
+  /** Texture fetches the taps cost per fragment. */
+  readonly fetches: number;
+}
+
+/** A source that supplies the mask taps instead of the one mask texture (the dust tile atlas, `visuals/dust`). */
+export interface MaskTapSource {
+  /** Textures the source samples (counted as bindings of the material). */
+  readonly textures: readonly Texture[];
+  /** `xz`: world position (x, z) in metres. */
+  build(xz: TslNode): MaskTaps;
+}
+
 export interface RegolithMaterialOptions {
   /** Mask texture (contract in mask-texture.ts) and the world rectangle / pixel size it covers. */
   readonly mask: Texture;
   readonly maskRect: MaskWorldRect;
   readonly maskSize: readonly [number, number];
+  /** Supplies the five mask taps (centre + 4 neighbours) instead of `mask`; `mask` is then only counted, not sampled. */
+  readonly maskSource?: MaskTapSource;
   /** Packed detail tile; default: the procedural tile (generated once per material). */
   readonly detail?: Texture;
   /** 0 = the look; 1 remaining dust, 2 berm, 3 polish, 4 relief height, 5 slope length, 6 thickness t, 7 normal. */
@@ -207,6 +229,7 @@ export function createRegolithMaterial(options: RegolithMaterialOptions): Regoli
   const detailBase: TslNode = texture(detailTexture);
   bound.add(options.mask);
   bound.add(detailTexture);
+  for (const t of options.maskSource?.textures ?? []) bound.add(t);
   const maskTap = (uv: TslNode): TslNode => {
     fetchCount += 1;
     return maskBase.sample(uv);
@@ -241,19 +264,23 @@ export function createRegolithMaterial(options: RegolithMaterialOptions): Regoli
 
     // ---- Mask: centre tap and four neighbours for the height gradient ---------------------------------------------
     const uvM: TslNode = xz.sub(rectOrigin).div(rectSize);
-    const centre: TslNode = maskTap(uvM);
-    const tapPx: TslNode = maskTap(uvM.add(vec2(texelUv.x, 0)));
-    const tapNx: TslNode = maskTap(uvM.sub(vec2(texelUv.x, 0)));
-    const tapPz: TslNode = maskTap(uvM.add(vec2(0, texelUv.y)));
-    const tapNz: TslNode = maskTap(uvM.sub(vec2(0, texelUv.y)));
+    // A mask source (the dust tile atlas) supplies the five taps itself; otherwise they come from the one mask texture.
+    const sourced = options.maskSource?.build(xz) ?? null;
+    if (sourced !== null) fetchCount += sourced.fetches;
+    const centre: TslNode = sourced?.centre ?? maskTap(uvM);
+    const tapPx: TslNode = sourced?.px ?? maskTap(uvM.add(vec2(texelUv.x, 0)));
+    const tapNx: TslNode = sourced?.nx ?? maskTap(uvM.sub(vec2(texelUv.x, 0)));
+    const tapPz: TslNode = sourced?.pz ?? maskTap(uvM.add(vec2(0, texelUv.y)));
+    const tapNz: TslNode = sourced?.nz ?? maskTap(uvM.sub(vec2(0, texelUv.y)));
+    const tapStepM: TslNode = sourced === null ? texelM : vec2(sourced.stepM, sourced.stepM);
     const remaining: TslNode = centre.r;
     const berm: TslNode = centre.g;
     const polish: TslNode = centre.b;
     // Height field of the mask in metres: the dust layer step plus the berm.
     const maskHeight = (tap: TslNode): TslNode =>
       tap.r.mul(layerGain.mul(DUST_LAYER_DEPTH_M)).add(tap.g.mul(bermGain.mul(BERM_HEIGHT_MAX_M)));
-    const dHdx: TslNode = maskHeight(tapPx).sub(maskHeight(tapNx)).div(texelM.x.mul(2));
-    const dHdz: TslNode = maskHeight(tapPz).sub(maskHeight(tapNz)).div(texelM.y.mul(2));
+    const dHdx: TslNode = maskHeight(tapPx).sub(maskHeight(tapNx)).div(tapStepM.x.mul(2));
+    const dHdz: TslNode = maskHeight(tapPz).sub(maskHeight(tapNz)).div(tapStepM.y.mul(2));
     // Steep steps (an edge ramp is ~1.2 cm wide for a 2 cm layer) would shimmer: cap the slope length.
     const maskSlope: TslNode = vec2(dHdx, dHdz);
     const maskSlopeLen: TslNode = max(length(maskSlope), 1e-5);

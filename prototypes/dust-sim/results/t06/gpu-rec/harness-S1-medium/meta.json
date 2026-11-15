@@ -1,0 +1,31 @@
+{
+ "label": "harness",
+ "px": 64,
+ "slots": 1024,
+ "frames": 10800,
+ "events": 3106,
+ "draws": 3094,
+ "clears": 0,
+ "rebuilt": 12,
+ "finalSlots": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11
+ ],
+ "cpuRefMs": {
+  "p50": 0.006,
+  "p95": 0.021,
+  "p99": 0.109,
+  "max": 37.116
+ },
+ "quality": "medium"
+}

@@ -303,13 +303,13 @@ The previous rule (remove `floor(d·E/A)` of what is left, clear only at ≥ 90 
 
 1. **Affected plots:** the anchor plus every neighbour whose 25.6 m frame overlaps the stroke's bounding box (typically 1–3 plots).
 2. **Transform** quantised endpoints from the anchor frame to each affected plot's frame via the sphere (§2.7) and round to mm.
-3. **Lattice sampling (flat-ended segment):** cover the bounding box with a square lattice of pitch p = clamp(width/8, 25 mm, 100 mm), rounded to whole mm, aligned to the plot frame. A lattice point is inside if its squared distance to the segment's line ≤ (width/2)² **and** its projection parameter t on the segment satisfies 0 ≤ t < 1 (integer/exact double arithmetic, values < 2⁴⁶). Flat ends make consecutive segments of one chain tile the swept area without double counting; round caps are visual only (§7.3). Each inside point deposits p² mm² into the owned ledger texel containing it: C_t = min(A, Σ p²), with A = 640,000 mm² (texel area).
+3. **Lattice sampling (flat-ended segment):** cover the bounding box with a square lattice of pitch p = clamp(width/8, 25 mm, 100 mm), rounded to whole mm then snapped down to a divisor of 800 mm (T2 32, T3 50, T4 80), aligned to the plot frame. A lattice point is inside if its squared distance to the segment's line ≤ (width/2)² **and** its projection parameter t on the segment satisfies 0 ≤ t < 1 (integer/exact double arithmetic, values < 2⁴⁶). Flat ends make consecutive segments of one chain tile the swept area without double counting; round caps are visual only (§7.3). Each inside point deposits p² mm² into the owned ledger texel containing it: C_t = min(A, Σ p²), with A = 640,000 mm² (texel area).
 4. **Removal per texel (state-independent):**
    - r_t = floor((depth16 · C_t + A/2) / A) (round to nearest unit; numerator < 2³¹);
    - if C_t ≥ C_min = A/64 = 10,000 mm² then r_t = max(r_t, 1) (**minimum per-pass removal**);
    - u_t ← max(0, u_t − r_t); removed_t = old u_t − new u_t.
 5. **Plot totals:** remainingUnits −= Σ removed_t; contributions[actor] += Σ removed_t; state thresholds re-checked (§4.2); ledger version +1; ledger hash updated (§5.5).
-6. **Cost [D]:** 60–600 lattice points per stroke (hand ≈100, vehicle ≈600) → ≈5–20 µs in V8. 160 strokes/s (16 players) ≈ 2–3 ms CPU per second. Superseded 2026-11-12: cap is 6 (scale linearly).
+6. **Cost [D]:** 60–600 lattice points per stroke (hand ≈306 (measured), vehicle ≈600) → ≈5–20 µs in V8. 160 strokes/s (16 players) ≈ 2–3 ms CPU per second. Superseded 2026-11-12: cap is 6 (scale linearly).
 
 **Why it works (the math the tests must hold):**
 
@@ -317,7 +317,7 @@ The previous rule (remove `floor(d·E/A)` of what is left, clear only at ≥ 90 
 | --- | --- |
 | Order independence | r_t depends only on the stroke and the texel geometry, never on u_t. Saturating subtraction of state-independent amounts commutes: max(0, max(0, u − a) − b) = max(0, u − a − b). Any permutation of the same set of ops gives the same bytes |
 | Reachability | Every stroke covering ≥ C_min of a texel removes ≥ 1 unit, so any texel reaches 0 after finitely many touches; Polished is reachable with every tool (B2) |
-| Matches design Depth | A full-cover pass removes depth16 = 16·D units = D levels. Passes to clear a class = ceil(L_P / D), exactly the design table (Mare at Depth 5: 80 + 48 units → 2 passes; Crater Floor at Depth 5: 3 passes; at Depth 13: 1) |
+| Matches design Depth | One stroke over a texel removes depth16 = 16·D units = D levels. Lanes sit coverage × width apart (0.75 on foot, 0.8 vehicles), so the overlap strip is stroked twice per pass: effective depth per pass = D ÷ coverage. Passes to clear a class follow the continuous rule of [progression §1.1](../design/progression-and-economy.md): 1 if L_P ≤ D, else max(2, coverage × L_P ÷ D). Not ceil(L_P / D). Examples: Mare at Depth 5 → 2 passes; Crater Floor at Depth 5 → 2 passes (n = 1.95); at Depth 13 → 1. Measured in T01c: multi-pass pairs take 1.75–2.18 passes |
 | Thin tools | Desk Duster (0.15 m, depth16 = 80) crossing a 0.8 m texel covers ≈ 0.12 m² = 18.75 % → removes 15 of 80 units; ≈5.3 adjacent lanes clear a Highland texel, i.e. one full-coverage pass, so pacing follows the design area rate (one Highland plot ≈ 21 min at 0.25 m²/s) |
 | Bounded over-collection | Re-scrubbing one thin line drains the texels it crosses at the same grams per stroke as sweeping fresh ground (≤ depth16·C_t/A + 1 unit per texel per stroke), so it cannot farm faster than honest sweeping. The coarse texel may empty before the line is visibly wide; the client then clears that cell visually (ledger-zero clear, §7.3) so economy and visuals agree |
 
@@ -331,7 +331,7 @@ Ledger bytes are order-independent, but **Dust Cell acceptance, credit and Polis
 | --- | --- | --- |
 | V1 | Golden vectors `packages/world/test/vectors/ledger-v1.json`: 1,000 seeded strokes over 20 plots covering T1–T6, Detailing, Charge, every vehicle intake width and robot lanes; expected per-plot ledger SHA-256, remainingUnits and per-actor removed units | Bit-exact in Node 26, Chromium, Firefox and WebKit (CI four-engine job) |
 | V2 | Permutation property test: 200 random permutations of the same op set (and random client-side arrival interleavings of own predictions vs echoes) | Identical ledger hashes |
-| V3 | Reachability: each tool T1–T6 sweeping a Highland, Mare and Crater Floor plot in realistic lanes (0.75 coverage efficiency, ±5 cm lane jitter, sweep phase from `inputSeq`) | Reaches Polished; stroke count within ±20 % of [progression §4](../design/progression-and-economy.md) times |
+| V3 | Reachability: each tool T1–T6 sweeping a Highland, Mare and Crater Floor plot in realistic lanes (0.75 coverage efficiency, ±5 cm lane jitter, sweep phase from `inputSeq`) | Every pair reaches Polished. **Mix-weighted** passes per tool, for the Moon mix (55/35/10) and the outpost mix (90/8/2), are within ±20 % of the [progression §1.1](../design/progression-and-economy.md) continuous rule. Per-pair pass counts are diagnostic only: frame overshoot and lane jitter move single pairs by up to about ±15 % (the snapped pitch removes lattice residue: exact-width lanes on Mare with no jitter finish in one pass; with ±5 cm jitter a second partial pass is real lane gaps, not lattice) |
 | V4 | Over-collection: 200 strokes re-scrubbing one line vs 200 strokes on fresh lanes | Grams collected by the re-scrub ≤ fresh-lane grams |
 | V5 | Client two-view model: predicted overlay after all echoes == authoritative copy == server ledger | 100 % hash match in `/bot-test` (S4) |
 
@@ -425,6 +425,8 @@ Robots never send per-stroke traffic to distant clients (TDT §4.4).
 | **Streamed part** (after `ready`, nearest-first, ≤ 8 KB/s shared with structures) | | |
 | Ledgers of Opened plots between 60 m and the dust radius | typ. 20 × 1.1 KB; worst (Ultra) ≈550 × 1.1 KB | typ. ≈8 KB; worst ≈220 KB (≈30 s at 8 KB/s; tiles use the dissolve fallback until their ledger lands) |
 
+**Hard caps (code constants in `packages/protocol/src/codec/dust-messages.ts`, M1 review 3 F3):** a SNAPSHOT RAW is at most `DUST_SNAPSHOT_MAX_RAW_BYTES` = 1.5 MiB (was 1 MiB; a full 1,024-ledger snapshot is ≈1.1 MB of ledgers plus up to ≈0.2 MB of plot states and remaining bytes, so 1 MiB was too small). The encoder returns null above it and the client inflate refuses it, so both sides agree. At most 1,024 ledgers, 256 logs and 64 slices (`DUST_SNAPSHOT_MAX_SLICES` × 4,087 B = 261,568 deflated bytes); the server counts a snapshot above any of these as a failure and sends nothing. These are abuse and corruption bounds, not budgets: the real blocking part stays within the ≤ 150 KB bar above (≈37 ledgers within 60 m). The 32 MiB inflate cap (owner decision, `CHECKPOINT_RAW_BUDGET_BYTES` in `apps/server/src/api/checkpoints`) is a different limit (the inflate budget of one solo checkpoint upload, REST), unchanged. Server → client messages stay ≤ 4,096 B (netcode N8) and client → server ≤ 2,048 B; neither depends on the raw cap. **Open mismatch (for server owner):** `WS_MAX_BACKPRESSURE_BYTES` is 128 KB and `ShiftCore.sendDust` queues all slices of a snapshot at once, so a deflated snapshot above ≈125 KB would close the socket before the 150 KB bar or the 64-slice ceiling applies; real snapshots (≤ ≈80 KB worst) are under it. Fix by pacing slices (netcode §9.1 says ≤ 2 slices per frame) or by lowering the server's own slice limit to ≈30.
+
 Order: states + remaining first (player may move once these and the ledgers within 60 m arrive), then the streamed ledgers nearest-first. A client returning from a hidden tab requests a fresh snapshot instead of replaying missed deltas ([browser-feasibility §6](../research/browser-feasibility.md)); while hidden it receives no dust sections at all (netcode.md §7, `visibility`).
 
 ### 5.5 Consistency
@@ -449,6 +451,7 @@ The header blob holds no per-plot dust data; L0 and the Shine Index are recomput
 | Size [D, measure in P2] | Value |
 | --- | --- |
 | Chunk with no touched plots | not stored (pristine) |
+| Largest raw payload (v1 layout bound, `shared/save/dust-chunk` `DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES`) | **421,959 B**: 256 touched plots × (1,052 B record + 4 × 5 B contributions + 32 × 18 B unchained strokes) + 71 B. It is also the write and upload limit `DUST_CHUNK_PAYLOAD_MAX_BYTES` (M1-W0-T08; was 256 KiB, below a legal full chunk) |
 | Per Opened plot | ledger ≈200–300 B deflated + 32 strokes ≈150 B → **≈0.4 KB** per version |
 | Typical contract (3,000 Opened) | ≈1.2 MB per version, ≈2.4 MB with both chunk versions |
 | Heavy contract (20,000 Opened) | ≈8 MB per version → exceeds the per-Contract cap; compaction stage 1 (logs dropped, ≈0.25 KB/plot) applies (data-model §5.1) |

@@ -23,7 +23,7 @@ Option 1, pinned exactly. Schema and migrations live in `packages/db` (owner: ba
 - A human reviews the SQL in the PR (primary keys, no destructive change without expand/contract, small migrations).
 - **Migrations are applied in the Render build command** (free plan has no `preDeployCommand`); a failed migration fails the build and the old version keeps serving. Every migration is backward-compatible with the previous release. `drizzle-kit push` is local-only.
 - Saves: a compressed header blob in two alternating slots (A/B) per Contract plus per-chunk dust rows (`contract_dust_chunks`) where only dirty chunks are rewritten, all in one transaction; written only when dirty, every <= 30 s, on room empty and on SIGTERM; format versioned by `SAVE_FORMAT_VERSION` (see data-model.md §3.7/§3.7b).
-- Two logical DBs (prod, staging) on one Aiven service; keep pool sizes small (deploy overlap doubles pools).
+- [Historical, Aiven] Two logical DBs (prod, staging) on one service; now one Neon schema `prod`; keep pool sizes small (deploy overlap doubles pools).
 - If `drizzle-orm` 1.0 final lands before the first schema is written, start on v1.
 
 ## Consequences
@@ -34,7 +34,7 @@ Option 1, pinned exactly. Schema and migrations live in `packages/db` (owner: ba
 **Negative / risks**
 - **Research nuance:** the data-layer report assumed MySQL (`mysql2`, MEDIUMBLOB) and presented PostgreSQL as an alternative; this ADR adopts the PostgreSQL branch (driver `postgres`, `bytea`).
 - 1 GB storage and heavy blob writes cause WAL volume and bloat; keep writes small (header slot + dirty chunks only) and vacuum-friendly.
-- Migrations at build time need the DB reachable and awake during builds; a powered-off Aiven free DB can break deploys.
+- [Historical, Aiven; Neon auto-wakes] Migrations at build time need the DB reachable and awake during builds; a powered-off Aiven free DB can break deploys.
 - Aiven may change region/config of free services; connection limit unpublished.
 
 ## Revisit trigger

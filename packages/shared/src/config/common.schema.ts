@@ -1,4 +1,4 @@
-// @contract config/common.schema v1.2
+// @contract config/common.schema v1.3
 // @consumers packages/game-data (validates every data file, M1), packages/sim (reads validated tables),
 //   tools/balance-sim; every per-table `config/<name>.schema.ts` builds on these
 //
@@ -15,6 +15,9 @@
 // v1.2 (no change in this file): contract wave v1.2 makes `albatross.rateM2ps`, `economy.trickComboMult`,
 // `assayCounter.pourS`, `fieldGate.baleChuteFaces`, `movement.carryUnits` and pacing `milestone` required.
 // `GAME_DATA_SCHEMA_VERSION` stays 1: the only data source (packages/game-data) already supplies every field.
+// v1.3 (2026-11-14): `GAME_DATA_TABLES` gains `tool-feel` (game-feel-and-controls.md section 10.2; the first table
+// from that spec rather than economy section 21). Contract wave v1.3 also adds the required section 10.1 feel keys to
+// movement and changes the Detailing param of traits (`diameterM`). `GAME_DATA_SCHEMA_VERSION` stays 1 (same reason).
 
 import { z } from "zod";
 
@@ -165,8 +168,9 @@ export function uniqueStringArray<T extends z.ZodType<string>>(item: T) {
 }
 
 /**
- * Baseline data files in `packages/game-data/data/` (section 21 rows not marked optional). Each has a
- * `<name>.schema.ts`; `GAME_DATA_TABLE_SCHEMAS` maps every entry to its schema.
+ * Baseline data files in `packages/game-data/data/` (section 21 rows not marked optional, plus game-feel section 10
+ * tables with a sim consumer: `tool-feel` since v1.3). Each has a `<name>.schema.ts`; `GAME_DATA_TABLE_SCHEMAS` maps
+ * every entry to its schema. New tables are appended at the end.
  */
 export const GAME_DATA_TABLES = [
   "world",
@@ -192,5 +196,6 @@ export const GAME_DATA_TABLES = [
   "moderation",
   "features",
   "pacing-targets",
+  "tool-feel",
 ] as const;
 export type GameDataTable = (typeof GAME_DATA_TABLES)[number];

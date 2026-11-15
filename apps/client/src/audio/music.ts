@@ -21,9 +21,13 @@ import {
 } from "./music-recipes";
 
 export const PAD_SLICE = 1024;
+const LAYERS: readonly MusicLayer[] = ["pulse", "melody"];
 export const PULSE_IDLE_S = 8;
 export const CROSSFADE_S = 4.8; // two bars at 100 BPM
 const OLD_SET_LINGER_S = CROSSFADE_S + 0.5;
+
+/** Fixed iteration order for pad slices (a Map key iterator would allocate every tick). */
+const PAD_SET_LIST: readonly MusicSet[] = ["day", "night", "bridge", "menu", "hold"];
 
 const BAR_S: Readonly<Record<MusicSet, number>> = {
   day: (4 * 60) / DAY_TIMING.bpm,
@@ -51,6 +55,8 @@ export class MusicDirector {
   private readonly pads = new Map<MusicSet, Float32Array>();
   private readonly padProgress = new Map<MusicSet, number>();
   private readonly layerBuffers = new Map<string, Float32Array>();
+  private readonly layerPending = new Set<string>();
+  private readonly layerEmpty = new Set<string>();
   private current: Playing | null = null;
   private readonly retiring: Playing[] = [];
   private wanted: MusicSet | null = null;
@@ -63,7 +69,16 @@ export class MusicDirector {
   constructor(
     private readonly ctx: AContext,
     private readonly dest: AGain,
+    /** Off-thread layer renderer; returns false when unavailable (layers then render here, one per tick). */
+    private readonly requestLayer: ((set: MusicSet, layer: MusicLayer) => boolean) | null = null,
   ) {}
+
+  /** A layer rendered by the worker arrives. */
+  acceptLayer(set: MusicSet, layer: MusicLayer, pcm: Float32Array): void {
+    this.layerPending.delete(`${set}/${layer}`);
+    if (pcm.length > 0) this.layerBuffers.set(`${set}/${layer}`, pcm);
+    else this.layerEmpty.add(`${set}/${layer}`);
+  }
 
   get currentSet(): MusicSet | null {
     return this.current?.set ?? null;
@@ -136,7 +151,7 @@ export class MusicDirector {
   /** Called a few times per second from the module's update; does the amortised rendering and layer gains. */
   tick(nowS: number): void {
     this.renderSlice();
-    if (this.wanted !== null && this.padReady(this.wanted)) {
+    if (this.wanted !== null && this.padReady(this.wanted) && this.layersReady(this.wanted)) {
       const set = this.wanted;
       this.wanted = null;
       this.begin(set);
@@ -184,20 +199,48 @@ export class MusicDirector {
   }
 
   private renderSlice(): void {
-    // Render the wanted set first, then any other set that was started.
-    const order: MusicSet[] = this.wanted !== null ? [this.wanted] : [];
-    for (const set of this.pads.keys()) if (set !== this.wanted) order.push(set);
-    for (const set of order) {
-      const done = this.padProgress.get(set) ?? 0;
-      if (done >= PAD_SAMPLES) continue;
-      const pad = this.pads.get(set);
-      if (pad === undefined) continue;
-      const to = Math.min(PAD_SAMPLES, done + PAD_SLICE);
-      renderPadRange(set, pad, done, to);
-      this.padProgress.set(set, to);
-      if (to >= PAD_SAMPLES) finishPad(pad);
-      return;
+    // Render the wanted set first, then any other set that was started. No allocation per call.
+    if (this.wanted !== null && this.renderSetSlice(this.wanted)) return;
+    for (let i = 0; i < PAD_SET_LIST.length; i++) {
+      const set = PAD_SET_LIST[i];
+      if (set !== undefined && set !== this.wanted && this.renderSetSlice(set)) return;
     }
+  }
+
+  private renderSetSlice(set: MusicSet): boolean {
+    const done = this.padProgress.get(set) ?? 0;
+    if (done >= PAD_SAMPLES) return false;
+    const pad = this.pads.get(set);
+    if (pad === undefined) return false;
+    const to = Math.min(PAD_SAMPLES, done + PAD_SLICE);
+    renderPadRange(set, pad, done, to);
+    this.padProgress.set(set, to);
+    if (to >= PAD_SAMPLES) finishPad(pad);
+    return true;
+  }
+
+  /**
+   * True once the pulse and melody layers of a set are cached. With a worker they are requested and arrive
+   * asynchronously; without one a single layer is rendered per call so no tick pays for both.
+   */
+  private layersReady(set: MusicSet): boolean {
+    if (timingOf(set) === null) return true;
+    let ready = true;
+    for (const which of LAYERS) {
+      const key = `${set}/${which}`;
+      if (this.layerBuffers.has(key) || this.layerEmpty.has(key)) continue;
+      ready = false;
+      if (this.requestLayer !== null) {
+        if (!this.layerPending.has(key)) {
+          if (this.requestLayer(set, which)) this.layerPending.add(key);
+          else this.layer(set, which); // worker gone: render here
+        }
+      } else {
+        this.layer(set, which);
+        return false; // one layer per tick
+      }
+    }
+    return ready;
   }
 
   private layer(set: MusicSet, which: MusicLayer): Float32Array | null {

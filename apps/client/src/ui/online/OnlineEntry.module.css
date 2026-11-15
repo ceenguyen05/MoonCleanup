@@ -1,0 +1,97 @@
+/* Launcher and connection chip: top-right of the safe area. Whole-pixel sizes from the tokens; colour never carries state
+   alone (the glyph shape and the label do). Interactive again (the UI host ignores pointer events). */
+.dock {
+  position: absolute;
+  top: var(--mc-safe);
+  right: var(--mc-safe);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--mc-sp-2);
+  pointer-events: none;
+}
+
+.launcher,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-sp-2);
+  min-height: var(--mc-hit);
+  padding: 0 var(--mc-sp-4);
+  font: inherit;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 600;
+  color: var(--mc-text-1);
+  background: var(--mc-glass-bg-strong);
+  border: 0;
+  border-radius: var(--mc-r-pill);
+  box-shadow:
+    var(--mc-e-1),
+    inset 0 0 0 var(--mc-hairline) var(--mc-glass-border);
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background-color var(--mc-dur-hover-in) var(--mc-ease-out),
+    transform var(--mc-dur-press) var(--mc-ease-out);
+}
+
+.launcher:hover,
+.chip:hover {
+  background: rgba(30, 38, 46, 0.94);
+}
+
+.launcher:active,
+.chip:active {
+  transform: translateY(var(--mc-px));
+}
+
+.glyph {
+  flex: none;
+}
+
+.chip[data-tone="good"] .glyph {
+  color: var(--mc-ok);
+}
+.chip[data-tone="warn"] .glyph {
+  color: var(--mc-warn);
+}
+.chip[data-tone="bad"] .glyph {
+  color: var(--mc-danger);
+}
+.chip[data-tone="pending"] .glyph {
+  color: var(--mc-teal-hi);
+}
+
+.chipLabel {
+  letter-spacing: var(--mc-caption-tracking);
+}
+
+.rtt {
+  font-family: var(--mc-font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--mc-text-2);
+}
+
+.reason {
+  max-width: round(calc(300px * var(--mc-hud-scale)), var(--mc-px));
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-text-1);
+  text-align: right;
+  text-wrap: balance;
+}
+
+.reason:empty {
+  display: none;
+}
+
+.reason > span {
+  display: block;
+  padding: var(--mc-sp-2) var(--mc-sp-3);
+  border-radius: var(--mc-r-md);
+  background: var(--mc-glass-bg-strong);
+  box-shadow: inset 0 0 0 var(--mc-hairline) rgba(255, 92, 97, 0.5);
+}

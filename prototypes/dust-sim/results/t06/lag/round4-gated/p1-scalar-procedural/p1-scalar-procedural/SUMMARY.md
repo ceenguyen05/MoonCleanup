@@ -1,0 +1,15 @@
+# Dust contest results: p1-scalar-procedural
+
+Measured run.
+
+| Scenario | Metric | Value | Bar | Status |
+| --- | --- | --- | --- | --- |
+| S4 | s4.eventLoopLagP99Ms | 13.674879 ms | <= 20 | PASS |
+| S4 | s4.bytesPerSecPerClient.max | 73.47 B/s | <= 1200 | PASS |
+| S4 | s4.hashMatchPct | 100 % | >= 100 | PASS |
+| S4 | s4.tickMs.p50 | 0.09 ms | - | INFO |
+| S4 | s4.tickMs.p99 | 0.35 ms | - | INFO |
+| S4 | s4.bytesPerSecPerClient.p50 | 73.47 B/s | - | INFO |
+| S4 | s4.serverCpuMs | 20.72570000007522 ms | - | INFO |
+| S4 | s4.rejectedStrokes | 0 strokes | - | INFO |
+| S4 | s4.strokes | 19200 strokes | - | INFO |

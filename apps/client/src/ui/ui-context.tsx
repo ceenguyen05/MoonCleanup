@@ -79,7 +79,13 @@ export function UiProvider(props: UiProviderProps): ReactElement {
     () => win.matchMedia("(prefers-reduced-motion: reduce)").matches,
     () => false,
   );
-  const reducedMotion = motion === "reduced" || (motion === "system" && systemReduced);
+  // The Settings "Reduce motion" switch (settings slice) adds to the URL / system choice, never removes it.
+  const settingReduced = useSyncExternalStore(
+    store.subscribe,
+    () => store.getState().settings.reduceMotion,
+    () => store.getState().settings.reduceMotion,
+  );
+  const reducedMotion = settingReduced || motion === "reduced" || (motion === "system" && systemReduced);
   const [glass, setGlass] = useState<GlassMode>(props.glass);
 
   useEffect(() => {

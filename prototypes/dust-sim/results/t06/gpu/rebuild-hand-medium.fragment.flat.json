@@ -1,0 +1,52 @@
+{
+ "label": "rebuild-hand-medium",
+ "path": "fragment",
+ "pace": "flat",
+ "px": 64,
+ "atlas": "2048x2048",
+ "framesReplayed": 100,
+ "framesWithEvents": 100,
+ "passes": 100,
+ "uploads": 100,
+ "copies": 0,
+ "instancesPerPass": {
+  "n": 100,
+  "mean": 305,
+  "p50": 305,
+  "p95": 305,
+  "p99": 305,
+  "max": 305
+ },
+ "tilesPerComputePass": null,
+ "timestampQuery": true,
+ "gpuPassMs": {
+  "n": 100,
+  "mean": 0.01838813,
+  "p50": 0.018333,
+  "p95": 0.019167,
+  "p99": 0.021166,
+  "max": 0.021166
+ },
+ "gpuPassMsPerFrameAllFrames": 0.018388130000000003,
+ "jsEncodeMs": {
+  "n": 100,
+  "mean": 0.10925000008195639,
+  "p50": 0.10999999940395355,
+  "p95": 0.14000000059604645,
+  "p99": 0.19500000029802322,
+  "max": 0.19500000029802322
+ },
+ "jsEncodeMsPerFrameAllFrames": 0.10925000008195639,
+ "wallMs": 27.929999999701977,
+ "rafIntervalMs": null,
+ "compare": null,
+ "errors": [],
+ "cpuRefMs": {
+  "p50": 1.341,
+  "p95": 1.883,
+  "p99": 8.133,
+  "max": 8.133
+ },
+ "machineLoadPct": 33.3,
+ "recording": "rebuild-hand-medium"
+}

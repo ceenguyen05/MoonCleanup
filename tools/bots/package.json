@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "bots": "tsx src/cli.ts",
+    "smoke": "tsx src/smoke/cli.ts",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"

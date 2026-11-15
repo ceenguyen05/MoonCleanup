@@ -9,7 +9,7 @@
 // client sees the specified close code 4100 (netcode.md section 13).
 
 import { JoinOptionsSchema, type HttpRouteDef, type HttpResponse } from "@moon-cleanup/shared";
-import { IpRateLimiter, type Admission } from "./admission";
+import { IpRateLimiter, retryAfterHeader, type Admission } from "./admission";
 import { HELLO_ROOM_NAME } from "./hello-room";
 import type { NetLogger } from "./http-routes";
 
@@ -37,7 +37,8 @@ export function createHelloJoinRoute(logger: NetLogger, admission: Admission): H
     method: "POST",
     path: HELLO_JOIN_PATH,
     async handle(request): Promise<HttpResponse> {
-      if (!(await limiter.consume(request.remoteAddress))) return { status: 429, body: { error: "RATE_LIMITED" } };
+      const wait = await limiter.check(request.remoteAddress);
+      if (wait > 0) return { status: 429, headers: retryAfterHeader(wait), body: { error: "RATE_LIMITED" } };
       const parsed = JoinOptionsSchema.safeParse(request.body);
       if (!parsed.success) return { status: 400, body: { error: "BAD_REQUEST", message: "invalid join options" } };
       const result = await admission.reserve(HELLO_ROOM_NAME, parsed.data, request.remoteAddress);

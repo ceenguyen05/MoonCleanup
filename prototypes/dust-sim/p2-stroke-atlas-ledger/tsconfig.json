@@ -8,5 +8,5 @@
       "@moon-cleanup/shared": ["../../../packages/shared/src/index.ts"]
     }
   },
-  "include": ["src", "test", "bench", "harness-adapter.ts", "grid.ts"]
+  "include": ["src", "test", "bench", "gpu/*.ts", "harness-adapter.ts", "grid.ts"]
 }

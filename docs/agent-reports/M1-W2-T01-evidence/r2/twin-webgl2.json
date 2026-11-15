@@ -1,0 +1,32 @@
+{
+  "backend": "webgl2",
+  "requestedBackend": "webgl2",
+  "part": "full",
+  "points": 10000,
+  "pointsReadBack": 10000,
+  "toleranceM": 0.02,
+  "over2cm": 0,
+  "maxErrorM": 0.00031968787693603673,
+  "p50ErrorM": 0.000007308599617061873,
+  "p99ErrorM": 0.00009164910470094156,
+  "rmsErrorM": 0.00002364366030256187,
+  "worst": {
+    "index": 4522,
+    "errorM": 0.00031968787693603673,
+    "gpuM": -0.8166055083274841,
+    "jsM": -0.8162858204505481,
+    "dir": [
+      -0.39413321018218994,
+      -0.6739299297332764,
+      0.6248819231987
+    ]
+  },
+  "pass": true,
+  "renderAndReadbackMs": 5637,
+  "cube": "height-cube-1024.0d70550a0d75.bin",
+  "shader": null,
+  "lane": "gpu",
+  "console": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+}

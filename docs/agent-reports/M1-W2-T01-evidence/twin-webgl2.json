@@ -1,0 +1,28 @@
+{
+  "backend": "webgl2",
+  "requestedBackend": "webgl2",
+  "points": 10000,
+  "pointsReadBack": 10000,
+  "toleranceM": 0.02,
+  "over2cm": 2491,
+  "maxErrorM": 0.5161993474074036,
+  "p50ErrorM": 0.000016643909411584445,
+  "p99ErrorM": 0.26056447659262716,
+  "rmsErrorM": 0.054576291027246586,
+  "worst": {
+    "index": 5452,
+    "errorM": 0.5161993474074036,
+    "gpuM": -4.346465110778809,
+    "jsM": -4.862664458186212,
+    "dir": [
+      0.5145944952964783,
+      -0.8510555624961853,
+      -0.104388527572155
+    ]
+  },
+  "pass": false,
+  "renderAndReadbackMs": 1216.4000000059605,
+  "cube": "height-cube-1024.0d70550a0d75.bin",
+  "lane": "gpu",
+  "console": []
+}

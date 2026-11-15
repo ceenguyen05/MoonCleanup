@@ -44,8 +44,11 @@ function run(args: string[], cwd: string): Promise<void> {
 }
 
 /** `vite build` of the client (no tsc: typecheck is a separate gate). */
-export async function buildClient(): Promise<void> {
-  await run([viteBin(), "build"], join(repoRoot(), "apps", "client"));
+export async function buildClient(outDir?: string): Promise<void> {
+  await run(
+    [viteBin(), "build", ...(outDir ? ["--outDir", outDir, "--emptyOutDir"] : [])],
+    join(repoRoot(), "apps", "client"),
+  );
 }
 
 export interface Preview {
@@ -54,10 +57,19 @@ export interface Preview {
 }
 
 /** Starts `vite preview` of the already-built client on `port` (strict) and resolves when it answers. */
-export async function startPreview(port: number): Promise<Preview> {
+export async function startPreview(port: number, outDir?: string): Promise<Preview> {
   const child: ChildProcess = spawn(
     process.execPath,
-    [viteBin(), "preview", "--port", String(port), "--strictPort", "--host", "127.0.0.1"],
+    [
+      viteBin(),
+      "preview",
+      "--port",
+      String(port),
+      "--strictPort",
+      "--host",
+      "127.0.0.1",
+      ...(outDir ? ["--outDir", outDir] : []),
+    ],
     {
       cwd: join(repoRoot(), "apps", "client"),
       stdio: "ignore",

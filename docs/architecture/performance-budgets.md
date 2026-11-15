@@ -103,7 +103,7 @@ Delivery: Vercel Brotli/gzip for JS/JSON/WGSL; KTX2 (UASTC normals/hero, ETC1S b
 | One 6-player room, tick p50 / p95 / max | ≈ 1.4 (est.) / ≤ 3.5 / ≤ 8 ms (max excludes traced major GC); the old 2.3 ms p50 was the 16-player value | [netcode.md §15](netcode.md#15-server-cpu-budget-01-cpu) |
 | One full room share of CPU | ≤ 50 % (tech-stack revisit trigger), target ≈ 27 % est. (6 players; was ≈ 45 % at 16, superseded; re-measure in M0-W2) | |
 | Max process stall with GC traced | ≤ 50 ms (10-min 6-bot run) | M0 evaluates heap cap 192–256 MB, semi-space size, `--single-threaded-gc` |
-| Solo Shift room, tick p95 | ≤ 0.4 ms | |
+| Solo Shift room, tick p95 | ≤ 0.4 ms | Server-hosted figure; superseded for Solo by the client Web Worker budgets in §6.4 (ADR-0031: no server room for Solo) |
 | Event-loop delay p99 | ≤ 20 ms | |
 | Process static (shared by all rooms) | ≈ 21 MB | Precomputed grid, neighbours, class/area arrays, height map ([WDS §4.3](world-and-dust-simulation.md)) |
 | Memory per 6-player room | typical ≈ 11 MB, heavy ≤ 47 MB (est. (derived from 4/8-player rows, re-measure locally in M0-W2): only client buffers scale, 1.2 MB × 6/16 ≈ 0.45 MB; dust dominates and is not player-linear; the old 16-player 12 / 48 MB figures are superseded) | Dust per WDS §4.3 (Uint8 states + Uint8 L0 cache 320 KB, ledgers 1.1 KB each: typ. 4–8 MB, heavy ≤ 40 MB incl. log share) + entities/structures ≤ 4 MB + client buffers ≈ 1.2 MB + save build ≤ 2 MB + snapshot cache ≈ 0.4 MB |
@@ -134,7 +134,7 @@ Delivery: Vercel Brotli/gzip for JS/JSON/WGSL; KTX2 (UASTC normals/hero, ETC1S b
 | **6 players, busy (cap) — est. (derived from 4/8-player rows, re-measure locally in M0-W2)** | ≈ 100 MB | ≈ 50 | ≈ 300 |
 | 8 players, mixed | ≈ 115 MB | ≈ 43 | ≈ 345 |
 | 4 players, typical | ≈ 36 MB | ≈ 140 | ≈ 560 |
-| Solo Shift | ≈ 5.8 MB | ≈ 860 | ≈ 860 |
+| Solo Shift (legacy server-room figure; local-first Solo uploads one small checkpoint per 120 s, §6.4) | ≈ 5.8 MB | ≈ 860 | ≈ 860 |
 | ~~16 players, busy~~ superseded | ~~≈ 337 MB~~ | ~~≈ 15~~ | ~~≈ 240~~ |
 | ~~16 players at 30/15 Hz~~ superseded | ~~≈ 477 MB~~ | ~~≈ 10~~ | ~~≈ 170~~ |
 

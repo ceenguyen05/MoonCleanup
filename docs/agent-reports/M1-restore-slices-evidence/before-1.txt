@@ -1,0 +1,20 @@
+node v26.13.1, Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz, loadavg 0/0/0
+3000 ledgers in 24 chunks, 4945704 B raw
+
+| run | total ms | slices | slice p50 | p99 | max ms | slices over 2 ms | hash ok |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 1 (cold) | 412.0 | 153 | 2.05 | 20.85 | 29.96 | 152 | true |
+| 2 | 405.2 | 177 | 2.07 | 6.94 | 11.15 | 176 | true |
+| 3 | 274.8 | 124 | 2.04 | 6.45 | 7.90 | 123 | true |
+| 4 | 204.8 | 96 | 2.04 | 5.44 | 5.44 | 95 | true |
+
+units (warm): 3024, mean 61.0 us, p50 46.0, p99 144.8, max 5483.9 us
+  unit with growth: 0.246 ms  (log slab -> 0.13 MB)
+  unit with growth: 0.274 ms  (log slab -> 0.25 MB)
+  unit with growth: 0.397 ms  (log slab -> 0.50 MB)
+  unit with growth: 0.484 ms  (log slab -> 1.00 MB)
+  unit with growth: 0.587 ms  (log slab -> 2.00 MB)
+  unit with growth: 0.955 ms  (log slab -> 4.00 MB)
+  unit with growth: 2.534 ms  (ledger pool -> 2048 slots, log slab -> 8.00 MB)
+  unit with growth: 5.484 ms  (ledger pool -> 4096 slots, log slab -> 16.00 MB)
+  growth units: 8, 10.96 ms of 184.48 ms total; largest unit without growth 391.6 us

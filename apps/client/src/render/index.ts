@@ -53,6 +53,7 @@ export {
   RenderModule,
   RenderUnsupportedError,
   type DynamicResolutionState,
+  type RendererInfoSample,
   type RenderEnvironment,
   type RenderFrameStats,
   type RenderModuleOptions,
@@ -69,6 +70,47 @@ export {
   type PipelineStages,
 } from "./pipeline";
 export { type RenderCapabilities, type RenderQualityService } from "./quality-service";
+export {
+  createCullCounts,
+  CULL_BASE_DISTANCE_M,
+  CULL_CLASSES,
+  cullDistanceM,
+  cullSpheres,
+  HorizonCuller,
+  LOD_HYSTERESIS,
+  projectedSizePx,
+  selectLod,
+  SideFrustum,
+  type CullClass,
+  type CullCounts,
+} from "./culling";
+export { DrawBudgetCounter, type DrawBudgetState } from "./draw-budget";
+export {
+  FRAME_TARGET_FPS,
+  FRAME_TARGET_GPU_BUDGET_MS,
+  frameTargetFor,
+  parseFrameTarget,
+  type FrameTarget,
+  type FrameTargetOverride,
+} from "./frame-target";
+export {
+  GpuMemoryLedger,
+  MEMORY_BUDGET_MB,
+  MEMORY_CATEGORIES,
+  textureBytes,
+  type MemoryCategory,
+  type MemoryEntry,
+  type MemoryTotals,
+} from "./memory-ledger";
+export {
+  PipelineWarmup,
+  WARMUP_TUNING,
+  warmupBudgetMs,
+  type WarmupPhase,
+  type WarmupReason,
+  type WarmupState,
+  type WarmupTuning,
+} from "./warmup";
 export { clampScale, RenderScale } from "./render-scale";
 export {
   DYNRES_FLOOR_HINT_S,

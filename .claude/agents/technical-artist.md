@@ -2,7 +2,7 @@
 name: technical-artist
 description: "Scoped technical artist work; launch only for a named task or review batch."
 tools: Read, Write, Edit, Glob, Grep, Bash, PowerShell, WebFetch, WebSearch
-model: claude-fable-5-2
+model: claude-opus-5-5
 effort: high
 maxTurns: 45
 color: pink

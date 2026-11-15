@@ -1,0 +1,182 @@
+{
+ "backend": "webgpu",
+ "preset": "medium",
+ "atlas": [
+  2048,
+  2048
+ ],
+ "frames": 2400,
+ "pace": "flat",
+ "prepared": true,
+ "gpuTimestamps": false,
+ "crossOriginIsolated": true,
+ "adapter": {
+  "vendor": "intel",
+  "architecture": "gen-9",
+  "device": "",
+  "description": ""
+ },
+ "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+ "strokes": 960,
+ "tileStrokeDraws": 6213,
+ "rebuilds": 61,
+ "tilesResident": 22,
+ "zeroEvents": 3795,
+ "polished": 3,
+ "liveOverflows": 0,
+ "backlog": 0,
+ "passes": 1459,
+ "largestBatch": 342,
+ "bytesCompared": 16777216,
+ "residentBytes": 360448,
+ "texelsWithStrokeWork": 33849,
+ "withinTolerance": true,
+ "bytesDiffering": 0,
+ "rgbBytesDiffering": 0,
+ "aTexelsDiffering": 0,
+ "aTexelsOver1": 0,
+ "maxDelta": 0,
+ "firstMismatches": [],
+ "bytesDifferingOtherRowOrder": 560450,
+ "atlasFrameMs": {
+  "n": 2388,
+  "mean": 0.023509212743047892,
+  "p50": 0.015000000596046448,
+  "p95": 0.054999999701976776,
+  "p99": 0.25999999046325684,
+  "max": 0.5149999856948853
+ },
+ "flushStrokeMs": {
+  "n": 304,
+  "mean": 0.27935855262177556,
+  "p50": 0.23000000417232513,
+  "p95": 0.48500001430511475,
+  "p99": 0.9049999713897705,
+  "max": 1.2300000190734863
+ },
+ "flushRebuildMs": {
+  "n": 57,
+  "mean": 0.42324561325081606,
+  "p50": 0.41499999165534973,
+  "p95": 0.7200000286102295,
+  "p99": 1.0399999618530273,
+  "max": 1.0399999618530273
+ },
+ "totalMs": {
+  "n": 2388,
+  "mean": 0.06968174207412717,
+  "p50": 0.015000000596046448,
+  "p95": 0.38999998569488525,
+  "p99": 0.7749999761581421,
+  "max": 1.284999966621399
+ },
+ "totalWorkMs": {
+  "n": 361,
+  "mean": 0.37966759048835724,
+  "p50": 0.30000001192092896,
+  "p95": 0.8100000619888306,
+  "p99": 1.1299999952316284,
+  "max": 1.284999966621399
+ },
+ "controlMs": {
+  "n": 2388,
+  "mean": 0.04329773865740004,
+  "p50": 0.040000006556510925,
+  "p95": 0.054999999701976776,
+  "p99": 0.06499999761581421,
+  "max": 0.1550000011920929
+ },
+ "controlOver1ms": 0,
+ "flushOver1ms": 3,
+ "flushOver1msWithHeapDrop": 0,
+ "flushOver1msWithSlowControl": 0,
+ "flushOutliers": [
+  {
+   "frame": 366,
+   "flushMs": 1.23,
+   "frameMs": 0.03,
+   "controlMs": 0.045,
+   "kind": 1,
+   "strokeN": 37,
+   "heapDeltaB": 13592
+  },
+  {
+   "frame": 342,
+   "flushMs": 1.04,
+   "frameMs": 0.02,
+   "controlMs": 0.045,
+   "kind": 1,
+   "strokeN": 17,
+   "heapDeltaB": 14180
+  },
+  {
+   "frame": 1792,
+   "flushMs": 1.04,
+   "frameMs": 0.245,
+   "controlMs": 0.06,
+   "kind": 2,
+   "strokeN": 85,
+   "heapDeltaB": 377660
+  },
+  {
+   "frame": 60,
+   "flushMs": 0.955,
+   "frameMs": 0.095,
+   "controlMs": 0.055,
+   "kind": 1,
+   "strokeN": 38,
+   "heapDeltaB": 31164
+  },
+  {
+   "frame": 324,
+   "flushMs": 0.905,
+   "frameMs": 0.05,
+   "controlMs": 0.04,
+   "kind": 1,
+   "strokeN": 32,
+   "heapDeltaB": 16016
+  },
+  {
+   "frame": 1793,
+   "flushMs": 0.81,
+   "frameMs": 0.325,
+   "controlMs": 0.06,
+   "kind": 2,
+   "strokeN": 143,
+   "heapDeltaB": 360248
+  }
+ ],
+ "gpuStrokeMs": {
+  "n": 0,
+  "mean": 0,
+  "p50": 0,
+  "p95": 0,
+  "p99": 0,
+  "max": 0
+ },
+ "gpuRebuildMs": {
+  "n": 0,
+  "mean": 0,
+  "p50": 0,
+  "p95": 0,
+  "p99": 0,
+  "max": 0
+ },
+ "flushHeapBytesPerPass": [
+  -21976.36,
+  3979.82,
+  3976.18,
+  3979.56,
+  3976.18
+ ],
+ "controlHeapBytesPerPass": [
+  0.32,
+  0.16,
+  0.08,
+  0.08,
+  0.08
+ ],
+ "controlSink": 1885547.164894411,
+ "lane": "gpu",
+ "console": []
+}

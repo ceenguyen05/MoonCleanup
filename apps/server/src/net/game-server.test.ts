@@ -178,6 +178,7 @@ describe("HTTP routing on uWS", () => {
       body: JSON.stringify({ pad: "x".repeat(MAX_HTTP_BODY_BYTES) }),
     });
     expect(big.status).toBe(413);
+    expect(await big.json()).toEqual({ error: "PAYLOAD_TOO_LARGE", message: "body too large" });
     const bad = await fetch(`${BASE}/v1/echo/1`, { method: "POST", headers: { origin: ALLOWED }, body: "{nope" });
     expect(bad.status).toBe(400);
   });
@@ -209,7 +210,69 @@ describe("WebSocket origin check", () => {
     expect(await upgradeStatus(DENIED)).toBe(403);
     expect(await upgradeStatus(undefined)).toBe(403);
   });
+
+  // NB2 on uWS: proves the AuthContext headers the uWS adapter builds carry the handshake headers (a valid upgrade
+  // still opens) and that malformed shapes are refused before the per-IP socket slot is claimed.
+  it("refuses malformed handshakes with 400 before claiming a slot; valid ones still open", async () => {
+    const ip = "198.51.100.30";
+    const cases: Array<Record<string, string | undefined>> = [
+      { "sec-websocket-key": "!!!!!!!!!!!!!!!!!!!!!!==" }, // 24 chars: uWS routes it to the upgrade handler
+      { "sec-websocket-version": "8" },
+      { "sec-websocket-version": undefined },
+      { "sec-websocket-protocol": "a, a" },
+    ];
+    for (let round = 0; round < 3; round++) {
+      for (const overrides of cases) {
+        const r = await rawUpgrade(ip, overrides);
+        expect(r.status, JSON.stringify(overrides)).toBe(400);
+        if (overrides["sec-websocket-version"] === "8") expect(r.version).toBe("13");
+        expect(server.admission.socketsOf(ip)).toBe(0);
+      }
+    }
+    // A wrong-length key never reaches the upgrade handler on uWS (no claim either way).
+    const short = await rawUpgrade(ip, { "sec-websocket-key": "short" });
+    expect(short.status).not.toBe(101);
+    expect(server.admission.socketsOf(ip)).toBe(0);
+    const ok = await rawUpgrade(ip, {});
+    expect(ok.status).toBe(101);
+    await expect.poll(() => server.admission.socketsOf(ip), { timeout: 3000 }).toBe(0);
+  });
 });
+
+function rawUpgrade(
+  ip: string,
+  overrides: Record<string, string | undefined>,
+): Promise<{ status: number; version: string | undefined }> {
+  return new Promise((resolve, reject) => {
+    const headers: Record<string, string> = {
+      connection: "Upgrade",
+      upgrade: "websocket",
+      "sec-websocket-key": "dGhlIHNhbXBsZSBub25jZQ==",
+      "sec-websocket-version": "13",
+      origin: ALLOWED,
+      "true-client-ip": ip,
+    };
+    for (const [name, value] of Object.entries(overrides)) {
+      if (value === undefined) delete headers[name];
+      else headers[name] = value;
+    }
+    const req = httpRequest({ host: "127.0.0.1", port: PORT, path: "/", headers });
+    const version = (h: Record<string, string | string[] | undefined>) => {
+      const v = h["sec-websocket-version"];
+      return Array.isArray(v) ? v[0] : v;
+    };
+    req.on("upgrade", (res, socket) => {
+      socket.destroy();
+      resolve({ status: res.statusCode ?? 0, version: version(res.headers) });
+    });
+    req.on("response", (res) => {
+      res.resume();
+      resolve({ status: res.statusCode ?? 0, version: version(res.headers) });
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
 
 describe("REST-only join flow (ADR-0025)", () => {
   it("has public matchmake methods disabled", async () => {

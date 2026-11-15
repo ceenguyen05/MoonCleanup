@@ -1,0 +1,1461 @@
+[
+  {
+    "name": "s06-ts-on",
+    "url": "http://localhost:5293/?scene=s06&view=pool&scale=0.6&solo=0&preset=medium&backend=webgpu",
+    "steady": {
+      "p50": 20.566666670143604,
+      "p95": 26.933333332339924,
+      "over20": 0.5809392234539542,
+      "fps": 46.94816358426674,
+      "scale": 0.6,
+      "steps": 0,
+      "stepsInTail": 0
+    },
+    "windows": [
+      {
+        "atS": 2.041,
+        "frames": 85,
+        "p50": 19.200000002980232,
+        "p95": 32.29999999701977,
+        "over20": 0.4117647058823529,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 8,
+          "avg": 15.7095785,
+          "min": 14.767852000000001,
+          "max": 16.507326,
+          "p50": 15.864170999999999,
+          "p95": 16.507326,
+          "p99": 16.507326
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 4.077,
+        "frames": 102,
+        "p50": 19.900000005960464,
+        "p95": 25.700000002980232,
+        "over20": 0.47058823529411764,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 8,
+          "avg": 15.508831125,
+          "min": 14.634353000000003,
+          "max": 16.712908,
+          "p50": 15.386343,
+          "p95": 16.712908,
+          "p99": 16.712908
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 6.099,
+        "frames": 95,
+        "p50": 21.200000002980232,
+        "p95": 24.900000005960464,
+        "over20": 0.6736842105263158,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 8,
+          "avg": 16.586865125000003,
+          "min": 15.027762999999998,
+          "max": 18.839037000000005,
+          "p50": 15.829002000000001,
+          "p95": 18.839037000000005,
+          "p99": 18.839037000000005
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 8.122,
+        "frames": 95,
+        "p50": 20.900000005960464,
+        "p95": 25.399999991059303,
+        "over20": 0.6105263157894737,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 7,
+          "avg": 16.667369428571426,
+          "min": 15.434506999999998,
+          "max": 17.644304999999996,
+          "p50": 17.35873,
+          "p95": 17.644304999999996,
+          "p99": 17.644304999999996
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 10.141,
+        "frames": 95,
+        "p50": 20.799999997019768,
+        "p95": 26,
+        "over20": 0.6631578947368421,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 8,
+          "avg": 17.432477875,
+          "min": 15.704087999999999,
+          "max": 20.127685999999997,
+          "p50": 16.896487999999998,
+          "p95": 20.127685999999997,
+          "p99": 20.127685999999997
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 12.171,
+        "frames": 93,
+        "p50": 21.400000005960464,
+        "p95": 27.299999997019768,
+        "over20": 0.6559139784946236,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 8,
+          "avg": 17.305157,
+          "min": 15.648006000000002,
+          "max": 18.85329,
+          "p50": 17.286063000000002,
+          "p95": 18.85329,
+          "p99": 18.85329
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      }
+    ],
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 7347.5,
+        "lastMs": 7347.5,
+        "lastFrames": 4,
+        "timedOut": false,
+        "pipelines": 56,
+        "pipelinesAtReady": 56,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0
+      },
+      "drawBudget": {
+        "drawCalls": 294,
+        "triangles": 518919,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 577,
+        "overFrames": 0,
+        "peakDrawCalls": 294,
+        "peakTriangles": 518919
+      },
+      "memory": {
+        "totalBytes": 3981312,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 3981312,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 3981312
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 56,
+        "textureBytes": 93893699,
+        "geometryBytes": 5249156,
+        "totalBytes": 99639774
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": true,
+        "scale": 0.6,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "name": "s06-ts-off",
+    "url": "http://localhost:5293/?scene=s06&view=pool&scale=0.6&gputime=0&solo=0&preset=medium&backend=webgpu",
+    "steady": {
+      "p50": 21.26666667064031,
+      "p95": 25.266666660706203,
+      "over20": 0.7014132173126039,
+      "fps": 46.21959972550761,
+      "scale": 0.6,
+      "steps": 0,
+      "stepsInTail": 0
+    },
+    "windows": [
+      {
+        "atS": 2.022,
+        "frames": 82,
+        "p50": 23.19999998807907,
+        "p95": 28.599999994039536,
+        "over20": 0.8292682926829268,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 4.034,
+        "frames": 92,
+        "p50": 21.299999997019768,
+        "p95": 25.799999997019768,
+        "over20": 0.7934782608695652,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 6.058,
+        "frames": 93,
+        "p50": 21.30000001192093,
+        "p95": 25.69999998807907,
+        "over20": 0.7204301075268817,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 8.07,
+        "frames": 92,
+        "p50": 21.600000008940697,
+        "p95": 25.099999994039536,
+        "over20": 0.8260869565217391,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 10.082,
+        "frames": 96,
+        "p50": 20.600000008940697,
+        "p95": 24.5,
+        "over20": 0.6666666666666666,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 12.096,
+        "frames": 102,
+        "p50": 19.600000008940697,
+        "p95": 21.899999991059303,
+        "over20": 0.37254901960784315,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      }
+    ],
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 5367.29999999702,
+        "lastMs": 5367.29999999702,
+        "lastFrames": 4,
+        "timedOut": false,
+        "pipelines": 56,
+        "pipelinesAtReady": 56,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0
+      },
+      "drawBudget": {
+        "drawCalls": 294,
+        "triangles": 518919,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 567,
+        "overFrames": 0,
+        "peakDrawCalls": 294,
+        "peakTriangles": 518919
+      },
+      "memory": {
+        "totalBytes": 3981312,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 3981312,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 3981312
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 56,
+        "textureBytes": 93893699,
+        "geometryBytes": 5249156,
+        "totalBytes": 99639774
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": true,
+        "scale": 0.6,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+      "warning: THREE.WebGPURenderer: Timestamp tracking is disabled."
+    ]
+  },
+  {
+    "name": "s06-ts-on-2",
+    "url": "http://localhost:5293/?scene=s06&view=pool&scale=0.6&solo=0&preset=medium&backend=webgpu",
+    "steady": {
+      "p50": 18.983333331843216,
+      "p95": 23.94999999801318,
+      "over20": 0.31063716767634375,
+      "fps": 51.71628168770153,
+      "scale": 0.6,
+      "steps": 0,
+      "stepsInTail": 0
+    },
+    "windows": [
+      {
+        "atS": 2.036,
+        "frames": 99,
+        "p50": 19,
+        "p95": 29.200000002980232,
+        "over20": 0.37373737373737376,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 8,
+          "avg": 16.641323375,
+          "min": 13.009045000000006,
+          "max": 28.62605299999999,
+          "p50": 15.793753000000002,
+          "p95": 28.62605299999999,
+          "p99": 28.62605299999999
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 4.054,
+        "frames": 102,
+        "p50": 19.100000008940697,
+        "p95": 26.099999994039536,
+        "over20": 0.37254901960784315,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 15.756827666666668,
+          "min": 12.343392,
+          "max": 21.646578999999996,
+          "p50": 15.737503999999998,
+          "p95": 21.646578999999996,
+          "p99": 21.646578999999996
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 6.061,
+        "frames": 103,
+        "p50": 19.399999991059303,
+        "p95": 22.799999997019768,
+        "over20": 0.36893203883495146,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 15.344731777777778,
+          "min": 13.978115999999995,
+          "max": 17.170560000000002,
+          "p50": 14.932349,
+          "p95": 17.170560000000002,
+          "p99": 17.170560000000002
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 8.074,
+        "frames": 107,
+        "p50": 18.700000002980232,
+        "p95": 21,
+        "over20": 0.205607476635514,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 15.18835577777778,
+          "min": 13.013048000000003,
+          "max": 16.116917,
+          "p50": 15.386676999999999,
+          "p95": 16.116917,
+          "p99": 16.116917
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 10.082,
+        "frames": 106,
+        "p50": 18.69999998807907,
+        "p95": 21.799999997019768,
+        "over20": 0.2641509433962264,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 15.399546555555553,
+          "min": 13.768365000000003,
+          "max": 17.347395999999996,
+          "p50": 15.428511999999998,
+          "p95": 17.347395999999996,
+          "p99": 17.347395999999996
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 12.1,
+        "frames": 104,
+        "p50": 19,
+        "p95": 22.799999997019768,
+        "over20": 0.27884615384615385,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 15.533933222222222,
+          "min": 13.903281000000002,
+          "max": 17.683472000000002,
+          "p50": 15.438842,
+          "p95": 17.683472000000002,
+          "p99": 17.683472000000002
+        },
+        "gpuMeasured": true,
+        "draws": 294,
+        "triangles": 518919
+      }
+    ],
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 4455.5,
+        "lastMs": 4455.5,
+        "lastFrames": 4,
+        "timedOut": false,
+        "pipelines": 56,
+        "pipelinesAtReady": 56,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0
+      },
+      "drawBudget": {
+        "drawCalls": 294,
+        "triangles": 518919,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 632,
+        "overFrames": 0,
+        "peakDrawCalls": 294,
+        "peakTriangles": 518919
+      },
+      "memory": {
+        "totalBytes": 3981312,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 3981312,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 3981312
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 56,
+        "textureBytes": 93893699,
+        "geometryBytes": 5249156,
+        "totalBytes": 99639774
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": true,
+        "scale": 0.6,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "name": "s06-ts-off-2",
+    "url": "http://localhost:5293/?scene=s06&view=pool&scale=0.6&gputime=0&solo=0&preset=medium&backend=webgpu",
+    "steady": {
+      "p50": 19.983333331843216,
+      "p95": 23.916666666666668,
+      "over20": 0.47225755180614754,
+      "fps": 49.36609661332028,
+      "scale": 0.6,
+      "steps": 0,
+      "stepsInTail": 0
+    },
+    "windows": [
+      {
+        "atS": 2.019,
+        "frames": 96,
+        "p50": 19.900000005960464,
+        "p95": 24.5,
+        "over20": 0.46875,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 4.025,
+        "frames": 104,
+        "p50": 18.899999991059303,
+        "p95": 22.399999991059303,
+        "over20": 0.2692307692307692,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 6.047,
+        "frames": 102,
+        "p50": 19.799999997019768,
+        "p95": 22.599999994039536,
+        "over20": 0.38235294117647056,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 8.058,
+        "frames": 98,
+        "p50": 20.399999991059303,
+        "p95": 23.799999997019768,
+        "over20": 0.5306122448979592,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 10.065,
+        "frames": 98,
+        "p50": 20.299999997019768,
+        "p95": 24.400000005960464,
+        "over20": 0.5510204081632653,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      },
+      {
+        "atS": 12.078,
+        "frames": 95,
+        "p50": 20.600000008940697,
+        "p95": 25.80000001192093,
+        "over20": 0.631578947368421,
+        "scale": 0.6,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 294,
+        "triangles": 518919
+      }
+    ],
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 4410.5,
+        "lastMs": 4410.5,
+        "lastFrames": 4,
+        "timedOut": false,
+        "pipelines": 56,
+        "pipelinesAtReady": 56,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0
+      },
+      "drawBudget": {
+        "drawCalls": 294,
+        "triangles": 518919,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 603,
+        "overFrames": 0,
+        "peakDrawCalls": 294,
+        "peakTriangles": 518919
+      },
+      "memory": {
+        "totalBytes": 3981312,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 3981312,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 3981312
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 56,
+        "textureBytes": 93893699,
+        "geometryBytes": 5249156,
+        "totalBytes": 99639774
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": true,
+        "scale": 0.6,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+      "warning: THREE.WebGPURenderer: Timestamp tracking is disabled."
+    ]
+  },
+  {
+    "name": "moon-ts-on",
+    "url": "http://localhost:5293/?scene=moon&view=ground&scale=0.85&solo=0&preset=medium&backend=webgpu",
+    "steady": {
+      "p50": 156.5999999990066,
+      "p95": 159.58333333581686,
+      "over20": 0.18403655576138414,
+      "fps": 5.505449117911974,
+      "scale": 0.85,
+      "steps": 0,
+      "stepsInTail": 0
+    },
+    "windows": [
+      {
+        "atS": 2.406,
+        "frames": 2,
+        "p50": 850.5999999940395,
+        "p95": 850.5999999940395,
+        "over20": 0.5,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 4.425,
+        "frames": 115,
+        "p50": 16.799999997019768,
+        "p95": 22.900000005960464,
+        "over20": 0.11304347826086956,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 11,
+          "avg": 13.440145727272728,
+          "min": 10.892915000000002,
+          "max": 17.206063,
+          "p50": 13.371124,
+          "p95": 17.206063,
+          "p99": 17.206063
+        },
+        "gpuMeasured": true,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 6.441,
+        "frames": 114,
+        "p50": 17.400000005960464,
+        "p95": 20.600000008940697,
+        "over20": 0.10526315789473684,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 13.626221666666668,
+          "min": 11.696815000000004,
+          "max": 14.813350000000003,
+          "p50": 13.987529000000002,
+          "p95": 14.813350000000003,
+          "p99": 14.813350000000003
+        },
+        "gpuMeasured": true,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 8.452,
+        "frames": 112,
+        "p50": 18,
+        "p95": 20.600000008940697,
+        "over20": 0.08035714285714286,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 10,
+          "avg": 13.1636945,
+          "min": 11.752315000000001,
+          "max": 14.609688999999998,
+          "p50": 12.609304000000003,
+          "p95": 14.609688999999998,
+          "p99": 14.609688999999998
+        },
+        "gpuMeasured": true,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 10.467,
+        "frames": 108,
+        "p50": 18.399999991059303,
+        "p95": 21.5,
+        "over20": 0.16666666666666666,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 14.272296333333335,
+          "min": 12.915046000000004,
+          "max": 15.191764000000001,
+          "p50": 14.658353,
+          "p95": 15.191764000000001,
+          "p99": 15.191764000000001
+        },
+        "gpuMeasured": true,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 12.487,
+        "frames": 108,
+        "p50": 18.400000005960464,
+        "p95": 21.299999997019768,
+        "over20": 0.1388888888888889,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 9,
+          "avg": 14.120760555555558,
+          "min": 12.40272,
+          "max": 17.018317,
+          "p50": 14.038615000000002,
+          "p95": 17.018317,
+          "p99": 17.018317
+        },
+        "gpuMeasured": true,
+        "draws": 30,
+        "triangles": 356371
+      }
+    ],
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 4597.4000000059605,
+        "lastMs": 4597.4000000059605,
+        "lastFrames": 7,
+        "timedOut": false,
+        "pipelines": 37,
+        "pipelinesAtReady": 37,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0
+      },
+      "drawBudget": {
+        "drawCalls": 30,
+        "triangles": 356371,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 569,
+        "overFrames": 0,
+        "peakDrawCalls": 30,
+        "peakTriangles": 356371
+      },
+      "memory": {
+        "totalBytes": 7990272,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 7990272,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 7990272
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 37,
+        "textureBytes": 83561464,
+        "geometryBytes": 2001056,
+        "totalBytes": 85802532
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": true,
+        "scale": 0.85,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "name": "moon-ts-off",
+    "url": "http://localhost:5293/?scene=moon&view=ground&scale=0.85&gputime=0&solo=0&preset=medium&backend=webgpu",
+    "steady": {
+      "p50": 158.1833333323399,
+      "p95": 160.70000000049671,
+      "over20": 0.20034171393741548,
+      "fps": 5.493202278257404,
+      "scale": 0.85,
+      "steps": 0,
+      "stepsInTail": 0
+    },
+    "windows": [
+      {
+        "atS": 2.458,
+        "frames": 2,
+        "p50": 858,
+        "p95": 858,
+        "over20": 0.5,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 4.464,
+        "frames": 110,
+        "p50": 17.600000008940697,
+        "p95": 21.299999997019768,
+        "over20": 0.10909090909090909,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 6.479,
+        "frames": 107,
+        "p50": 18.5,
+        "p95": 20.700000002980232,
+        "over20": 0.1588785046728972,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 8.492,
+        "frames": 108,
+        "p50": 18.399999991059303,
+        "p95": 22.30000001192093,
+        "over20": 0.1574074074074074,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 10.511,
+        "frames": 109,
+        "p50": 18.299999997019768,
+        "p95": 21.099999994039536,
+        "over20": 0.11926605504587157,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 30,
+        "triangles": 356371
+      },
+      {
+        "atS": 12.517,
+        "frames": 108,
+        "p50": 18.299999997019768,
+        "p95": 20.799999997019768,
+        "over20": 0.1574074074074074,
+        "scale": 0.85,
+        "signal": "interval",
+        "dynP90": 0,
+        "dynTarget": 0,
+        "steps": 0,
+        "floorHint": false,
+        "gpuMs": {
+          "samples": 0,
+          "avg": 0,
+          "min": 0,
+          "max": 0,
+          "p50": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "gpuMeasured": false,
+        "draws": 30,
+        "triangles": 356371
+      }
+    ],
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 4474.100000008941,
+        "lastMs": 4474.100000008941,
+        "lastFrames": 7,
+        "timedOut": false,
+        "pipelines": 37,
+        "pipelinesAtReady": 37,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0
+      },
+      "drawBudget": {
+        "drawCalls": 30,
+        "triangles": 356371,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 554,
+        "overFrames": 0,
+        "peakDrawCalls": 30,
+        "peakTriangles": 356371
+      },
+      "memory": {
+        "totalBytes": 7990272,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 7990272,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 7990272
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 37,
+        "textureBytes": 83561464,
+        "geometryBytes": 2001056,
+        "totalBytes": 85802532
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": true,
+        "scale": 0.85,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+      "warning: THREE.WebGPURenderer: Timestamp tracking is disabled."
+    ]
+  }
+]

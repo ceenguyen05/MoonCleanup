@@ -2,9 +2,14 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   API_ERROR_CODES,
   API_ERROR_STATUS,
+  API_BINARY_CONTENT_TYPE,
+  API_EXPOSED_RESPONSE_HEADERS,
   API_ROUTES,
   ApiErrorBodySchema,
+  CHECKPOINT_META_MAX_BYTES,
   CHECKPOINT_REJECT_REASONS,
+  CHECKPOINT_UPLOAD_BODY_MAX_BYTES,
+  CHECKPOINT_UPLOAD_PREFIX_BYTES,
   CONTRACT_QUOTA_PER_PLAYER,
   CheckpointRejectedBodySchema,
   ContractPatchRequestSchema,
@@ -24,10 +29,15 @@ import {
   SoloCheckpointAcceptedSchema,
   SoloCheckpointBeginRequestSchema,
   SoloCheckpointSummarySchema,
+  type ContractSummary,
   type CreateContractRequest,
   type GetContractResponse,
+  type JoinContractResponse,
+  type HttpRequest,
+  type HttpResponse,
+  type HttpRouteDef,
 } from "./rest";
-import { SAVE_FORMAT_VERSION } from "../save";
+import { CHECKPOINT_PART_MAX_BYTES, SAVE_FORMAT_VERSION } from "../save";
 
 const UUID = "0190a6c4-7d3e-7b1a-9c55-2f8e4d6a1b00";
 const TOKEN = "A".repeat(43);
@@ -173,10 +183,26 @@ describe("contract DTOs", () => {
   it("join response keeps unknown reservation fields", () => {
     const body = {
       reservation: { name: "shift", sessionId: "s1", roomId: "r1", processId: "p1", reconnectionToken: "x" },
-      joinTicket: "t".repeat(32),
       role: "staff",
     };
     expect(JoinContractResponseSchema.parse(body).reservation).toMatchObject({ reconnectionToken: "x" });
+  });
+
+  it("join response has no joinTicket (v0.5.0): a v0.4 body still parses and the key is stripped", () => {
+    const reservation = { name: "shift", sessionId: "s1", roomId: "r1", processId: "p1" };
+    const parsed = JoinContractResponseSchema.parse({ reservation, joinTicket: "t".repeat(32), role: "staff" });
+    expect(parsed).toEqual({ reservation, role: "staff" });
+    expect("joinTicket" in parsed).toBe(false);
+    expect(Object.keys(JoinContractResponseSchema.shape)).toEqual(["reservation", "role"]);
+    expectTypeOf<JoinContractResponse>().not.toHaveProperty("joinTicket");
+  });
+
+  it("contract summary carries an optional createdAt ISO instant (v0.5.0)", () => {
+    expect(ContractSummarySchema.parse(contract).createdAt).toBeUndefined();
+    const withCreated = { ...contract, createdAt: "2026-11-14T10:00:00.000Z" };
+    expect(ContractSummarySchema.parse(withCreated)).toEqual(withCreated);
+    expect(ContractSummarySchema.safeParse({ ...contract, createdAt: "yesterday" }).success).toBe(false);
+    expectTypeOf<ContractSummary["createdAt"]>().toEqualTypeOf<string | undefined>();
   });
 });
 
@@ -235,5 +261,77 @@ describe("solo checkpoint DTOs (ADR-0031)", () => {
       expect(SoloCheckpointBeginRequestSchema.safeParse(bad).success).toBe(false);
     }
     expectTypeOf<ReturnType<typeof SoloCheckpointBeginRequestSchema.parse>["overwrite"]>().toEqualTypeOf<boolean>();
+  });
+});
+
+describe("binary REST seam (v0.4.0, ADR-0031 amendment 1)", () => {
+  const worstCase = {
+    contractId: UUID,
+    generation: 0xffff_ffff,
+    parentGeneration: 0xffff_fffe,
+    baseGeneration: 0xffff_fffe,
+    saveFormatVersion: 0xffff,
+    gameDataVersion: "x".repeat(32),
+    bakeHash: "a".repeat(64),
+    totalBytes: CHECKPOINT_PART_MAX_BYTES,
+    partCount: 1,
+    packageCrc32: 0xffff_ffff,
+    summary: {
+      generation: 0xffff_ffff,
+      parentGeneration: 0xffff_fffe,
+      originKind: "solo",
+      savedAt: "2026-11-14T12:00:00.000Z",
+      simTick: 0xffff_ffff,
+      playtimeS: 0xffff_ffff,
+      shinePolished: 163842,
+      walletLumens: 1e12,
+      saveFormatVersion: 0xffff,
+      gameDataVersion: "x".repeat(32),
+      deviceLabel: "d".repeat(40),
+    },
+    profileDelta: {
+      playtimeS: 0xffff_ffff,
+      tenurePoints: 0xffff_ffff,
+      commendations: 0xffff_ffff,
+      achievementIds: Array.from({ length: 32 }, () => "a".repeat(64)),
+    },
+    deviceId: UUID,
+    overwrite: false,
+  };
+
+  it("fits the largest valid metadata under CHECKPOINT_META_MAX_BYTES but not under a 4 KB header", () => {
+    expect(SoloCheckpointBeginRequestSchema.safeParse(worstCase).success).toBe(true);
+    const json = JSON.stringify(worstCase);
+    expect(json).toMatch(/^[ -~]+$/); // ASCII, so characters equal UTF-8 bytes
+    expect(json.length).toBeLessThanOrEqual(CHECKPOINT_META_MAX_BYTES);
+    // Why the header carrier was rejected: base64url is 4/3 as long and uWS caps ALL request headers at 4096 bytes.
+    expect(Math.ceil((json.length * 4) / 3)).toBeGreaterThan(4000);
+  });
+
+  it("derives the upload body limit and declares it on the upload route only", () => {
+    expect(CHECKPOINT_UPLOAD_BODY_MAX_BYTES).toBe(
+      CHECKPOINT_UPLOAD_PREFIX_BYTES + CHECKPOINT_META_MAX_BYTES + CHECKPOINT_PART_MAX_BYTES,
+    );
+    expect(CHECKPOINT_UPLOAD_BODY_MAX_BYTES).toBe(1_052_674);
+    expect(API_ROUTES.checkpointUpload.rawBodyMaxBytes).toBe(CHECKPOINT_UPLOAD_BODY_MAX_BYTES);
+    const raw = Object.entries(API_ROUTES).filter(([, r]) => "rawBodyMaxBytes" in r);
+    expect(raw.map(([k]) => k)).toEqual(["checkpointUpload"]);
+    expect(API_BINARY_CONTENT_TYPE).toBe("application/octet-stream");
+    expect([...API_EXPOSED_RESPONSE_HEADERS]).toEqual(["x-save-pages", "retry-after"]);
+  });
+
+  it("types rawBody, binary and rawBodyMaxBytes as optional additions", () => {
+    expectTypeOf<HttpRequest["rawBody"]>().toEqualTypeOf<Uint8Array | undefined>();
+    expectTypeOf<HttpResponse["binary"]>().toEqualTypeOf<Uint8Array | undefined>();
+    expectTypeOf<HttpRouteDef["rawBodyMaxBytes"]>().toEqualTypeOf<number | undefined>();
+    const route: HttpRouteDef = {
+      ...API_ROUTES.checkpointUpload,
+      handle: (request) => ({
+        status: 200,
+        binary: request.rawBody ?? new Uint8Array(0),
+        headers: { "content-type": API_BINARY_CONTENT_TYPE },
+      }),
+    };
+    expect(route.rawBodyMaxBytes).toBe(CHECKPOINT_UPLOAD_BODY_MAX_BYTES);
   });
 });

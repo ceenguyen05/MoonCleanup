@@ -1,6 +1,7 @@
 {
   "scene": "S01",
   "tod": "noon",
+  "todApplied": "verified: sun elevation 60.00 deg, expected 60",
   "tier": "C",
   "preset": "low",
   "backend": "webgl2",
@@ -11,22 +12,119 @@
   "hud": "nohud",
   "seed": "vt-standard-01",
   "lane": "gpu",
-  "commit": "60faef9",
+  "commit": "5a7cec4",
+  "treeDirty": true,
+  "serve": {
+    "mode": "production",
+    "url": "http://127.0.0.1:5184/",
+    "how": "preview-started"
+  },
+  "url": "http://127.0.0.1:5184/?scene=s01&time=noon&backend=webgl2&preset=low&dpr=1&tier=C&tod=noon&seed=vt-standard-01&hud=0&scale=floor&capture=1",
   "browser": "157.0.8103.79",
   "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
   "frameTimeSample": {
-    "avgMs": 166.50162661075592,
-    "p95Ms": 49.20000076293945
+    "avgMs": 183.98436895012856,
+    "p95Ms": 20.600000381469727
   },
   "drawCalls": 178,
   "triangles": 378346,
   "texPoolMB": 0,
   "placeholderAssets": [],
+  "knobs": {
+    "renderScale": 0.5,
+    "canvasDpr": 1,
+    "aa": null,
+    "lookKnobs": "default",
+    "csm": [
+      {
+        "index": 0,
+        "texelM": 0.02300155612922763,
+        "endM": 10
+      },
+      {
+        "index": 1,
+        "texelM": 0.18405802202644278,
+        "endM": 80
+      }
+    ],
+    "shadowFilter": "pcf3+pcf5",
+    "skyDome": "baked",
+    "postPasses": [
+      "scene",
+      "grade",
+      "bloom",
+      "fxaa"
+    ],
+    "dustRingTexelCm": null,
+    "particlePool": null
+  },
+  "camera": {
+    "view": null,
+    "pose": {
+      "positionM": [
+        -3,
+        2.031851233832349,
+        -23
+      ],
+      "quaternion": [
+        -0.00014856198812744918,
+        0.998667914427423,
+        -0.0028798622288549003,
+        -0.05151777378788852
+      ],
+      "forward": [
+        0.10289743973327227,
+        0.005767359177653323,
+        0.9946752507549657
+      ],
+      "aspect": 1.7777777777777777,
+      "nearM": 0.05,
+      "farM": 30000
+    },
+    "vfovDeg": 59.99999999999999
+  },
+  "sun": {
+    "elevationDeg": 60,
+    "azimuthDeg": 100
+  },
+  "ev100": 14.3,
+  "evSource": "sun",
+  "adaptationMultiplier": null,
+  "earth": {
+    "litFraction": 0.2262093389518871,
+    "elevationDeg": 17,
+    "azimuthDeg": 48,
+    "diameterDeg": 4.2
+  },
+  "particlesLive": null,
   "stepFrames": 30,
   "view": null,
+  "lookdevFacts": null,
+  "roiSpecs": [
+    {
+      "kind": "patch",
+      "name": "probe:clean",
+      "rect": {
+        "x": 1096,
+        "y": 650,
+        "w": 48,
+        "h": 48
+      }
+    },
+    {
+      "kind": "patch",
+      "name": "probe:grime",
+      "rect": {
+        "x": 1063,
+        "y": 542,
+        "w": 48,
+        "h": 48
+      }
+    }
+  ],
   "measure": {
     "lumaMean": {
-      "value": 86.22024786848138,
+      "value": 86.2205101127074,
       "rect": {
         "x": 0,
         "y": 0,
@@ -35,7 +133,7 @@
       }
     },
     "sobel": {
-      "value": 25.593603229835306,
+      "value": 25.596603818500185,
       "rect": {
         "x": 0,
         "y": 0,
@@ -44,7 +142,7 @@
       }
     },
     "labB": {
-      "value": -9.028238672147705,
+      "value": -9.028194229051829,
       "rect": {
         "x": 0,
         "y": 0,
@@ -53,12 +151,12 @@
       }
     },
     "edgeWidth1090": {
-      "value": 241.56667712234733,
+      "value": null,
       "rect": {
         "x": 0,
         "y": 0,
-        "w": 1920,
-        "h": 1080
+        "w": 0,
+        "h": 0
       }
     },
     "stars": {
@@ -71,6 +169,112 @@
       }
     },
     "nonBlackFraction": 0.9999180169753087,
-    "diskBytes": 528487
+    "diskBytes": 528479,
+    "rois": {
+      "frame:upper": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 216
+        },
+        "lumaMean": 13.199007924927836,
+        "labB": -15.347392928847519,
+        "sobel": 16.613247589466706,
+        "stars": 1
+      },
+      "frame:middle": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 432,
+          "w": 1920,
+          "h": 216
+        },
+        "lumaMean": 96.27197216303996,
+        "labB": -10.48561971423818,
+        "sobel": 45.95904548899928,
+        "stars": 8
+      },
+      "frame:lower": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 720,
+          "w": 1920,
+          "h": 360
+        },
+        "lumaMean": 140.43999963786868,
+        "labB": -0.3223193202759027,
+        "sobel": 19.405005330239806,
+        "stars": 0
+      },
+      "frame:left": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 640,
+          "h": 1080
+        },
+        "lumaMean": 88.59134101491628,
+        "labB": -9.621301697994463,
+        "sobel": 23.89848123114213,
+        "stars": 5
+      },
+      "frame:center": {
+        "kind": "patch",
+        "rect": {
+          "x": 640,
+          "y": 360,
+          "w": 640,
+          "h": 360
+        },
+        "lumaMean": 108.73705484179159,
+        "labB": -6.895556322843044,
+        "sobel": 53.0167483178416,
+        "stars": 4
+      },
+      "frame:right": {
+        "kind": "patch",
+        "rect": {
+          "x": 1280,
+          "y": 0,
+          "w": 640,
+          "h": 1080
+        },
+        "lumaMean": 85.95822867316642,
+        "labB": -10.018439506005423,
+        "sobel": 19.1621716064532,
+        "stars": 1
+      },
+      "probe:clean": {
+        "kind": "patch",
+        "rect": {
+          "x": 1096,
+          "y": 650,
+          "w": 48,
+          "h": 48
+        },
+        "lumaMean": 185.02509697940616,
+        "labB": 1.1853623649962395,
+        "sobel": 1.5821803236372174,
+        "stars": 0
+      },
+      "probe:grime": {
+        "kind": "patch",
+        "rect": {
+          "x": 1063,
+          "y": 542,
+          "w": 48,
+          "h": 48
+        },
+        "lumaMean": 144.08674391441875,
+        "labB": 0.07641067258654023,
+        "sobel": 72.24957984433681,
+        "stars": 0
+      }
+    }
   }
 }

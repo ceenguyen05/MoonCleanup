@@ -1,0 +1,84 @@
+{
+ "label": "harness",
+ "path": "compute",
+ "pace": "flat",
+ "px": 64,
+ "atlas": "2048x2048",
+ "framesReplayed": 10800,
+ "framesWithEvents": 1801,
+ "passes": 1799,
+ "uploads": 12,
+ "copies": 3092,
+ "instancesPerPass": {
+  "n": 1799,
+  "mean": 1.7198443579766538,
+  "p50": 2,
+  "p95": 3,
+  "p99": 3,
+  "max": 5
+ },
+ "tilesPerComputePass": {
+  "n": 1799,
+  "mean": 1.7187326292384657,
+  "p50": 2,
+  "p95": 3,
+  "p99": 3,
+  "max": 3
+ },
+ "timestampQuery": true,
+ "gpuPassMs": {
+  "n": 1799,
+  "mean": 0.017303091717620737,
+  "p50": 0.01725,
+  "p95": 0.020666,
+  "p99": 0.021917,
+  "max": 0.172497
+ },
+ "gpuPassMsPerFrameAllFrames": 0.0028822464814814573,
+ "jsEncodeMs": {
+  "n": 1801,
+  "mean": 0.04827873397624738,
+  "p50": 0.03999999910593033,
+  "p95": 0.10500000044703484,
+  "p99": 0.17999999970197678,
+  "max": 0.6750000007450581
+ },
+ "jsEncodeMsPerFrameAllFrames": 0.008050925915853845,
+ "wallMs": 663.625,
+ "rafIntervalMs": null,
+ "compare": {
+  "tiles": 12,
+  "texels": 49152,
+  "texelsCleanedAtAll": 5886,
+  "texelsDiffering": 0,
+  "pctDiffering": 0,
+  "diffTexelsRGBA": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "maxAbsDiffRGBA": [
+   0,
+   0,
+   0,
+   0
+  ],
+  "histMaxDiff_1_2_3_4_5plus": [
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "errors": [],
+ "cpuRefMs": {
+  "p50": 0.006,
+  "p95": 0.021,
+  "p99": 0.109,
+  "max": 37.116
+ },
+ "machineLoadPct": 79.3,
+ "recording": "harness-S1-medium"
+}

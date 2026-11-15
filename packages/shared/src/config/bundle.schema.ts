@@ -1,4 +1,4 @@
-// @contract config/bundle.schema v1.2
+// @contract config/bundle.schema v1.3
 // @consumers packages/game-data (loads every data file and validates the whole set, M1), tools/balance-sim
 //
 // Maps every baseline table file to its schema and validates cross-table references once all tables are loaded
@@ -14,6 +14,9 @@
 // `plot-bonus.chargeFinishMult`.
 // v1.2 (no new rules): the bundle type tightens because robots, economy, movement, logistics and pacing-targets
 // make their v1.1 fields required (see those files).
+// v1.3: the `tool-feel` table (config/tool-feel.schema); movement and traits tighten (see those files). New rules:
+// `tool-feel.strokeLengthMaxSweepMps` >= `movement.sweepWalkMps` (the gap-free vMax cannot be below base sweep-walk),
+// (the Detailing `diameterM` check is a traits table rule, not a bundle rule).
 
 import { z } from "zod";
 import type { Effect, GameDataTable } from "./common.schema";
@@ -36,6 +39,7 @@ import { DUST_CELL_NODE_ID_PREFIX, PromotionsBoardSchema } from "./promotions-bo
 import { NEST_PIECE_ID, ROOST_PIECE_ID, RobotsSchema } from "./robots.schema";
 import { SuitGearSchema } from "./suit-gear.schema";
 import { BUILD_TOOL_TIER, ToolsSchema } from "./tools.schema";
+import { ToolFeelSchema } from "./tool-feel.schema";
 import { CHARGE_FINISH_STAMP_PARAM, CHARGE_TRAIT_ID, TraitsSchema } from "./traits.schema";
 import { VehicleUpgradesSchema } from "./vehicle-upgrades.schema";
 import { VehiclesSchema } from "./vehicles.schema";
@@ -66,6 +70,7 @@ export const GAME_DATA_TABLE_SCHEMAS = {
   moderation: ModerationSchema,
   features: FeaturesSchema,
   "pacing-targets": PacingTargetsSchema,
+  "tool-feel": ToolFeelSchema,
 } as const satisfies Record<GameDataTable, z.ZodType>;
 
 type Path = (string | number)[];
@@ -230,6 +235,11 @@ export const GameDataBundleSchema = z.strictObject(GAME_DATA_TABLE_SCHEMAS).supe
       ["traits", "traits", charge, "params", CHARGE_FINISH_STAMP_PARAM],
       `${CHARGE_FINISH_STAMP_PARAM} differs from plot-bonus.chargeFinishMult`,
     );
+  }
+
+  // Feel (v1.3): the gap-free push rule's vMax covers at least the base sweep-walk speed.
+  if (data["tool-feel"].strokeLengthMaxSweepMps < data.movement.sweepWalkMps) {
+    issue(["tool-feel", "strokeLengthMaxSweepMps"], "strokeLengthMaxSweepMps is below movement.sweepWalkMps");
   }
 });
 export type GameDataBundle = z.infer<typeof GameDataBundleSchema>;

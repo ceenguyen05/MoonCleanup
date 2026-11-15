@@ -1,0 +1,39 @@
+{
+ "label": "rebuild-bulldust-medium",
+ "px": 64,
+ "slots": 1024,
+ "frames": 100,
+ "events": 47000,
+ "draws": 46900,
+ "clears": 0,
+ "rebuilt": 100,
+ "finalSlots": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16
+ ],
+ "cpuRefMs": {
+  "p50": 1.938,
+  "p95": 2.724,
+  "p99": 3.359,
+  "max": 3.359
+ },
+ "noCompare": true,
+ "quality": "medium",
+ "widthCm": 300,
+ "perPlot": 256
+}

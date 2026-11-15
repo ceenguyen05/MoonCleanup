@@ -29,9 +29,26 @@ export class BandwidthCounter {
   private sinceReport = 0;
   private monthBytes = 0;
   private month: string;
+  /** Bytes folded in since the last `takeUnpersisted` (the delta `ops_usage_daily` still has to receive). */
+  private unpersisted = 0;
 
   constructor(startMs: number = Date.now()) {
     this.month = monthKeyUtc(startMs);
+  }
+
+  /**
+   * Flushes and hands out the bytes not yet written to `ops_usage_daily` (zeroing them). A failed write calls
+   * `returnUnpersisted` so the bytes are retried, never lost.
+   */
+  takeUnpersisted(nowMs: number): number {
+    this.flush(nowMs);
+    const bytes = this.unpersisted;
+    this.unpersisted = 0;
+    return bytes;
+  }
+
+  returnUnpersisted(bytes: number): void {
+    this.unpersisted += bytes;
   }
 
   /** Hot path: count bytes handed to the transport. */
@@ -53,6 +70,7 @@ export class BandwidthCounter {
     }
     this.monthBytes += this.pending;
     this.sinceReport += this.pending;
+    this.unpersisted += this.pending;
     this.pending = 0;
   }
 

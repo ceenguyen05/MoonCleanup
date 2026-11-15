@@ -1,4 +1,4 @@
-// @contract world/stroke v1
+// @contract world/stroke v1.1
 // @consumers packages/world (quantisation + rasterisation), packages/sim (tool-head motion emits StrokeRecord),
 //   packages/protocol (dust.strokes chain codec, dust.log, save stroke log), apps/client/src/terrain (prediction
 //   keyed by inputSeq, tile replay), apps/server/src/world (validation, sequencing), tools/bots
@@ -19,6 +19,8 @@
 // diameter `widthCm` (Detailing, WDS section 4.4: 0.5 m disc, depth16 255). The section 4.5 lattice rule
 // "0 <= t < 1" is degenerate for a zero-length segment, so the rasteriser treats length 0 as "inside if the squared
 // distance to the point <= (width/2)^2".
+// v1.1 (doc only, 2026-11-14; wire unchanged): the Detailing disc is 0.5 m in DIAMETER (`widthCm` 50). Its size comes
+// from game-data `trait.detailing` `params.diameterM` (config/traits v1.2), which replaced the ambiguous `radiusM`.
 //
 // Wire widths (bits, used by packages/protocol; section framing, chain counts and the FRAME flags are bound by
 // protocol/messages.ts):

@@ -1,0 +1,174 @@
+[
+ {
+  "name": "after-s05-shadeSlope-low-webgl2",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=low&backend=webgl2&view=shadeSlope&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "low",
+  "backend": "webgl2",
+  "renderScale": 0.5,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": 1024,
+  "adaptationMultiplier": 0,
+  "notBuilt": [
+   "dustRing",
+   "particles"
+  ],
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922763,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.18405802202644278,
+    "endM": 80
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "slopeLit": {
+    "world": [
+     -24.819,
+     1.026,
+     -5
+    ],
+    "px": [
+     1386,
+     845
+    ],
+    "luma48": 170.7,
+    "luma16": 170.6,
+    "labB16": 0.48
+   },
+   "rampShadow": {
+    "world": [
+     -25.759,
+     1.368,
+     3.309
+    ],
+    "px": [
+     1215,
+     446
+    ],
+    "luma48": 88.9,
+    "luma16": 89,
+    "labB16": -1.88
+   },
+   "slopeShadow": {
+    "world": [
+     -25.759,
+     1.368,
+     3.309
+    ],
+    "px": [
+     1215,
+     446
+    ],
+    "luma48": 88.9,
+    "luma16": 89,
+    "labB16": -1.88
+   }
+  },
+  "hiddenProbes": [
+   "flatLit",
+   "flatShadow",
+   "slopeBoots",
+   "wallLit"
+  ],
+  "errors": []
+ },
+ {
+  "name": "after-s05-wall-low-webgl2",
+  "url": "http://127.0.0.1:5194/?scene=s05&sun=60&az=200&preset=low&backend=webgl2&view=wall&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "low",
+  "backend": "webgl2",
+  "renderScale": 0.5,
+  "sun": [
+   60,
+   200
+  ],
+  "shadowMapSize": 1024,
+  "adaptationMultiplier": 0,
+  "notBuilt": [
+   "dustRing",
+   "particles"
+  ],
+  "dustAtlas": null,
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922763,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.18405802202644278,
+    "endM": 80
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {
+   "flatLit": {
+    "world": [
+     4,
+     0,
+     -3
+    ],
+    "px": [
+     607,
+     616
+    ],
+    "luma48": 144,
+    "luma16": 144,
+    "labB16": 0
+   },
+   "flatShadow": {
+    "world": [
+     16.713,
+     0,
+     -7.013
+    ],
+    "px": [
+     1518,
+     574
+    ],
+    "luma48": 106,
+    "luma16": 86,
+    "labB16": -1.88
+   },
+   "wallShadow": {
+    "world": [
+     8,
+     1.2,
+     0.17
+    ],
+    "px": [
+     960,
+     529
+    ],
+    "luma48": 144,
+    "luma16": 144,
+    "labB16": 0
+   }
+  },
+  "hiddenProbes": [
+   "slopeLit",
+   "rampShadow",
+   "slopeShadow",
+   "slopeBoots"
+  ],
+  "errors": []
+ }
+]

@@ -115,6 +115,8 @@ export interface ContractView {
   readonly walletLumens: number;
   readonly playtimeS: number;
   readonly lastPlayedAt: Date | null;
+  /** When the Contract was created (bounds the playtime a solo checkpoint may claim). */
+  readonly createdAt: Date;
   /** The viewing player's role. */
   readonly role: ContractRoleName;
 }
@@ -218,8 +220,153 @@ export interface ContractRepository {
   listMembers(contractId: string, requesterId: string): Promise<ListMembersResult>;
 }
 
+// ---- Saves (data-model.md sections 3.7, 3.7b, 3.7c) ---------------------------------------------------------------------
+
+export type SaveSlotName = "A" | "B";
+export type SaveOriginKindName = "room" | "solo";
+
+/** Summary of the newest save copy of a Contract: header slot metadata plus the Contract's mirrored counters. */
+export interface SaveHeadView {
+  /** `save_seq` of the newest valid-looking slot row (the save generation). */
+  readonly generation: number;
+  /** `null` for the first save. */
+  readonly parentGeneration: number | null;
+  readonly originKind: SaveOriginKindName;
+  readonly savedAt: Date;
+  /** `solo:<device id>` for an accepted solo upload, the lease instance string for a room checkpoint. */
+  readonly savedBy: string;
+  readonly simTick: number;
+  readonly saveFormatVersion: number;
+  readonly gameDataVersion: string;
+  /** Contract mirrors (`contracts.playtime_s`, `shine_polished`, `wallet_lumens`), written with every checkpoint. */
+  readonly playtimeS: number;
+  readonly shinePolished: number;
+  readonly walletLumens: number;
+}
+
+/** One header slot row including its blob. `checksum` is the CRC32 as an UNSIGNED number here (the signed int32 column is converted). */
+export interface SaveSlotRow {
+  readonly slot: SaveSlotName;
+  readonly saveFormatVersion: number;
+  readonly gameDataVersion: string;
+  readonly codec: string;
+  readonly rawSize: number;
+  readonly blobSize: number;
+  readonly checksum: number;
+  readonly blob: Uint8Array;
+  readonly saveSeq: number;
+  readonly parentSeq: number | null;
+  readonly originKind: SaveOriginKindName;
+  readonly simTick: number;
+  readonly savedAt: Date;
+  readonly savedBy: string;
+}
+
+/** One dust chunk version row including its blob. `checksum` is unsigned here. */
+export interface DustChunkRow {
+  readonly chunkId: number;
+  readonly ver: 0 | 1;
+  readonly saveSeq: number;
+  readonly codec: string;
+  readonly rawSize: number;
+  readonly blobSize: number;
+  readonly checksum: number;
+  readonly blob: Uint8Array;
+}
+
+export interface SoloCheckpointChunkInput {
+  readonly chunkId: number;
+  readonly codec: string;
+  readonly rawSize: number;
+  /** Unsigned CRC32 of the uncompressed payload. */
+  readonly checksum: number;
+  readonly blob: Uint8Array;
+}
+
+/** A verified solo checkpoint ready to be written (the persistence service did every content check). */
+export interface CommitSoloCheckpointInput {
+  readonly contractId: string;
+  readonly playerId: string;
+  readonly deviceId: string;
+  /** Newest server generation the sender knows; the write is accepted only if the server still has exactly this. */
+  readonly baseGeneration: number;
+  /** Skip the fast-forward test (after "Keep this device"). Chunks not in the package are then dropped: it is a full snapshot. */
+  readonly overwrite: boolean;
+  readonly generation: number;
+  readonly parentGeneration: number;
+  readonly saveFormatVersion: number;
+  readonly gameDataVersion: string;
+  readonly simTick: number;
+  readonly header: {
+    readonly codec: string;
+    readonly rawSize: number;
+    /** Unsigned CRC32 of the uncompressed envelope. */
+    readonly checksum: number;
+    readonly blob: Uint8Array;
+  };
+  readonly chunks: readonly SoloCheckpointChunkInput[];
+  /** Counters mirrored onto the Contract row (already clamped by the service). */
+  readonly playtimeS: number;
+  readonly shinePolished: number;
+  readonly walletLumens: number;
+  /** Profile credit, already capped by the service; added to the caller's profile in the same transaction. */
+  readonly profileCredit: { readonly tenurePoints: number; readonly commendations: number };
+  /** Minimum gap since the newest save, measured with the database clock (ADR-0031: 20 s). */
+  readonly minIntervalS: number;
+  /** Refuse (rollback) if `stored_bytes` after the write would exceed this (data-model.md 5.1 hard cap). */
+  readonly hardCapBytes: number;
+}
+
+export type CommitSoloCheckpointResult =
+  /** `replayed`: the same device re-sent an already stored checkpoint (lost acknowledgement); nothing was written. */
+  | {
+      readonly kind: "accepted";
+      readonly generation: number;
+      readonly savedAt: Date;
+      readonly storedBytes: number;
+      readonly replayed: boolean;
+    }
+  /** The server's newest generation differs from `baseGeneration`; nothing was written. `server` is null when it has no save. */
+  | { readonly kind: "conflict"; readonly server: SaveHeadView | null }
+  | { readonly kind: "generation_not_increasing"; readonly serverGeneration: number }
+  | { readonly kind: "too_soon"; readonly retryAfterS: number }
+  /** A live room holds the Contract lease. */
+  | { readonly kind: "busy" }
+  | { readonly kind: "not_found" }
+  | { readonly kind: "not_holder" }
+  | { readonly kind: "not_solo" }
+  | { readonly kind: "over_cap"; readonly storedBytes: number };
+
+/**
+ * What an account has already claimed as playtime across ALL its Contracts (any status: deleting a Contract does not give the
+ * time back), for the account-wide wall-clock bound on playtime credit (security review R3).
+ */
+export interface PlaytimeLedger {
+  /** `players.created_at`: no real playtime can predate the account. */
+  readonly accountCreatedAt: Date;
+  /** Sum of `contracts.playtime_s` over the Contracts the player owns (every status). */
+  readonly contractsPlaytimeS: number;
+}
+
+export interface SaveRepository {
+  /** Account age and total claimed playtime. `null` for an unknown player. */
+  getPlaytimeLedger(playerId: string): Promise<PlaytimeLedger | null>;
+  /** Newest header slot summary. `null` when the Contract has never been saved. Never reads blobs. */
+  getSaveHead(contractId: string): Promise<SaveHeadView | null>;
+  /** Both header slots and every chunk version row of a Contract (the caller applies the data-model 3.7b load rule). */
+  loadSaveRows(
+    contractId: string,
+  ): Promise<{ readonly slots: readonly SaveSlotRow[]; readonly chunks: readonly DustChunkRow[] }>;
+  /**
+   * One transaction: lock the Contract, run the verify-time database rules (Holder, solo, lease, fast-forward, interval,
+   * cap), write the older header slot guarded by a compare-and-set on that slot's `save_seq`, write each chunk to its older
+   * version, update the Contract mirrors and credit the profile.
+   */
+  commitSoloCheckpoint(input: CommitSoloCheckpointInput): Promise<CommitSoloCheckpointResult>;
+}
+
 /** The whole persistence surface the REST API needs. */
-export interface MoonRepository extends AccountRepository, ContractRepository {}
+export interface MoonRepository extends AccountRepository, ContractRepository, SaveRepository {}
 
 /** Grace window for a retried refresh (security.md section 3). */
 export const REFRESH_GRACE_S = 60;

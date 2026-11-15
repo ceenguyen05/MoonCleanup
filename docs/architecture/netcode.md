@@ -104,7 +104,7 @@ The single catalog (type ids, bit layouts, rates, direction) is `packages/shared
 | Name | Type id | Rate | Typical size | Contents |
 | --- | --- | --- | --- | --- |
 | `FRAME` | `0x20` | `SNAPSHOT_HZ` per visible client; 1 Hz Self-only while hidden | 120–600 B (cap 1,000 B) | Header **9 B**: `type` u8, `serverTick` u32, `ackInputSeq` u16, `inputBufferDepth` u8, `flags` u8 (keyframe, hasSlotChanges, hasEntities, hasStrokes, hasRobotIntents, hasDustPlots, hasEvents). Sections in order: **Self** (always; includes Dust Cell grams = `dust.ack`), **SlotChanges**, **Entities**, **DustStrokes** (WDS `dust.strokes`, incl. own-stroke echoes), **RobotIntents** (WDS `robot.plot`), **DustPlots** (WDS `dust.plots`, every `SNAPSHOT_HZ/2`-th frame), **Events**. **[v1] Framing:** flag bit 7 is reserved (0); after the header and Self, every present section is `u16 byteLength` (little-endian, excludes the prefix) + body, in this order, so a decoder can skip an unknown section. Self has no prefix. Max message 1,000 B (`FRAME_MAX_BYTES`) |
-| `DUST_SNAPSHOT` | `0x21` | join, hidden-tab return, resync; sliced, ≤ 2 slices per frame | WDS §5.4 | `sliceIndex` u16, `sliceCount` u16, `snapshotVersion` u32, deflate payload per WDS §5.4 |
+| `DUST_SNAPSHOT` | `0x21` | join, hidden-tab return, resync; sliced, paced against socket buffered amount (96 KB bulk-send ceiling, 32 KB reserved for frames/ledgers); typ. snapshots leave in one tick; resync/hide/hold/leave drop a half-sent snapshot | WDS §5.4 | `sliceIndex` u16, `sliceCount` u16, `snapshotVersion` u32, deflate payload per WDS §5.4 |
 | `DUST_LEDGER` | `0x22` | on dust-radius entry, on `DUST_REQUEST` | WDS §5.1 | One plot's ledger, deflated |
 | `DUST_LOG` | `0x23` | within 60 m on entry, on `DUST_REQUEST` | WDS §5.1 | One plot's stroke log as chains |
 | `DUST_CHECK` | `0x24` | 0.2 Hz; detail mode on request | WDS §5.1/§5.5 | Chunk hashes, or per-plot hashes of one chunk |
@@ -233,7 +233,7 @@ Everything about dust content is in **WDS**: stroke records and chains (§4.4, �
 | --- | --- | --- | --- |
 | 1 | Schema full state (Colyseus on join) | 2–6 KB | immediate |
 | 2 | `FRAME` keyframe (self + entities in interest) | ≤ 1 KB | immediate |
-| 3 | `DUST_SNAPSHOT` blocking part (WDS §5.4) | typ. 15–25 KB, worst ≈ 80 KB | ≤ 4 KB slices, ≤ 2 slices per frame |
+| 3 | `DUST_SNAPSHOT` blocking part (WDS §5.4) | typ. 15–25 KB, worst ≈ 80 KB | ≤ 4 KB slices, paced against socket buffered amount (96 KB bulk ceiling, 32 KB reserved); `DUST_LEDGER` streaming waits for the last slice |
 | — | Client sends `ready` | | Player can move |
 | 4 | Streamed ledgers (WDS §5.4) + `STRUCTURES_CHUNK` in structure range | typ. ≈ 10–30 KB, worst ≈ 240 KB | ≤ 8 KB/s shared budget, nearest first |
 | — | **Blocking total** | **typ. ≈ 20–35 KB, worst ≈ 90 KB** | |

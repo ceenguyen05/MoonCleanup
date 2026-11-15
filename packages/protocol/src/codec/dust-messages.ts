@@ -53,11 +53,21 @@ export const DUST_CHECK_MAX_CHUNKS = 255;
 export const DUST_CHECK_MAX_DETAIL_PLOTS = 256;
 export const DUST_LOG_MAX_CHAINS = 256;
 export const DUST_LOG_MAX_CONTINUATIONS = 4096;
+/** Highest contribution actor slot a LEDGER RAW carries (player slots; readLedgerRaw rejects more). */
+export const LEDGER_WIRE_ACTOR_SLOT_MAX = 15;
 export const DUST_SNAPSHOT_MAX_SLICES = 64;
 export const DUST_SNAPSHOT_MAX_LEDGERS = 1024;
 export const DUST_SNAPSHOT_MAX_LOGS = 256;
-/** Largest inflated snapshot accepted (256 KB; the join bar is <= 150 KB compressed, ~250 KB raw worst case). */
-export const DUST_SNAPSHOT_MAX_RAW_BYTES = 1 << 20;
+/**
+ * Largest SNAPSHOT RAW the encoder emits and the decoder inflates (1.5 MiB). One ledger is at least 3 + 23 + 1024 = 1050
+ * bytes (up to 1070 with 4 contributions), so a full DUST_SNAPSHOT_MAX_LEDGERS (1024) snapshot is ~1.1 MB plus the
+ * plot-state arrays (~200 KB at 163,842 plots): the cap must sit above that or the client would refuse a snapshot the
+ * server legitimately built. The encoder rejects anything larger, so both sides always agree. The join bar is still
+ * <= 150 KB compressed and today's worst case ~250 KB raw. Not to be confused with the 32 MiB per-package inflate budget
+ * of solo checkpoint uploads (apps/server/src/api/checkpoints, a separate REST path). The wire ceiling is separate:
+ * DUST_SNAPSHOT_MAX_SLICES x (4,096 - 9) = 261,568 deflated bytes (world-and-dust-simulation.md 5.4).
+ */
+export const DUST_SNAPSHOT_MAX_RAW_BYTES = 3 << 19;
 export const LEDGER_RAW_MAX_BYTES =
   LEDGER_HEADER_FIXED_BYTES + LEDGER_MAX_CONTRIBUTIONS * LEDGER_CONTRIBUTION_BYTES + LEDGER_BYTES;
 const MAX_PLOT_COUNT = 1 << PLOT_ID_BITS;
@@ -256,6 +266,9 @@ export function writeLedgerRaw(ledger: LedgerRawInput, out: Uint8Array, at = 0):
   const n = h.contributions.length;
   const len = ledgerRawBytes(ledger);
   if (n > LEDGER_MAX_CONTRIBUTIONS || ledger.texels.length !== LEDGER_BYTES || at + len > out.length) return 0;
+  // Review S2: never write what readLedgerRaw rejects (one bad ledger would void a whole snapshot).
+  if (!(h.ownedTexels >= 0 && h.ownedTexels <= LEDGER_BYTES) || h.remainingUnits > h.initialUnits) return 0;
+  for (const c of h.contributions) if (!(c.actorSlot >= 0 && c.actorSlot <= LEDGER_WIRE_ACTOR_SLOT_MAX)) return 0;
   put32(out, at, h.version);
   put32(out, at + 4, h.remainingUnits);
   put32(out, at + 8, h.initialUnits);
@@ -304,7 +317,7 @@ function readLedgerRaw(c: Cursor): DecodedLedger | null {
   for (let i = 0; i < n; i++) {
     const actorSlot = c.u8();
     const units = c.u32();
-    if (actorSlot > 15) return null;
+    if (actorSlot > LEDGER_WIRE_ACTOR_SLOT_MAX) return null;
     contributions.push({ actorSlot, units });
   }
   const texels = c.bytes(LEDGER_BYTES);
@@ -373,6 +386,10 @@ export function writeLogEntry(
   if (!(plotId >= 0 && plotId < MAX_PLOT_COUNT) || buf.chainCount > DUST_LOG_MAX_CHAINS || at + len > out.length) {
     return 0;
   }
+  // Review S2: the decoder caps one entry at DUST_LOG_MAX_CONTINUATIONS continuations in total.
+  let continuations = 0;
+  for (let i = 0; i < buf.chainCount; i++) continuations += buf.contCount[i] ?? 0;
+  if (continuations > DUST_LOG_MAX_CONTINUATIONS) return 0;
   const view = out.subarray(at, at + len);
   const bw = new BitWriter(view);
   bw.writeBits(plotId, 24);
@@ -514,11 +531,14 @@ export interface SnapshotRawInput {
   readonly logs: readonly { readonly plotId: number; readonly refTick: number; readonly chains: StrokeChainBuffer }[];
 }
 
+const PLOT_STATE_OPENED = PlotState.Opened;
+
 /** Counts the Opened (state 1) plots in a 2-bit state array of `plotCount` plots. */
 export function countOpened(plotStates: Uint8Array, plotCount: number): number {
   let n = 0;
+  const opened = PLOT_STATE_OPENED; // hoisted: a namespace property read per plot dominated the loop (13-20 ms -> <1 ms)
   for (let p = 0; p < plotCount; p++) {
-    if ((((plotStates[p >>> 2] ?? 0) >>> ((p & 3) * 2)) & 3) === PlotState.Opened) n++;
+    if ((((plotStates[p >>> 2] ?? 0) >>> ((p & 3) * 2)) & 3) === opened) n++;
   }
   return n;
 }
@@ -532,6 +552,7 @@ export function encodeSnapshotRaw(s: SnapshotRawInput): Uint8Array | null {
   let total = 4 + stateBytes + s.openedRemaining.length + 2 + 2;
   for (const l of s.ledgers) total += 3 + ledgerRawBytes(l.ledger);
   for (const l of s.logs) total += logEntryBytes(l.chains);
+  if (total > DUST_SNAPSHOT_MAX_RAW_BYTES) return null; // the decoder would refuse it (inflate cap)
   const out = new Uint8Array(total);
   put32(out, 0, s.plotCount);
   let at = 4;

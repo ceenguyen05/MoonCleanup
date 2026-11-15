@@ -6,6 +6,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runRepositorySuite } from "./contract-suite.ts";
+import { runSaveSuite } from "./save-suite.ts";
 import { createPostgresRepository, type PgDb } from "./postgres.ts";
 import { DEFAULT_MIGRATIONS_FOLDER, MIGRATIONS_TABLE } from "../migrate.ts";
 import * as schema from "../schema/index.ts";
@@ -93,5 +94,89 @@ describe("postgres repository specifics", () => {
       [SCHEMA],
     );
     expect(cols.rows).toHaveLength(5);
+  });
+});
+
+runSaveSuite("postgres (PGlite)", {
+  async create() {
+    await pg.exec("truncate table players cascade");
+    now = new Date(0);
+    return {
+      repo: createPostgresRepository(db, { clock: () => now }),
+      setNow: (date: Date) => {
+        now = date;
+      },
+      now: () => now,
+    };
+  },
+});
+
+describe("postgres solo checkpoint specifics", () => {
+  it("creates contract_dust_chunks with EXTERNAL blob storage and its CHECKs (0003), and refuses a live room lease", async () => {
+    const storage = await pg.query<{ attstorage: string }>(
+      `select a.attstorage from pg_attribute a join pg_class c on c.oid = a.attrelid
+       join pg_namespace n on n.oid = c.relnamespace
+       where n.nspname = $1 and c.relname = 'contract_dust_chunks' and a.attname = 'blob'`,
+      [SCHEMA],
+    );
+    expect(storage.rows[0]?.attstorage).toBe("e");
+    await pg.exec("truncate table players cascade");
+    const repo = createPostgresRepository(db, { clock: () => now });
+    const playerId = uuidv7();
+    await repo.createGuest({
+      playerId,
+      displayName: "Lease Test",
+      recoveryHash: "d".repeat(64),
+      token: { id: uuidv7(), hash: "e".repeat(64), expiresAt: new Date(Date.now() + 86_400_000), familyId: uuidv7() },
+    });
+    const contractId = uuidv7();
+    await repo.createContract({
+      id: contractId,
+      ownerPlayerId: playerId,
+      name: "Lease Moon",
+      shiftType: "solo",
+      maxPlayers: 1,
+      gridM: 128,
+      plotCount: 163842,
+      seed: "1",
+      inviteCode: null,
+      ownedQuota: 3,
+    });
+    await pg.query("update contracts set lease_expires_at = $1 where id = $2", [
+      new Date(now.getTime() + 60_000),
+      contractId,
+    ]);
+    const input = {
+      contractId,
+      playerId,
+      deviceId: "0190a000-0000-7000-8000-0000000000d1",
+      baseGeneration: 0,
+      overwrite: false,
+      generation: 1,
+      parentGeneration: 0,
+      saveFormatVersion: 1,
+      gameDataVersion: "1.3",
+      simTick: 1,
+      header: { codec: "gzip", rawSize: 10, checksum: 1, blob: new Uint8Array(4) },
+      chunks: [],
+      playtimeS: 0,
+      shinePolished: 0,
+      walletLumens: 0,
+      profileCredit: { tenurePoints: 0, commendations: 0 },
+      minIntervalS: 20,
+      hardCapBytes: 1_000_000,
+    };
+    expect((await repo.commitSoloCheckpoint(input)).kind).toBe("busy");
+    await pg.query("update contracts set lease_expires_at = $1 where id = $2", [
+      new Date(now.getTime() - 1000),
+      contractId,
+    ]);
+    expect((await repo.commitSoloCheckpoint(input)).kind).toBe("accepted");
+    await expect(
+      pg.query(
+        "insert into contract_dust_chunks (contract_id, chunk_id, ver, save_seq, codec, raw_size, blob_size, checksum, blob) values ($1, 641, 0, 1, 'deflate', 1, 1, 0, '\x00')",
+        [contractId],
+      ),
+    ).rejects.toBeDefined();
   });
 });

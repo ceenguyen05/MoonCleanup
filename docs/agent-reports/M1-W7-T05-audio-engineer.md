@@ -29,3 +29,29 @@ Status: in-review (listening quality NOT RUN) · 2026-11-14 · Sonnet 5.5
 
 Files: `apps/client/src/audio/{module,graph,player,voice-manager,event-router,ducking,music,music-recipes,recipes,dsp,cue-params,buffer-store,webaudio-types,fake-audio,index}.ts` + `*.test.ts` (5), `docs/ASSET_LICENSES.md` (1 row).
 Commit suggestion: feat(audio): procedural Web Audio graph, cue router and music director
+
+## Follow-up (2026-11-14, Sonnet 5.5)
+
+### 1. First-play render freeze: fixed by moving synthesis off the main thread
+- New `render-worker.ts` (module Worker, pure DSP, PCM transferred back). `BufferStore` takes an optional `CueRenderRemote`; on a cache miss it requests the render and returns null (that one play is skipped, nothing blocks the frame), and `prewarmStep` queues every missing buffer once in `PREWARM_ORDER`. `browserEnv.createRenderer` builds the Worker (CSP in `vercel.json` already allows `worker-src 'self' blob:`). Worker death falls back to main-thread sliced prewarm (`onFallback`). Without a Worker (Node tests, old browsers) behaviour is the previous one.
+- Music pulse/melody layers (14-71 ms each, rendered synchronously inside `begin()` before) are now rendered by the worker; `MusicDirector` does not start a set until its layers arrive. Without a worker one layer renders per tick. `renderSlice` no longer allocates an array per tick.
+- Measured (Node, warm): stinger_fulfilled 118 ms, ui.clock_in 106, suit_bed 67, night melody 62 - all now off-thread in the browser path. Pad slices (1024 samples, ~5 ms cold) stay on the main thread; that slice remains the only synthesis on the frame thread. Moving pads to the worker is a small next step if 5 ms is judged too much.
+- Residual: a cue not yet prewarmed is silent on its first play instead of hitching (prewarm covers the first-minute set first, then the rest).
+- Evidence: tsc whole client PASS, eslint src/audio PASS, prettier PASS, vitest src/audio 6 files / 53 tests PASS (new `buffer-store.test.ts`: miss returns null and dedupes, prewarm queues without rendering, worker-failure fallback, worker output equals main render, layer requests, MusicDirector gating with and without worker).
+- NOT RUN: a real Worker in a browser (Vite worker bundling of `new URL("./render-worker.ts", import.meta.url)` not built or exercised; run `pnpm --filter @moon-cleanup/client build` and check a worker chunk is emitted).
+
+### 2. Browser CPU vs 0.3 ms budget: NOT RUN in a browser
+`AudioModule` is not constructed by the composition root yet (no import outside `src/audio`), so no page in tools/perf or screenshots exercises it; I did not fake a browser number. Node proxy only: `update()` 0.95 us/frame with the fake context over 200k frames (router tick, music tick, ducker included, at the 30 Hz throttle). Real cost in a browser is dominated by Web Audio node creation per play and parameter writes; measure after wiring (needs the lead to register `new AudioModule({ env: browserEnv(window) })`).
+
+### 3. Hot-path allocation review (player, voice-manager, ducking, event-router tick, music, buffer-store)
+- `Ducker.apply`, `VoiceManager.acquire/release/pickVictim`, `EventRouter.tick`: no allocation (reused result object, fixed tables, indexed loops).
+- Fixed: `MusicDirector.renderSlice` built an array every tick.
+- Remaining minor, left as is: `BufferStore.get` builds a `${id}#${v}` key string per play (short-lived string, per play not per frame); `MusicDirector.renderSlice` iterates `pads.keys()` (one iterator per 30 Hz tick) while any pad exists; `play` creates one BufferSource per voice (unavoidable in Web Audio; gain/panner nodes are pooled). Voice-steal logic reads correct (steal releases slot first, stolen voice's slot not double-released via `releaseSlot=false`).
+- No per-frame allocation found in the 30 Hz tick path.
+
+### 4. Recommendation on "Opus/WebM + AAC N/A"
+Recommend ruling it N/A for M1 with an explicit scope note, and keeping the codec requirement alive only for M2 recorded assets. Reason: every cue and bed is synthesised at runtime, so there is nothing to encode and the download is zero bytes. Target browsers (current Chrome/Edge, Firefox, Safari 17+) all decode Opus in WebM or Ogg, and Safari plays Opus in CAF/MP4 only recently; AAC in MP4 works everywhere, so if recordings are added a single AAC/MP4 file would cover all targets, with Opus/WebM as the small-size primary for Chromium/Firefox. Cost of the procedural approach is startup CPU (now off-thread) and memory; both reported in diagnostics. Lead decides.
+
+### NOT RUN
+Browser CPU measurement; real Worker build/runtime; listening, loudness (-18 LUFS), true peak at master (unchanged from the original report).
+- Note: one vitest run of src/audio showed 1 failing test (cause not captured, likely load/timeout as eslint/tsc ran just before); 4 reruns passed 53/53. Not root-caused.

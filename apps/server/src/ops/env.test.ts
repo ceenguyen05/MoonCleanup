@@ -49,7 +49,11 @@ describe("parseServerEnv", () => {
       tickBudgetMs: 3.5,
       clientIpHeader: "true-client-ip",
       maxClients: 12,
+      maxSeatsPerIp: 6,
       checkpointIntervalS: 30,
+      checkpointInflateMibPerMin: 32,
+      checkpointInflateConcurrency: 1,
+      checkpointInflateQueue: 3,
       seatHoldS: 60,
       netSpike: false,
       buildVersion: "dev",
@@ -89,7 +93,22 @@ describe("parseServerEnv", () => {
     expect(parseServerEnv(prodEnv).clientIpHeader).toBe("true-client-ip");
   });
 
-  it("refuses 30/20 (SNAPSHOT_HZ must divide; 30/15 is the high-rate profile)", () => {
+  it("parses MAX_SEATS_PER_IP: default 6, blank is default, valid values and bounds accepted", () => {
+    expect(parseServerEnv(localEnv).maxSeatsPerIp).toBe(6);
+    expect(parseServerEnv({ ...localEnv, MAX_SEATS_PER_IP: "" }).maxSeatsPerIp).toBe(6);
+    expect(parseServerEnv({ ...localEnv, MAX_SEATS_PER_IP: "12" }).maxSeatsPerIp).toBe(12);
+    expect(parseServerEnv({ ...localEnv, MAX_SEATS_PER_IP: "1" }).maxSeatsPerIp).toBe(1);
+    expect(parseServerEnv({ ...localEnv, MAX_SEATS_PER_IP: "64" }).maxSeatsPerIp).toBe(64);
+  });
+
+  it.each(["0", "65", "-3", "2.5", "many"])("rejects MAX_SEATS_PER_IP=%s with a keyed, value-free issue", (value) => {
+    const issues = issuesOf({ ...localEnv, MAX_SEATS_PER_IP: value });
+    expect(issues.length).toBe(1);
+    expect(issues[0]).toMatch(/^MAX_SEATS_PER_IP: /);
+    expect(issues[0]).not.toContain(value === "many" ? "many" : `: ${value}`);
+  });
+
+  it("refuses 30/20(SNAPSHOT_HZ must divide; 30/15 is the high-rate profile)", () => {
     expect(issuesOf({ ...localEnv, SIM_TICK_HZ: "30", SNAPSHOT_HZ: "20" })).toContain(
       "SNAPSHOT_HZ: must divide SIM_TICK_HZ evenly",
     );
@@ -242,6 +261,28 @@ describe("parseServerEnv", () => {
 
   it("rejects an out-of-range checkpoint interval", () => {
     expect(issuesOf({ ...localEnv, CHECKPOINT_INTERVAL_S: "31" }).join("|")).toContain("CHECKPOINT_INTERVAL_S");
+  });
+
+  it("reads the checkpoint inflate budget, with blanks as defaults and out-of-range values refused", () => {
+    const env = parseServerEnv({
+      ...localEnv,
+      CHECKPOINT_INFLATE_MIB_PER_MIN: "64",
+      CHECKPOINT_INFLATE_CONCURRENCY: "2",
+      CHECKPOINT_INFLATE_QUEUE: "0",
+    });
+    expect(env).toMatchObject({
+      checkpointInflateMibPerMin: 64,
+      checkpointInflateConcurrency: 2,
+      checkpointInflateQueue: 0,
+    });
+    expect(parseServerEnv({ ...localEnv, CHECKPOINT_INFLATE_MIB_PER_MIN: "" }).checkpointInflateMibPerMin).toBe(32);
+    for (const bad of [
+      { CHECKPOINT_INFLATE_MIB_PER_MIN: "0" },
+      { CHECKPOINT_INFLATE_CONCURRENCY: "5" },
+      { CHECKPOINT_INFLATE_QUEUE: "-1" },
+    ]) {
+      expect(issuesOf({ ...localEnv, ...bad }).join("|")).toContain("CHECKPOINT_INFLATE");
+    }
   });
 });
 

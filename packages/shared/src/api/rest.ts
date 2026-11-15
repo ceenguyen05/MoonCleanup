@@ -1,6 +1,22 @@
-// @contract api/rest v0.3.0
+// @contract api/rest v0.5.0
 // @consumers apps/server/src/api (health and readiness handlers), apps/server/src/net (mounts HttpRouteDef[] on
 //   the transport; admission refusals), apps/client/src/net (wake probe parses HealthResponse), tools/bots
+//
+// v0.5.0 (owner decision 2026-11-14, M1-W0-T07): `JoinContractResponseSchema` DROPS `joinTicket` (BREAKING for any
+// reader of the field; none exists in apps/client). The ticket stays server-side (apps/server/src/net/shift/
+// shift-join.ts keeps granting it for onAuth; the server just stops echoing it). Servers on v0.4.x still send the
+// key; the schema strips it. `ContractSummarySchema` gains optional `createdAt` (ISO instant; additive, mirrors
+// `ContractView.createdAt` of packages/db). Consumers: apps/server/src/net/shift (response body), apps/client/src/net
+// (join: use `reservation` + `role` only).
+//
+// v0.4.0 (additive, M1-W5-T07b): binary REST seam for the solo checkpoint routes. `HttpRequest.rawBody`,
+// `HttpResponse.binary`, `HttpRouteDef.rawBodyMaxBytes`, `API_ROUTES.checkpointUpload.rawBodyMaxBytes`,
+// `CHECKPOINT_META_MAX_BYTES`, `CHECKPOINT_UPLOAD_*`, `API_BINARY_CONTENT_TYPE`, `API_EXPOSED_RESPONSE_HEADERS`.
+// DECISION: upload metadata rides in the BODY (u16 LE length + JSON + MCCK package, framed by
+// `@moon-cleanup/protocol` checkpoint-upload), NOT in header `x-mc-checkpoint-meta` (uWebSockets.js caps the TOTAL request
+// header size at 4096 bytes and the worst-case metadata is 4043 base64url chars). Consumers: apps/server/src/api/
+// checkpoints (read the prefix from `rawBody`, drop the header), apps/server/src/net (raw body, binary response, CORS
+// expose headers), apps/client/src/net (build the framed body). See ADR-0031 amendment 1.
 //
 // v0.3.0 (additive, contracts bump 1 of M1): `API_ERROR_CODES` gains `VERSION_CONFLICT` (409, stale `PATCH /v1/me`
 // `version`; replaces the interim `409 BAD_REQUEST`); new `GetContractResponseSchema` (`ContractSummary` plus the
@@ -64,6 +80,11 @@ export interface HttpRequest {
   readonly body: unknown;
   /** Client address as resolved by the adapter (proxy headers applied per security.md section 4). */
   readonly remoteAddress: string;
+  /**
+   * Raw request bytes. Present (possibly empty) ONLY on a route that declares `rawBodyMaxBytes`; such a route never has
+   * a JSON-parsed `body`. The adapter owns the buffer for the call and the handler must not keep it.
+   */
+  readonly rawBody?: Uint8Array;
 }
 
 /** What a handler returns. The adapter serialises `body` as JSON and adds CORS and security headers. */
@@ -74,12 +95,22 @@ export interface HttpResponse {
   readonly body?: unknown;
   /** Extra response headers (lower-case names). */
   readonly headers?: Readonly<Record<string, string>>;
+  /**
+   * Binary body (only on a 2xx answer). When set it is written verbatim as the response body, `body` is ignored and the
+   * handler supplies `content-type` (`API_BINARY_CONTENT_TYPE`).
+   */
+  readonly binary?: Uint8Array;
 }
 
 /** One route. `path` uses `:name` segments, for example `/v1/contracts/:id/join`. */
 export interface HttpRouteDef {
   readonly method: HttpMethod;
   readonly path: string;
+  /**
+   * Opt-in raw binary request body with this byte limit (`API_ROUTES.checkpointUpload` spreads it in). Absent: the
+   * adapter JSON-parses the body under its default limit.
+   */
+  readonly rawBodyMaxBytes?: number;
   handle(request: HttpRequest): HttpResponse | Promise<HttpResponse>;
 }
 
@@ -219,6 +250,23 @@ export const API_ERROR_STATUS = {
   VERSION_CONFLICT: 409,
 } as const satisfies Record<ApiErrorCode, number>;
 
+// ---- Binary REST seam (v0.4.0, ADR-0031 amendment 1) ----------------------------------------------------------------
+
+/** Content type of the checkpoint upload body and of every checkpoint download page. */
+export const API_BINARY_CONTENT_TYPE = "application/octet-stream";
+/** Largest metadata JSON (UTF-8 bytes) in the upload body prefix; the schema's worst case is about 3.1 KB. */
+export const CHECKPOINT_META_MAX_BYTES = 4096;
+/** The upload body starts with the metadata length as u16 little-endian. */
+export const CHECKPOINT_UPLOAD_PREFIX_BYTES = 2;
+/** Body of the single-request upload: prefix + metadata JSON + MCCK package (at most CHECKPOINT_PART_MAX_BYTES). */
+export const CHECKPOINT_UPLOAD_BODY_MAX_BYTES =
+  CHECKPOINT_UPLOAD_PREFIX_BYTES + CHECKPOINT_META_MAX_BYTES + CHECKPOINT_PART_MAX_BYTES;
+/**
+ * Response headers a cross-origin browser client must be able to read: the adapter sends them as
+ * `access-control-expose-headers` on every CORS answer.
+ */
+export const API_EXPOSED_RESPONSE_HEADERS = ["x-save-pages", "retry-after"] as const;
+
 // ---- Route table ---------------------------------------------------------------------------------------------------
 
 /** Every `/v1` route of the MVP (system-overview.md section 2.1, security.md section 3, data-model.md section 3.7c). */
@@ -237,12 +285,16 @@ export const API_ROUTES = {
   contractJoinByCode: { method: "POST", path: "/v1/contracts/join-code" },
   contractInviteRotate: { method: "POST", path: "/v1/contracts/:id/invite-code" },
   contractMembers: { method: "GET", path: "/v1/contracts/:id/members" },
-  checkpointUpload: { method: "POST", path: "/v1/contracts/:id/solo-checkpoints" },
+  checkpointUpload: {
+    method: "POST",
+    path: "/v1/contracts/:id/solo-checkpoints",
+    rawBodyMaxBytes: CHECKPOINT_UPLOAD_BODY_MAX_BYTES,
+  },
   checkpointPart: { method: "PUT", path: "/v1/contracts/:id/solo-checkpoints/:uploadId/parts/:n" },
   checkpointCommit: { method: "POST", path: "/v1/contracts/:id/solo-checkpoints/:uploadId/commit" },
   saveHead: { method: "GET", path: "/v1/contracts/:id/save/head" },
   saveDownload: { method: "GET", path: "/v1/contracts/:id/save" },
-} as const satisfies Record<string, { method: HttpMethod; path: string }>;
+} as const satisfies Record<string, { method: HttpMethod; path: string; rawBodyMaxBytes?: number }>;
 
 // ---- Display and Contract names ---------------------------------------------------------------------------------
 
@@ -364,6 +416,11 @@ export const ContractSummarySchema = z.object({
   lastPlayedAt: IsoInstant.nullable(),
   /** Players connected to the live room, 0 when none. */
   online: z.int().min(0).max(MAX_PLAYERS_PER_ROOM),
+  /**
+   * When the Contract was created (v0.5.0; mirrors the persistence `ContractView.createdAt`, which bounds the playtime a
+   * solo checkpoint may claim). Optional: servers that do not send it stay valid; the client must not depend on it yet.
+   */
+  createdAt: IsoInstant.optional(),
 });
 export type ContractSummary = z.infer<typeof ContractSummarySchema>;
 
@@ -445,10 +502,13 @@ export const SeatReservationSchema = z.looseObject({
 });
 export type SeatReservation = z.infer<typeof SeatReservationSchema>;
 
-/** `POST /v1/contracts/:id/join`: seat reservation plus the 30 s single-use join ticket (security.md section 3). */
+/**
+ * `POST /v1/contracts/:id/join`: seat reservation and the caller's role (security.md section 3). The 30 s single-use
+ * join ticket is NOT part of the response (v0.5.0): it stays server-side, bound to (player, room, session), and the
+ * client never sends it.
+ */
 export const JoinContractResponseSchema = z.object({
   reservation: SeatReservationSchema,
-  joinTicket: z.string().min(16).max(512),
   role: ContractRoleSchema,
 });
 export type JoinContractResponse = z.infer<typeof JoinContractResponseSchema>;
@@ -513,7 +573,8 @@ export const ProfileDeltaSchema = z.object({
 export type ProfileDelta = z.infer<typeof ProfileDeltaSchema>;
 
 /**
- * Metadata of `POST /v1/contracts/:id/solo-checkpoints` (multipart: this JSON plus the octet-stream MCCK package).
+ * Metadata of `POST /v1/contracts/:id/solo-checkpoints`. Wire form (v0.4.0): the body is `u16 LE metaLen`, this JSON in
+ * UTF-8 (`metaLen <= CHECKPOINT_META_MAX_BYTES`), then the MCCK package; `totalBytes` is the PACKAGE length alone.
  * One request when the package is at most CHECKPOINT_PART_MAX_BYTES; otherwise `partCount > 1` returns an upload
  * session and the parts follow (`PUT .../parts/:n`, then `POST .../commit`).
  */

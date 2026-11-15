@@ -1,0 +1,23 @@
+# M1-W3-T03 follow-up: feel keys + Detailing size (contracts-architect)
+
+Task / status: M1-W3-T03 feel-keys / in-review / 2026-11-14 / contracts-architect / Opus 5.5
+
+**Done (contract wave v1.3, `GAME_DATA_SCHEMA_VERSION` stays 1, no protocol/save change):**
+- `movement.json` gains the game-feel §10.1 keys the sim implements (required, structural checks + orderings). New `tool-feel.json` table (§10.2), appended to `GAME_DATA_TABLES`. All values equal the sim's `MOVEMENT_FEEL`/`TOOL_FEEL`. Push length is stored as the §3.1 rule (`strokeLengthStrideFrac`/`PadM`/`MaxSweepMps`), not the §10.2 cm-rounded per-tool L, so the sim's unrounded L is unchanged. The test reproduces §10.2's 45/54/67/87/85/94 cm. Bundle rule: `strokeLengthMaxSweepMps >= movement.sweepWalkMps`.
+- **Detailing decision:** the disc is 0.5 m in **diameter**. Sources: WDS §4.4 "0.5 m-diameter disc op" (its ≥31 % straggler math assumes that size), the stroke `widthCm` = diameter, game-feel §3.1, economy §8 "0.5 m disc/circle", and the animation-spec one-knee scrub. E §21 `radiusM: 0.5` was a key slip. Data changed to `trait.detailing.params = {diameterM: 0.5}`. Traits v1.2 rejects `radiusM` on Detailing and requires a diameter of 0.01–10.23 m. `DETAILING_DIAMETER_MM` (world/dust v1.1) is superseded but kept until the sim migrates. Already 3.3× the Desk Duster width, which makes it generous. A 1.0 m disc would change the golden replay and the WDS math.
+
+**Next: sim owner, exact re-points in `packages/sim/src/config/sim-config.ts` (values identical):**
+movement: accelWalkMps2→`groundAccelMps2`, accelLopeMps2→`lopeAccelMps2`, releaseMps2→`groundDecelMps2`, reverseMps2→`groundReverseAccelMps2`, minStickFrac→`analogMinSpeedFrac`, turnRateDegPerS→`facingTurnDegPerS`, slopeSlowStartDeg→same, slopeNoTractionDeg→`slopeWalkMaxDeg`, slopeSlowMinMult→`slopeUphillMinMult`, slideFriction→`slopeSlideFrictionFrac`, jumpCutMult→`jumpCutVelocityMult`, coyoteS/jumpBufferS/touchdownGravityMult/airAccelMps2/airBrakeMps2→same, snapSweepM/snapWalkM/snapLopeM/snapOffAfterJumpS→`groundSnapSweepM`/`groundSnapWalkM`/`groundSnapLopeM`/`groundSnapOffAfterJumpS`, hopCos35/hopSin35→`Math.cos/sin(hopBurstAngleDeg·π/180)` at config time (bit-identical in V8, tested; not on a state path), hopMaxUpMps/hopMaxHorizontalMps/hopMinIntervalS→same, landSoftMps/landHeavyMps/landFaceplantMps→`landingSoftMps`/`landingHeavyMps`/`faceplantMps`, landMediumRecoverS/landHeavyRecoverS→`landingMediumRecoveryS`/`landingHeavyRecoveryS`, landMediumAccelMult/landHeavyAccelMult→`landingMediumAccelMult`/`landingHeavyAccelMult`, faceplantMoveLockS/faceplantJumpLockS→same, maxSubstepM/minSubsteps/maxSubsteps→`substepMaxDispM`/`substepsMin`/`substepsMax`, slopeProbeM/capsuleRadiusM/capsuleHeightM→same, TOOL_FEEL.holsterSwapS→`movement.holsterSwapS`.
+tool-feel: contactFrac→same, pushK/pushPadM/sweepVMaxMps→`strokeLengthStrideFrac`/`strokeLengthPadM`/`strokeLengthMaxSweepMps`, bootClearM→`bootClearanceM`, headLiftMps/headDropMps→`headSpeedLiftMps`/`headSpeedResumeMps`, sweepTurnRateDegPerS→`sweepFacingTurnDegPerS`, detailingSpeedMult→`detailingMoveMult`, flickMaxHeightM→`flickMaxFeetHeightM`, cellNearFullFrac→same.
+Detailing: `tool.ts:187` and `dust/ledger-port.ts:107` → `round(trait.detailing.params.diameterM × 100)` cm via SimConfig. After that, contracts removes `DETAILING_DIAMETER_MM` (add/migrate/remove).
+Hot paths should read the SimConfig fields that config build copies, not `data.*`. Out of scope: `TWILIGHT_FRAC_OF_DAYLIGHT` (world, not feel), the `yawFrame` input bit, and the rest of §10.1/§10.2 (added when a consumer exists).
+
+Files: packages/shared/src/config/{movement,tool-feel(new),traits,bundle,common}.schema.ts, config/index.ts, config/bundle.schema.test.ts, world/dust.ts, world/stroke.ts (doc-only); packages/game-data/data/{movement,traits,tool-feel(new)}.json, src/raw.ts, src/game-data.test.ts, README.md.
+
+Evidence (Node 26.13.1 fnm prefix, final file state, package-scoped): shared tsc OK, vitest 462/462; game-data tsc OK, vitest 59/59; sim (unchanged code) tsc OK, vitest 18/18 including 10,000-tick golden (stateHash 4037918216 assertion passes); prettier + eslint on changed files OK.
+
+Consumers: packages/sim (re-point, above); tools/balance-sim (read `tool-feel`/new movement keys when built); apps/client/server: none (they use `loadGameData()`); module-boundaries §2 config row: lead may add `tool-feel`.
+
+Blockers: none. Design-doc follow-up for game-designer: E §21 traits row `radiusM: 0.5` → `diameterM: 0.5`; game-feel §10.2 strokeLengthM row → stored as rule.
+
+Commit suggestion: `feat(shared,game-data): data-driven movement/tool feel keys (config v1.3) and Detailing diameterM`

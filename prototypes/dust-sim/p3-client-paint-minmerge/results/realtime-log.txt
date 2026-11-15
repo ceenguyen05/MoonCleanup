@@ -1,0 +1,12 @@
+run a load before 76
+S4 FAIL metrics=9 approach=p3-client-paint-minmerge
+run a load after 100
+P1 control load before 100
+S4 FAIL metrics=9 approach=p1-scalar-procedural
+P1 control load after 31
+run b load before 20
+S4 PASS metrics=9 approach=p3-client-paint-minmerge
+run b load after 29
+run c load before 59
+S4 FAIL metrics=9 approach=p3-client-paint-minmerge
+run c load after 90

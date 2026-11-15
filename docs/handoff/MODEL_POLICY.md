@@ -1,20 +1,19 @@
 # Models and usage
 
-Allowed versions: **Sonnet 5.5** (`claude-sonnet-5-5`), **Opus 5.5** (`claude-opus-5-5`),
-**Fable 5.2** (`claude-fable-5-2`). No Haiku. Exact role defaults/tools/turn checkpoints live in `.claude/agents/*.md`;
+Allowed versions: **Sonnet 5.5** (`claude-sonnet-5-5`) and **Opus 5.5** (`claude-opus-5-5`). No Haiku. **Fable 5.2 is retired (owner, 2026-11-15)**; do not launch it unless Cee explicitly says so. Exact role defaults/tools/turn checkpoints live in `.claude/agents/*.md`;
 do not maintain a second copied roster here. Role files are a menu, not a launch checklist.
 
 | Model | Default responsibility | Effort |
 | --- | --- | --- |
 | Sonnet 5.5 | Lead; UI/backend/integration, setup, tests, profiling, balance checks and docs | Medium; high for edge cases/important craft |
-| Opus 5.5 | Contracts/architecture, game design, netcode, independent code/visual/security reviews | High; Sonnet can cover simple sub-tasks |
-| Fable 5.2 | Demanding gameplay/feel, terrain/dust, rendering, technical art and animation | High; simpler fixes can use Sonnet/Opus |
+| Opus 5.5 (premium, High) | Demanding gameplay/feel, terrain/dust, rendering, technical art, animation; contracts/architecture, game design, netcode, independent reviews | High (the single premium slot) |
+| Opus 5.5 / Sonnet 5.5 (regular, medium) | Everything else: UI/backend/integration, tests, profiling, balance, docs, simpler fixes | Medium; high only for a bounded edge case |
 
 ## Lead's authority
 
 The Sonnet lead may choose model and low/medium/high/xhigh/max effort per task without asking Cee again.
 Record a one-line reason and exit check. Low for exact mechanical edits, medium for clear work, high for edge cases/craft;
-xhigh/max only for a specific bounded hard problem, then return to the default. Do not force all workers onto one model/effort.
+xhigh/max are not allowed (owner, 2026-11-15: effort ceiling is High); the lead may raise or lower effort per task between low and High on its own judgment. Do not force all workers onto one model/effort.
 Normally omit Agent's model argument to retain the pinned role ID. Invocation model overrides accept aliases;
 verify alias resolution matches an allowed version, or use a task-specific role with the pin and unchanged tools/ownership.
 Effort overrides can be passed per task; do not rewrite persistent defaults for a one-off effort change.
@@ -23,7 +22,7 @@ Check model availability and whether environment overrides defeat the profiles; 
 
 ## Usage controls
 
-Run independent ready work in parallel; **up to five regular (Sonnet/Opus) workers plus up to two Fable workers at once; the first two reviewers count toward the regular cap, additional reviewers do not** (owner relaxed 2026-11-12).
+Run independent ready work in parallel; **keep 4 regular workers (Opus 5.5 or Sonnet 5.5, medium) + 1 premium worker (Opus 5.5, High) running at all times; reviewers count toward the regular cap** (owner, 2026-11-15; restores the 4+1 blueprint, Fable retired, the 2026-11-15 Fable-only window is over). Idle slots should be filled with the next dependency-ready task.
 Installs/contracts/root edits/migrations are sequential. A second worker must unblock independent critical-path work.
 No nested agents, worktrees, team mode, automatic prototype contest or polling loops. `maxTurns` is a checkpoint, not a token cap.
 Brief ≤500 words plus paths; initially read ≤3 focused spec sections when practical. Read more source when correctness needs it.

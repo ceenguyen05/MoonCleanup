@@ -17,6 +17,23 @@ export default defineConfig({
     // builds that are not deployed; MC_SOURCEMAP=true emits linked maps (local debugging).
     sourcemap: process.env["MC_SOURCEMAP"] === "hidden" ? "hidden" : process.env["MC_SOURCEMAP"] === "true",
     target: "es2024",
+    // Vendor chunk groups (M1 chunk split): engine libs leave the app entry chunk so it caches separately and the
+    // online-only SDK/Sentry load only with the lazy online chunk. Rolldown advancedChunks, Vite 8.
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: "vendor-three", test: /node_modules[\/]three[\/]/, priority: 30 },
+            {
+              name: "vendor-react",
+              test: /node_modules[\/](react|react-dom|scheduler|motion|motion-dom|motion-utils)[\/]/,
+              priority: 20,
+            },
+            { name: "vendor-online", test: /node_modules[\/](@colyseus|@sentry|@sentry-internal)[\/]/, priority: 10 },
+          ],
+        },
+      },
+    },
   },
   server: {
     strictPort: true,

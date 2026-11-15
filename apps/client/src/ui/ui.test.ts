@@ -114,7 +114,9 @@ describe("misc", () => {
       glass: "solid",
       motion: "reduced",
       hudScale: 1.5,
+      hudForce: false,
     });
+    expect(parseUiUrlOptions("?uihud=1").hudForce).toBe(true);
     expect(parseUiUrlOptions("").hudTest).toBe(false);
   });
 });

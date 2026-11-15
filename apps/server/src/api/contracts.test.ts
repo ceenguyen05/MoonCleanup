@@ -1,6 +1,7 @@
 import {
   ApiErrorBodySchema,
   CreateContractResponseSchema,
+  GetContractResponseSchema,
   GuestCreateResponseSchema,
   InviteRotateResponseSchema,
   JoinCodeResponseSchema,
@@ -316,6 +317,79 @@ describe("contracts", () => {
       body: { shiftType: "solo" },
     });
     expect(ContractSummarySchema.parse(back.body)).toMatchObject({ shiftType: "solo", maxPlayers: 1 });
+  });
+
+  it("GET /v1/contracts/:id returns the invite code to the Holder of a Private Shift only (REST v0.3.0)", async () => {
+    const h = createHarness();
+    const holder = await player(h, "Holder Epsilon");
+    const mate = await player(h, "Mate Epsilon");
+    const solo = CreateContractResponseSchema.parse(
+      (await h.call("POST", "/v1/contracts", { token: holder.accessToken, body: { name: "Solo Epsilon" } })).body,
+    );
+    const priv = CreateContractResponseSchema.parse(
+      (
+        await h.call("POST", "/v1/contracts", {
+          token: holder.accessToken,
+          body: { name: "Private Epsilon", shiftType: "private" },
+        })
+      ).body,
+    );
+    await h.call("POST", "/v1/contracts/join-code", { token: mate.accessToken, body: { code: priv.inviteCode } });
+
+    const asHolder = GetContractResponseSchema.parse(
+      (await h.call("GET", `/v1/contracts/${priv.contract.id}`, { token: holder.accessToken })).body,
+    );
+    expect(asHolder.inviteCode).toBe(priv.inviteCode);
+
+    // After a rotation the GET reflects the current code.
+    const rotated = InviteRotateResponseSchema.parse(
+      (await h.call("POST", `/v1/contracts/${priv.contract.id}/invite-code`, { token: holder.accessToken })).body,
+    );
+    expect(
+      GetContractResponseSchema.parse(
+        (await h.call("GET", `/v1/contracts/${priv.contract.id}`, { token: holder.accessToken })).body,
+      ).inviteCode,
+    ).toBe(rotated.inviteCode);
+
+    // Staff never receive it: not as a value, and the key itself is null.
+    const staffRes = await h.call("GET", `/v1/contracts/${priv.contract.id}`, { token: mate.accessToken });
+    expect(GetContractResponseSchema.parse(staffRes.body).inviteCode).toBeNull();
+    expect(JSON.stringify(staffRes.body)).not.toContain(rotated.inviteCode);
+    expect(JSON.stringify(staffRes.body)).not.toContain(priv.inviteCode!);
+
+    // Solo Contract: null.
+    expect(
+      GetContractResponseSchema.parse(
+        (await h.call("GET", `/v1/contracts/${solo.contract.id}`, { token: holder.accessToken })).body,
+      ).inviteCode,
+    ).toBeNull();
+
+    // The list never carries invite codes.
+    const listText = JSON.stringify((await h.call("GET", "/v1/contracts", { token: holder.accessToken })).body);
+    expect(listText).not.toContain("inviteCode");
+    expect(listText).not.toContain(rotated.inviteCode);
+  });
+
+  it("PATCH to Private returns the new invite code to the Holder, and nothing for Solo", async () => {
+    const h = createHarness();
+    const holder = await player(h, "Holder Zeta");
+    const created = CreateContractResponseSchema.parse(
+      (await h.call("POST", "/v1/contracts", { token: holder.accessToken, body: { name: "Zeta Moon" } })).body,
+    );
+    const id = created.contract.id;
+    const toPrivate = GetContractResponseSchema.parse(
+      (await h.call("PATCH", `/v1/contracts/${id}`, { token: holder.accessToken, body: { shiftType: "private" } }))
+        .body,
+    );
+    expect(toPrivate.inviteCode).toMatch(/^[0-9A-HJKMNP-TV-Z]{8}$/);
+    const viaGet = GetContractResponseSchema.parse(
+      (await h.call("GET", `/v1/contracts/${id}`, { token: holder.accessToken })).body,
+    );
+    expect(viaGet.inviteCode).toBe(toPrivate.inviteCode);
+    const toSolo = GetContractResponseSchema.parse(
+      (await h.call("PATCH", `/v1/contracts/${id}`, { token: holder.accessToken, body: { shiftType: "solo" } })).body,
+    );
+    expect(toSolo.inviteCode).toBeNull();
   });
 
   it("reports live player counts through the injected presence source, capped at 6", async () => {

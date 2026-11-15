@@ -1,0 +1,263 @@
+[
+  {
+    "view": "pool",
+    "url": "http://localhost:5262/?scene=s06&view=pool&solo=0&preset=medium&backend=webgl2",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "lumas": {
+      "pool": 139.44218437499984
+    },
+    "stars": 290,
+    "frameMs": {
+      "p50": 16.700000002980232,
+      "p95": 19.69999998807907,
+      "max": 144.40000000596046
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 6.635416667039196,
+      "min": 4.200000002980232,
+      "max": 12,
+      "p50": 6.200000002980232,
+      "p95": 9.700000002980232,
+      "p99": 10.900000005960464
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.07000000017384687,
+      "min": 0,
+      "max": 0.4000000059604645,
+      "p50": 0.09999999403953552,
+      "p95": 0.19999998807907104,
+      "p99": 0.20000000298023224
+    },
+    "draws": 294,
+    "triangles": 518919,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  },
+  {
+    "view": "wide",
+    "url": "http://localhost:5262/?scene=s06&view=wide&solo=0&preset=medium&backend=webgl2",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "lumas": {
+      "pool": 141.01211718750014
+    },
+    "stars": 148,
+    "frameMs": {
+      "p50": 16.5,
+      "p95": 20.19999998807907,
+      "max": 23.400000005960464
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 7.70124999973923,
+      "min": 4.5,
+      "max": 17.099999994039536,
+      "p50": 7.5999999940395355,
+      "p95": 10.899999991059303,
+      "p99": 13.399999991059303
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.08125000018626452,
+      "min": 0,
+      "max": 0.7000000029802322,
+      "p50": 0.09999999403953552,
+      "p95": 0.20000000298023224,
+      "p99": 0.3999999910593033
+    },
+    "draws": 288,
+    "triangles": 516487,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  },
+  {
+    "view": "pool&off=lamp",
+    "url": "http://localhost:5262/?scene=s06&view=pool&off=lamp&solo=0&preset=medium&backend=webgl2",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "lumas": {
+      "pool": 88.15649453125008
+    },
+    "stars": 294,
+    "frameMs": {
+      "p50": 16.599999994039536,
+      "p95": 19.099999994039536,
+      "max": 21.299999997019768
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 4.901666666132709,
+      "min": 3.3999999910593033,
+      "max": 9.900000005960464,
+      "p50": 4.600000008940697,
+      "p95": 6.899999991059303,
+      "p99": 7.700000002980232
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.06749999970197677,
+      "min": 0,
+      "max": 0.5,
+      "p50": 0.09999999403953552,
+      "p95": 0.19999998807907104,
+      "p99": 0.20000000298023224
+    },
+    "draws": 269,
+    "triangles": 493811,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  },
+  {
+    "view": "pool&off=lamp,flood,glow",
+    "url": "http://localhost:5262/?scene=s06&view=pool&off=lamp,flood,glow&solo=0&preset=medium&backend=webgl2",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "lumas": {
+      "pool": 79.57666406250013
+    },
+    "stars": 305,
+    "frameMs": {
+      "p50": 16.69999998807907,
+      "p95": 18.80000001192093,
+      "max": 20.599999994039536
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 5.74499999905626,
+      "min": 3.5,
+      "max": 12.200000002980232,
+      "p50": 5.799999997019768,
+      "p95": 7.899999991059303,
+      "p99": 9.700000002980232
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.06749999957780044,
+      "min": 0,
+      "max": 0.20000000298023224,
+      "p50": 0.09999999403953552,
+      "p95": 0.20000000298023224,
+      "p99": 0.20000000298023224
+    },
+    "draws": 269,
+    "triangles": 493811,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "error: THREE.Object3D.add: object not an instance of THREE.Object3D. undefined"
+    ]
+  }
+]

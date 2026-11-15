@@ -7,5 +7,5 @@
   "tempVoteKick": { "minVotes": 3 },
   "cleanupOrder": { "nearestAlbatrossNext": true, "holderOrSupervisorOnly": true, "maxFlaggedPlots": 10 },
   "serviceCall": { "durationS": 60, "maxPerDay": 3 },
-  "loanerKit": { "maxVehiclesOut": 4 }
+  "loanerKit": { "maxVehiclesOut": 4, "walletFrac": 0.02, "capLm": 25000, "windowS": 600 }
 }

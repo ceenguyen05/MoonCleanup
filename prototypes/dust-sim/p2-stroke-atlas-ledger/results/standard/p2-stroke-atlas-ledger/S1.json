@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "approach": "p2-stroke-atlas-ledger",
+  "scenario": "S1",
+  "seed": 20261114,
+  "dryRun": false,
+  "tier": "floor",
+  "quality": "medium",
+  "backend": "webgpu",
+  "status": "NOT_RUN",
+  "simSeconds": 180,
+  "metrics": [
+    {
+      "name": "s1.dustGpuMs.p95.tierB",
+      "value": null,
+      "unit": "ms",
+      "bar": {
+        "op": "<=",
+        "limit": 1,
+        "source": "WDS 10 S1 tier B"
+      },
+      "status": "NOT_RUN",
+      "note": "GPU timestamps not provided by this adapter or run (CPU/headless)"
+    },
+    {
+      "name": "s1.edgeWidthPx.2m",
+      "value": null,
+      "unit": "px",
+      "bar": {
+        "op": "<=",
+        "limit": 2,
+        "source": "WDS 10 S1"
+      },
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "s1.edgeWidthPx.10m",
+      "value": null,
+      "unit": "px",
+      "bar": null,
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "s1.edgeWidthPx.50m",
+      "value": null,
+      "unit": "px",
+      "bar": null,
+      "status": "NOT_RUN"
+    },
+    {
+      "name": "s1.cpuMs.p95",
+      "value": 0.01,
+      "unit": "ms",
+      "bar": null,
+      "status": "INFO"
+    },
+    {
+      "name": "s1.frames",
+      "value": 10800,
+      "unit": "frames",
+      "bar": null,
+      "status": "INFO"
+    },
+    {
+      "name": "s1.strokes",
+      "value": 3599,
+      "unit": "strokes",
+      "bar": null,
+      "status": "INFO"
+    }
+  ],
+  "extra": {
+    "cadenceFrame": 1,
+    "frameTicks": 2,
+    "lagSourceEventLoop": 0,
+    "serverTickMsP50": 0.002900000000408909,
+    "serverTickMsP99": 0.10570000000006985,
+    "serverTickMsMax": 12.10490000000027,
+    "serverCpuMs": 56.652699999991,
+    "strokesSubmitted": 3759,
+    "strokesMerged": 1876,
+    "strokesApplied": 1880,
+    "strokesCellFull": 0,
+    "unitsRemoved": 14906,
+    "latticePoints": 378074,
+    "headersSent": 19,
+    "continuationsSent": 1861,
+    "bytesStrokes": 14976,
+    "bytesRobot": 0,
+    "bytesAck": 7200,
+    "bytesPlots": 327,
+    "bytesLedger": 395,
+    "bytesLog": 1005,
+    "bytesCheck": 288,
+    "bytesSnapshot": 65,
+    "ledgersSent": 4,
+    "serverLedgers": 12,
+    "serverPolished": 0,
+    "serverLogBytes": 65536,
+    "serverLogEvictions": 0,
+    "robotsActive": 0,
+    "robotChunks": 0,
+    "clients": 1,
+    "clientLedgersTotal": 12,
+    "clientL0Mismatch": 0,
+    "clientDriftChunks": 0,
+    "clientStrayLedgers": 0,
+    "clientMispredicts": 0,
+    "clientUnackedPredictions": 1,
+    "clientBadContinuations": 0,
+    "resyncs": 0,
+    "scanMismatch": 0,
+    "saves": 0,
+    "saveMsMean": 0,
+    "saveBytesLast": 0,
+    "saveChunksLast": 0,
+    "storeBytes": 0,
+    "restoreMs": 0,
+    "snapshotStatesRawBytes": 40965,
+    "joinBlockingBytes": 0,
+    "joinStreamedBytes": 0,
+    "joinLedgers": 0,
+    "joinSnapshotMs": 0,
+    "joinTileRebuildMs": 0,
+    "joinTiles": 0,
+    "rssMb": 148.28125,
+    "tilesResident": 12,
+    "tileEvictions": 0,
+    "tileRebuilds": 12,
+    "tileRebuildMsMean": 1.7637583333332714,
+    "tileRebuildMsMax": 4.403899999999794,
+    "tileStrokesReplayed": 1800,
+    "tileStrokeDraws": 3801
+  },
+  "notes": [],
+  "env": {
+    "node": "v26.13.1",
+    "platform": "win32-x64",
+    "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "gpu": "see run notes"
+  }
+}

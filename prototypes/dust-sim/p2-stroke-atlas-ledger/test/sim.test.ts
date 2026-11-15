@@ -5,6 +5,7 @@ import { DurableStore, loadWorld, saveWorld } from "../src/core/persistence";
 import { P2Server, SUBMIT_MALFORMED, SUBMIT_OK, SUBMIT_TOO_LONG, type StrokeLike } from "../src/core/server";
 import { TILE_PRESETS, TileAtlasRef } from "../src/core/tiles";
 import { dirOf, xform } from "../src/core/util";
+import { computeSimGolden, SIM_GOLDEN_EXPECTED } from "./golden-cases";
 import { fullDigest, mulberry32, plotNear, realTables, SITE_PLOT, TEST_OPTIONS } from "./support";
 
 const t = realTables();
@@ -186,6 +187,37 @@ describe.each(["frame", "tick"] as const)("server and clients (%s cadence)", (ca
     expect(s.linkOf(0)!.client.plans.active[9] ?? 0).toBe(0);
     expectClean(s);
   }, 120_000);
+
+  it("a robot re-assigned out of reach stops on the clients too (no stale plan, no chunk applied by one side only)", () => {
+    // No drift checks: a resync must not be able to hide a divergence.
+    const s = new P2Server(t, { ...TEST_OPTIONS, cadence, checkIntervalS: 1e9 });
+    s.join(0, null);
+    s.join(1, null);
+    const a = walker(0, { width: 60, depth: 16, speedMm: 150, originU: 0, originV: 0 });
+    const b = walker(1, { width: 60, depth: 16, speedMm: 150, originU: 5000, originV: 9000 });
+    const far = SITE_PLOT + 4000;
+    for (let tick = 1; tick <= 900; tick++) {
+      s.submit(0, a(tick));
+      s.submit(1, b(tick));
+      if (tick === 40) {
+        for (let id = 0; id < 4; id++) s.submitRobotIntent(id, SITE_PLOT, tick, 140, 32, 90, 0xffffffff, 0);
+      }
+      // Old chunks are due at 40 + 20 k. Re-assign on a chunk tick, one tick before and one tick after.
+      if (tick === 400) s.submitRobotIntent(0, far, tick, 140, 32, 90, 0xffffffff, 0);
+      if (tick === 419) s.submitRobotIntent(1, far, tick, 140, 32, 90, 0xffffffff, 0);
+      if (tick === 441) s.submitRobotIntent(2, t.neighbors[SITE_PLOT * 6 + 2]!, tick, 80, 16, 120, 0xffff, 0);
+      s.advance(1);
+      if (tick % 2 === 0) expectHashes(s, [0, 1]);
+    }
+    const c = s.linkOf(0)!.client;
+    expect(s.robotStops).toBe(4); // robots 0 and 1, two clients each
+    expect(c.plans.active[0]).toBe(0);
+    expect(c.plans.active[1]).toBe(0);
+    expect(c.plans.plot[2]).toBe(t.neighbors[SITE_PLOT * 6 + 2]);
+    expect(s.plans.active[0]).toBe(1); // the server still runs it, far away
+    expect(c.plans.chunksApplied).toBeGreaterThan(100);
+    expectClean(s);
+  }, 120_000);
 });
 
 describe("persistence and join", () => {
@@ -359,6 +391,59 @@ describe("CPU reference tile atlas", () => {
     expect(tiles.ledgerZeroClears).toBe(0);
     expect(s.clientHash(0)).toBe(s.serverHash());
   }, 60_000);
+});
+
+describe("CPU reference tile atlas: chains", () => {
+  it("a slow straight chain removes exactly one pass in the tile, like the ledger (no double count at joints)", () => {
+    const s = new P2Server(t, { ...TEST_OPTIONS, cadence: "tick" });
+    s.join(0, null);
+    const c = s.linkOf(0)!.client;
+    const tiles = new TileAtlasRef(t, c.view, c.log, c.set, { ...TILE_PRESETS.medium, now: () => 0 });
+    c.tiles = tiles;
+    const d = new Float64Array(3);
+    dirOf(t, SITE_PLOT, 0, 0, d);
+    // 120 cm wide, 5 cm per stroke (24 x slower than the width), depth16 16: one pass removes 16 units of u0.
+    for (let k = 0; k < 120; k++) {
+      s.submit(0, {
+        anchor: SITE_PLOT,
+        startUMm: -3000 + k * 50,
+        startVMm: 400,
+        endUMm: -3000 + (k + 1) * 50,
+        endVMm: 400,
+        widthCm: 120,
+        depth16: 16,
+        toolCode: 2,
+        tick: k + 1,
+        actorSlot: 0,
+        inputSeq: (k + 1) & 0xffff,
+      });
+      s.advance(1);
+      tiles.frame(d);
+    }
+    const slot = tiles.slotOfPlot[SITE_PLOT]!;
+    expect(slot).toBeGreaterThanOrEqual(0);
+    const level = [5, 8, 13][t.classOf[SITE_PLOT]!]!;
+    const onePass = Math.round((255 * 16) / (16 * level));
+    // Tile texel at plot-local (0, 400) mm: well inside the swept band (u in -3000 .. 3000, v in -200 .. 1000).
+    const px = tiles.px;
+    const x = Math.floor(12_800 / tiles.texelMm);
+    const y = Math.floor((400 + 12_800) / tiles.texelMm);
+    const r = tiles.data[(slot * px * px + y * px + x) * 4]!;
+    // One rounding step per stroke that partly covers the texel (a 400 mm texel meets 8 or 9 strokes of 50 mm).
+    expect(Math.abs(255 - r - onePass)).toBeLessThanOrEqual(5);
+    // The ledger cell under it lost exactly depth16 units.
+    const ls = c.view.slotOf[SITE_PLOT]!;
+    expect(c.view.texels[ls * 1024 + 16 * 32 + 16]).toBe(16 * level - 16);
+  });
+});
+
+describe("golden scenario", () => {
+  it("server + clients + robots + checkpoint + late join + tiles give the recorded numbers", () => {
+    const got = computeSimGolden();
+    expect(got.clientsMatching).toBe(7);
+    expect(got.restoredHash).not.toBe(0);
+    expect(got).toEqual(SIM_GOLDEN_EXPECTED);
+  }, 120_000);
 });
 
 describe("Polished plots", () => {

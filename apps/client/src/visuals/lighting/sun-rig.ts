@@ -32,7 +32,7 @@ import { DEFAULT_LOOK_KNOBS, sunShadowsEnabled, type LookKnobs, type ShadowFilte
 import { KEY_NORMAL_OFFSET_PROPERTY, KeyCascadeShadowNode } from "./cascade-shadow-node";
 import { cascadeEndsM } from "./cascade-splits";
 import { keyDirectionUniform } from "./key-direction";
-import { FILL_FRACTION, SUN_LUX_NORMAL, type KeyState } from "./key-light";
+import { FILL_FRACTION, type KeyState } from "./key-light";
 import { depthBias, normalBiasM, texelWorldM } from "./shadow-bias";
 import { shadowFilterFor } from "./shadow-filter";
 
@@ -48,6 +48,12 @@ const FILL_TINT = new Color(1.0, 1.0, 1.045);
 
 /** Material `userData` key under which a receiver publishes its far-occluder (horizon map) visibility node. */
 export const HORIZON_VISIBILITY_KEY = "mcHorizonVisibility";
+
+/**
+ * Layer of the shadow camera of cascade 0; cascade i also renders layer `KEY_CASCADE_LAYER_BASE + i`. An object on
+ * that layer alone is drawn into that one cascade and by no other camera (the per-cascade terrain casters, M1-W2-T01).
+ */
+export const KEY_CASCADE_LAYER_BASE = 10;
 
 /** Light margin above the highest point of a cascade (rim shadows at grazing sun), metres. */
 const LIGHT_MARGIN_M = 300;
@@ -164,6 +170,11 @@ export class SunRig {
   readonly floor: AmbientLight;
   /** Cascades of the current CSM: texel size and far end, for the debug sidecar. */
   readonly cascadeInfo: CascadeInfo[] = [];
+  /**
+   * Shadow cameras of the cascades that cast this frame, in cascade order (empty while the key casts no shadow or the
+   * cascades are not built). Their matrices are those of the last shadow render.
+   */
+  readonly cascadeCameras: Camera[] = [];
 
   private readonly scene: Scene;
   private csm: MoonShadowNode | null = null;
@@ -269,13 +280,10 @@ export class SunRig {
 
   /**
    * Points the key at `directionToKey` (unit vector toward the sun or the Earth), colours and scales every light for the
-   * key state, and updates the cascade bias rule. Call once per frame after the camera moved.
-   *
-   * `elevationDeg` is ignored (the bias no longer depends on the elevation); it stays in the signature only because the
-   * render bench (`render/bench/look-visuals.ts`) still passes it. Remove it together with that argument.
+   * key state, and updates the cascade bias rule (it follows the cascade texel, not the sun elevation). Call once per frame
+   * after the camera moved.
    */
-  update(camera: PerspectiveCamera | Camera, key: KeyState, directionToKey: Vector3, elevationDeg?: number): void {
-    void elevationDeg;
+  update(camera: PerspectiveCamera | Camera, key: KeyState, directionToKey: Vector3, siteUp?: Vector3): void {
     const settings = this.settings;
     if (settings === null) return;
     const csm = this.csm;
@@ -293,11 +301,21 @@ export class SunRig {
     }
 
     // Direction (never exactly horizontal) and colour.
+    // `siteUp`: local vertical of the scene's site (default +Y). The bounce fill's "up" follows it.
     this._dir.copy(directionToKey);
-    if (this._dir.y < Math.sin(MIN_CSM_ELEVATION_RAD)) {
-      this._dir.y = Math.sin(MIN_CSM_ELEVATION_RAD);
-      this._dir.normalize();
+    const minSin = Math.sin(MIN_CSM_ELEVATION_RAD);
+    if (siteUp === undefined) {
+      if (this._dir.y < minSin) {
+        this._dir.y = minSin;
+        this._dir.normalize();
+      }
+      if (this.fill.position.y !== 1) this.fill.position.set(0, 1, 0);
+    } else {
+      const sinEl = this._dir.dot(siteUp);
+      if (sinEl < minSin) this._dir.addScaledVector(siteUp, minSin - sinEl).normalize();
+      this.fill.position.copy(siteUp);
     }
+    this.fill.updateMatrixWorld();
     keyDirectionUniform.value.copy(this._dir);
     this.key.position.copy(this._dir).multiplyScalar(500);
     this.key.target.position.set(0, 0, 0);
@@ -308,7 +326,8 @@ export class SunRig {
     this.key.color.copy(mode === "earth" ? EARTH_COLOUR : SUN_COLOUR);
     // A DirectionalLight's intensity is the illuminance on a surface FACING the light; the surface's N.L supplies sin(elevation)
     // for the ground. (`key.sunLux` is the flat-ground value and only drives the fill; using it here applied N.L twice.)
-    const normalLux = mode === "sun" ? (key.sunLux > 0 ? SUN_LUX_NORMAL : 0) : mode === "earth" ? key.earthLux : 0;
+    // The sun fades over the terminator band (`sunTerminatorFraction`), so it is at 0 when the key hands over to the Earth.
+    const normalLux = mode === "sun" ? key.sunNormalLux : mode === "earth" ? key.earthLux : 0;
     this.key.intensity = normalLux * key.scale;
     this.key.castShadow = this.shadowsOn && mode !== "floor";
 
@@ -316,14 +335,22 @@ export class SunRig {
     this.fill.color.copy(FILL_TINT).multiplyScalar(FILL_FRACTION.up);
     this.fill.groundColor.copy(FILL_TINT).multiplyScalar(FILL_FRACTION.down);
     this.fill.intensity = key.keyLux * key.scale;
+    // Far-side floor, or the earthshine carried through the terminator band (cool Earth white, no shadows).
+    this.floor.color.copy(key.floorIsEarth ? EARTH_COLOUR : FLOOR_COLOUR);
     this.floor.intensity = key.floorLux * key.scale;
 
     // Cascade texel sizes and the normal offset (it follows the texel, which changes with the camera), written to the CLONED
     // cascade shadows.
+    this.cascadeCameras.length = 0;
     if (csm !== null) {
+      const casting = this.key.castShadow && csm.camera !== null;
       for (let i = 0; i < csm.lights.length; i++) {
         const shadow = csm.lights[i]?.shadow;
         if (shadow === undefined) continue;
+        // Own layer per cascade (a mask beyond layer 0 stops three copying the layers of the main camera onto it).
+        shadow.camera.layers.enable(0);
+        shadow.camera.layers.enable(KEY_CASCADE_LAYER_BASE + i);
+        if (casting) this.cascadeCameras.push(shadow.camera);
         const width = shadow.camera.right - shadow.camera.left;
         const texel = texelWorldM(width, shadow.mapSize.width);
         const info = this.cascadeInfo[i];
@@ -349,6 +376,17 @@ export class SunRig {
   /** PCF kernel of the current cascades (`near+far` when cascade 0 runs its own). */
   get shadowFilter(): string {
     return this.filterNearId === this.filterId ? this.filterId : `${this.filterNearId}+${this.filterId}`;
+  }
+
+  /**
+   * Edge in pixels of one cascade's shadow map: the depth target three allocated once the cascades are built (cascade 0;
+   * every cascade is cloned from the same shadow), the size written from the preset before that. 0 with sun shadows off.
+   * Reads only; for `__mcLook.info()` (VT-M0-03).
+   */
+  get shadowMapSizePx(): number {
+    if (!this.shadowsOn || this.csm === null) return 0;
+    const shadow = this.csm.lights[0]?.shadow ?? this.key.shadow;
+    return shadow.map?.width ?? shadow.mapSize.width;
   }
 
   /** The CSM node (for debug views and tests). */

@@ -1,0 +1,33 @@
+{
+ "label": "cluster-6-medium-frame",
+ "px": 64,
+ "slots": 1024,
+ "frames": 3600,
+ "events": 7828,
+ "draws": 6674,
+ "clears": 1149,
+ "rebuilt": 5,
+ "finalSlots": [
+  0,
+  1,
+  2,
+  3,
+  4
+ ],
+ "cpuRefMs": {
+  "p50": 0.006,
+  "p95": 0.101,
+  "p99": 0.364,
+  "max": 24.168
+ },
+ "cleaners": 6,
+ "seconds": 60,
+ "quality": "medium",
+ "cadence": "frame",
+ "submitted": 7200,
+ "rejected": 0,
+ "strokesApplied": 3625,
+ "hashMatch": true,
+ "tilesResident": 5,
+ "polished": 1
+}

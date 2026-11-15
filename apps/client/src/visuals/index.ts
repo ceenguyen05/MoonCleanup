@@ -14,13 +14,25 @@ export type {
   LookdevSceneOptions,
 } from "./lookdev/s02-lookdev-kit";
 export { TYPICAL_SCENE_ID, TypicalWorksite } from "./lookdev/typical-worksite";
-export type { LookHooks, LookInfo } from "./lookdev/hooks";
+export type { LookCameraInfo, LookDustAtlasInfo, LookHooks, LookInfo } from "./lookdev/hooks";
 export type { LookState } from "./lookdev/scene-base";
+// `?scene=dust` stroke feed port (M1-W3-T02b): the composition root adapts the Solo host's ledger view to it.
+export { DUST_SCENE_ID, DUST_SCENE_SITE, type DustFeedPort } from "./dust/dust-worksite";
 
 // Look rig building blocks (M0-W3-T07 follow-up): a host that does not run `VisualsModule` (the render bench) can drive the
 // same sun / CSM, sky and post look through these. Export-only: no behaviour change.
 export { HORIZON_VISIBILITY_KEY, MoonShadowNode, SunRig, type CascadeInfo } from "./lighting/sun-rig";
 export { createKeyState, earthExposureGain, litFraction, resolveKey, type KeyState } from "./lighting/key-light";
+// Day clock and Crown Lamp light hooks (M1-W2-T02): the sun path of decision D1 and the lamp levels for W6.
+export { applySunPath, DEFAULT_DAY_CYCLE, ExposureRamp, sunAzimuthDeg } from "./lighting/day-clock";
+export {
+  createCrownLamp,
+  CROWN_LAMP_LEVELS,
+  setCrownLampLevel,
+  updateCrownLamp,
+  type CrownLampLevel,
+  type CrownLampLevelId,
+} from "./lighting/crown-lamp";
 export { SkyRig, type SkyFrame } from "./sky/sky-rig";
 export { limitingMagnitude } from "./sky/star-catalog";
 export { CameraOnlyVelocity } from "./post/camera-velocity";

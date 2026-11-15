@@ -42,3 +42,14 @@ Solo play is the product priority: tools, cleaning, vehicles and robots must res
 ## Revisit trigger
 
 Golden-hash divergence between worker and Node that cannot be fixed in `packages/sim`; solo input-to-visual > 1 frame budget on UHD 620 after tuning; solo upload volume threatening the 1 GB DB.
+
+## Amendment 1 (2026-11-14, M1-W5-T07b): checkpoint upload wire shape
+
+Replaces "multipart: JSON metadata + octet-stream package" and the proposed header `x-mc-checkpoint-meta`.
+
+- **Decision:** the upload is one `application/octet-stream` body: `u16 LE metaLen`, the `SoloCheckpointBeginRequest` JSON (UTF-8, `1..4096` bytes), then the MCCK package (`1..1 MiB`). Max body `1,052,674` bytes (`CHECKPOINT_UPLOAD_BODY_MAX_BYTES`). Framing codec: `@moon-cleanup/protocol` `checkpoint-upload`; constants and route flag: `@moon-cleanup/shared` `api/rest` v0.4.0.
+- **Why not a header:** uWebSockets.js (the production HTTP path) limits the TOTAL request header size to 4096 bytes (`UWS_HTTP_MAX_HEADERS_SIZE`, default 4096). The worst-case metadata (32 achievement ids of 64 chars) is 3032 JSON bytes = 4043 base64url chars, and the Bearer JWT plus browser headers need about 1.5 KB more. Over the limit the request is dropped without a usable error. A header would also add a custom CORS preflight allow-header. A body prefix has neither problem and costs the same bytes.
+- `totalBytes` in the metadata is the PACKAGE length (body length minus `2 + metaLen`). `partCount` stays 1 for the single request; multi-part sessions (`PUT .../parts/:n`, `POST .../commit`, uploads over 1 MiB) remain unbuilt and out of this amendment.
+- **Download:** `GET /v1/contracts/:id/save?page=n` answers `200 application/octet-stream`, one MCCK page of at most 1 MiB, with `x-save-pages`; pages are 0-based (REST schema wins over the package comment).
+- **Errors** on both routes are the normal JSON `ApiErrorBody` family (`401`, `404`, `409 SAVE_CONFLICT`/`CONTRACT_BUSY`/`SAVE_VERSION_UNSUPPORTED`, `413 PAYLOAD_TOO_LARGE`, `422 CHECKPOINT_REJECTED` + `reason`, `429` + `retry-after`, `503 RETRY_LATER` + `retry-after`); never a binary body.
+- Transport requirements for the net adapter are in `docs/agent-reports/M1-W5-T07b-contracts-architect.md` (brief).

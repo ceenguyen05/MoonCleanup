@@ -25,13 +25,25 @@ export type LookInfoLike = NonNullable<ReturnType<NonNullable<McLookLike["info"]
 
 export interface SidecarExtras {
   readonly knobs: Record<string, unknown>;
-  readonly camera: { view: string | null; pose: null; vfovDeg: null; note: string };
+  readonly camera: {
+    view: string | null;
+    pose: {
+      positionM: number[];
+      quaternion: number[];
+      forward: number[];
+      aspect: number;
+      nearM: number;
+      farM: number;
+    } | null;
+    vfovDeg: number | null;
+    note?: string;
+  };
   readonly sun: { elevationDeg: number; azimuthDeg: number } | null;
   readonly ev100: number | null;
   readonly evSource: string | null;
-  readonly adaptationMultiplier: null;
+  readonly adaptationMultiplier: number | null;
   readonly earth: { litFraction: number; elevationDeg: number; azimuthDeg: number; diameterDeg: number } | null;
-  readonly particlesLive: null;
+  readonly particlesLive: number | null;
 }
 
 /**
@@ -40,30 +52,30 @@ export interface SidecarExtras {
  */
 export function sidecarExtras(info: McInfo, look: LookInfoLike | null, view: string | null): SidecarExtras {
   const st = look?.state;
+  const opt = readOptional(info, look);
   return {
     knobs: {
       renderScale: (info["renderScale"] as number | undefined) ?? null,
       canvasDpr: (info["dpr"] as number | undefined) ?? null,
-      aa: parseAa(look?.knobs),
+      aa: parseAa(look?.knobs) ?? aaFromPasses(look?.postPasses),
       lookKnobs: look?.knobs ?? null,
       csm: look?.cascades ?? null,
       shadowFilter: look?.shadowFilter ?? null,
       skyDome: look?.skyDome ?? null,
       postPasses: look?.postPasses ?? null,
-      dustRingTexelCm: null,
-      particlePool: null,
+      shadowMapSize: opt.shadowMapSize,
+      dustRingTexelCm: opt.dustRingTexelCm,
+      particlePool: opt.particlePool,
+      // Fields the client hooks do not report yet are null (never zero) and listed here. They are read from
+      // `__mcLook.info()` first, then `__mcInfo()`, as soon as a build reports them (no harness change needed).
+      notReported: OPTIONAL_HOOK_FIELDS.filter((k) => opt[k] === null),
     },
-    camera: {
-      view,
-      pose: null,
-      vfovDeg: null,
-      note: "not exposed by the client: needs a read-only `camera` field in __mcLook.info() (visuals owner)",
-    },
+    camera: cameraExtras(look, view),
     sun: st ? { elevationDeg: st.sunElevationDeg, azimuthDeg: st.sunAzimuthDeg } : null,
     ev100: look?.ev100 ?? null,
     evSource: look?.keyMode ?? null,
     // The client scripts the exposure from the key state; whether any eye adaptation is active in captures is not reported.
-    adaptationMultiplier: null,
+    adaptationMultiplier: opt.adaptationMultiplier,
     earth: st
       ? {
           litFraction: earthLitFraction(st.sunAzimuthDeg, st.sunElevationDeg, st.earthAzimuthDeg, st.earthElevationDeg),
@@ -72,8 +84,62 @@ export function sidecarExtras(info: McInfo, look: LookInfoLike | null, view: str
           diameterDeg: st.earthDiameterDeg,
         }
       : null,
-    particlesLive: null,
+    particlesLive: opt.particlesLive,
   };
+}
+
+/** Optional hook fields (visual-target 6.6). A key present in a build is copied verbatim when it is a finite number. */
+export const OPTIONAL_HOOK_FIELDS = [
+  "shadowMapSize",
+  "dustRingTexelCm",
+  "particlePool",
+  "adaptationMultiplier",
+] as const;
+type OptionalHookField = (typeof OPTIONAL_HOOK_FIELDS)[number] | "particlesLive";
+
+function readOptional(info: McInfo, look: LookInfoLike | null): Record<OptionalHookField, number | null> {
+  const sources: Record<string, unknown>[] = [
+    look as unknown as Record<string, unknown>,
+    info as Record<string, unknown>,
+  ];
+  const pick = (k: string): number | null => {
+    for (const src of sources) {
+      const v = src?.[k];
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+    }
+    return null;
+  };
+  return {
+    shadowMapSize: pick("shadowMapSize"),
+    dustRingTexelCm: pick("dustRingTexelCm"),
+    particlePool: pick("particlePool"),
+    adaptationMultiplier: pick("adaptationMultiplier"),
+    particlesLive: pick("particlesLive"),
+  };
+}
+
+function cameraExtras(look: LookInfoLike | null, view: string | null): SidecarExtras["camera"] {
+  const c = look?.camera;
+  if (!c || !Array.isArray(c.position) || !Array.isArray(c.quaternion)) {
+    return { view, pose: null, vfovDeg: null, note: "build does not report __mcLook.info().camera" };
+  }
+  return {
+    view,
+    pose: {
+      positionM: [...c.position],
+      quaternion: [...c.quaternion],
+      forward: [...(c.forward ?? [])],
+      aspect: c.aspect,
+      nearM: c.nearM,
+      farM: c.farM,
+    },
+    vfovDeg: c.vfovDeg,
+  };
+}
+
+/** Real AA is a post pass (`fxaa`, `smaa`, `traa`); the knob string rarely carries it. */
+export function aaFromPasses(passes: readonly string[] | undefined): string | null {
+  return passes?.find((p) => p === "fxaa" || p === "smaa" || p === "traa") ?? null;
 }
 
 function parseAa(knobs: string | undefined): string | null {

@@ -5,6 +5,7 @@
 //   ?glass=blur|solid         glass panel mode; default `auto` (blur, unless OS reduce-transparency)
 //   ?uimotion=full|reduced    overrides prefers-reduced-motion; default follows the OS
 //   ?hudscale=0.8..1.5        player HUD size setting (default 1)
+//   ?uihud=1                  shows the in-game HUD even before a shift is ready (sandbox and screenshot lanes)
 
 import { NET_CONNECTION_STATES, type NetConnectionState } from "@moon-cleanup/shared";
 import { USER_SCALE_MAX, USER_SCALE_MIN } from "./tokens/display-metrics";
@@ -20,6 +21,8 @@ export interface UiUrlOptions {
   readonly glass: GlassMode;
   readonly motion: MotionMode;
   readonly hudScale: number;
+  /** `?uihud=1`: draw the in-game HUD without waiting for `shift.ready`. */
+  readonly hudForce: boolean;
 }
 
 export function parseUiUrlOptions(search: string): UiUrlOptions {
@@ -38,5 +41,6 @@ export function parseUiUrlOptions(search: string): UiUrlOptions {
       params.get("hudscale") !== null && Number.isFinite(scale)
         ? Math.min(USER_SCALE_MAX, Math.max(USER_SCALE_MIN, scale))
         : 1,
+    hudForce: params.get("uihud") === "1",
   };
 }

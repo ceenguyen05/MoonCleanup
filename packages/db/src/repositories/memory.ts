@@ -4,14 +4,18 @@
 // atomic, which stands in for the transactions and row locks of postgres.ts.
 
 import { decideRotation, type TokenRowView } from "./rotation.ts";
+import { pickOlderSlot, pickOlderVersion } from "./save-rules.ts";
 import {
   REFRESH_RETENTION_DAYS,
   TOUCH_INTERVAL_S,
   type ContractRoleName,
   type ContractView,
+  type CommitSoloCheckpointInput,
+  type CommitSoloCheckpointResult,
   type CreateContractInput,
   type CreateContractResult,
   type CreateGuestInput,
+  type DustChunkRow,
   type HexDigest,
   type JoinByCodeResult,
   type ListMembersResult,
@@ -20,6 +24,7 @@ import {
   type MoonRepository,
   type PatchContractInput,
   type PatchContractResult,
+  type PlaytimeLedger,
   type Profile,
   type ProfilePatch,
   type ProfilePatchResult,
@@ -27,16 +32,25 @@ import {
   type RotateInviteResult,
   type RotateRefreshInput,
   type RotateResult,
+  type SaveHeadView,
+  type SaveSlotName,
+  type SaveSlotRow,
 } from "./types.ts";
 
 export interface MemoryRepositoryOptions {
   /** Test seam; defaults to the wall clock. */
   readonly clock?: () => Date;
+  /**
+   * Test seam standing in for the room lease of M1-W5-T01: Contract id -> lease expiry. A Contract whose entry is in the
+   * future is "held by a live room" and refuses solo checkpoint writes.
+   */
+  readonly leaseExpiry?: ReadonlyMap<string, Date>;
 }
 
 interface PlayerRec {
   id: string;
   isGuest: boolean;
+  createdAt: Date;
   lastSeenAt: Date;
 }
 interface ProfileRec {
@@ -81,6 +95,8 @@ interface ContractRec {
   walletLumens: number;
   playtimeS: number;
   lastPlayedAt: Date;
+  createdAt: Date;
+  storedBytes: number;
 }
 interface MemberRec {
   contractId: string;
@@ -104,6 +120,9 @@ export function createMemoryRepository(options: MemoryRepositoryOptions = {}): M
   const contractByCode = new Map<string, string>();
   const members: MemberRec[] = [];
   let memberSeq = 0;
+  const saveSlots = new Map<string, Map<SaveSlotName, SaveSlotRow>>(); // contract id -> slot -> row
+  const saveChunks = new Map<string, Map<string, DustChunkRow>>(); // contract id -> "chunkId:ver" -> row
+  const copyBytes = (bytes: Uint8Array): Uint8Array => Uint8Array.from(bytes);
 
   const toProfile = (p: ProfileRec): Profile => ({
     playerId: p.playerId,
@@ -134,7 +153,28 @@ export function createMemoryRepository(options: MemoryRepositoryOptions = {}): M
     walletLumens: c.walletLumens,
     playtimeS: c.playtimeS,
     lastPlayedAt: c.lastPlayedAt,
+    createdAt: c.createdAt,
     role,
+  });
+
+  const newestSlot = (slots: ReadonlyMap<SaveSlotName, SaveSlotRow> | undefined): SaveSlotRow | undefined => {
+    let best: SaveSlotRow | undefined;
+    for (const row of slots?.values() ?? []) if (best === undefined || row.saveSeq > best.saveSeq) best = row;
+    return best;
+  };
+
+  const headOf = (row: SaveSlotRow, c: ContractRec): SaveHeadView => ({
+    generation: row.saveSeq,
+    parentGeneration: row.parentSeq,
+    originKind: row.originKind,
+    savedAt: row.savedAt,
+    savedBy: row.savedBy,
+    simTick: row.simTick,
+    saveFormatVersion: row.saveFormatVersion,
+    gameDataVersion: row.gameDataVersion,
+    playtimeS: c.playtimeS,
+    shinePolished: c.shinePolished,
+    walletLumens: c.walletLumens,
   });
 
   const findMember = (contractId: string, playerId: string): MemberRec | undefined =>
@@ -188,7 +228,7 @@ export function createMemoryRepository(options: MemoryRepositoryOptions = {}): M
       if (players.has(input.playerId) || identities.has(input.recoveryHash) || tokenByHash.has(input.token.hash)) {
         return Promise.reject(new Error("unique violation"));
       }
-      players.set(input.playerId, { id: input.playerId, isGuest: true, lastSeenAt: now });
+      players.set(input.playerId, { id: input.playerId, isGuest: true, createdAt: now, lastSeenAt: now });
       profiles.set(input.playerId, {
         playerId: input.playerId,
         displayName: input.displayName,
@@ -339,6 +379,8 @@ export function createMemoryRepository(options: MemoryRepositoryOptions = {}): M
         walletLumens: 0,
         playtimeS: 0,
         lastPlayedAt: now,
+        createdAt: now,
+        storedBytes: 0,
       };
       contracts.set(rec.id, rec);
       if (rec.inviteCode !== null) contractByCode.set(rec.inviteCode, rec.id);
@@ -473,6 +515,138 @@ export function createMemoryRepository(options: MemoryRepositoryOptions = {}): M
           status: m.status,
         }));
       return Promise.resolve({ kind: "ok", members: list });
+    },
+
+    // ---- saves (same rules as postgres.ts) -----------------------------------------------------------------------
+    getSaveHead(contractId): Promise<SaveHeadView | null> {
+      const slots = saveSlots.get(contractId);
+      const c = contracts.get(contractId);
+      const newest = newestSlot(slots);
+      if (newest === undefined || c === undefined) return Promise.resolve(null);
+      return Promise.resolve(headOf(newest, c));
+    },
+
+    getPlaytimeLedger(playerId): Promise<PlaytimeLedger | null> {
+      const player = players.get(playerId);
+      if (player === undefined) return Promise.resolve(null);
+      let contractsPlaytimeS = 0;
+      for (const c of contracts.values()) if (c.ownerPlayerId === playerId) contractsPlaytimeS += c.playtimeS;
+      return Promise.resolve({ accountCreatedAt: player.createdAt, contractsPlaytimeS });
+    },
+
+    loadSaveRows(contractId) {
+      const slots = [...(saveSlots.get(contractId)?.values() ?? [])].map((r) => ({
+        ...r,
+        blob: copyBytes(r.blob),
+      }));
+      const chunks = [...(saveChunks.get(contractId)?.values() ?? [])]
+        .sort((a, b) => a.chunkId - b.chunkId || a.ver - b.ver)
+        .map((r) => ({ ...r, blob: copyBytes(r.blob) }));
+      return Promise.resolve({ slots, chunks });
+    },
+
+    commitSoloCheckpoint(input: CommitSoloCheckpointInput): Promise<CommitSoloCheckpointResult> {
+      const at = clock();
+      const c = contracts.get(input.contractId);
+      const member = c === undefined ? undefined : findMember(input.contractId, input.playerId);
+      if (c === undefined || c.status === "deleted" || member?.status !== "active") {
+        return Promise.resolve({ kind: "not_found" });
+      }
+      if (member.role !== "holder") return Promise.resolve({ kind: "not_holder" });
+      if (c.shiftType !== "solo") return Promise.resolve({ kind: "not_solo" });
+      const lease = options.leaseExpiry?.get(input.contractId);
+      if (lease !== undefined && lease.getTime() > at.getTime()) return Promise.resolve({ kind: "busy" });
+
+      const slots = saveSlots.get(input.contractId) ?? new Map<SaveSlotName, SaveSlotRow>();
+      const newest = newestSlot(slots);
+      const newestSeq = newest?.saveSeq ?? 0;
+      if (
+        newest !== undefined &&
+        newest.saveSeq === input.generation &&
+        newest.parentSeq === input.parentGeneration &&
+        newest.savedBy === `solo:${input.deviceId}`
+      ) {
+        return Promise.resolve({
+          kind: "accepted",
+          generation: newest.saveSeq,
+          savedAt: newest.savedAt,
+          storedBytes: 0,
+          replayed: true,
+        });
+      }
+      if (!input.overwrite && newestSeq !== input.baseGeneration) {
+        return Promise.resolve({ kind: "conflict", server: newest === undefined ? null : headOf(newest, c) });
+      }
+      if (input.generation <= newestSeq || input.generation <= input.parentGeneration) {
+        return Promise.resolve({ kind: "generation_not_increasing", serverGeneration: newestSeq });
+      }
+      if (newest !== undefined) {
+        const waitMs = input.minIntervalS * 1000 - (at.getTime() - newest.savedAt.getTime());
+        if (waitMs > 0)
+          return Promise.resolve({ kind: "too_soon", retryAfterS: Math.max(1, Math.ceil(waitMs / 1000)) });
+      }
+
+      // Stage everything, check the cap, then commit (nothing is applied on a refusal).
+      const target = pickOlderSlot([...slots.values()].map((s) => ({ slot: s.slot, saveSeq: s.saveSeq })));
+      const chunkMap = new Map(input.overwrite ? [] : (saveChunks.get(input.contractId) ?? new Map()));
+      const writes: DustChunkRow[] = input.chunks.map((chunk) => {
+        const existing = [...chunkMap.values()].filter((r) => r.chunkId === chunk.chunkId);
+        const ver = pickOlderVersion(existing.map((r) => ({ ver: r.ver, saveSeq: r.saveSeq })));
+        return {
+          chunkId: chunk.chunkId,
+          ver,
+          saveSeq: input.generation,
+          codec: chunk.codec,
+          rawSize: chunk.rawSize,
+          blobSize: chunk.blob.byteLength,
+          checksum: chunk.checksum,
+          blob: copyBytes(chunk.blob),
+        };
+      });
+      for (const row of writes) chunkMap.set(`${row.chunkId}:${row.ver}`, row);
+      const slotRow: SaveSlotRow = {
+        slot: target.slot,
+        saveFormatVersion: input.saveFormatVersion,
+        gameDataVersion: input.gameDataVersion,
+        codec: input.header.codec,
+        rawSize: input.header.rawSize,
+        blobSize: input.header.blob.byteLength,
+        checksum: input.header.checksum,
+        blob: copyBytes(input.header.blob),
+        saveSeq: input.generation,
+        parentSeq: input.parentGeneration,
+        originKind: "solo",
+        simTick: input.simTick,
+        savedAt: at,
+        savedBy: `solo:${input.deviceId}`,
+      };
+      const otherSlots = [...slots.values()].filter((s) => s.slot !== target.slot);
+      const storedBytes =
+        [slotRow, ...otherSlots].reduce((sum, r) => sum + r.blobSize, 0) +
+        [...chunkMap.values()].reduce((sum, r) => sum + r.blobSize, 0);
+      if (storedBytes > input.hardCapBytes) return Promise.resolve({ kind: "over_cap", storedBytes });
+
+      slots.set(target.slot, slotRow);
+      saveSlots.set(input.contractId, slots);
+      saveChunks.set(input.contractId, chunkMap);
+      c.lastPlayedAt = at;
+      c.shinePolished = input.shinePolished;
+      c.walletLumens = input.walletLumens;
+      c.playtimeS = input.playtimeS;
+      c.storedBytes = storedBytes;
+      const profile = profiles.get(input.playerId);
+      if (profile !== undefined && (input.profileCredit.tenurePoints > 0 || input.profileCredit.commendations > 0)) {
+        profile.tenurePoints += input.profileCredit.tenurePoints;
+        profile.commendations += input.profileCredit.commendations;
+        profile.version += 1;
+      }
+      return Promise.resolve({
+        kind: "accepted",
+        generation: input.generation,
+        savedAt: at,
+        storedBytes,
+        replayed: false,
+      });
     },
   };
 }

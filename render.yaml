@@ -66,6 +66,8 @@ services:
         value: "10"
       - key: MAX_ROOMS
         value: "3"
+      - key: MAX_SEATS_PER_IP
+        value: "6"
       - key: TICK_BUDGET_MS
         value: "3.5"
       - key: CLIENT_IP_HEADER
@@ -82,6 +84,13 @@ services:
         value: "12"
       - key: CHECKPOINT_INTERVAL_S
         value: "30"
+      # Process-wide checkpoint decompression budget (512 MB / 0.1 CPU free instance): MiB inflated per minute, concurrent, queued.
+      - key: CHECKPOINT_INFLATE_MIB_PER_MIN
+        value: "32"
+      - key: CHECKPOINT_INFLATE_CONCURRENCY
+        value: "1"
+      - key: CHECKPOINT_INFLATE_QUEUE
+        value: "3"
       - key: SEAT_HOLD_S
         value: "60"
       - key: NODE_OPTIONS

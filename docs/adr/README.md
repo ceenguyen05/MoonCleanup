@@ -23,7 +23,7 @@ Evidence lives in [`docs/research/`](../research/) (see each ADR's Evidence sect
 | [0013](0013-asset-pipeline-gltf-ktx2.md) | Asset pipeline: glTF 2.0, meshopt and KTX2 | Accepted | 2026-11-12 |
 | [0014](0014-netcode-framework-colyseus.md) | Netcode framework: Colyseus 0.18 on uWebSockets.js | Accepted | 2026-11-12 |
 | [0015](0015-netcode-model-authority-rates.md) | Netcode model: authority, tick rates, prediction, interest management | Superseded by 0025 | 2026-11-12 |
-| [0016](0016-data-layer-drizzle-postgres.md) | Data layer: Drizzle ORM on Aiven PostgreSQL Free | Accepted (amended 2026-11-12) | 2026-11-12 |
+| [0016](0016-data-layer-drizzle-postgres.md) | Data layer: Drizzle ORM on PostgreSQL (Neon Free; was Aiven) | Accepted (amended 2026-11-12) | 2026-11-12 |
 | [0017](0017-asset-storage-no-lfs.md) | Asset storage: no Git LFS by default | Accepted | 2026-11-12 |
 | [0018](0018-auth-guest-first.md) | Authentication: guest-first, opaque refresh token + short JWT | Accepted (amended 2026-11-12) | 2026-11-12 |
 | [0019](0019-testing-strategy.md) | Testing strategy | Accepted | 2026-11-12 |
@@ -39,6 +39,8 @@ Evidence lives in [`docs/research/`](../research/) (see each ADR's Evidence sect
 | [0029](0029-single-deploy-branch-main.md) | Single deploy branch (`main` only) and one Render service | Accepted (supersedes the branch/staging topology of 0002) | 2026-11-12 |
 | [0030](0030-reference-first-design.md) | Reference-first recreation and flexible display naming | Accepted | 2026-11-12 |
 | [0031](0031-local-first-solo.md) | Local-first Solo Shift (sim in a Web Worker); server for auth, saves and multiplayer rooms | Accepted (amends 0025 for Solo only) | 2026-11-13 |
+| [0032](0032-render-spike-verdict.md) | M0 render spike verdict: NOT PASSED, CONDITIONAL; stay on three r187 WebGPURenderer + TSL | Accepted | 2026-11-14 |
+| [0033](0033-netcode-spike-verdict.md) | M0 netcode spike verdict: 6 bots pass at 20/10; plain uWS HTTP handlers | Accepted | 2026-11-14 |
 
 ## Template
 

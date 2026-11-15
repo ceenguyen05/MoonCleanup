@@ -1,0 +1,7 @@
+| logs | tile | strokes in the plot's log | work units | ms p50 | ms p95 | ms max | ns per unit |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 7 logs x 64, hand tool 60 cm x 0.3 m | medium 64^2 | 111 | 4396 | 0.43 | 0.69 | 0.98 | 98 |
+| 7 logs full (256), hand tool 60 cm x 0.3 m | medium 64^2 | 256 | 8346 | 0.91 | 1.49 | 1.83 | 109 |
+| 7 logs full (256), Bulldust 300 cm x 2 m | medium 64^2 | 256 | 58648 | 1.88 | 3.00 | 6.08 | 32 |
+| 7 logs full (256), hand tool 60 cm x 0.3 m | high 128^2 | 256 | 17335 | 1.61 | 2.37 | 5.13 | 93 |
+| 7 logs full (256), Bulldust 300 cm x 2 m | high 128^2 | 256 | 191612 | 5.45 | 7.44 | 8.90 | 28 |

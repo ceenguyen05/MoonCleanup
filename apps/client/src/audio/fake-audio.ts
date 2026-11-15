@@ -213,6 +213,17 @@ export class FakeEnv implements AudioEnv {
   clockMs = 0;
   readonly queue: { fn: () => void; ms: number }[] = [];
   contexts = 0;
+  idleQueue: (() => void)[] = [];
+  /** When false the env has no `idle` hook (module falls back to `later`). */
+  idle?: (fn: () => void) => void = (fn) => {
+    this.idleQueue.push(fn);
+  };
+  /** Runs the idle callbacks (the post-boot context preparation). */
+  runIdle(): void {
+    const q = this.idleQueue;
+    this.idleQueue = [];
+    for (const f of q) f();
+  }
   createContext(): AContext {
     this.contexts++;
     return this.ctx;

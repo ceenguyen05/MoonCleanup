@@ -1,0 +1,82 @@
+[
+  {
+    "name": "high-before",
+    "query": "scene=moon&view=high&tod=1814&todrate=0",
+    "keyMode": "sun",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5129177953970295,
+      "limitingMagnitude": 6,
+      "keyLux": 1.7929995673744952,
+      "floorLux": 40.271279508728526
+    },
+    "sunEl": -0.48864356305306966,
+    "groundLuma": 3.8042517050983355,
+    "nearLuma": 3.8263898049990552,
+    "console": []
+  },
+  {
+    "name": "high-after",
+    "query": "scene=moon&view=high&tod=1814.8&todrate=0",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814.8,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5136557405639333,
+      "limitingMagnitude": 6,
+      "keyLux": 94.91606660301596,
+      "floorLux": 0
+    },
+    "sunEl": -0.5165600097183656,
+    "groundLuma": 8.24300015183623,
+    "nearLuma": 6.469894139997684,
+    "console": []
+  },
+  {
+    "name": "down-before",
+    "query": "scene=moon&view=ground&pitch=-55&tod=1814&todrate=0",
+    "keyMode": "sun",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5129177953970295,
+      "limitingMagnitude": 6,
+      "keyLux": 1.7929995673744952,
+      "floorLux": 40.271279508728526
+    },
+    "sunEl": -0.48864356305306966,
+    "groundLuma": 3.8234880136894254,
+    "nearLuma": 3.8588960499984584,
+    "console": []
+  },
+  {
+    "name": "down-after",
+    "query": "scene=moon&view=ground&pitch=-55&tod=1814.8&todrate=0",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814.8,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5136557405639333,
+      "limitingMagnitude": 6,
+      "keyLux": 94.91606660301596,
+      "floorLux": 0
+    },
+    "sunEl": -0.5165600097183656,
+    "groundLuma": 11.264089075674603,
+    "nearLuma": 11.194816010005152,
+    "console": []
+  }
+]

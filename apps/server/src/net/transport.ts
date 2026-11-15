@@ -15,7 +15,7 @@ import type { BeforeUpgradeHandler, Transport } from "@colyseus/core";
 import type { HttpRouteDef } from "@moon-cleanup/shared";
 import type { Admission } from "./admission";
 import type { OriginPolicy } from "./cors";
-import type { NetLogger } from "./http-routes";
+import type { NetLogger, RawBodyAuth } from "./http-routes";
 
 /** TRANSPORT env values. */
 export const TRANSPORT_MODES = ["auto", "uws", "ws"] as const;
@@ -57,6 +57,8 @@ export interface TransportDeps {
   readonly admission: Admission;
   /** Origin check + per-IP socket claim, shared by both transports (./game-server). */
   readonly beforeUpgrade: BeforeUpgradeHandler;
+  /** Bearer verifier for raw-body routes, run before an upload slot is taken (./http-routes, review M1). */
+  readonly rawBodyAuth?: RawBodyAuth;
 }
 
 /** A constructed transport with its HTTP routes mounted, ready for `new Server({ transport })`. */

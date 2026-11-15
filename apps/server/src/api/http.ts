@@ -15,7 +15,13 @@ import type { TokenService } from "./tokens";
 
 /** Audit event kinds this layer raises (data-model.md section 3.11; the table itself arrives later, events are logged). */
 export type AuditKind =
-  "guest_create_limited" | "token_reuse" | "recover_failed" | "recover_global_lock" | "rate_limited";
+  | "guest_create_limited"
+  | "token_reuse"
+  | "recover_failed"
+  | "recover_global_lock"
+  | "rate_limited"
+  | "solo_implausible"
+  | "checkpoint_rejected";
 
 export interface AuditEvent {
   readonly kind: AuditKind;
@@ -44,6 +50,11 @@ export interface ApiContext {
   readonly online: (contractId: string) => number;
   /** Extra lower-case display / Contract names to refuse (profanity list is server data). */
   readonly blockedNames: readonly string[];
+  /**
+   * Lazy housekeeping hook (refresh-token purge). Called, fire-and-forget, after a handler answered below 500, i.e. when
+   * the database is demonstrably up. Self-throttled; must never throw.
+   */
+  readonly housekeeping?: () => void;
 }
 
 export function fail(code: ApiErrorCode, message?: string, headers?: Record<string, string>): HttpResponse {
@@ -95,7 +106,9 @@ export function safe(
 ): (request: HttpRequest) => Promise<HttpResponse> {
   return async (request) => {
     try {
-      return await handler(request);
+      const response = await handler(request);
+      if (response.status < 500) ctx.housekeeping?.();
+      return response;
     } catch (error) {
       if (isUnreachableError(error)) {
         return fail("RETRY_LATER", "records are waking up, retry shortly", { "retry-after": "5" });

@@ -1,7 +1,13 @@
-// @contract save/checkpoint-package v1
+// @contract save/checkpoint-package v1.1
 // @consumers apps/client/src/sim-host (builds the package from a local checkpoint), apps/client/src/net (uploads,
 //   downloads, restores), apps/server/src/api and apps/server/src/persistence (verify, split into slot + chunk rows),
 //   packages/sim and packages/world (decode of the header and chunk payloads inside), tools/bots (fixtures)
+//
+// v1.1 (M1-W0-T08, 2026-11-14; layout unchanged, CHECKPOINT_PACKAGE_VERSION stays 1): `rawSize` is bounded by the
+// raised DUST_CHUNK_PAYLOAD_MAX_BYTES (421,959 B, the dust chunk layout maximum). Carrier check: one maximum chunk
+// deflates to at most about 422 KB (stored-block worst case), so a download page holding it alone (42 + 2 + 15 + bytes
+// + 4) stays well inside CHECKPOINT_PART_MAX_BYTES; upload parts are plain slices and need no change. Part, session
+// and header limits are unchanged; the server's 32 MiB per-package inflate budget is unchanged.
 //
 // `MCCK` checkpoint package: the binary body of a Solo checkpoint upload and of a save download (ADR-0031,
 // data-model.md section 3.7c). One package = one header envelope (gzip, as stored in a slot) plus the dust chunk

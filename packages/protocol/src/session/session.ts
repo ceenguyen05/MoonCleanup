@@ -70,6 +70,10 @@ export type FailureReason =
   | "banned"
   | "rate_limited"
   | "room_full"
+  /** REST join refused with 503 AT_CAPACITY (instance at MAX_ROOMS / MAX_CLIENTS; same UI family as 4105). */
+  | "at_capacity"
+  /** REST join refused with 403 (not a member of the Contract, or banned from it). */
+  | "forbidden"
   | "duplicate_session"
   | "idle_timeout"
   | "contract_unavailable"
@@ -137,6 +141,12 @@ export interface SessionConfig {
   holdMs?: number;
   /** Reconnects longer than this expect a fresh DUST_SNAPSHOT (netcode.md 9.2: 10 s). */
   snapshotAfterMs?: number;
+  /**
+   * Whether join, resync and long reconnects wait for a DUST_SNAPSHOT before `ready` (default true, netcode.md 9.1).
+   * False only for a server build that does not stream dust yet (the M1 ShiftRoom before the ledger, W3-T01): the
+   * keyframe FRAME alone then completes the join.
+   */
+  expectDustSnapshot?: boolean;
   /** false: the SDK reconnects by itself; the session only waits for onConnected / onConnectFailed. */
   driveReconnect?: boolean;
   joinTimeoutMs?: number;
@@ -330,6 +340,7 @@ export class ClientSession {
       reconnectBackoff: config.reconnectBackoff ?? RECONNECT_BACKOFF,
       holdMs: config.holdMs ?? 60_000,
       snapshotAfterMs: config.snapshotAfterMs ?? 10_000,
+      expectDustSnapshot: config.expectDustSnapshot ?? true,
       driveReconnect: config.driveReconnect ?? true,
       joinTimeoutMs: config.joinTimeoutMs ?? 45_000,
       resyncMinIntervalMs: config.resyncMinIntervalMs ?? 1000,
@@ -496,6 +507,17 @@ export class ClientSession {
     }
     this.attemptPending = true;
     this.nextAttemptAt = nowMs + backoffDelayMs(this.cfg.connectBackoff, this.connectFailures - 1, this.random);
+  }
+
+  /**
+   * The join was refused before any connection opened (REST seat reservation: 401 after a token refresh, 403, 404,
+   * ROOM_FULL, AT_CAPACITY, RATE_LIMITED, ...). Transient refusals (CONTRACT_BUSY, RETRY_LATER, network) are
+   * `onConnectFailed` instead, which retries with backoff.
+   */
+  onJoinRejected(nowMs: number, failure: SessionFailure): void {
+    void nowMs;
+    if (this.phase !== "connecting") return;
+    this.failWith(failure);
   }
 
   /** The connection closed with `code`. */
@@ -793,7 +815,8 @@ export class ClientSession {
 
   // ---- internals -------------------------------------------------------------------------------------------------------
 
-  private beginAwaitKeyframe(expectSnapshot: boolean): void {
+  private beginAwaitKeyframe(wantSnapshot: boolean): void {
+    const expectSnapshot = wantSnapshot && this.cfg.expectDustSnapshot;
     this.awaitingKeyframe = true;
     this.keyframeApplied = false;
     this.haveTick = false;
@@ -802,6 +825,19 @@ export class ClientSession {
     this.table.reset();
     this.interpolation?.resetAll();
     this.host.onSlotsReset?.();
+  }
+
+  /**
+   * Asks the server for a fresh keyframe + DUST_SNAPSHOT on purpose (the client noticed it missed dust, for example a
+   * paced snapshot whose transfer window dropped FRAME strokes). Same state machine as a stall resync: the phase goes
+   * to `resyncing`, frames are dropped until a keyframe, the request is rate limited and retried. The server allows
+   * one snapshot per seat per 2 s, so callers space requests accordingly. False (nothing done) when not in the room or
+   * while the tab is hidden (showing the tab resyncs by itself).
+   */
+  requestSnapshotResync(nowMs: number): boolean {
+    if (!this.inRoom || this.hidden) return false;
+    this.beginResync(nowMs, "snapshot");
+    return true;
   }
 
   /** Frame-driven resync (decode error, stall): enters resyncing and asks for a keyframe. */

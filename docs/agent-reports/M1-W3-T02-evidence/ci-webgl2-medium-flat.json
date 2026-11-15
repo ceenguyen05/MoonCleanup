@@ -1,0 +1,185 @@
+{
+ "backend": "webgl2",
+ "preset": "medium",
+ "atlas": [
+  2048,
+  2048
+ ],
+ "frames": 900,
+ "pace": "flat",
+ "prepared": true,
+ "gpuTimestamps": false,
+ "crossOriginIsolated": true,
+ "adapter": {
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+ },
+ "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36",
+ "strokes": 160,
+ "tileStrokeDraws": 715,
+ "rebuilds": 18,
+ "tilesResident": 9,
+ "zeroEvents": 702,
+ "polished": 0,
+ "liveOverflows": 0,
+ "backlog": 0,
+ "passes": 1100,
+ "largestBatch": 155,
+ "bytesCompared": 16777216,
+ "residentBytes": 147456,
+ "texelsWithStrokeWork": 6619,
+ "withinTolerance": true,
+ "bytesDiffering": 0,
+ "rgbBytesDiffering": 0,
+ "aTexelsDiffering": 0,
+ "aTexelsOver1": 0,
+ "maxDelta": 0,
+ "firstMismatches": [],
+ "bytesDifferingOtherRowOrder": 216474,
+ "atlasFrameMs": {
+  "n": 888,
+  "mean": 0.026221846960283613,
+  "p50": 0.01000000536441803,
+  "p95": 0.07500000298023224,
+  "p99": 0.36500000953674316,
+  "max": 0.5600000023841858
+ },
+ "flushStrokeMs": {
+  "n": 55,
+  "mean": 0.4439999981360002,
+  "p50": 0.4350000023841858,
+  "p95": 0.7849999666213989,
+  "p99": 0.800000011920929,
+  "max": 0.800000011920929
+ },
+ "flushRebuildMs": {
+  "n": 14,
+  "mean": 0.6185714283159801,
+  "p50": 0.5649999976158142,
+  "p95": 1.475000023841858,
+  "p99": 1.475000023841858,
+  "max": 1.475000023841858
+ },
+ "totalMs": {
+  "n": 888,
+  "mean": 0.06412725218546551,
+  "p50": 0.01499999314546585,
+  "p95": 0.5199999809265137,
+  "p99": 0.9700000286102295,
+  "max": 1.8949999809265137
+ },
+ "totalWorkMs": {
+  "n": 69,
+  "mean": 0.6451449268969937,
+  "p50": 0.5850000381469727,
+  "p95": 1.125,
+  "p99": 1.8949999809265137,
+  "max": 1.8949999809265137
+ },
+ "controlMs": {
+  "n": 888,
+  "mean": 0.05051801802573709,
+  "p50": 0.04999999701976776,
+  "p95": 0.06000000238418579,
+  "p99": 0.07000000029802322,
+  "max": 0.11500000208616257
+ },
+ "controlOver1ms": 0,
+ "flushOver1ms": 2,
+ "flushOver1msWithHeapDrop": 0,
+ "flushOver1msWithSlowControl": 0,
+ "flushOutliers": [
+  {
+   "frame": 208,
+   "flushMs": 1.475,
+   "frameMs": 0.42,
+   "controlMs": 0.065,
+   "kind": 2,
+   "strokeN": 0,
+   "heapDeltaB": 0
+  },
+  {
+   "frame": 210,
+   "flushMs": 1.03,
+   "frameMs": 0.405,
+   "controlMs": 0.045,
+   "kind": 2,
+   "strokeN": 34,
+   "heapDeltaB": 0
+  },
+  {
+   "frame": 18,
+   "flushMs": 0.8,
+   "frameMs": 0.085,
+   "controlMs": 0.055,
+   "kind": 1,
+   "strokeN": 56,
+   "heapDeltaB": 0
+  },
+  {
+   "frame": 100,
+   "flushMs": 0.79,
+   "frameMs": 0.22,
+   "controlMs": 0.055,
+   "kind": 1,
+   "strokeN": 48,
+   "heapDeltaB": 0
+  },
+  {
+   "frame": 294,
+   "flushMs": 0.785,
+   "frameMs": 0.075,
+   "controlMs": 0.05,
+   "kind": 1,
+   "strokeN": 19,
+   "heapDeltaB": 0
+  },
+  {
+   "frame": 216,
+   "flushMs": 0.78,
+   "frameMs": 0.225,
+   "controlMs": 0.05,
+   "kind": 2,
+   "strokeN": 31,
+   "heapDeltaB": 0
+  }
+ ],
+ "gpuStrokeMs": {
+  "n": 0,
+  "mean": 0,
+  "p50": 0,
+  "p95": 0,
+  "p99": 0,
+  "max": 0
+ },
+ "gpuRebuildMs": {
+  "n": 0,
+  "mean": 0,
+  "p50": 0,
+  "p95": 0,
+  "p99": 0,
+  "max": 0
+ },
+ "flushHeapBytesPerPass": [
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "controlHeapBytesPerPass": [
+  0,
+  0,
+  0,
+  0,
+  0
+ ],
+ "controlSink": 1885547.164894411,
+ "lane": "ci",
+ "console": [
+  "error: WebSocket connection to 'ws://localhost:5188/?token=JnxQc_5c_vEa' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS",
+  "error: WebSocket connection to 'ws://localhost:5188/?token=JnxQc_5c_vEa' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS",
+  "error: [vite] failed to connect to websocket.\nyour current setup:\n  (browser) localhost:5188/ <--[HTTP]--> localhost:5188/ (server)\n  (browser) localhost:5188/ <--[WebSocket (failing)]--> localhost:5188/ (server)\nCheck out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .",
+  "error: Failed to send error to Vite server: TypeError: Cannot read properties of undefined (reading 'send')\n    at Object.send (http://localhost:5188/@vite/client:260:7)\n    at Object.send (http://localhost:5188/@vite/client:982:16)\n    at Object.send (http://localhost:5188/@vite/client:119:21)\n    at Object.send (http://localhost:5188/@vite/client:199:30)\n    at sendError (http://localhost:5188/@vite/cl",
+  "warning: [.WebGL-0x15f40061f000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+ ]
+}

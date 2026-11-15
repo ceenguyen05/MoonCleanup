@@ -82,7 +82,7 @@ describe("shadow filter choice", () => {
 
 describe("scene routing", () => {
   it("routes S02, S03 and the typical worksite next to S01 / S05 / S06", () => {
-    expect([...LOOKDEV_SCENE_IDS]).toEqual(["s01", "s02", "s03", "s05", "s06", "typical"]);
+    expect([...LOOKDEV_SCENE_IDS]).toEqual(["s01", "s02", "s03", "s05", "s06", "typical", "dust", "moon"]);
   });
 
   it("createLookdevScene only knows s02 and s03", () => {

@@ -86,9 +86,14 @@ function reserve(ip: string): Promise<Response> {
 }
 
 /** Opens a raw upgrade; resolves the status and a closer that keeps the socket open until called. */
-function upgrade(origin: string | undefined, ip: string): Promise<{ status: number; close: () => void }> {
+function upgrade(
+  origin: string | undefined,
+  ip: string | string[],
+  overrides: Record<string, string | undefined> = {},
+  method = "GET",
+): Promise<{ status: number; retryAfter: string | undefined; close: () => void }> {
   return new Promise((resolve, reject) => {
-    const headers: Record<string, string> = {
+    const headers: Record<string, string | string[]> = {
       connection: "Upgrade",
       upgrade: "websocket",
       "sec-websocket-key": "dGhlIHNhbXBsZSBub25jZQ==",
@@ -96,11 +101,21 @@ function upgrade(origin: string | undefined, ip: string): Promise<{ status: numb
       "true-client-ip": ip,
     };
     if (origin !== undefined) headers.origin = origin;
-    const req: ClientRequest = httpRequest({ host: "127.0.0.1", port: PORT, path: "/", headers });
-    req.on("upgrade", (res, socket) => resolve({ status: res.statusCode ?? 0, close: () => socket.destroy() }));
+    for (const [name, value] of Object.entries(overrides)) {
+      if (value === undefined) delete headers[name];
+      else headers[name] = value;
+    }
+    const req: ClientRequest = httpRequest({ host: "127.0.0.1", port: PORT, path: "/", method, headers });
+    const retryAfter = (res: { headers: { "retry-after"?: string | string[] } }): string | undefined => {
+      const value = res.headers["retry-after"];
+      return Array.isArray(value) ? value[0] : value;
+    };
+    req.on("upgrade", (res, socket) =>
+      resolve({ status: res.statusCode ?? 0, retryAfter: retryAfter(res), close: () => socket.destroy() }),
+    );
     req.on("response", (res) => {
       res.resume();
-      resolve({ status: res.statusCode ?? 0, close: () => req.destroy() });
+      resolve({ status: res.statusCode ?? 0, retryAfter: retryAfter(res), close: () => req.destroy() });
     });
     req.on("error", reject);
     req.end();
@@ -158,6 +173,32 @@ describe("HTTP on the ws fallback", () => {
     expect(await res.json()).toEqual({ id: "abc d", query: { x: "1" }, body: { hello: "moon" }, ip: "203.0.113.5" });
   });
 
+  it("keys a duplicated client-IP header as unknown (same rule as the upgrade, NB3)", async () => {
+    const status = await new Promise<{ ip: string }>((resolve, reject) => {
+      const req = httpRequest(
+        {
+          host: "127.0.0.1",
+          port: PORT,
+          path: "/v1/echo/dup",
+          method: "POST",
+          headers: {
+            origin: ALLOWED,
+            "content-type": "application/json",
+            "true-client-ip": ["203.0.113.5", "1.2.3.4"],
+          },
+        },
+        (res) => {
+          const chunks: Buffer[] = [];
+          res.on("data", (c: Buffer) => chunks.push(c));
+          res.on("end", () => resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")) as { ip: string }));
+        },
+      );
+      req.on("error", reject);
+      req.end("{}");
+    });
+    expect(status.ip).toBe("unknown");
+  });
+
   it("prefers a static route over a :param route (uWS precedence)", async () => {
     const res = await fetch(`${BASE}/v1/echo/static`, { method: "POST", headers: { origin: ALLOWED } });
     expect(await res.json()).toEqual({ static: true });
@@ -176,6 +217,7 @@ describe("HTTP on the ws fallback", () => {
       body: JSON.stringify({ pad: "x".repeat(MAX_HTTP_BODY_BYTES) }),
     });
     expect(big.status).toBe(413);
+    expect(await big.json()).toEqual({ error: "PAYLOAD_TOO_LARGE", message: "body too large" });
     expect(big.headers.get("connection")).toBe("close");
     expect(await postChunked("/v1/echo/1", MAX_HTTP_BODY_BYTES + 4096)).toBe(413);
     const bad = await fetch(`${BASE}/v1/echo/1`, { method: "POST", headers: { origin: ALLOWED }, body: "{nope" });
@@ -240,6 +282,16 @@ describe("WebSocket upgrades on the ws fallback", () => {
     expect((await upgrade(undefined, "198.51.100.1")).status).toBe(403);
   });
 
+  it("keys an upgrade with a duplicated client-IP header as unknown, like REST (NB3)", async () => {
+    const before = server.admission.socketsOf("unknown");
+    const socket = await upgrade(ALLOWED, ["203.0.113.5", "1.2.3.4"]);
+    expect(socket.status).toBe(101);
+    expect(server.admission.socketsOf("unknown")).toBe(before + 1);
+    expect(server.admission.socketsOf("203.0.113.5")).toBe(0);
+    socket.close();
+    await expect.poll(() => server.admission.socketsOf("unknown"), { timeout: 3000 }).toBe(before);
+  });
+
   it("caps concurrent sockets per IP (429) and releases the slot on close", async () => {
     const ip = "198.51.100.9";
     const open: Array<{ close: () => void }> = [];
@@ -251,12 +303,46 @@ describe("WebSocket upgrades on the ws fallback", () => {
     expect(server.admission.socketsOf(ip)).toBe(MAX_SOCKETS);
     const refused = await upgrade(ALLOWED, ip);
     expect(refused.status).toBe(429);
+    expect(refused.retryAfter).toBe("5");
     expect((await upgrade(ALLOWED, "198.51.100.10")).status).toBe(101);
     for (const socket of open) socket.close();
     await expect.poll(() => server.admission.socketsOf(ip), { timeout: 3000 }).toBe(0);
     const again = await upgrade(ALLOWED, ip);
     expect(again.status).toBe(101);
     again.close();
+  });
+
+  it("refuses malformed handshakes before claiming a socket slot (NB2): no 10 s self-lockout", async () => {
+    const ip = "198.51.100.20";
+    const bad: Array<[Record<string, string | undefined>, string, number]> = [
+      [{ "sec-websocket-key": "not-a-key" }, "GET", 400],
+      [{ "sec-websocket-key": "!!!!!!!!!!!!!!!!!!!!!!==" }, "GET", 400],
+      [{ "sec-websocket-key": undefined }, "GET", 400],
+      [{ "sec-websocket-version": "8" }, "GET", 400],
+      [{ "sec-websocket-version": undefined }, "GET", 400],
+      [{ upgrade: "h2c" }, "GET", 400],
+      [{ "sec-websocket-protocol": "a, a" }, "GET", 400],
+      [{ "sec-websocket-protocol": "a b" }, "GET", 400],
+      [{}, "POST", 405],
+    ];
+    // Twice the cap of each: before the fix the 4th bad handshake already got 429.
+    for (let round = 0; round < 2; round++) {
+      for (const [overrides, method, status] of bad) {
+        const r = await upgrade(ALLOWED, ip, overrides, method);
+        expect(r.status, `${method} ${JSON.stringify(overrides)}`).toBe(status);
+        expect(server.admission.socketsOf(ip)).toBe(0);
+      }
+    }
+    const version = await upgrade(ALLOWED, ip, { "sec-websocket-version": "12" });
+    expect(version.status).toBe(400);
+    // A valid subprotocol list still passes the shape check, and a good handshake opens at once.
+    const withProtocol = await upgrade(ALLOWED, ip, { "sec-websocket-protocol": "colyseus, v1" });
+    expect(withProtocol.status).not.toBe(400);
+    withProtocol.close();
+    const ok = await upgrade(ALLOWED, ip);
+    expect(ok.status).toBe(101);
+    ok.close();
+    await expect.poll(() => server.admission.socketsOf(ip), { timeout: 3000 }).toBe(0);
   });
 });
 

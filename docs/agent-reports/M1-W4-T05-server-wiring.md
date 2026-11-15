@@ -26,3 +26,15 @@ Scope: `apps/server/src/app/**` only. No edits to `packages/db`, `apps/server/sr
 
 ## Recommendation
 Accept the wiring. Follow-ups: net owner adds `onAuth` using `ServerApp.verifyToken` when the authenticated room lands; devops/lead may want a scheduler abstraction if more periodic jobs appear.
+
+## Fixes (review B1, 2026-11-14, backend-data-engineer)
+
+Files: `apps/server/src/api/{accounts,contracts,http,service}.ts`, tests `auth.test.ts`, `contracts.test.ts`, new `housekeeping.test.ts`. `packages/db` unchanged. `apps/server/src/net/**` and `app/server.ts` untouched.
+
+- **B1a** `accounts.ts`: a stale `PATCH /v1/me` now answers `409 {error:"VERSION_CONFLICT"}` through `fail()` (status from `API_ERROR_STATUS`). Test: `auth.test.ts` "PATCH enforces optimistic concurrency" asserts the code via `ApiErrorBodySchema`.
+- **B1b** `contracts.ts`: new `toDetail()` builds `GetContractResponse` (summary plus `inviteCode`). The code is non-null only when `role === "holder"` and `shiftType === "private"`, otherwise `null`. Used by `GET /v1/contracts/:id` and, as the contract allows, by `PATCH /v1/contracts/:id` (so a switch to Private hands the Holder the fresh code). The list and join-code responses are unchanged (no code). Tests: Holder sees the code, it follows rotation, Staff get `null` and the serialised body contains neither the old nor the new code, Solo is `null`, the list never mentions `inviteCode`; PATCH to Private returns the code, back to Solo returns `null`.
+- **Other v0.3.0 drift**: re-read the contract header and schemas. Create, rotate, join-code, members and the other error codes already match. No further drift in the api handlers.
+- **Non-blocking 3 (purge on Render free)**: `createLazyPurge` (`service.ts`) purges refresh tokens on the first API request that answers below 500 after boot, then at most once per 24 h (`purgeIntervalMs`, 0 disables). Triggered from `safe()` via the optional `ApiContext.housekeeping` hook, fire-and-forget, never overlapping. A failed purge is logged by `errorCodeForLog` only and retried after 10 min, so a powered-off database is not hammered. The 24 h timer in `app/server.ts` is left in place (harmless duplicate). Tests in `housekeeping.test.ts`: first call, interval throttle, disable, failure log redaction and retry gap, no overlap.
+- **Not done / for others**: `server.ts:140` still logs the raw `{ err }` (non-blocking 5); it is outside my paths, suggest switching to `errorCodeForLog`. Non-blocking 1, 2, 4, 6-12 untouched (spec decisions or no-op).
+
+Evidence (Node 26.13.1 via fnm prefix): `tsc --noEmit` clean in `apps/server` and `packages/db`. `packages/db` vitest: 6 files, 78 passed, 2 skipped. `apps/server` vitest: 17 of 18 files pass, 192 passed, 2 failed, both in `src/net/admission.test.ts` ("N2 unknown bucket", net owner's in-flight work, unrelated to the api; no api test fails). Not run: `pnpm verify`.

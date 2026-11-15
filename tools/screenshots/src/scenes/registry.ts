@@ -56,6 +56,16 @@ export const SCENES: Readonly<Record<string, SceneEntry>> = {
     urlScene: "s05",
     tods: { noon: t({ sun: "60" }, 60), morning: t({ sun: "30" }, 30), dawn: t({ sun: "4" }, 4) },
   },
+  /**
+   * "Typical worksite" (`?scene=typical`, client `TYPICAL_SCENE_ID`, M0-W3-T08): the solo-play frame the per-device numbers are
+   * quoted on. Not a numbered visual-target scene; registered so the harness verifies its sun. `noon` is the scene's own
+   * default sun (38 deg), the value every earlier `typical-noon-*` capture used; `morning`/`dawn` pass `sun=`.
+   */
+  TYPICAL: {
+    id: "TYPICAL",
+    urlScene: "typical",
+    tods: { noon: t({}, 38), morning: t({ sun: "30" }, 30), dawn: t({ sun: "4" }, 4) },
+  },
   S06: { id: "S06", urlScene: "s06", tods: { "night-near": t({}, -20, 6) } },
   /** HUD sheet / test page (`?scene=hud-test` in the client). */
   S12: {
@@ -66,6 +76,16 @@ export const SCENES: Readonly<Record<string, SceneEntry>> = {
   },
 };
 
+/**
+ * S05 view variants (`S05ramp`, `S05slope`): camera on the ramp so the canopy shadow on the visible ramp face is in frame
+ * (the default `wide` view no longer has a slope probe). Azimuth is fixed at 200; sun elevation comes from the tod (noon = 60).
+ * `rampShadow` / `slopeShadow` then appear as `probe:*` (48 px) and `probe16:*` (16 px) ROIs in the sidecar `measure`.
+ */
+export const S05_VIEWS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  ramp: { view: "shadeSlope", az: "200" },
+  slope: { view: "slope", az: "200" },
+};
+
 export interface ResolvedScene {
   readonly entry: SceneEntry;
   /** Extra URL params implied by the scene id suffix (`S01a` -> `view=a`). */
@@ -74,6 +94,9 @@ export interface ResolvedScene {
 
 /** `S01a` -> S01 view a; `s12` -> S12. Returns null for an id the harness does not know. */
 export function resolveScene(id: string): ResolvedScene | null {
+  if (id.trim().toLowerCase() === "typical") return { entry: SCENES["TYPICAL"]!, params: {} };
+  const v = /^s05(ramp|slope)$/i.exec(id.trim());
+  if (v !== null) return { entry: SCENES["S05"]!, params: S05_VIEWS[v[1]!.toLowerCase()]! };
   const m = /^s(\d{2})([ab])?$/i.exec(id.trim());
   if (m === null) return null;
   const entry = SCENES[`S${m[1]}`];

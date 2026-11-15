@@ -4,7 +4,8 @@
 
 ## Purpose
 
-The 23 baseline tables of progression-and-economy.md §21 (`data/<table>.json`, reference mode) validated by the zod
+The 23 baseline tables of progression-and-economy.md §21 plus `tool-feel.json` (game-feel-and-controls.md §10.2;
+`movement.json` also carries the §10.1 feel keys since contract v1.3) (`data/<table>.json`, reference mode) validated by the zod
 schemas in `@moon-cleanup/shared` (`config/*.schema`, contract v1) and the cross-table `GameDataBundleSchema`.
 Names come from `docs/design/naming-bible.md`; numbers will be re-tuned with `tools/balance-sim`.
 

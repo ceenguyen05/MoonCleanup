@@ -21,7 +21,11 @@ import type {
 } from "@moon-cleanup/shared";
 import type { WebGPURenderer } from "three/webgpu";
 import { detectBackend, type BackendDecision, type BlocklistEntry, type GpuLike } from "./backend";
-import { DynamicResolution, dynresTargetMs, type DynresSignal } from "./dynres";
+import { DrawBudgetCounter, type DrawBudgetState } from "./draw-budget";
+import { DynamicResolution, type DynresSignal } from "./dynres";
+import { frameTargetFor, parseFrameTarget, type FrameTarget, type FrameTargetOverride } from "./frame-target";
+import { GpuMemoryLedger, textureBytes } from "./memory-ledger";
+import { PipelineWarmup, warmupBudgetMs, type WarmupReason, type WarmupState } from "./warmup";
 import blocklistData from "./blocklist.json";
 import gpuClassData from "./gpu-classes.json";
 import { FramePipeline, toneMappingFor, type FramePipelineLike, type PipelineStages } from "./pipeline";
@@ -77,6 +81,23 @@ export interface DynamicResolutionState {
   steps: number;
   /** At the floor and still over budget for 10 s: the UI may offer a lower preset (section 9). */
   floorHint: boolean;
+  /** Frame rate the controller steers to (`frame-target.ts`: 60 on every preset unless `?fps=` says otherwise). */
+  targetFps: number;
+  /** Pace guard (gpu signal): p90 of the frame interval and its budget (ms); 0 when the interval is the signal. */
+  paceP90Ms: number;
+  paceTargetMs: number;
+  /** The last verdict was over budget because frames missed the display, not because of GPU time. */
+  paceLimited: boolean;
+}
+
+/** What three's own tracker reports for the live renderer (`renderer.info.memory`). Filled in place. */
+export interface RendererInfoSample {
+  /** Render and compute pipelines (programs) alive. */
+  pipelines: number;
+  /** Bytes of textures (render targets and shadow maps included) and of vertex / index / storage attributes. */
+  textureBytes: number;
+  geometryBytes: number;
+  totalBytes: number;
 }
 
 /** GPU frame times older than this are not used as the controller's signal (the reporter stopped). */
@@ -126,6 +147,23 @@ export interface RenderRendererService extends RendererService {
   setPipelineStages(stages: PipelineStages | null): void;
   /** Fills `out` with the draw statistics of the last rendered frame (all passes). Allocates nothing. */
   readStats(out: RenderFrameStats): void;
+  /** Last frame against the preset's draw-call / triangle budget (section 10.2). Updated in place. */
+  readonly drawBudget: Readonly<DrawBudgetState>;
+  /** GPU memory ledger (section 13): owners record every GPU allocation here (`memory-ledger.ts`). */
+  readonly memory: GpuMemoryLedger;
+  /** What three's tracker reports for the live renderer (cross-check of the ledger). Updated in place once per frame. */
+  readonly rendererInfo: Readonly<RendererInfoSample>;
+  /** Pipeline warm-up read-out (section 12): phase, `pipelinesReadyMs`, pipelines created after warm-up. */
+  readonly pipelineWarmup: Readonly<WarmupState>;
+  /**
+   * Registers a warm-up source: called with `true` when a warm-up starts (show one instance of every variant the owner
+   * will ever draw, culling off) and with `false` when it ends. Called at once with `true` if a warm-up is running.
+   */
+  addWarmupSource(source: (active: boolean) => void): Unsubscribe;
+  /** Starts a warm-up now (an owner added content with new pipelines behind a loading screen). */
+  requestWarmup(): void;
+  /** Resolves when no warm-up is running (at once if none is): gate "Clock In" and the settings overlay on it. */
+  whenPipelinesReady(): Promise<void>;
   /** The renderer was lost; GPU-only resources (render targets, storage textures) are gone. */
   onLost(listener: (info: DeviceLossInfo, lossCount: number) => void): Unsubscribe;
   /** A new renderer is ready: rebuild GPU-only resources against `service.renderer`. */
@@ -158,6 +196,8 @@ export interface RenderRuntime<R, C> {
   applyToneMapping(renderer: R, toneMapping: QualitySettings["post"]["toneMapping"]): void;
   createPipeline(renderer: R, roots: SceneRoots, stages: PipelineStages | null): FramePipelineLike;
   readStats(renderer: R, out: RenderFrameStats): void;
+  /** three's memory tracker and pipeline count. Optional: without it warm-up ends on its minimum frame count. */
+  readInfo?(renderer: R, out: RendererInfoSample): void;
 }
 
 function createThreeRuntime(
@@ -183,6 +223,17 @@ function createThreeRuntime(
     readStats(renderer, out) {
       out.drawCalls = renderer.info.render.drawCalls;
       out.triangles = renderer.info.render.triangles;
+    },
+    readInfo(renderer, out) {
+      const memory = renderer.info.memory as unknown as Record<string, number | undefined>;
+      out.pipelines = memory["programs"] ?? 0;
+      out.textureBytes = memory["texturesSize"] ?? 0;
+      out.geometryBytes =
+        (memory["attributesSize"] ?? 0) +
+        (memory["indexAttributesSize"] ?? 0) +
+        (memory["storageAttributesSize"] ?? 0) +
+        (memory["indirectStorageAttributesSize"] ?? 0);
+      out.totalBytes = memory["total"] ?? 0;
     },
   };
 }
@@ -281,7 +332,23 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     targetMs: 0,
     steps: 0,
     floorHint: false,
+    targetFps: 0,
+    paceP90Ms: 0,
+    paceTargetMs: 0,
+    paceLimited: false,
   };
+  private readonly frameTargetOverride: FrameTargetOverride;
+  private readonly frameTarget: FrameTarget = { targetFps: 60, gpuBudgetMs: 14 };
+  private readonly budget = new DrawBudgetCounter();
+  readonly memory = new GpuMemoryLedger();
+  readonly rendererInfo: RendererInfoSample = { pipelines: 0, textureBytes: 0, geometryBytes: 0, totalBytes: 0 };
+  private readonly warmup = new PipelineWarmup();
+  private readonly warmupSources = new Set<(active: boolean) => void>();
+  private warmupWaiters: (() => void)[] = [];
+  private warmupReason: WarmupReason = "boot";
+  private runtimeCreationsLogged = 0;
+  /** Ledger entry of the HDR scene pass target (colour RGBA16F + depth), sized for the render scale in effect. */
+  private sceneTargetEntry = 0;
   private reversedDepth = true;
   private disposed = false;
   /** Draw statistics copied right after each render: three zeroes `renderer.info` at the next display frame. */
@@ -300,6 +367,7 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     this.options = options;
     const search = options.search ?? (typeof location === "undefined" ? "" : location.search);
     this.url = parseRenderUrlOptions(search);
+    this.frameTargetOverride = parseFrameTarget(search);
     this.log = options.log ?? ((line) => console.info(line));
   }
 
@@ -325,7 +393,11 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     }
 
     // Step 6: create, init, read back.
-    const runtime = env.runtime ?? createThreeRuntime(container, options.trackTimestamp === true);
+    // `?gputime=0` switches the timestamp queries off (A/B of their cost; dynres then steers on the frame interval).
+    const gpuTime = new URLSearchParams(options.search ?? (typeof location === "undefined" ? "" : location.search)).get(
+      "gputime",
+    );
+    const runtime = env.runtime ?? createThreeRuntime(container, options.trackTimestamp === true && gpuTime !== "0");
     this.runtime = runtime;
     const host = new RendererHost({
       driver: runtime.driver,
@@ -449,7 +521,13 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     this.bench?.update(frame);
     this.verify?.update(frame);
     pipeline.render();
-    this.runtime?.readStats(renderer, this.lastStats);
+    const runtime = this.runtime;
+    if (runtime !== null) {
+      runtime.readStats(renderer, this.lastStats);
+      runtime.readInfo?.(renderer, this.rendererInfo);
+    }
+    this.budget.record(this.lastStats.drawCalls, this.lastStats.triangles);
+    this.stepWarmup();
     this.framesRendered += 1;
   }
 
@@ -458,6 +536,7 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     if (renderer === null || this.runtime === null || this.roots === null) return;
     this.runtime.applyViewport(renderer, viewport);
     applyCameraProjection(this.roots.camera, viewport, this.reversedDepth);
+    this.recordSceneTarget();
   }
 
   dispose(): void {
@@ -466,6 +545,9 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     for (const off of this.unsubscribe) off();
     this.unsubscribe.length = 0;
     this.recreatedListeners.clear();
+    this.warmupSources.clear();
+    this.releaseWarmupWaiters();
+    this.memory.remove(this.sceneTargetEntry);
     this.bench?.dispose();
     this.bench = null;
     this.verify?.dispose();
@@ -525,7 +607,38 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     state.targetMs = dynres?.lastTargetMs ?? 0;
     state.steps = dynres?.steps ?? 0;
     state.floorHint = dynres?.floorHint ?? false;
+    state.targetFps = this.frameTarget.targetFps;
+    state.paceP90Ms = dynres?.lastPaceP90Ms ?? 0;
+    state.paceTargetMs = dynres?.lastPaceTargetMs ?? 0;
+    state.paceLimited = dynres?.paceLimited ?? false;
     return state;
+  }
+
+  get drawBudget(): Readonly<DrawBudgetState> {
+    return this.budget.state;
+  }
+
+  get pipelineWarmup(): Readonly<WarmupState> {
+    return this.warmup.state;
+  }
+
+  addWarmupSource(source: (active: boolean) => void): Unsubscribe {
+    this.warmupSources.add(source);
+    if (this.warmup.warming) source(true);
+    return () => {
+      this.warmupSources.delete(source);
+    };
+  }
+
+  requestWarmup(): void {
+    this.beginWarmup("request");
+  }
+
+  whenPipelinesReady(): Promise<void> {
+    if (!this.warmup.warming || this.disposed) return Promise.resolve();
+    return new Promise((resolve) => {
+      this.warmupWaiters.push(resolve);
+    });
   }
 
   setRenderScale(scale: number): number {
@@ -535,6 +648,7 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     const applied = holder.set(scale);
     this.dynres?.reset(holder.rangeOf(), applied);
     this.pipeline?.setRenderScale(applied);
+    this.recordSceneTarget();
     return applied;
   }
 
@@ -558,6 +672,8 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
   setPipelineStages(stages: PipelineStages | null): void {
     this.stages = stages;
     this.pipeline?.setStages(stages);
+    // A new post chain brings new pipelines: warm them up before they count as runtime creations.
+    if (this.pipeline !== null) this.beginWarmup("stages");
   }
 
   readStats(out: RenderFrameStats): void {
@@ -612,6 +728,7 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     if (runtime === null || roots === null || tracker === null || quality === null) return;
     this.reversedDepth = quality.capabilities.reversedDepth;
     this.pipeline = runtime.createPipeline(renderer, roots, this.stages);
+    this.warmupReason = this.framesRendered === 0 ? "boot" : "device";
     this.appliedQuality = null;
     this.applyQuality(renderer, quality.current);
     // Size the new drawing buffer now; the frame loop only reports later CHANGES.
@@ -624,6 +741,11 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     const previous = this.appliedQuality;
     this.appliedQuality = settings;
     this.runtime?.applyToneMapping(renderer, settings.post.toneMapping);
+    this.budget.setBudget(settings.budgets);
+    this.memory.setPreset(settings.preset);
+    frameTargetFor(settings.dynres, this.frameTargetOverride, this.frameTarget);
+    // Section 12 step 5: a preset change rebuilds shadows and post; warm them up before play continues.
+    this.beginWarmup(previous === null ? this.warmupReason : "preset");
     if (
       previous === null ||
       previous.dynres.scaleMin !== settings.dynres.scaleMin ||
@@ -637,7 +759,67 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
       }
     }
     this.pipeline?.setRenderScale(this.scale?.current ?? 1);
+    this.recordSceneTarget();
     // The DPR cap is read by the viewport tracker on its next poll, which triggers `resize`.
+  }
+
+  // ---- Warm-up and memory (sections 12 and 13) ----------------------------------------------------------------
+
+  private beginWarmup(reason: WarmupReason): void {
+    if (this.disposed) return;
+    if (!this.warmup.begin(reason, this.now())) return;
+    for (const source of this.warmupSources) source(true);
+  }
+
+  /** Once per rendered frame: feeds the warm-up tracker; on completion ends the sources and releases the waiters. */
+  private stepWarmup(): void {
+    const warmup = this.warmup;
+    const state = warmup.state;
+    const done = warmup.frame(this.rendererInfo.pipelines, this.now());
+    if (done) {
+      for (const source of this.warmupSources) source(false);
+      // Frames that compiled pipelines say nothing about the load at this scale.
+      if (this.scale !== null) this.dynres?.reset(this.scale.rangeOf(), this.scale.current);
+      this.log(
+        `[render] pipelines ready: reason=${state.reason} ms=${state.lastMs.toFixed(0)} frames=${String(state.lastFrames)}` +
+          ` pipelines=${String(state.pipelinesAtReady)} budgetMs=${String(warmupBudgetMs(this.tier))}` +
+          ` timedOut=${String(state.timedOut)}`,
+      );
+      this.releaseWarmupWaiters();
+      this.runtimeCreationsLogged = 0;
+    } else if (state.phase === "ready" && state.pipelinesAfterWarmup > this.runtimeCreationsLogged) {
+      // Budget 0 (section 12 "Never"): say so, a few times at most.
+      if (state.runtimeCreationFrames <= 5) {
+        console.warn(
+          `[render] ${String(state.pipelinesAfterWarmup)} pipeline(s) created after warm-up (frame ${String(this.framesRendered)})`,
+        );
+      }
+      this.runtimeCreationsLogged = state.pipelinesAfterWarmup;
+    }
+  }
+
+  private releaseWarmupWaiters(): void {
+    if (this.warmupWaiters.length === 0) return;
+    const waiters = this.warmupWaiters;
+    this.warmupWaiters = [];
+    for (const resolve of waiters) resolve();
+  }
+
+  /** Keeps the scene pass target's ledger entry at its current size: (RGBA16F 8 B + depth 4 B) x scaled pixels. */
+  private recordSceneTarget(): void {
+    const viewport = this.tracker?.current;
+    if (viewport === undefined) return;
+    const scale = this.scale?.current ?? 1;
+    const bytes = textureBytes(
+      viewport.widthCssPx * viewport.dpr * scale,
+      viewport.heightCssPx * viewport.dpr * scale,
+      12,
+    );
+    if (this.sceneTargetEntry === 0) {
+      this.sceneTargetEntry = this.memory.add("render", "renderTargets", "scene pass (RGBA16F + depth)", bytes);
+    } else {
+      this.memory.resize(this.sceneTargetEntry, bytes);
+    }
   }
 
   /**
@@ -669,16 +851,26 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     const dynres = this.dynres;
     const scale = this.scale;
     if (dynres === null || scale === null || !this.dynresActive() || !(wallMs > 0)) return;
+    // Warm-up frames compile pipelines: their times are not load.
+    if (this.warmup.warming) return;
     const frameMs = frame.dt > 0 ? frame.dt * 1000 : wallMs;
     const gpuFresh = now - this.gpuReportedAtMs <= GPU_SIGNAL_MAX_AGE_MS;
     const signal: DynresSignal = gpuFresh ? "gpu" : "interval";
+    // 60 fps on every preset (`frame-target.ts`); with GPU times the frame pace is guarded as well (`dynres.ts`).
+    const target = this.frameTarget;
+    const paceTargetMs = 1000 / target.targetFps;
     const wanted = dynres.sample(
       Math.max(wallMs, frameMs),
       gpuFresh ? this.gpuFrameMs : frameMs,
-      dynresTargetMs(signal, frame.quality.dynres),
+      gpuFresh ? target.gpuBudgetMs : paceTargetMs,
       signal,
+      gpuFresh ? paceTargetMs : 0,
+      frameMs,
     );
-    if (wanted !== scale.current) this.pipeline?.setRenderScale(scale.set(wanted));
+    if (wanted !== scale.current) {
+      this.pipeline?.setRenderScale(scale.set(wanted));
+      this.recordSceneTarget();
+    }
   }
 
   private disposePipeline(): void {

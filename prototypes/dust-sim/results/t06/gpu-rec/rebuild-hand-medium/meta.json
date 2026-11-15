@@ -1,0 +1,37 @@
+{
+ "label": "rebuild-hand-medium",
+ "px": 64,
+ "slots": 1024,
+ "frames": 100,
+ "events": 30600,
+ "draws": 30500,
+ "clears": 0,
+ "rebuilt": 100,
+ "finalSlots": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14
+ ],
+ "cpuRefMs": {
+  "p50": 1.341,
+  "p95": 1.883,
+  "p99": 8.133,
+  "max": 8.133
+ },
+ "noCompare": true,
+ "quality": "medium",
+ "widthCm": 60,
+ "perPlot": 256
+}

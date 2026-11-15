@@ -1,0 +1,576 @@
+[
+  {
+    "name": "ground-hz0-sun14",
+    "url": "http://localhost:5247/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&dynres=0&horizon=0",
+    "info": {
+      "ready": true,
+      "error": null,
+      "nodes": 87,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        12,
+        23,
+        28
+      ],
+      "triangles": 201144,
+      "visited": 186,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": false,
+        "on": false,
+        "bytes": 0,
+        "fetchMs": 0,
+        "decodeMs": 0
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.3999999761581421,
+        "max": 0.6000000238418579,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 2263.6000000089407,
+        "decodeMs": 289.5
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117,
+      "frameMs": {
+        "p50": 15.799999997019768,
+        "p95": 21.299999997019768,
+        "max": 32.099999994039536
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": false,
+        "scale": 0.85,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      },
+      "mc": {
+        "backend": "webgpu",
+        "tier": "B",
+        "preset": "medium",
+        "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1,
+        "renderScale": 0.85,
+        "frameTimeAvgMs": 15.69249995922049,
+        "frameTimeP95Ms": 33.099998474121094,
+        "drawCalls": 30,
+        "triangles": 355075,
+        "texPoolMB": 0,
+        "placeholderAssets": [],
+        "lossCount": 0
+      },
+      "stats": {
+        "schema": 1,
+        "atMs": 14590.60000000894,
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.85,
+          "canvasCssPx": [
+            1280,
+            720
+          ]
+        },
+        "frameMs": {
+          "samples": 240,
+          "avg": 15.718333333358169,
+          "min": 8.299999997019768,
+          "max": 32.29999999701977,
+          "p50": 15.700000002980232,
+          "p95": 18.900000005960464,
+          "p99": 24.900000005960464
+        },
+        "fps": 63.6199766725747,
+        "cpuMs": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.0020833334575096766,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.0033333331967393557,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999403953552
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.6654166661202907,
+            "min": 0.29999999701976776,
+            "max": 2.2999999970197678,
+            "p50": 0.5999999940395355,
+            "p95": 1.1000000089406967,
+            "p99": 1.4000000059604645
+          },
+          "render": {
+            "samples": 240,
+            "avg": 10.073333332998057,
+            "min": 3.7999999970197678,
+            "max": 23.600000008940697,
+            "p50": 10.600000008940697,
+            "p95": 14.200000002980232,
+            "p99": 17.700000002980232
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0.012083333420256774,
+            "min": 0,
+            "max": 0.20000000298023224,
+            "p50": 0,
+            "p95": 0.10000000894069672,
+            "p99": 0.10000000894069672
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.005416666778425376,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0.09999999403953552,
+            "p99": 0.10000000894069672
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "cpuTotalMs": {
+          "samples": 240,
+          "avg": 10.76166666597128,
+          "min": 4.4000000059604645,
+          "max": 24.299999997019768,
+          "p50": 11.399999991059303,
+          "p95": 14.799999997019768,
+          "p99": 18.299999997019768
+        },
+        "gpu": {
+          "source": "timestamp-query",
+          "measured": true,
+          "renderMs": {
+            "samples": 3,
+            "avg": 11.933814999999997,
+            "min": 10.383591999999998,
+            "max": 13.121960999999999,
+            "p50": 12.295891999999997,
+            "p95": 13.121960999999999,
+            "p99": 13.121960999999999
+          },
+          "computeMs": {
+            "samples": 3,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "perPass": "unavailable"
+        },
+        "render": {
+          "drawCalls": 30,
+          "triangles": 355075,
+          "geometries": 11,
+          "textures": 34,
+          "gpuMemoryBytes": 85797947,
+          "texturesBytes": 83561512,
+          "pipelinesAfterWarmup": null,
+          "framesRendered": 433,
+          "lossCount": 0
+        },
+        "memory": {
+          "jsHeapBytes": 121894933
+        },
+        "net": {
+          "rttMs": null,
+          "conn": "asleep"
+        },
+        "frames": 252
+      },
+      "canvas": 1280
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: [render] 6 pipeline(s) created after warm-up (frame 100)",
+      "warning: [render] 8 pipeline(s) created after warm-up (frame 101)",
+      "warning: The resource http://localhost:5247/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+      "warning: The resource http://localhost:5247/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    ]
+  },
+  {
+    "name": "rim-hz0-sun14",
+    "url": "http://localhost:5247/?scene=moon&solo=0&preset=medium&backend=webgpu&view=rim&dynres=0&horizon=0",
+    "info": {
+      "ready": true,
+      "error": null,
+      "nodes": 71,
+      "perLevel": [
+        0,
+        0,
+        1,
+        9,
+        9,
+        10,
+        13,
+        21,
+        8
+      ],
+      "triangles": 164152,
+      "visited": 154,
+      "culledHorizon": 12,
+      "culledFrustum": 34,
+      "overflow": 0,
+      "horizon": {
+        "wanted": false,
+        "on": false,
+        "bytes": 0,
+        "fetchMs": 0,
+        "decodeMs": 0
+      },
+      "siteUp": [
+        0.1294172190162412,
+        0.9887710779360422,
+        0.0747190662367996
+      ],
+      "shadowInstances": 108,
+      "shadowPerCascade": [
+        0,
+        42,
+        66,
+        0
+      ],
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.5,
+        "max": 17.399999618530273,
+        "n": 214
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 3426.9000000059605,
+        "decodeMs": 523.5
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 600.0000000000009,
+        "posts": 564
+      },
+      "cameraAltitudeM": 29.99999999999973,
+      "frameMs": {
+        "p50": 14.800000011920929,
+        "p95": 26.799999997019768,
+        "max": 80.79999999701977
+      },
+      "dynres": {
+        "enabled": false,
+        "pinned": false,
+        "scale": 0.85,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      },
+      "mc": {
+        "backend": "webgpu",
+        "tier": "B",
+        "preset": "medium",
+        "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1,
+        "renderScale": 0.85,
+        "frameTimeAvgMs": 44.20249956895908,
+        "frameTimeP95Ms": 36.20000076293945,
+        "drawCalls": 29,
+        "triangles": 281795,
+        "texPoolMB": 0,
+        "placeholderAssets": [],
+        "lossCount": 0
+      },
+      "stats": {
+        "schema": 1,
+        "atMs": 17903.70000000298,
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.85,
+          "canvasCssPx": [
+            1280,
+            720
+          ]
+        },
+        "frameMs": {
+          "samples": 134,
+          "avg": 29.541044776119403,
+          "min": 6.199999988079071,
+          "max": 1818.2999999970198,
+          "p50": 14.800000011920929,
+          "p95": 29.5,
+          "p99": 80.8999999910593
+        },
+        "fps": 33.85120626499937,
+        "cpuMs": {
+          "input": {
+            "samples": 134,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 134,
+            "avg": 0.0037313435059874805,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 134,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 134,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "animation": {
+            "samples": 134,
+            "avg": 0.0007462687234380352,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "terrain": {
+            "samples": 134,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 134,
+            "avg": 0.6559701485197935,
+            "min": 0.29999999701976776,
+            "max": 5.799999997019768,
+            "p50": 0.5,
+            "p95": 1.5999999940395355,
+            "p99": 2.2999999970197678
+          },
+          "render": {
+            "samples": 134,
+            "avg": 23.791044775896996,
+            "min": 3.699999988079071,
+            "max": 1815.699999988079,
+            "p50": 10.099999994039536,
+            "p95": 18.5,
+            "p99": 69.29999999701977
+          },
+          "audio": {
+            "samples": 134,
+            "avg": 0.016417910247596344,
+            "min": 0,
+            "max": 0.3999999910593033,
+            "p50": 0,
+            "p95": 0.10000000894069672,
+            "p99": 0.20000000298023224
+          },
+          "ui": {
+            "samples": 134,
+            "avg": 0.008208955290602215,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0.09999999403953552,
+            "p99": 0.10000000894069672
+          },
+          "debug": {
+            "samples": 134,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "cpuTotalMs": {
+          "samples": 134,
+          "avg": 24.476119402184416,
+          "min": 4.099999979138374,
+          "max": 1816.199999988079,
+          "p50": 10.700000002980232,
+          "p95": 19.100000008940697,
+          "p99": 70
+        },
+        "gpu": {
+          "source": "timestamp-query",
+          "measured": true,
+          "renderMs": {
+            "samples": 2,
+            "avg": 12.168766,
+            "min": 12.038892,
+            "max": 12.298639999999999,
+            "p50": 12.038892,
+            "p95": 12.298639999999999,
+            "p99": 12.298639999999999
+          },
+          "computeMs": {
+            "samples": 2,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "perPass": "unavailable"
+        },
+        "render": {
+          "drawCalls": 29,
+          "triangles": 281795,
+          "geometries": 10,
+          "textures": 34,
+          "gpuMemoryBytes": 85788971,
+          "texturesBytes": 83561512,
+          "pipelinesAfterWarmup": null,
+          "framesRendered": 316,
+          "lossCount": 0
+        },
+        "memory": {
+          "jsHeapBytes": 110656202
+        },
+        "net": {
+          "rttMs": null,
+          "conn": "asleep"
+        },
+        "frames": 134
+      },
+      "canvas": 1280
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: [render] 6 pipeline(s) created after warm-up (frame 102)",
+      "warning: [render] 8 pipeline(s) created after warm-up (frame 103)",
+      "warning: The resource http://localhost:5247/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+      "warning: The resource http://localhost:5247/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    ]
+  }
+]

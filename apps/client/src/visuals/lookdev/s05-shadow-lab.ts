@@ -4,10 +4,35 @@
 // The ground is the REAL regolith material, all clean, no macro variation (`look-ground.ts`; `&ground=standin` = old, A/B).
 //
 // Layout (camera looks +z, camera right = world -x): post (0,0,0), boulder (0,0,8), custodian (0,0,-8), wall (8,0,0) with its
-// shaded face toward +z, flat canopy (14,5,-8), ramp group at (-22,0,0) with its own post, boulder, boots and canopy.
+// shaded face toward +z, flat canopy (14,5,-8), ramp group at (-22,0,0) with its own post, boulder and boots on the hinge and
+// a canopy over the half of the ramp that is above the ground (`s05-geometry.ts`; `&rampcanopy=m0` = the M0 placement, A/B).
+//
+// Probes (`__mcLook.probes()`), all on surfaces the camera can see:
+//   flatLit / flatShadow     flat ground in the sun / under the flat canopy
+//   slopeLit                 the ramp's visible face, in the sun
+//   rampShadow               centre of the ramp canopy's shadow wherever it lands (ramp face, else the flat ground)
+//   slopeShadow              the same point, reported ONLY while it is on the ramp face (VT-M0-16 "slope facing away")
+//   slopeBoots               the custodian's feet on the hinge
+//   wallLit / wallShadow     the wall face toward / away from the sun, each reported only to a camera in front of it
 
 import { BoxGeometry, Group, Mesh, Vector3 } from "three/webgpu";
 import { wantsStandInGround } from "./look-ground";
+import {
+  S05_CANOPY_EDGE_M,
+  RAMP_CANOPY_HEIGHT_M,
+  RAMP_CANOPY_X_M0,
+  RAMP_CANOPY_Z_M,
+  RAMP_CENTRE_X,
+  RAMP_HALF_X_M,
+  RAMP_HALF_Z_M,
+  RAMP_TILT_DEG,
+  S05_GROUND_RADIUS_M,
+  rampCanopyLocalX,
+  rampCanopyShadow,
+  rampPoint,
+  rampVisibleSide,
+  wallProbe,
+} from "./s05-geometry";
 import {
   SceneKit,
   capResolution,
@@ -19,9 +44,9 @@ import {
 } from "./scene-base";
 import { directionFromAzEl } from "../sky/sky-math";
 
+export { RAMP_CENTRE_X, RAMP_TILT_DEG } from "./s05-geometry";
+
 const DEG = Math.PI / 180;
-export const RAMP_CENTRE_X = -22;
-export const RAMP_TILT_DEG = 20;
 
 export const S05_VIEWS: Readonly<Record<string, Pose>> = {
   wide: { position: [0, 3.4, -19], target: [0, 0.9, 0] },
@@ -38,6 +63,8 @@ export class S05ShadowLab implements LookScene {
   readonly id = "s05";
   readonly views = Object.keys(S05_VIEWS);
   readonly probes: Record<string, ProbeFn>;
+  /** Ramp-local x of the ramp canopy's centre. */
+  readonly rampCanopyX: number;
 
   private readonly kit: SceneKit;
   private readonly ctx: SceneContext;
@@ -54,10 +81,12 @@ export class S05ShadowLab implements LookScene {
     state.earthElevationDeg = 32;
     state.earthAzimuthDeg = 60;
     this.tilt = (params.get("slope") === "toward" ? 1 : -1) * RAMP_TILT_DEG * DEG;
+    this.rampCanopyX =
+      (params.get("rampcanopy") ?? "").toLowerCase() === "m0" ? RAMP_CANOPY_X_M0 : rampCanopyLocalX(this.tilt);
 
     const kit = new SceneKit(ctx.roots, "mc:look-s05", { allClean: true, standIn: wantsStandInGround(params) });
     this.kit = kit;
-    kit.addGround(170, undefined, ...capResolution(params));
+    kit.addGround(S05_GROUND_RADIUS_M, undefined, ...capResolution(params));
     const { props, group } = kit;
 
     group.add(placed(props.post(1), 0, 0, 0));
@@ -70,7 +99,7 @@ export class S05ShadowLab implements LookScene {
     ramp.name = "mc:look-ramp";
     ramp.position.set(RAMP_CENTRE_X, 0, 0);
     ramp.rotation.z = this.tilt;
-    const slab = new Mesh(kit.own(new BoxGeometry(14, 0.6, 22)), kit.ground.material);
+    const slab = new Mesh(kit.own(new BoxGeometry(RAMP_HALF_X_M * 2, 0.6, RAMP_HALF_Z_M * 2)), kit.ground.material);
     slab.position.y = -0.3;
     slab.castShadow = true;
     slab.receiveShadow = true;
@@ -80,41 +109,24 @@ export class S05ShadowLab implements LookScene {
       placed(props.boulder(0.5, 9), 0, 0, 8),
       placed(props.custodian(), 0, 0, -8),
     );
-    ramp.add(canopy(kit, -3, 5, 2));
+    ramp.add(canopy(kit, this.rampCanopyX, RAMP_CANOPY_HEIGHT_M, RAMP_CANOPY_Z_M));
     group.add(ramp);
 
+    const side = rampVisibleSide(this.tilt);
     this.probes = {
       flatLit: () => [4, 0, -3],
       flatShadow: (s) => shadowUnder(s, [14, 5, -8], this._dir, this._p),
-      slopeLit: () => this.rampPoint(3, 0, -5),
-      slopeShadow: (s) => this.rampShadow(s),
-      slopeBoots: () => this.rampPoint(0, 0, -8),
-      wallShadow: () => [8, 1.2, 0.17],
-      wallLit: () => [8, 1.2, -0.17],
+      slopeLit: () => rampPoint(this.tilt, side * 3, 0, -5),
+      rampShadow: (s) => rampCanopyShadow(this.tilt, this.rampCanopyX, s)?.point ?? null,
+      slopeShadow: (s) => {
+        const hit = rampCanopyShadow(this.tilt, this.rampCanopyX, s);
+        return hit !== null && hit.onRamp ? hit.point : null;
+      },
+      slopeBoots: () => rampPoint(this.tilt, 0, 0, -8),
+      wallShadow: (s) => wallProbe("shadow", s, ctx.roots.camera.position.z),
+      wallLit: (s) => wallProbe("lit", s, ctx.roots.camera.position.z),
     };
     this.setView(params.get("view") ?? "wide");
-  }
-
-  /** World position of the ramp surface at local (x, 0, z). */
-  private rampPoint(x: number, y: number, z: number): readonly [number, number, number] {
-    const c = Math.cos(this.tilt);
-    const s = Math.sin(this.tilt);
-    return [RAMP_CENTRE_X + x * c - y * s, x * s + y * c, z];
-  }
-
-  /** Where the ramp canopy's shadow centre falls on the ramp plane. */
-  private rampShadow(
-    state: Readonly<{ sunElevationDeg: number; sunAzimuthDeg: number }>,
-  ): readonly [number, number, number] {
-    const dir = makeDir(state, this._dir);
-    // Canopy centre in world space: ramp-local (-3, 5, 2).
-    const top = this.rampPoint(-3, 5, 2);
-    // Plane through the ramp centre with normal n = (-sin t, cos t, 0).
-    const nx = -Math.sin(this.tilt);
-    const ny = Math.cos(this.tilt);
-    const denom = dir.x * nx + dir.y * ny + dir.z * 0;
-    const t = ((RAMP_CENTRE_X - top[0]) * nx + (0 - top[1]) * ny) / denom;
-    return [top[0] + dir.x * t, top[1] + dir.y * t, top[2] + dir.z * t];
   }
 
   setView(name: string): void {
@@ -157,7 +169,7 @@ function placed<T extends { position: Vector3 }>(object: T, x: number, y: number
 }
 
 function canopy(kit: SceneKit, x: number, y: number, z: number): Mesh {
-  const slab = new Mesh(kit.own(new BoxGeometry(7, 0.15, 7)), kit.props.ivory);
+  const slab = new Mesh(kit.own(new BoxGeometry(S05_CANOPY_EDGE_M, 0.15, S05_CANOPY_EDGE_M)), kit.props.ivory);
   slab.name = "mc:look-canopy";
   slab.castShadow = true;
   slab.position.set(x, y, z);

@@ -1,6 +1,26 @@
-import { CHUNK_COUNT, DUST_MESSAGE_SLICE_MAX_BYTES, LEDGER_BYTES, PlotState, type PlotId } from "@moon-cleanup/shared";
+import {
+  CHUNK_COUNT,
+  DUST_MESSAGE_SLICE_MAX_BYTES,
+  DUST_SNAPSHOT_SLICE_HEADER_BYTES,
+  LEDGER_BYTES,
+  LEDGER_MAX_CONTRIBUTIONS,
+  PlotState,
+  type PlotId,
+} from "@moon-cleanup/shared";
 import { describe, expect, it } from "vitest";
-import { DUST_CHECK_MAX_CHUNKS, DUST_LOG_ID, SnapshotAssembler, countOpened } from "./dust-messages";
+import {
+  DUST_CHECK_MAX_CHUNKS,
+  DUST_LOG_ID,
+  DUST_LOG_MAX_CONTINUATIONS,
+  DUST_SNAPSHOT_MAX_LEDGERS,
+  DUST_SNAPSHOT_MAX_LOGS,
+  DUST_SNAPSHOT_MAX_RAW_BYTES,
+  DUST_SNAPSHOT_MAX_SLICES,
+  LEDGER_RAW_MAX_BYTES,
+  LEDGER_WIRE_ACTOR_SLOT_MAX,
+  SnapshotAssembler,
+  countOpened,
+} from "./dust-messages";
 import {
   decodeDustCheck,
   decodeDustLedger,
@@ -19,6 +39,7 @@ import {
   type Inflate,
   type LedgerRawInput,
 } from "./dust-messages";
+import { PLOT_ID_BITS } from "./dust-wire";
 import { StrokeChainBuffer } from "./frame-state";
 import { randInt, rng } from "./test-util";
 import {
@@ -66,6 +87,28 @@ function randomLedger(r: () => number): LedgerRawInput {
     },
     texels,
   };
+}
+
+/** Exactly `chains` chains, each with 4 continuations (the largest typical log). */
+function randomChainsFull(r: () => number, chains: number, refTick: number): StrokeChainBuffer {
+  const b = new StrokeChainBuffer(chains, 64);
+  for (let c = 0; c < chains; c++) {
+    b.addChain(
+      randInt(r, 0, PLOTS - 1),
+      randInt(r, -32768, 32767),
+      randInt(r, -32768, 32767),
+      randInt(r, -32768, 32767),
+      randInt(r, -32768, 32767),
+      randInt(r, 1, 1023),
+      randInt(r, 0, 255),
+      randInt(r, 0, 63),
+      randInt(r, 0, 15),
+      refTick - randInt(r, 0, 255),
+      randInt(r, 0, 65535),
+    );
+    for (let k = 0; k < 4; k++) b.addContinuation(randInt(r, -4096, 4095), randInt(r, -4096, 4095));
+  }
+  return b;
 }
 
 function randomChains(r: () => number, maxChains: number, refTick: number): StrokeChainBuffer {
@@ -341,6 +384,90 @@ describe("dust message round trips", () => {
     expect(decodeSnapshotRaw(raw, plotCount - 1)).toBeNull();
   });
 
+  it("the snapshot size cap sits above a full 1,024-ledger snapshot and the encoder refuses anything the decoder would", () => {
+    const states = new Uint8Array(Math.ceil(PLOTS / 4));
+    const ledger: LedgerRawInput = {
+      header: {
+        version: 1,
+        remainingUnits: 10,
+        initialUnits: 10,
+        ownedTexels: 1024,
+        mgPerUnit: 1,
+        hash: 2,
+        contributions: Array.from({ length: 4 }, (_, i) => ({ actorSlot: i, units: 1 })),
+      },
+      texels: new Uint8Array(LEDGER_BYTES).fill(7),
+    };
+    const ledgers = Array.from({ length: DUST_SNAPSHOT_MAX_LEDGERS }, (_, i) => ({ plotId: i, ledger }));
+    const full = encodeSnapshotRaw({
+      plotCount: PLOTS,
+      plotStates: states,
+      openedRemaining: new Uint8Array(0),
+      ledgers,
+      logs: [],
+    });
+    expect(full).not.toBeNull();
+    // Above the old 1 MiB cap, within the new one, and accepted by an inflate that enforces the cap.
+    expect(full!.length).toBeGreaterThan(1 << 20);
+    expect(full!.length).toBeLessThanOrEqual(DUST_SNAPSHOT_MAX_RAW_BYTES);
+    const decoded = decodeSnapshotStream(full!, identityInflate, PLOTS);
+    expect(decoded?.ledgers.length).toBe(DUST_SNAPSHOT_MAX_LEDGERS);
+
+    // Full ledgers plus a full set of long logs exceeds the cap: refused at encode, not silently dropped by the client.
+    const r = rng(77);
+    const logs = Array.from({ length: DUST_SNAPSHOT_MAX_LOGS }, (_, i) => ({
+      plotId: i,
+      refTick: 9000,
+      chains: randomChainsFull(r, 255, 9000),
+    }));
+    const oversize = encodeSnapshotRaw({
+      plotCount: PLOTS,
+      plotStates: states,
+      openedRemaining: new Uint8Array(0),
+      ledgers,
+      logs,
+    });
+    expect(oversize).toBeNull();
+  });
+
+  it("snapshot caps are mutually consistent: 1.5 MiB raw covers the worst ledger case, slices bound the wire size", () => {
+    expect(DUST_SNAPSHOT_MAX_RAW_BYTES).toBe(1.5 * 1024 * 1024);
+    // Worst legal ledger-only snapshot at the largest addressable grid: every plot Opened (1 remaining byte each),
+    // 1,024 ledgers with the maximum contributions. Must fit with room to spare (the margin carries short logs).
+    const maxPlots = 1 << PLOT_ID_BITS;
+    const worst =
+      4 + Math.ceil(maxPlots / 4) + maxPlots + 2 + 2 + DUST_SNAPSHOT_MAX_LEDGERS * (3 + LEDGER_RAW_MAX_BYTES);
+    expect(worst).toBeLessThan(DUST_SNAPSHOT_MAX_RAW_BYTES);
+    // The standard grid with every plot Opened and 1,024 full ledgers encodes (it is above the old 1 MiB cap).
+    const opened = new Uint8Array(Math.ceil(PLOTS / 4)).fill(PlotState.Opened * 0x55);
+    const ledger: LedgerRawInput = {
+      header: {
+        version: 1,
+        remainingUnits: 1,
+        initialUnits: 1,
+        ownedTexels: 1024,
+        mgPerUnit: 1,
+        hash: 3,
+        contributions: Array.from({ length: LEDGER_MAX_CONTRIBUTIONS }, (_, i) => ({ actorSlot: i, units: 1 })),
+      },
+      texels: new Uint8Array(LEDGER_BYTES).fill(1),
+    };
+    const raw = encodeSnapshotRaw({
+      plotCount: PLOTS,
+      plotStates: opened,
+      openedRemaining: new Uint8Array(PLOTS).fill(5),
+      ledgers: Array.from({ length: DUST_SNAPSHOT_MAX_LEDGERS }, (_, i) => ({ plotId: i, ledger })),
+      logs: [],
+    });
+    expect(raw).not.toBeNull();
+    expect(raw!.length).toBeGreaterThan(1 << 20);
+    expect(raw!.length).toBeLessThan(DUST_SNAPSHOT_MAX_RAW_BYTES);
+    // The deflated stream is at most DUST_SNAPSHOT_MAX_SLICES slices of DUST_MESSAGE_SLICE_MAX_BYTES (4,096 B each).
+    const maxDeflated = DUST_SNAPSHOT_MAX_SLICES * (DUST_MESSAGE_SLICE_MAX_BYTES - DUST_SNAPSHOT_SLICE_HEADER_BYTES);
+    expect(snapshotSliceCount(maxDeflated)).toBe(DUST_SNAPSHOT_MAX_SLICES);
+    expect(snapshotSliceCount(maxDeflated + 1)).toBe(DUST_SNAPSHOT_MAX_SLICES + 1);
+  });
+
   it("a newer snapshot version restarts an unfinished assembly; duplicates and bad slices are handled", () => {
     const big = new Uint8Array(9000).fill(3);
     const a = new Uint8Array(DUST_MESSAGE_SLICE_MAX_BYTES);
@@ -357,6 +484,69 @@ describe("dust message round trips", () => {
     bad[1] = 9;
     expect(asm.add(bad)).toBe("invalid");
     expect(asm.take()).toBeNull();
+  });
+});
+
+describe("dust message encoders never emit what the decoders reject (review S2)", () => {
+  /** A log whose chains carry `total` continuations in all (255 per chain at most). */
+  function heavyLog(total: number): StrokeChainBuffer {
+    const b = new StrokeChainBuffer(32, total + 8);
+    let left = total;
+    while (left > 0 || b.chainCount === 0) {
+      b.addChain(7, 0, 0, 10, 10, 30, 9, 1, 2, 1000, 5);
+      const k = Math.min(255, left);
+      for (let i = 0; i < k; i++) b.addContinuation(3, -3);
+      left -= k;
+    }
+    return b;
+  }
+
+  it("DUST_LOG: exactly DUST_LOG_MAX_CONTINUATIONS round-trips; one more is refused by the encoder", () => {
+    const out = new Uint8Array(64 * 1024);
+    const atCap = heavyLog(DUST_LOG_MAX_CONTINUATIONS);
+    const n = encodeDustLog(9, 1000, atCap, out);
+    expect(n).toBeGreaterThan(0);
+    sameChains(decodeDustLog(out.slice(0, n), PLOTS)!.chains, atCap);
+    expect(encodeDustLog(9, 1000, heavyLog(DUST_LOG_MAX_CONTINUATIONS + 1), out)).toBe(0);
+  });
+
+  it("LEDGER RAW: actor slot 15 round-trips; slot 16, owned > 1,024 or remaining > initial are refused", () => {
+    const r = rng(77);
+    const out = new Uint8Array(8192);
+    const base = randomLedger(r);
+    const ok: LedgerRawInput = {
+      ...base,
+      header: { ...base.header, contributions: [{ actorSlot: LEDGER_WIRE_ACTOR_SLOT_MAX, units: 5 }] },
+    };
+    const n = encodeDustLedger(3, ok, identityDeflate, out);
+    expect(n).toBeGreaterThan(0);
+    expect(decodeDustLedger(out.slice(0, n), identityInflate, PLOTS)!.header).toEqual(ok.header);
+    const bad: LedgerRawInput[] = [
+      { ...base, header: { ...base.header, contributions: [{ actorSlot: 16, units: 5 }] } },
+      { ...base, header: { ...base.header, ownedTexels: LEDGER_BYTES + 1 } },
+      { ...base, header: { ...base.header, remainingUnits: base.header.initialUnits + 1 } },
+    ];
+    for (const l of bad) {
+      expect(encodeDustLedger(3, l, identityDeflate, out)).toBe(0);
+      const snap = encodeSnapshotRaw({
+        plotCount: PLOTS,
+        plotStates: new Uint8Array(Math.ceil(PLOTS / 4)),
+        openedRemaining: new Uint8Array(0),
+        ledgers: [{ plotId: 3, ledger: l }],
+        logs: [],
+      });
+      expect(snap).toBeNull();
+    }
+    // A snapshot whose log is over the continuation cap is refused as a whole (never a snapshot the client voids).
+    expect(
+      encodeSnapshotRaw({
+        plotCount: PLOTS,
+        plotStates: new Uint8Array(Math.ceil(PLOTS / 4)),
+        openedRemaining: new Uint8Array(0),
+        ledgers: [],
+        logs: [{ plotId: 4, refTick: 1000, chains: heavyLog(DUST_LOG_MAX_CONTINUATIONS + 1) }],
+      }),
+    ).toBeNull();
   });
 });
 

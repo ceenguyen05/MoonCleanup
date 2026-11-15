@@ -19,6 +19,7 @@ import {
   SEC_ACK,
   SEC_PLOTS,
   SEC_ROBOT,
+  SEC_ROBOT_STOP,
   SEC_STROKES,
 } from "./client";
 import {
@@ -31,7 +32,7 @@ import {
   STATE_POLISHED,
 } from "./dust-view";
 import { InterestScratch, InterestSet } from "./interest";
-import { ROBOT_INTENT_BYTES, RobotPlans } from "./robots";
+import { ROBOT_INTENT_BYTES, ROBOT_STOP_BYTES, RobotPlans } from "./robots";
 import { StrokeLog } from "./stroke-log";
 import type { PlotTables } from "./tables";
 import { applyLogged, ByteWriter, xform, type Codec } from "./util";
@@ -73,6 +74,8 @@ export interface StrokeLike {
 }
 
 const QW = 12;
+/** Words per pending robot intent: id, plot, startTick, width, depth16, speed, mask0, mask1. */
+const PW = 8;
 const MAX_SEGMENT_MM = 4000;
 const REANCHOR_MM = 30_000;
 const SNAPSHOT_HZ = 10;
@@ -91,6 +94,8 @@ export class Link {
   nRec = 0;
   readonly robotRec = new ByteWriter(64);
   nRobot = 0;
+  readonly stopRec = new ByteWriter(16);
+  nStop = 0;
   readonly seenChain = new Int32Array(64).fill(-1);
   readonly seenIdx = new Int32Array(64);
   knowsRobot = new Int32Array(64);
@@ -99,7 +104,10 @@ export class Link {
   /** Reused dust.check message (2 + 255 x 6 bytes at most); checkLen is its length this round. */
   readonly checkBuf = new Uint8Array(2 + 255 * 6);
   checkLen = 0;
+  /** Queued bytes messages: a counted list. `outbox.length = 0` would drop the backing store, so the next push
+   *  allocates again (T05 allocation finding 1); entries [0, outN) are valid. */
   readonly outbox: Uint8Array[] = [];
+  outN = 0;
 
   constructor(
     readonly idx: number,
@@ -147,6 +155,10 @@ export class P2Server {
   private readonly mergeFirstTick = new Int32Array(64);
   private readonly xy = new Int32Array(2);
 
+  // robot intents waiting for the next frame boundary (see submitRobotIntent)
+  private pend = new Int32Array(64 * PW);
+  private pendN = 0;
+
   // per-actor chain (global, shared by every recipient)
   private chainCounter = 0;
   private readonly chainId = new Int32Array(64);
@@ -173,11 +185,23 @@ export class P2Server {
   private snapVersion = -1;
   snapRawBytes = 0;
 
+  // Encoded dust.ledger / dust.log messages per ledger slot, reused while the plot's ledger version (or log stamp)
+  // is unchanged: clustered clients enter the same plots in the same tick, and one deflate serves all of them.
+  private readonly ledgerMsg: (Uint8Array | undefined)[] = [];
+  private readonly ledgerMsgKey: number[] = [];
+  private readonly logMsg: (Uint8Array | undefined)[] = [];
+  private readonly logMsgKey: number[] = [];
+  ledgerEncodes = 0;
+  ledgerCacheHits = 0;
+
   // dust.check scratch
-  private readonly chunkAcc: Uint32Array;
+  // Signed int32 inside the core: an unsigned hash above 2^31 is boxed as a heap number when it crosses a call that
+  // is not inlined (T05 allocation finding 2). The wire bytes are the same.
+  private readonly chunkAcc: Int32Array;
   private readonly chunkSeen: Uint8Array;
   private chunkList = new Int32Array(64);
   private readonly plotsBuf = new ByteWriter(1024);
+  private readonly msgScratch = new ByteWriter(4400);
 
   // statistics
   serverMs = 0;
@@ -192,6 +216,7 @@ export class P2Server {
   contsSent = 0;
   bytesStrokes = 0;
   bytesRobot = 0;
+  robotStops = 0;
   bytesAck = 0;
   bytesPlots = 0;
   bytesLedger = 0;
@@ -217,7 +242,7 @@ export class P2Server {
     this.checkEvery = Math.max(1, Math.round(opt.simTickHz * (opt.checkIntervalS ?? 5)));
     this.plotsEveryFrames = Math.max(1, Math.round(opt.simTickHz / this.frameTicks / 2));
     this.chunkDirty = new Uint8Array(t.chunkCount);
-    this.chunkAcc = new Uint32Array(t.chunkCount);
+    this.chunkAcc = new Int32Array(t.chunkCount);
     this.chunkSeen = new Uint8Array(t.chunkCount);
   }
 
@@ -349,13 +374,25 @@ export class P2Server {
 
   // ---- robots -------------------------------------------------------------------------------------------------
 
+  /**
+   * Can a robot working `plot` change a ledger this client holds? A lane chunk ends inside the plot's frame, so the
+   * plot under its end point is the plot or one of its neighbours, and the rasteriser touches that plot and its
+   * neighbours: two rings around `plot` at most.
+   */
   private intentReaches(link: Link, plot: number): boolean {
     const m = link.mirror.member;
     if (m[plot] === 1) return true;
+    const nbr = this.t.neighbors;
     const nb = plot * 6;
     for (let k = 0; k < 6; k++) {
-      const q = this.t.neighbors[nb + k]!;
-      if (q >= 0 && m[q] === 1) return true;
+      const q = nbr[nb + k]!;
+      if (q < 0) continue;
+      if (m[q] === 1) return true;
+      const qb = q * 6;
+      for (let j = 0; j < 6; j++) {
+        const r = nbr[qb + j]!;
+        if (r >= 0 && m[r] === 1) return true;
+      }
     }
     return false;
   }
@@ -381,7 +418,14 @@ export class P2Server {
     link.knowsRobot[id] = this.plans.serial[id]!;
   }
 
-  /** A robot starts a plot. Returns the wire bytes sent for it now (20 B per interested client). */
+  /**
+   * A robot starts a plot. The intent takes effect at the next frame boundary, in the same FRAME that carries it to
+   * the clients: until then server and clients both keep running the previous plan of the robot, so a chunk of the
+   * old plan that is due in between is applied by everyone or by no one. Clients inside reach get the intent (20 B);
+   * clients that hold the previous plan but are out of reach of the new plot get a stop record (2 B), otherwise they
+   * would keep executing the stale plan. Returns the wire bytes this will cost, counted against the interest sets as
+   * they are now (the bytes really sent are counted when the FRAME is built).
+   */
   submitRobotIntent(
     robotId: number,
     plot: number,
@@ -393,18 +437,64 @@ export class P2Server {
     mask1: number,
   ): number {
     const t0 = this.opt.now();
-    this.plans.set(robotId, plot, startTick, widthCm, depth16, speedCmPerS, mask0 >>> 0, mask1 >>> 0, 0);
+    if ((this.pendN + 1) * PW > this.pend.length) {
+      const g = new Int32Array(this.pend.length * 2);
+      g.set(this.pend);
+      this.pend = g;
+    }
+    const o = this.pendN++ * PW;
+    const p = this.pend;
+    p[o] = robotId;
+    p[o + 1] = plot;
+    p[o + 2] = startTick;
+    p[o + 3] = widthCm;
+    p[o + 4] = depth16;
+    p[o + 5] = speedCmPerS;
+    p[o + 6] = mask0 | 0;
+    p[o + 7] = mask1 | 0;
+    const plans = this.plans;
+    const wasActive = robotId < plans.n && plans.active[robotId] === 1;
+    const oldSerial = robotId < plans.n ? plans.serial[robotId]! : 0;
     let bytes = 0;
     for (let i = 0; i < this.links.length; i++) {
       const link = this.links[i];
-      if (link === null || link === undefined || !this.intentReaches(link, plot)) continue;
-      this.writeIntent(link.robotRec, robotId);
-      link.nRobot++;
-      this.noteRobotKnown(link, robotId);
-      bytes += ROBOT_INTENT_BYTES;
+      if (link === null || link === undefined) continue;
+      if (this.intentReaches(link, plot)) bytes += ROBOT_INTENT_BYTES;
+      else if (wasActive && robotId < link.knowsRobot.length && link.knowsRobot[robotId] === oldSerial) {
+        bytes += ROBOT_STOP_BYTES;
+      }
     }
     this.serverMs += this.opt.now() - t0;
     return bytes;
+  }
+
+  /** Frame boundary: the pending robot intents replace the old plans and are written into the FRAME of each client. */
+  private flushIntents(): void {
+    const p = this.pend;
+    const plans = this.plans;
+    for (let k = 0; k < this.pendN; k++) {
+      const o = k * PW;
+      const id = p[o]!;
+      const plot = p[o + 1]!;
+      const wasActive = id < plans.n && plans.active[id] === 1;
+      const oldSerial = id < plans.n ? plans.serial[id]! : 0;
+      plans.set(id, plot, p[o + 2]!, p[o + 3]!, p[o + 4]!, p[o + 5]!, p[o + 6]! >>> 0, p[o + 7]! >>> 0, 0);
+      for (let i = 0; i < this.links.length; i++) {
+        const link = this.links[i];
+        if (link === null || link === undefined) continue;
+        if (this.intentReaches(link, plot)) {
+          this.writeIntent(link.robotRec, id);
+          link.nRobot++;
+          this.noteRobotKnown(link, id);
+        } else if (wasActive && id < link.knowsRobot.length && link.knowsRobot[id] === oldSerial) {
+          link.stopRec.u16(id);
+          link.nStop++;
+          link.knowsRobot[id] = 0;
+          this.robotStops++;
+        }
+      }
+    }
+    this.pendN = 0;
   }
 
   // ---- tick ---------------------------------------------------------------------------------------------------
@@ -429,7 +519,10 @@ export class P2Server {
       this.chunkDirty[this.t.chunkOf[p]!] = 1;
     }
     v.polishedN = 0;
-    if (frame) this.encodeFrames();
+    if (frame) {
+      if (this.pendN > 0) this.flushIntents();
+      this.encodeFrames();
+    }
     let spent = now() - t0;
 
     // Client side of the in-process simulation (not server time).
@@ -695,6 +788,20 @@ export class P2Server {
         link.nRobot = 0;
         link.robotRec.reset();
       }
+      if (link.nStop > 0) {
+        const at = f.len;
+        let done = 0;
+        while (done < link.nStop) {
+          const n = Math.min(255, link.nStop - done);
+          f.u8(SEC_ROBOT_STOP);
+          f.u8(n);
+          f.bytes(link.stopRec.buf, done * ROBOT_STOP_BYTES, n * ROBOT_STOP_BYTES);
+          done += n;
+        }
+        this.bytesRobot += f.len - at;
+        link.nStop = 0;
+        link.stopRec.reset();
+      }
       if (link.actor >= 0) {
         const g = this.grams[link.actor]!;
         if (g !== link.ackSent) {
@@ -754,10 +861,20 @@ export class P2Server {
     return n;
   }
 
-  /** dust.ledger for one plot (deflated header + 1,024 texel bytes). */
+  /** dust.ledger for one plot (deflated header + 1,024 texel bytes); cached until the ledger changes. */
   ledgerMessage(plot: number): Uint8Array {
-    const inner = new ByteWriter(1100);
-    this.ledgerInner(inner, this.view.slotOf[plot]!);
+    const slot = this.view.slotOf[plot]!;
+    // plot < 2^18 and version < 2^32: the key is an exact double.
+    const key = plot * 4294967296 + this.view.version[slot]!;
+    const hit = this.ledgerMsg[slot];
+    if (hit !== undefined && this.ledgerMsgKey[slot] === key) {
+      this.ledgerCacheHits++;
+      return hit;
+    }
+    this.ledgerEncodes++;
+    const inner = this.msgScratch;
+    inner.reset();
+    this.ledgerInner(inner, slot);
     const z = this.opt.codec.deflate(inner.buf.subarray(0, inner.len));
     const msg = new Uint8Array(4 + z.length);
     msg[0] = MSG_LEDGER;
@@ -765,11 +882,22 @@ export class P2Server {
     msg[2] = (plot >>> 8) & 0xff;
     msg[3] = plot >>> 16;
     msg.set(z, 4);
+    this.ledgerMsg[slot] = msg;
+    this.ledgerMsgKey[slot] = key;
     return msg;
   }
 
   private logMessage(plot: number): Uint8Array {
-    const inner = new ByteWriter(4200);
+    const slot = this.view.slotOf[plot]!;
+    const key = plot * 4294967296 + this.log.stamp(plot);
+    const hit = this.logMsg[slot];
+    if (hit !== undefined && this.logMsgKey[slot] === key) {
+      this.ledgerCacheHits++;
+      return hit;
+    }
+    this.ledgerEncodes++;
+    const inner = this.msgScratch;
+    inner.reset();
     const n = this.logInner(inner, plot, 256);
     const z = this.opt.codec.deflate(inner.buf.subarray(0, inner.len));
     const msg = new Uint8Array(6 + z.length);
@@ -780,6 +908,8 @@ export class P2Server {
     msg[4] = n & 0xff;
     msg[5] = n >>> 8;
     msg.set(z, 6);
+    this.logMsg[slot] = msg;
+    this.logMsgKey[slot] = key;
     return msg;
   }
 
@@ -810,16 +940,16 @@ export class P2Server {
       if (v.slotOf[p]! >= 0) {
         if (!withLedgers) continue;
         const msg = this.ledgerMessage(p);
-        link.outbox.push(msg);
+        link.outbox[link.outN++] = msg;
         this.bytesLedger += msg.length;
         this.ledgersSent++;
         if (this.withinBlocking(link, p) && this.log.count(p) > 0) {
           const lm = this.logMessage(p);
-          link.outbox.push(lm);
+          link.outbox[link.outN++] = lm;
           this.bytesLog += lm.length;
         }
       } else if (v.state[p] === STATE_POLISHED && withLedgers) {
-        link.outbox.push(this.plotMessage(p));
+        link.outbox[link.outN++] = this.plotMessage(p);
         this.bytesPlots += 5;
       }
     }
@@ -832,7 +962,7 @@ export class P2Server {
         const w = new ByteWriter(1 + ROBOT_INTENT_BYTES);
         w.u8(MSG_ROBOT);
         this.writeIntent(w, id);
-        link.outbox.push(w.take());
+        link.outbox[link.outN++] = w.take();
         this.noteRobotKnown(link, id);
         this.bytesRobot += 1 + ROBOT_INTENT_BYTES;
       }
@@ -843,7 +973,7 @@ export class P2Server {
     link.needScan = false;
     link.mirror.scan(link.pos);
     this.queueEntries(link, true);
-    for (let i = 0; i < link.outbox.length; i++) link.bytes += link.outbox[i]!.length;
+    for (let i = 0; i < link.outN; i++) link.bytes += link.outbox[i]!.length;
   }
 
   private scanClientSide(link: Link): void {
@@ -853,8 +983,8 @@ export class P2Server {
   }
 
   private deliverOutbox(link: Link): void {
-    for (let i = 0; i < link.outbox.length; i++) link.client.onMessage(link.outbox[i]!, this.tick);
-    link.outbox.length = 0;
+    for (let i = 0; i < link.outN; i++) link.client.onMessage(link.outbox[i]!, this.tick);
+    link.outN = 0;
   }
 
   /** dust.check: per chunk, the XOR of the plot hashes of this client's interest set (6 B per chunk). */
@@ -877,7 +1007,7 @@ export class P2Server {
         }
         this.chunkList[n++] = ch;
       }
-      this.chunkAcc[ch] = (this.chunkAcc[ch]! ^ h) >>> 0;
+      this.chunkAcc[ch] = this.chunkAcc[ch]! ^ h;
     }
     const count = n > 255 ? 255 : n;
     const msg = link.checkBuf;
@@ -917,7 +1047,7 @@ export class P2Server {
         if (this.view.slotOf[p]! >= 0) msg = this.ledgerMessage(p);
         else if (this.view.state[p] === STATE_POLISHED) msg = this.plotMessage(p);
         if (msg !== null) {
-          link.outbox.push(msg);
+          link.outbox[link.outN++] = msg;
           link.bytes += msg.length;
           this.bytesLedger += msg.length;
         }
@@ -1020,7 +1150,7 @@ export class P2Server {
       nStreamed = far.length;
       // Active robot intents that reach the set (entered = the whole set on a fresh mirror).
       this.queueEntries(link, false);
-      for (let i = 0; i < link.outbox.length; i++) streamed += link.outbox[i]!.length;
+      for (let i = 0; i < link.outN; i++) streamed += link.outbox[i]!.length;
       this.deliverOutbox(link);
     }
     this.bytesSnapshot += blocking;

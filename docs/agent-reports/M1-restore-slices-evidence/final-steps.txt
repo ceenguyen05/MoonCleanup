@@ -1,0 +1,12 @@
+node v26.13.1, Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz; 24121 steps, 257.9 ms
+| step | count | first call (cold) us | largest of calls 2 .. 20 us | settled mean us | p99 us | max us | share of total |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| prepare | 1 | 760 | 0 | 760.3 | 760.3 | 760 | 0.3 % |
+| scan | 24 | 402 | 229 | 66.6 | 401.8 | 402 | 0.6 % |
+| reset x64 | 96 | 607 | 97 | 23.0 | 606.7 | 607 | 0.9 % |
+| open | 3000 | 224 | 61 | 2.2 | 15.1 | 558 | 3.2 % |
+| mask x8 rows | 12000 | 595 | 902 | 11.0 | 26.3 | 720 | 52.7 % |
+| texels | 3000 | 2293 | 126 | 9.0 | 15.7 | 120 | 12.1 % |
+| check + hash | 3000 | 521 | 97 | 15.9 | 36.1 | 1304 | 18.2 % |
+| log + state | 3000 | 687 | 124 | 9.5 | 33.5 | 631 | 12.1 % |
+ledger hash alone: 3.53 us per record (sink 426749887); result ok true

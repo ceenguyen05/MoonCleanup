@@ -1,0 +1,210 @@
+{
+  "before": {
+    "frames": 5,
+    "atlas": {
+      "preset": "medium",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "slotPx": 64,
+      "slots": 1024,
+      "texelCm": 40,
+      "tilesResident": 2,
+      "rebuildBacklog": 1,
+      "rebuilds": 2,
+      "evictions": 0,
+      "strokesReplayed": 4,
+      "tileStrokeDraws": 5,
+      "liveOverflows": 0,
+      "cpuMsLast": 0.30000001192092896,
+      "cpuMsMax": 9.599999994039536
+    },
+    "feed": null
+  },
+  "after": {
+    "frames": 298,
+    "atlas": {
+      "preset": "medium",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "slotPx": 64,
+      "slots": 1024,
+      "texelCm": 40,
+      "tilesResident": 9,
+      "rebuildBacklog": 0,
+      "rebuilds": 9,
+      "evictions": 0,
+      "strokesReplayed": 160,
+      "tileStrokeDraws": 404,
+      "liveOverflows": 0,
+      "cpuMsLast": 0,
+      "cpuMsMax": 12.099999994039536
+    },
+    "feed": null
+  },
+  "frames": 293,
+  "total": 33823400,
+  "byGroup": {
+    "three": 25322264,
+    "dust": 430956,
+    "render": 225856,
+    "other": 7844324
+  },
+  "top": [
+    {
+      "fn": "getCacheKey @ deps/three_tsl.js:958",
+      "bytes": 2345776,
+      "via": "get @ deps/three_webgpu.js:4349 < get needsUpdate @ deps/three_webgpu.js:4216 < getDynamicCacheKey @ deps/three_webgpu.js:4224 < getCacheKey @ deps/three_webgpu.js:12202"
+    },
+    {
+      "fn": "getOwnPropertyNames @ :-1",
+      "bytes": 1999084,
+      "via": "getCacheKey @ deps/three_webgpu.js:12202 < getCacheKey @ deps/three_tsl.js:958 < getCacheKey @ deps/three_tsl.js:958 < _getChildren @ deps/three_tsl.js:918"
+    },
+    {
+      "fn": "get @ deps/three_webgpu.js:6784",
+      "bytes": 1721600,
+      "via": "preRender @ dust/dust-worksite.ts:157 < flush @ dust/replay-pass.ts:308 < render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125"
+    },
+    {
+      "fn": "applyOp @ dust/ledger.ts:932",
+      "bytes": 1673716,
+      "via": "preRender @ dust/dust-worksite.ts:157 < step @ verify/scenario.ts:238 < apply @ verify/scenario.ts:198 < applyStroke @ dust/ledger.ts:270"
+    },
+    {
+      "fn": "cyrb53 @ deps/three_tsl.js:160",
+      "bytes": 1479376,
+      "via": "get needsUpdate @ deps/three_webgpu.js:4216 < getDynamicCacheKey @ deps/three_webgpu.js:4224 < getCacheKey @ deps/three_webgpu.js:12202 < getCacheKey @ deps/three_tsl.js:958"
+    },
+    {
+      "fn": "customCacheKey @ deps/three_tsl.js:3355",
+      "bytes": 1181620,
+      "via": "getDynamicCacheKey @ deps/three_webgpu.js:4224 < getCacheKey @ deps/three_webgpu.js:12202 < getCacheKey @ deps/three_tsl.js:958 < getCacheKey @ deps/three_tsl.js:958"
+    },
+    {
+      "fn": "updateForRender @ deps/three_webgpu.js:12482",
+      "bytes": 1136256,
+      "via": "_renderScene @ deps/three_webgpu.js:16125 < _renderObjects @ deps/three_webgpu.js:17153 < renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357"
+    },
+    {
+      "fn": "beginRender @ deps/three_webgpu.js:32297",
+      "bytes": 1017620,
+      "via": "preRender @ dust/dust-worksite.ts:157 < flush @ dust/replay-pass.ts:308 < render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125"
+    },
+    {
+      "fn": "update @ deps/three_webgpu.js:17896",
+      "bytes": 981620,
+      "via": "_renderObjectDirect @ deps/three_webgpu.js:17357 < updateForRender @ deps/three_webgpu.js:5906 < _updateBindings @ deps/three_webgpu.js:6000 < _update @ deps/three_webgpu.js:6009"
+    },
+    {
+      "fn": "_getChildren @ deps/three_tsl.js:918",
+      "bytes": 968612,
+      "via": "get needsUpdate @ deps/three_webgpu.js:4216 < getDynamicCacheKey @ deps/three_webgpu.js:4224 < getCacheKey @ deps/three_webgpu.js:12202 < getCacheKey @ deps/three_tsl.js:958"
+    },
+    {
+      "fn": "_resolveQueries @ deps/three_webgpu.js:31505",
+      "bytes": 967956,
+      "via": "update @ render/gpu-timing.ts:38 < resolveTimestampsAsync @ deps/three_webgpu.js:16984 < resolveTimestampsAsync @ deps/three_webgpu.js:20335 < resolveQueriesAsync @ deps/three_webgpu.js:31488"
+    },
+    {
+      "fn": "getCacheKey @ deps/three_webgpu.js:6744",
+      "bytes": 897464,
+      "via": "_renderScene @ deps/three_webgpu.js:16125 < beginRender @ deps/three_webgpu.js:32297 < _getRenderPassDescriptor @ deps/three_webgpu.js:32168 < getCacheKey @ deps/three_webgpu.js:6732"
+    },
+    {
+      "fn": "_draw @ deps/three_webgpu.js:32941",
+      "bytes": 832316,
+      "via": "_renderObjects @ deps/three_webgpu.js:17153 < renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357 < draw @ deps/three_webgpu.js:33038"
+    },
+    {
+      "fn": "updateSampler @ deps/three_webgpu.js:26895",
+      "bytes": 729564,
+      "via": "renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357 < _updateBindings @ deps/three_webgpu.js:6000 < _update @ deps/three_webgpu.js:6009"
+    },
+    {
+      "fn": "_getRenderPassDescriptor @ deps/three_webgpu.js:32168",
+      "bytes": 699456,
+      "via": "flush @ dust/replay-pass.ts:308 < render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125 < beginRender @ deps/three_webgpu.js:32297"
+    },
+    {
+      "fn": "set @ :-1",
+      "bytes": 694388,
+      "via": "(root) @ :-1 < w.onmessage @ audio/module.ts:328 < (anonymous) @ audio/buffer-store.ts:62 < accept @ audio/buffer-store.ts:80"
+    },
+    {
+      "fn": "_update @ deps/three_webgpu.js:6009",
+      "bytes": 674836,
+      "via": "renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357 < updateForRender @ deps/three_webgpu.js:5906 < _updateBindings @ deps/three_webgpu.js:6000"
+    },
+    {
+      "fn": "setFromProjectionMatrix @ deps/three.core-BygaA1rz.js:18846",
+      "bytes": 618432,
+      "via": "flush @ dust/replay-pass.ts:308 < render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125 < begin @ deps/three_webgpu.js:14659"
+    },
+    {
+      "fn": "next @ :-1",
+      "bytes": 590776,
+      "via": "resolveTimestampsAsync @ deps/three_webgpu.js:20335 < resolveQueriesAsync @ deps/three_webgpu.js:31488 < _resolveQueries @ deps/three_webgpu.js:31505 < Map @ :-1"
+    },
+    {
+      "fn": "invert @ deps/three.core-BygaA1rz.js:8403",
+      "bytes": 532240,
+      "via": "render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125 < _updateCamera @ deps/three_webgpu.js:17221 < updateMatrixWorld @ deps/three.core-BygaA1rz.js:33170"
+    },
+    {
+      "fn": "updateTimeStampUID @ deps/three_webgpu.js:20231",
+      "bytes": 526592,
+      "via": "preRender @ dust/dust-worksite.ts:157 < flush @ dust/replay-pass.ts:308 < render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125"
+    },
+    {
+      "fn": "match @ :-1",
+      "bytes": 487796,
+      "via": "(root) @ :-1 < (anonymous) @ :-1 < _resolveQueries @ deps/three_webgpu.js:31505"
+    },
+    {
+      "fn": "updateAttributes @ deps/three_webgpu.js:4806",
+      "bytes": 475120,
+      "via": "_renderObjects @ deps/three_webgpu.js:17153 < renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357 < updateForRender @ deps/three_webgpu.js:4770"
+    },
+    {
+      "fn": "get needsGeometryUpdate @ deps/three_webgpu.js:4182",
+      "bytes": 474860,
+      "via": "_renderObjects @ deps/three_webgpu.js:17153 < renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357 < get @ deps/three_webgpu.js:4349"
+    },
+    {
+      "fn": "_updateBindings @ deps/three_webgpu.js:6000",
+      "bytes": 467196,
+      "via": "_renderScene @ deps/three_webgpu.js:16125 < _renderObjects @ deps/three_webgpu.js:17153 < renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357"
+    },
+    {
+      "fn": "getCacheKey @ deps/three_webgpu.js:12202",
+      "bytes": 448472,
+      "via": "renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357 < get @ deps/three_webgpu.js:4349 < getDynamicCacheKey @ deps/three_webgpu.js:4224"
+    },
+    {
+      "fn": "project @ deps/three_webgpu.js:14722",
+      "bytes": 387328,
+      "via": "flush @ dust/replay-pass.ts:308 < render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125 < project @ deps/three_webgpu.js:14722"
+    },
+    {
+      "fn": "Set @ :-1",
+      "bytes": 373692,
+      "via": "get needsUpdate @ deps/three_webgpu.js:4216 < getDynamicCacheKey @ deps/three_webgpu.js:4224 < getCacheKey @ deps/three_webgpu.js:12202 < getCacheKey @ deps/three_tsl.js:958"
+    },
+    {
+      "fn": "updateBefore @ deps/three_webgpu.js:12431",
+      "bytes": 332036,
+      "via": "_renderScene @ deps/three_webgpu.js:16125 < _renderObjects @ deps/three_webgpu.js:17153 < renderObject @ deps/three_webgpu.js:17275 < _renderObjectDirect @ deps/three_webgpu.js:17357"
+    },
+    {
+      "fn": "updateTexture @ deps/three_webgpu.js:6981",
+      "bytes": 301324,
+      "via": "flush @ dust/replay-pass.ts:308 < render @ deps/three_webgpu.js:16021 < _renderScene @ deps/three_webgpu.js:16125 < updateRenderTarget @ deps/three_webgpu.js:6906"
+    }
+  ],
+  "console": [
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+    "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+  ]
+}

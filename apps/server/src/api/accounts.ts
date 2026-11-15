@@ -231,9 +231,8 @@ export function createAccountRoutes(ctx: ApiContext): HttpRouteDef[] {
       case "updated":
         return { status: 200, body: toProfileDto(result.profile) };
       case "version_conflict":
-        // The DTO contract documents 409 but has no matching code (proposal: VERSION_CONFLICT); BAD_REQUEST keeps the
-        // body schema valid until contracts-architect adds one.
-        return { status: 409, body: { error: "BAD_REQUEST", message: "stale version" } };
+        // REST contract v0.3.0: the client refetches /v1/me, reapplies its edit and resends.
+        return fail("VERSION_CONFLICT", "stale version");
       case "not_found":
         return notFound();
     }

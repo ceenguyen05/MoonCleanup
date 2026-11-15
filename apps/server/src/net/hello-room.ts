@@ -18,6 +18,7 @@ import {
   type ProtocolMismatchInfo,
 } from "@moon-cleanup/shared";
 import { PONG_BODY_BYTES, readPingBody, writePongBody } from "@moon-cleanup/protocol";
+import { IdleWatch, type IdleLimits } from "./idle-watch";
 
 /** Room name registered with the matchmaker. */
 export const HELLO_ROOM_NAME = "hello";
@@ -39,6 +40,8 @@ export interface HelloRoomOptions {
   readonly simTickHz: number;
   readonly snapshotHz: number;
   readonly serverBuild: string;
+  /** Handshake/silence limits of the idle watch (./idle-watch); defaults 10 s / 120 s. Tests shorten them. */
+  readonly idle?: Partial<IdleLimits>;
 }
 
 /** Abuse thresholds of netcode.md section 11. */
@@ -67,8 +70,12 @@ export class HelloRoom extends Room<{ state: HelloState }> {
   /** Messages dropped (unknown type, malformed, rate-limited); exposed for tests and ops counters. */
   dropped = 0;
 
+  /** Closes seats that never speak or fall silent (review NB1). Swept once a second from the fixed step. */
+  idleWatch = new IdleWatch();
+
   private hello!: HelloPayload;
   private framesPerSnapshot = 1;
+  private ticksPerSecond = 20;
   private readonly perClient = new Map<string, PerClient>();
   /** Reused PONG body buffer (no allocation per PING). */
   private readonly pongBody = new Uint8Array(PONG_BODY_BYTES);
@@ -90,6 +97,8 @@ export class HelloRoom extends Room<{ state: HelloState }> {
       snapshotHz: options.snapshotHz,
     };
     this.framesPerSnapshot = options.simTickHz / options.snapshotHz;
+    this.ticksPerSecond = options.simTickHz;
+    this.idleWatch = new IdleWatch(options.idle);
 
     const state = new HelloState();
     state.protocolVersion = PROTOCOL_VERSION;
@@ -120,6 +129,7 @@ export class HelloRoom extends Room<{ state: HelloState }> {
       violations: 0,
     });
     this.state.players = this.clients.length;
+    this.idleWatch.add(client, now);
     client.send(MESSAGE_CATALOG.HELLO.id, this.hello);
   }
 
@@ -133,6 +143,7 @@ export class HelloRoom extends Room<{ state: HelloState }> {
 
   override onLeave(client: Client): void {
     this.perClient.delete(client.sessionId);
+    this.idleWatch.remove(client.sessionId);
     this.state.players = this.clients.length;
   }
 
@@ -140,6 +151,7 @@ export class HelloRoom extends Room<{ state: HelloState }> {
   step(): void {
     this.tick = (this.tick + 1) >>> 0;
     if (this.tick % this.framesPerSnapshot === 0) this.broadcastPatch();
+    if (this.tick % this.ticksPerSecond === 0) this.idleWatch.sweep(Date.now());
   }
 
   private handlePing(client: Client, body: Uint8Array): void {
@@ -160,6 +172,7 @@ export class HelloRoom extends Room<{ state: HelloState }> {
       this.violation(client);
       return;
     }
+    this.idleWatch.touch(client.sessionId, now);
     this.pong.clientTimeMs = clientTimeMs;
     this.pong.serverTick = this.tick;
     writePongBody(this.pong, this.pongBody);

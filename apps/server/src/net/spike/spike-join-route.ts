@@ -5,7 +5,7 @@
 // Reservations go through the same Admission as HelloRoom (MAX_ROOMS / MAX_CLIENTS / per-IP room creation).
 
 import { JoinOptionsSchema, type HttpResponse, type HttpRouteDef } from "@moon-cleanup/shared";
-import { IpRateLimiter, type Admission } from "../admission";
+import { IpRateLimiter, retryAfterHeader, type Admission } from "../admission";
 import type { NetLogger } from "../http-routes";
 import { LOAD_TEST_ROOM_NAME } from "./load-test-room";
 import { SpikeRoomOptionsSchema } from "./options";
@@ -32,7 +32,8 @@ export function createSpikeJoinRoute(logger: NetLogger, admission: Admission): H
     method: "POST",
     path: SPIKE_JOIN_PATH,
     async handle(request): Promise<HttpResponse> {
-      if (!(await limiter.consume(request.remoteAddress))) return { status: 429, body: { error: "RATE_LIMITED" } };
+      const wait = await limiter.check(request.remoteAddress);
+      if (wait > 0) return { status: 429, headers: retryAfterHeader(wait), body: { error: "RATE_LIMITED" } };
       const join = JoinOptionsSchema.safeParse(request.body);
       const spike = SpikeRoomOptionsSchema.safeParse(request.body ?? {});
       if (!join.success || !spike.success) {
@@ -42,6 +43,8 @@ export function createSpikeJoinRoute(logger: NetLogger, admission: Admission): H
         LOAD_TEST_ROOM_NAME,
         { ...join.data, ...spike.data },
         request.remoteAddress,
+        // Load-test bots all come from one IP (NET_SPIKE only; refused in production): no per-IP seat cap.
+        { exemptSeatCap: true },
       );
       if (!result.ok) return result.response;
       const seat = result.seat;

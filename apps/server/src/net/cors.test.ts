@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { resolveClientIp, resolveUpgradeClientIp, UNKNOWN_CLIENT_IP } from "./client-ip";
 import { CORS_MAX_AGE_S, createOriginPolicy } from "./cors";
-import { parseQuery, routeParamNames, safeDecodeURIComponent } from "./http-routes";
+import {
+  BodyBuffer,
+  RawBodyGate,
+  mediaType,
+  parseQuery,
+  responseHeaderPairs,
+  routeParamNames,
+  safeDecodeURIComponent,
+} from "./http-routes";
 
 describe("origin policy", () => {
   const policy = createOriginPolicy(["https://moon-cleanup.vercel.app", "http://localhost:5177"]);
@@ -26,7 +34,11 @@ describe("origin policy", () => {
 
   it("echoes the origin with Vary and never allows credentials", () => {
     const h = policy.responseHeaders("http://localhost:5177");
-    expect(h).toEqual({ "access-control-allow-origin": "http://localhost:5177", vary: "Origin" });
+    expect(h).toEqual({
+      "access-control-allow-origin": "http://localhost:5177",
+      "access-control-expose-headers": "x-save-pages, retry-after",
+      vary: "Origin",
+    });
     const p = policy.preflightHeaders("http://localhost:5177");
     expect(p["access-control-max-age"]).toBe(String(CORS_MAX_AGE_S));
     expect(p["access-control-allow-headers"]).toBe("Authorization, Content-Type");
@@ -98,5 +110,50 @@ describe("route helpers", () => {
   it("keeps the first value of a repeated query key", () => {
     expect(parseQuery("a=1&b=2&a=3")).toEqual({ a: "1", b: "2" });
     expect(parseQuery("")).toEqual({});
+  });
+
+  it("writes each header name once; the handler's content-type replaces the JSON default", () => {
+    const pairs = responseHeaderPairs(
+      {
+        status: 200,
+        binary: new Uint8Array(1),
+        headers: { "Content-Type": "application/octet-stream", "x-save-pages": "2" },
+      },
+      { "access-control-allow-origin": "http://localhost:5177", vary: "Origin" },
+    );
+    expect(pairs.filter(([k]) => k === "content-type")).toEqual([["content-type", "application/octet-stream"]]);
+    expect(new Set(pairs.map(([k]) => k)).size).toBe(pairs.length);
+    expect(pairs).toContainEqual(["cache-control", "no-store"]);
+    expect(pairs).toContainEqual(["x-content-type-options", "nosniff"]);
+    expect(mediaType("Application/Octet-Stream; charset=binary")).toBe("application/octet-stream");
+    expect(mediaType(undefined)).toBe("");
+  });
+});
+
+describe("RawBodyGate and BodyBuffer", () => {
+  it("caps in-flight raw reads at 4 per process and 1 per IP, and releases", () => {
+    const gate = new RawBodyGate();
+    expect(gate.tryAcquire("a")).toBe(true);
+    expect(gate.tryAcquire("a")).toBe(false);
+    for (const ip of ["b", "c", "d"]) expect(gate.tryAcquire(ip)).toBe(true);
+    expect(gate.tryAcquire("e")).toBe(false);
+    gate.release("a");
+    expect(gate.tryAcquire("e")).toBe(true);
+    gate.release("zzz"); // unknown: no-op
+    expect(gate.inFlight).toBe(4);
+  });
+
+  it("fills a pre-sized buffer, falls back to chunks past the declared size, and refuses limit + 1", () => {
+    const sized = new BodyBuffer(8, 4, true);
+    expect(sized.push(Uint8Array.of(1, 2))).toBe(true);
+    expect(sized.push(Uint8Array.of(3, 4))).toBe(true);
+    expect([...sized.bytes()]).toEqual([1, 2, 3, 4]);
+    const grown = new BodyBuffer(8, 2, true);
+    grown.push(Uint8Array.of(1, 2));
+    grown.push(Uint8Array.of(3));
+    expect([...grown.bytes()]).toEqual([1, 2, 3]);
+    const capped = new BodyBuffer(8, undefined, false);
+    expect(capped.push(new Uint8Array(8))).toBe(true);
+    expect(capped.push(new Uint8Array(1))).toBe(false);
   });
 });

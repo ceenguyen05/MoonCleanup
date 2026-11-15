@@ -24,6 +24,8 @@ export {
   createChipMaterial,
   createDetailTexture,
   createRegolithMaterial,
+  type MaskTapSource,
+  type MaskTaps,
   type RegolithMaterial,
   type RegolithMaterialOptions,
   type RegolithUniforms,

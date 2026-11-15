@@ -35,7 +35,8 @@ describe("procedural recipes", () => {
     }
     // Decoded SFX residency budget: 32 MB (Tier B); everything rendered at once stays far below.
     expect(totalBytes).toBeLessThan(32 * 1024 * 1024);
-  });
+    // Renders every cue variant (about 1.5 s alone, 5+ s under parallel verify): the default 5 s timeout is too tight.
+  }, 60_000);
 
   it("is deterministic", () => {
     const a = CUE_RECIPES["assay.ka_ching"].render(0, mulberry32(hashString("assay.ka_ching#0")));

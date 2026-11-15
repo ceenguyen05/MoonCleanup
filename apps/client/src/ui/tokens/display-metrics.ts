@@ -24,6 +24,15 @@ export function computeHudScale(viewportHeightCssPx: number, userScale: number =
   return Math.round(base * user * 100) / 100;
 }
 
+/**
+ * The player's UI size setting (`settings.hudScalePct`, percent) combined with the `?hudscale=` debug override, clamped
+ * to the supported range. A non-finite percentage counts as 100.
+ */
+export function userScaleFromSetting(hudScalePct: number, urlScale: number = 1): number {
+  const pct = Number.isFinite(hudScalePct) ? hudScalePct : 100;
+  return Math.min(USER_SCALE_MAX, Math.max(USER_SCALE_MIN, (pct / 100) * urlScale));
+}
+
 /** Snaps a CSS-px position to a whole device pixel: `round(x * dpr) / dpr` (section 5.5 rule 3). */
 export function snapToDevicePx(cssPx: number, dpr: number): number {
   return Math.round(cssPx * dpr) / dpr;

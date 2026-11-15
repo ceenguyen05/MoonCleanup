@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "approach": "p3-client-paint-minmerge",
+  "scenario": "S4",
+  "seed": 20261114,
+  "dryRun": false,
+  "tier": "B",
+  "quality": "medium",
+  "backend": "webgpu",
+  "status": "NOT_RUN",
+  "simSeconds": 600,
+  "metrics": [
+    {
+      "name": "s4.eventLoopLagP99Ms",
+      "value": null,
+      "unit": "ms",
+      "bar": {
+        "op": "<=",
+        "limit": 20,
+        "source": "WDS 10 S4"
+      },
+      "status": "NOT_RUN",
+      "note": "adapter has no probe"
+    },
+    {
+      "name": "s4.bytesPerSecPerClient.max",
+      "value": 696.06,
+      "unit": "B/s",
+      "bar": {
+        "op": "<=",
+        "limit": 1200,
+        "source": "WDS 10 S4 (1.2 KB/s per client)"
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "s4.hashMatchPct",
+      "value": 100,
+      "unit": "%",
+      "bar": {
+        "op": ">=",
+        "limit": 100,
+        "source": "WDS 10 S4"
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "s4.tickMs.p50",
+      "value": 0.06,
+      "unit": "ms",
+      "bar": null,
+      "status": "INFO"
+    },
+    {
+      "name": "s4.tickMs.p99",
+      "value": 0.43,
+      "unit": "ms",
+      "bar": null,
+      "status": "INFO"
+    },
+    {
+      "name": "s4.bytesPerSecPerClient.p50",
+      "value": 678.29,
+      "unit": "B/s",
+      "bar": null,
+      "status": "INFO"
+    },
+    {
+      "name": "s4.serverCpuMs",
+      "value": 199.23609999996415,
+      "unit": "ms",
+      "bar": null,
+      "status": "INFO"
+    },
+    {
+      "name": "s4.rejectedStrokes",
+      "value": 1,
+      "unit": "strokes",
+      "bar": null,
+      "status": "INFO"
+    },
+    {
+      "name": "s4.strokes",
+      "value": 192000,
+      "unit": "strokes",
+      "bar": null,
+      "status": "INFO"
+    }
+  ],
+  "extra": {
+    "flushTicks": 4,
+    "flushHz": 5,
+    "serverCpuMs": 199.23609999996415,
+    "serverTiles": 25,
+    "serverTileStateBytes": 64000,
+    "plotsOpened": 25,
+    "plotsPolished": 0,
+    "texelsMerged": 162658,
+    "texelsStale": 25,
+    "levelsMerged": 254856,
+    "rejectedOutOfReach": 0,
+    "rejectedRate": 0,
+    "rejectedMalformed": 0,
+    "uploads": 46096,
+    "uploadBytesTotal": 631841,
+    "uploadBytesPerSecPerClientMax": 71.33333333333333,
+    "tileDeltaBytesTotal": 6148564,
+    "l0BytesTotal": 165696,
+    "fullTilesSent": 0,
+    "fullTileBytesTotal": 0,
+    "robotChunks": 0,
+    "robotChunkTicksDeferred": 0,
+    "clientDriftChecksFailed": 0,
+    "clientTilesMax": 25,
+    "clientPaintMsTotal": 595.180600000007,
+    "clientReceiveMsTotal": 174.11860000001002,
+    "hashChecksFullCoverage": 1920,
+    "hashChecksPartialCoverage": 0,
+    "geomBuilds": 47,
+    "persists": 0,
+    "persistMsTotal": 0,
+    "checkpointBytes": 0,
+    "checkpointDeflatedBytes": 0,
+    "checkpointTiles": 0,
+    "checkpointBytesPerTile": 0,
+    "restoreMs": 0,
+    "joinBlockingBytes": 0,
+    "joinBlockingDeflatedBytes": 0,
+    "joinStreamedBytes": 0,
+    "rssMb": 126.5625
+  },
+  "notes": [],
+  "env": {
+    "node": "v26.13.1",
+    "platform": "win32-x64",
+    "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+    "gpu": "see run notes"
+  }
+}

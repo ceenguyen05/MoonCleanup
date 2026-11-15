@@ -175,8 +175,9 @@ describe("DynamicResolution", () => {
     expect(events.length).toBeGreaterThanOrEqual(4);
     expect(events[0]?.scale).toBe(0.55);
     expect(events[1]?.scale).toBe(0.5);
-    // A failed probe is reverted within about 1.5 s, not after the 4 s reverse lock.
-    expect((events[1]?.at ?? 0) - (events[0]?.at ?? 0)).toBeLessThan(2100);
+    // A failed probe is reverted after 2 s (at most one change per 2 s), not after the 4 s reverse lock.
+    expect((events[1]?.at ?? 0) - (events[0]?.at ?? 0)).toBeGreaterThanOrEqual(2000);
+    expect((events[1]?.at ?? 0) - (events[0]?.at ?? 0)).toBeLessThan(3100);
     const firstGap = (events[2]?.at ?? 0) - (events[1]?.at ?? 0);
     const secondGap = (events[4]?.at ?? 60_000) - (events[3]?.at ?? 0);
     expect(secondGap).toBeGreaterThan(firstGap * 1.5);

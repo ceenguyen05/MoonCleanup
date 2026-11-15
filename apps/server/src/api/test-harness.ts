@@ -19,7 +19,14 @@ export interface Harness {
   call(
     method: HttpMethod,
     path: string,
-    options?: { body?: unknown; token?: string; ip?: string; headers?: Record<string, string> },
+    options?: {
+      body?: unknown;
+      token?: string;
+      ip?: string;
+      headers?: Record<string, string>;
+      /** Binary body (the checkpoint upload seam). */
+      rawBody?: Uint8Array;
+    },
   ): Promise<HttpResponse>;
 }
 
@@ -76,7 +83,7 @@ export function createHarness(overrides: Partial<AccountApiDeps> = {}): Harness 
       if (matched === undefined) return { status: 404, body: { error: "NOT_FOUND" } };
       const headers: Record<string, string> = { ...options.headers };
       if (options.token !== undefined) headers.authorization = `Bearer ${options.token}`;
-      const request: HttpRequest = {
+      const request: HttpRequest & { rawBody?: Uint8Array } = {
         method,
         path: pathname,
         params: matched.params,
@@ -84,6 +91,7 @@ export function createHarness(overrides: Partial<AccountApiDeps> = {}): Harness 
         headers,
         body: options.body,
         remoteAddress: options.ip ?? "203.0.113.7",
+        ...(options.rawBody === undefined ? {} : { rawBody: options.rawBody }),
       };
       return matched.route.handle(request);
     },

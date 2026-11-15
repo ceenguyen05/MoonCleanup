@@ -1,0 +1,112 @@
+[
+  {
+    "tod": 58,
+    "sunEl": 4.042251887317853,
+    "expected": 0.44149494909276366,
+    "measured": 0.46707317073170734,
+    "diskPx": 1640,
+    "radiusPx": 22.86411117201204,
+    "centre": {
+      "x": 186.39269639156296,
+      "y": 128.18342833203374,
+      "visible": true
+    },
+    "peakLuma": 232.85959999999997,
+    "litSideToSunDeg": 11.995733353225491,
+    "centroidOffsetPx": 10.109407098587265,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "tod": 900,
+    "sunEl": 40,
+    "expected": 0.03974757327377987,
+    "measured": 0.09573170731707317,
+    "diskPx": 1640,
+    "radiusPx": 22.86411117201204,
+    "centre": {
+      "x": 186.39269639156296,
+      "y": 128.18342833203374,
+      "visible": true
+    },
+    "peakLuma": 209.44239999999996,
+    "litSideToSunDeg": 11.864076601799255,
+    "centroidOffsetPx": 14.847967918072065,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "tod": 1742,
+    "sunEl": 4.042251887317855,
+    "expected": 0.44149494909276354,
+    "measured": 0.4634146341463415,
+    "diskPx": 1640,
+    "radiusPx": 22.86411117201204,
+    "centre": {
+      "x": 186.39269639156296,
+      "y": 128.18342833203374,
+      "visible": true
+    },
+    "peakLuma": 232.85959999999997,
+    "litSideToSunDeg": 7.414707207445367,
+    "centroidOffsetPx": 10.27459687062008,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "tod": 2250,
+    "sunEl": -14.14213562373095,
+    "expected": 0.8635750363338959,
+    "measured": 0.9060975609756098,
+    "diskPx": 1640,
+    "radiusPx": 22.86411117201204,
+    "centre": {
+      "x": 186.39269639156296,
+      "y": 128.18342833203374,
+      "visible": true
+    },
+    "peakLuma": 233.07219999999998,
+    "litSideToSunDeg": 4.326541515418519,
+    "centroidOffsetPx": 1.9648239966478906,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "tod": 2700,
+    "sunEl": -20,
+    "expected": 0.999314767377287,
+    "measured": 1,
+    "diskPx": 1640,
+    "radiusPx": 22.86411117201204,
+    "centre": {
+      "x": 186.39269639156296,
+      "y": 128.18342833203374,
+      "visible": true
+    },
+    "peakLuma": 233.8596,
+    "litSideToSunDeg": 88.0211861204271,
+    "centroidOffsetPx": 0.05002407118553241,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  }
+]

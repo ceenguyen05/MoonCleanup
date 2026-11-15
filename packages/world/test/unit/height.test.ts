@@ -102,6 +102,32 @@ describe("GroundHeight (H_base + H_detail)", () => {
   const cube = loadFixtureCube();
   const ground = new GroundHeight(cube, { radiusM: R });
 
+  it("heightsAt (batched) is bit-identical to heightAtXYZ", () => {
+    const rnd = mulberry32(77);
+    const n = 512;
+    const dirs = new Float64Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const x = rnd() / 2147483648 - 1;
+      const y = rnd() / 2147483648 - 1;
+      const z = rnd() / 2147483648 - 1;
+      const l = Math.hypot(x, y, z) || 1;
+      dirs[i * 3] = x / l;
+      dirs[i * 3 + 1] = y / l;
+      dirs[i * 3 + 2] = z / l;
+    }
+    // Include the poles and an exact face edge.
+    dirs.set([0, 1, 0, 0, -1, 0, Math.SQRT1_2, Math.SQRT1_2, 0], 0);
+    const out = new Float64Array(n);
+    ground.heightsAt(dirs, out, n);
+    for (let i = 0; i < n; i++) {
+      expect(Object.is(out[i], ground.heightAtXYZ(dirs[i * 3]!, dirs[i * 3 + 1]!, dirs[i * 3 + 2]!))).toBe(true);
+    }
+    // n limits the work; entries past n are untouched.
+    const partial = new Float64Array(4).fill(-999);
+    ground.heightsAt(dirs, partial, 2);
+    expect(partial[2]).toBe(-999);
+  });
+
   it("detail disabled gives H_base", () => {
     const flat = new GroundHeight(cube, { radiusM: R, detail: null });
     expect(flat.heightAtXYZ(1, 0, 0)).toBe(cube.sampleXYZ(1, 0, 0));

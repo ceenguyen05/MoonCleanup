@@ -2,7 +2,7 @@
 name: animation-engineer
 description: "Scoped animation engineer work; launch only for a named task or review batch."
 tools: Read, Write, Edit, Glob, Grep, Bash, PowerShell
-model: claude-fable-5-2
+model: claude-opus-5-5
 effort: high
 maxTurns: 40
 color: yellow

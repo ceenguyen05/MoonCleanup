@@ -19,6 +19,7 @@ import production from "../data/production.json" with { type: "json" };
 import promotionsBoard from "../data/promotions-board.json" with { type: "json" };
 import robots from "../data/robots.json" with { type: "json" };
 import suitGear from "../data/suit-gear.json" with { type: "json" };
+import toolFeel from "../data/tool-feel.json" with { type: "json" };
 import tools from "../data/tools.json" with { type: "json" };
 import traits from "../data/traits.json" with { type: "json" };
 import vehicleUpgrades from "../data/vehicle-upgrades.json" with { type: "json" };
@@ -49,4 +50,5 @@ export const RAW_GAME_DATA: Readonly<Record<GameDataTable, unknown>> = {
   moderation,
   features,
   "pacing-targets": pacingTargets,
+  "tool-feel": toolFeel,
 };

@@ -1,7 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { PlotId } from "../ids";
 import {
-  DETAILING_DIAMETER_MM,
   DUST_ACK_GRAMS_MAX,
   DUST_CLASS_TERRAIN_ID,
   DUST_MODEL_VERSION,
@@ -110,8 +109,8 @@ describe("plot states and classes", () => {
     expect(DUST_CLASS_TERRAIN_ID[DustClass.CraterFloor]).toBe("terrain.crater_floor");
   });
 
-  it("DUST_MODEL_VERSION is 1", () => {
-    expect(DUST_MODEL_VERSION).toBe(1);
+  it("DUST_MODEL_VERSION is 2", () => {
+    expect(DUST_MODEL_VERSION).toBe(2);
   });
 });
 
@@ -132,11 +131,10 @@ describe("ledger dimensions and units (WDS section 4.4/4.5, ADR-0026)", () => {
     expect(LEDGER_UNIT_MAX).toBe(255);
   });
 
-  it("has the minimum coverage A/64, lattice pitch clamp and Detailing disc", () => {
+  it("has the minimum coverage A/64, lattice pitch clamp", () => {
     expect(LEDGER_MIN_COVERAGE_MM2).toBe(10_000);
     expect(LEDGER_LATTICE_PITCH_MIN_MM).toBe(25);
     expect(LEDGER_LATTICE_PITCH_MAX_MM).toBe(100);
-    expect(DETAILING_DIAMETER_MM).toBe(500);
   });
 
   it("serialised ledger header size matches the WDS field list", () => {

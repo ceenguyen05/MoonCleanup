@@ -35,6 +35,8 @@ export interface HarnessHookTarget {
   __mcDynres?: () => DynamicResolutionState;
   /** `RenderRendererService.setRenderScale` for sweeps without a reload; returns the scale in effect (a pin wins). */
   __mcRenderScale?: (scale: number) => number;
+  /** Render-infra read-out for perf tools: warm-up, draw budget, memory ledger, three's tracker, dynres. Allocates. */
+  __mcRender?: () => unknown;
 }
 
 /** Frames rendered before `__mcReady`: the first compiles the pipelines, the next ones prove a stable frame. */
@@ -88,6 +90,19 @@ export async function installHarnessHooks(target: HarnessHookTarget, options: Ha
   };
   target.__mcDynres = () => ({ ...renderer.dynamicResolution });
   target.__mcRenderScale = (scale) => renderer.setRenderScale(scale);
+  target.__mcRender = () => ({
+    warmup: { ...renderer.pipelineWarmup },
+    drawBudget: { ...renderer.drawBudget },
+    memory: {
+      totalBytes: renderer.memory.totals.totalBytes,
+      budgetBytes: renderer.memory.totals.budgetBytes,
+      overCategories: renderer.memory.totals.overCategories,
+      bytes: { ...renderer.memory.totals.bytes },
+      entries: renderer.memory.list(),
+    },
+    rendererInfo: { ...renderer.rendererInfo },
+    dynres: { ...renderer.dynamicResolution },
+  });
   target.__mcStep = (n, dtSeconds) => {
     if (!loop.isManual) return Promise.reject(new Error("__mcStep needs ?capture=1"));
     return loop.step(n, dtSeconds);

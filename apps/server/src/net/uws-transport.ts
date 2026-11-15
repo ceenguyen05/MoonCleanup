@@ -4,7 +4,9 @@
 // incompatible addon rejects that import instead of failing the whole process.
 //
 // - HTTP: `HttpRouteDef[]` mounted as plain uWS handlers (./http-routes, why not Colyseus' router).
-// - Upgrades: `beforeUpgrade` (origin 403, per-IP socket cap 429); open/close reported to Admission.
+// - Upgrades: `beforeUpgrade` (origin 403, handshake shape 400, per-IP socket cap 429); open/close reported to
+//   Admission. The AuthContext headers it reads come from `req.forEach` here (all headers, lower-case), so the
+//   handshake check sees `upgrade` / `sec-websocket-key` / `-version` (./upgrade-handshake, review NB2).
 // - Payload 2 KB, backpressure 128 KB with close (security review B1c).
 
 import { uWebSocketsTransport, type TransportOptions } from "@colyseus/uwebsockets-transport";
@@ -56,6 +58,7 @@ export function createUwsTransport(deps: TransportDeps): BoundTransport {
     policy: deps.policy,
     clientIpHeader: deps.clientIpHeader,
     logger: deps.logger,
+    ...(deps.rawBodyAuth === undefined ? {} : { rawBodyAuth: deps.rawBodyAuth }),
   });
 
   return {

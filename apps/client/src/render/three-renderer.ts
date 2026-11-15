@@ -44,6 +44,11 @@ export function createThreeDriver(options: ThreeDriverOptions = {}): RendererDri
 
     async init(renderer) {
       await renderer.init();
+      // GPU timing is WebGPU-only here (gpu-timing.ts). When three falls back to WebGL2 on its own (no adapter), the
+      // backend would still begin a timer query per render context and Chrome logs "beginQuery: a query is already
+      // active" every frame: nested contexts (shadow and post passes) cannot nest EXT_disjoint_timer_query.
+      const backend = renderer.backend as unknown as { isWebGLBackend?: boolean; trackTimestamp?: boolean };
+      if (backend.isWebGLBackend === true) backend.trackTimestamp = false;
     },
 
     readBackend(renderer) {

@@ -1,7 +1,16 @@
-// @contract save/dust-chunk v1
+// @contract save/dust-chunk v1.1
 // @consumers packages/world (chunk payload codec; pure, shared by the Solo worker and the server), apps/server/src/
 //   world (hand-off of dirty chunk payloads), apps/server/src/persistence and apps/client/src/sim-host (deflate,
 //   CRC32 and storage of the row), apps/server/src/api (size and chunk id checks of solo uploads), tools/bots
+//
+// v1.1 (M1-W0-T08, 2026-11-14; byte layout unchanged, DUST_CHUNK_PAYLOAD_VERSION stays 1): the largest legal payload
+// is now pinned here as DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES (421,959 B: 256 touched plots, 4 contributions and 32
+// unchained strokes each), and save/format's DUST_CHUNK_PAYLOAD_MAX_BYTES is derived from it. The old 262,144 B limit
+// was below a legal payload (256 touched plots need 269,383 B without any stroke log), so a full chunk could never be
+// written or uploaded. A plot record's `strokeLog` is now bounded by strokeCount x DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES
+// (every stroke at most one chain header), which every v1 writer already met. Consumers: packages/world (drop the
+// local layout maximum and the log-shrinking ladder, add the strokeLog bound to the scan), apps/server/src/api
+// (comments only; the code reads the constant).
 //
 // Dust chunk payload: the body of one `contract_dust_chunks` row (section DUST_CHUNK). Specification:
 // docs/architecture/world-and-dust-simulation.md section 6, data-model.md section 3.7b. The payload is deflated as a
@@ -36,6 +45,7 @@ import {
   LEDGER_BYTES,
   LEDGER_CONTRIBUTION_BYTES,
   LEDGER_HEADER_FIXED_BYTES,
+  LEDGER_MAX_CONTRIBUTIONS,
   PlotStateSchema,
   PlotState,
   PLOTS_PER_CHUNK,
@@ -64,21 +74,53 @@ export const DUST_CHUNK_PLOT_RECORD_FIXED_BYTES = 1 + 1 + LEDGER_HEADER_FIXED_BY
 /** Bytes per header contribution (re-exported name for codec readers). */
 export const DUST_CHUNK_CONTRIBUTION_BYTES = LEDGER_CONTRIBUTION_BYTES;
 
+/**
+ * Bytes of one stroke chain before its continuations: the 17-byte chain header (136 bits, world/stroke wire widths)
+ * plus the continuationCount u8 of the chain framing (packages/protocol codec/dust-wire). A stroke saved as its own
+ * chain costs this much; a stroke saved as a continuation costs 4 bytes, so chaining only makes a log smaller.
+ */
+export const DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES = 17 + 1;
+
+/** Largest saved stroke log of one plot: SAVED_STROKE_LOG_MAX strokes, each its own chain (576 B). */
+export const DUST_CHUNK_STROKE_LOG_MAX_BYTES = SAVED_STROKE_LOG_MAX * DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES;
+
+/** Largest plot record: the fixed part, LEDGER_MAX_CONTRIBUTIONS contributions and the largest stroke log (1,648 B). */
+export const DUST_CHUNK_PLOT_RECORD_MAX_BYTES =
+  DUST_CHUNK_PLOT_RECORD_FIXED_BYTES +
+  LEDGER_MAX_CONTRIBUTIONS * LEDGER_CONTRIBUTION_BYTES +
+  DUST_CHUNK_STROKE_LOG_MAX_BYTES;
+
+/**
+ * Largest payload the v1 layout can hold (421,959 B): a 256-plot chunk with every plot touched, each record at
+ * DUST_CHUNK_PLOT_RECORD_MAX_BYTES. The pole chunk is far smaller. save/format's DUST_CHUNK_PAYLOAD_MAX_BYTES (the
+ * validate-before-write and upload limit) equals this value, so every legal payload can be stored and uploaded.
+ */
+export const DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES =
+  DUST_CHUNK_FIXED_BYTES + DUST_CHUNK_STATE_BYTES + PLOTS_PER_CHUNK * DUST_CHUNK_PLOT_RECORD_MAX_BYTES;
+
 const U8 = z.int().min(0).max(0xff);
 
 /** One touched plot (allocated ledger) of a chunk payload. */
-export const DustChunkPlotRecordSchema = z.object({
-  /** Index inside the chunk: 0 .. 255 (pole chunk 0 .. 1). */
-  localIndex: U8,
-  /** Remaining dust fraction, 0 .. 255 (255 = untouched). */
-  remainingFrac: U8,
-  ledger: LedgerHeaderSchema,
-  texels: LedgerTexelsSchema,
-  /** Number of strokes in `strokeLog`, 0 .. 32. */
-  strokeCount: z.int().min(0).max(SAVED_STROKE_LOG_MAX),
-  /** The most recent strokes as chains (chain wire format of world/stroke), opaque here. */
-  strokeLog: z.instanceof(Uint8Array).refine((bytes) => bytes.length <= 0xffff, { message: "strokeLog exceeds u16" }),
-});
+export const DustChunkPlotRecordSchema = z
+  .object({
+    /** Index inside the chunk: 0 .. 255 (pole chunk 0 .. 1). */
+    localIndex: U8,
+    /** Remaining dust fraction, 0 .. 255 (255 = untouched). */
+    remainingFrac: U8,
+    ledger: LedgerHeaderSchema,
+    texels: LedgerTexelsSchema,
+    /** Number of strokes in `strokeLog`, 0 .. 32. */
+    strokeCount: z.int().min(0).max(SAVED_STROKE_LOG_MAX),
+    /**
+     * The most recent strokes as chains (chain wire format of world/stroke), opaque here. At most
+     * strokeCount x DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES bytes (so at most DUST_CHUNK_STROKE_LOG_MAX_BYTES).
+     */
+    strokeLog: z.instanceof(Uint8Array),
+  })
+  .refine((record) => record.strokeLog.length <= record.strokeCount * DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES, {
+    message: "strokeLog exceeds strokeCount x DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES",
+    path: ["strokeLog"],
+  });
 export type DustChunkPlotRecord = z.infer<typeof DustChunkPlotRecordSchema>;
 
 /** Decoded dust chunk payload. `states` has one 2-bit state per plot of the chunk, in local-index order. */

@@ -1,0 +1,70 @@
+[
+  {
+    "view": "ground",
+    "swapAtS": 1814.365234375,
+    "samples": [
+      {
+        "name": "before",
+        "timeS": 1814.01640625,
+        "keyMode": "sun",
+        "ev100": 7.3,
+        "sunEl": -0.4892160780607968,
+        "keyLux": 3.2328221640705563,
+        "floorLux": 40.27511270163764,
+        "groundLuma": 3.4773628110531654,
+        "nearLuma": 3.786683195000745
+      },
+      {
+        "name": "after",
+        "timeS": 1814.665234375,
+        "keyMode": "earth",
+        "ev100": 7.3,
+        "sunEl": -0.5118573570395581,
+        "keyLux": 94.87131514687321,
+        "floorLux": 0,
+        "groundLuma": 16.183495195302267,
+        "nearLuma": 12.82822004999874
+      }
+    ],
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  },
+  {
+    "view": "rim",
+    "swapAtS": 1814.365234375,
+    "samples": [
+      {
+        "name": "before",
+        "timeS": 1814.01640625,
+        "keyMode": "sun",
+        "ev100": 7.3,
+        "sunEl": -0.4892160780607968,
+        "keyLux": 3.2328221640705563,
+        "floorLux": 40.27511270163764,
+        "groundLuma": 3.618886683125333,
+        "nearLuma": 3.8595999999984545
+      },
+      {
+        "name": "after",
+        "timeS": 1814.665234375,
+        "keyMode": "earth",
+        "ev100": 7.3,
+        "sunEl": -0.5118573570395581,
+        "keyLux": 94.87131514687321,
+        "floorLux": 0,
+        "groundLuma": 12.115329264164044,
+        "nearLuma": 6.313462939996847
+      }
+    ],
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+      "warning: The resource http://localhost:5293/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+    ]
+  }
+]

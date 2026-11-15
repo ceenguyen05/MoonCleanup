@@ -1,0 +1,60 @@
+[
+  {
+    "view": "ground",
+    "swapAtS": 1814.365234375,
+    "samples": [
+      {
+        "name": "before",
+        "timeS": 1814.01640625,
+        "keyMode": "sun",
+        "ev100": 7.3,
+        "sunEl": -0.4892160780607968,
+        "keyLux": 3.2328221640705563,
+        "floorLux": 40.27511270163764,
+        "groundLuma": 3.477355138201603,
+        "nearLuma": 3.786736835000745
+      },
+      {
+        "name": "after",
+        "timeS": 1814.665234375,
+        "keyMode": "earth",
+        "ev100": 7.3,
+        "sunEl": -0.5118573570395581,
+        "keyLux": 94.87131514687321,
+        "floorLux": 0,
+        "groundLuma": 16.183324762685103,
+        "nearLuma": 12.827401799998734
+      }
+    ],
+    "console": []
+  },
+  {
+    "view": "rim",
+    "swapAtS": 1814.365234375,
+    "samples": [
+      {
+        "name": "before",
+        "timeS": 1814.01640625,
+        "keyMode": "sun",
+        "ev100": 7.3,
+        "sunEl": -0.4892160780607968,
+        "keyLux": 3.2328221640705563,
+        "floorLux": 40.27511270163764,
+        "groundLuma": 3.6188727143753323,
+        "nearLuma": 3.8595999999984545
+      },
+      {
+        "name": "after",
+        "timeS": 1814.665234375,
+        "keyMode": "earth",
+        "ev100": 7.3,
+        "sunEl": -0.5118573570395581,
+        "keyLux": 94.87131514687321,
+        "floorLux": 0,
+        "groundLuma": 12.115326957035135,
+        "nearLuma": 6.313427079996847
+      }
+    ],
+    "console": []
+  }
+]

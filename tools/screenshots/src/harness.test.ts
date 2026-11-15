@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { laneLaunch, parseArgs, portsFor, sceneUrl } from "./harness";
 import { captureFileName, cropFileName, pngSize } from "./naming";
+import { resolveScene } from "./scenes/registry";
 
 describe("naming (visual-target 6.6 examples)", () => {
   const base = { tier: "A", preset: "high", backend: "webgpu", hud: "nohud" } as const;
@@ -111,6 +112,24 @@ describe("harness helpers", () => {
     expect(q("S01a", "dawn")).toMatchObject({ scene: "s01", time: "dawn", view: "a" });
     expect(q("S05", "dawn")).toMatchObject({ scene: "s05", sun: "4" });
     expect(q("S12", "noon")).toMatchObject({ scene: "hud-test" });
+  });
+  it("S05ramp / S05slope select the ramp views at sun 60 azimuth 200", () => {
+    const base = {
+      tier: "A",
+      preset: "low",
+      backend: "webgpu",
+      cssWidth: 1920,
+      cssHeight: 1080,
+      dpr: 1,
+      hud: "nohud",
+      seed: "x",
+    } as const;
+    const q = (scene: string) =>
+      Object.fromEntries(new URL(sceneUrl("http://h/", { ...base, scene, tod: "noon" })).searchParams);
+    expect(q("S05ramp")).toMatchObject({ scene: "s05", sun: "60", az: "200", view: "shadeSlope", preset: "low" });
+    expect(q("s05slope")).toMatchObject({ scene: "s05", sun: "60", az: "200", view: "slope" });
+    expect(q("S05")).not.toHaveProperty("view");
+    expect(resolveScene("S05ramp")?.entry.id).toBe("S05");
   });
   it("fails loudly for an unsupported scene or tod", () => {
     const base = {

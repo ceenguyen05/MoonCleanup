@@ -187,6 +187,23 @@ export class GroundHeight {
     return w[W_OUT]!;
   }
 
+  /**
+   * Batched `heightAtXYZ` (additive, M1-W5-T04): out[i] = H at unit direction dirs[3i .. 3i + 2] for i < n, bit-identical
+   * to `heightAtXYZ`. One call per batch with typed-array I/O, so callers whose call site is not inlined do not box a
+   * double per sample. Allocation-free.
+   */
+  heightsAt(dirs: Float64Array, out: Float64Array, n: number): void {
+    const w = this.w;
+    for (let i = 0; i < n; i++) {
+      const o = i * 3;
+      w[W_X] = dirs[o]!;
+      w[W_Y] = dirs[o + 1]!;
+      w[W_Z] = dirs[o + 2]!;
+      this.evaluate(true);
+      out[i] = w[W_OUT]!;
+    }
+  }
+
   /** H_base only. */
   baseAtXYZ(x: number, y: number, z: number): number {
     return this.cube.sampleXYZ(x, y, z);

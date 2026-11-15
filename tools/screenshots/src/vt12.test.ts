@@ -84,7 +84,7 @@ describe("ROI measures (known chart in, known number out)", () => {
       lookdev: { chips: { c1: { x: 10, y: 20, w: 30, h: 40 } }, lines: { e: { x0: 1, y0: 2, x1: 3, y1: 4 } } },
       look: { a: { px: { x: 100, y: 50, visible: true } }, b: { px: { x: 1, y: 1, visible: false } } },
     });
-    expect(rois.map((r) => r.name)).toEqual(["chip:c1", "line:e", "probe:a"]);
+    expect(rois.map((r) => r.name)).toEqual(["chip:c1", "line:e", "probe16:a", "probe:a"]);
     expect(rois[0]).toMatchObject({ rect: { x: 20, y: 40, w: 60, h: 80 } });
     expect(rois[1]).toMatchObject({ x0: 2, y1: 8 });
   });
@@ -127,7 +127,37 @@ describe("sidecar extras", () => {
     expect(x.ev100).toBe(15);
     expect(x.knobs).toMatchObject({ renderScale: 0.5, aa: "traa" });
     expect(x.camera.pose).toBeNull();
+    expect(x.camera.vfovDeg).toBeNull();
+    expect(x.camera.note).toMatch(/does not report/);
     expect(x.earth?.litFraction).toBeGreaterThan(0);
+  });
+  it("copies camera pose and vFOV from look info when present", () => {
+    const x = sidecarExtras(
+      {},
+      {
+        camera: {
+          position: [1, 2, 3],
+          quaternion: [0, 0, 0, 1],
+          forward: [0, 0, -1],
+          vfovDeg: 52,
+          aspect: 1.78,
+          nearM: 0.1,
+          farM: 5000,
+        },
+      },
+      "a",
+    );
+    expect(x.camera.view).toBe("a");
+    expect(x.camera.vfovDeg).toBe(52);
+    expect(x.camera.pose).toEqual({
+      positionM: [1, 2, 3],
+      quaternion: [0, 0, 0, 1],
+      forward: [0, 0, -1],
+      aspect: 1.78,
+      nearM: 0.1,
+      farM: 5000,
+    });
+    expect(x.camera.note).toBeUndefined();
   });
 });
 

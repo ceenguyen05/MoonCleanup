@@ -1,0 +1,172 @@
+[
+  {
+    "name": "clockin-t0",
+    "query": "scene=moon&view=ground&tod=0&todrate=0",
+    "keyMode": "sun",
+    "ev100": 10.5,
+    "dayClock": {
+      "on": true,
+      "timeS": 0,
+      "rate": 0,
+      "scriptedEv100": 10.5,
+      "earthLitFraction": 0.5,
+      "limitingMagnitude": 4.671428571428572,
+      "keyLux": 4666.708093481982,
+      "floorLux": 19.15368101176496
+    },
+    "sunEl": 0,
+    "groundLuma": 69.68693655090658,
+    "nearLuma": 25.619630860006605,
+    "console": []
+  },
+  {
+    "name": "t20",
+    "query": "scene=moon&view=ground&tod=20&todrate=0",
+    "keyMode": "sun",
+    "ev100": 11.5,
+    "dayClock": {
+      "on": true,
+      "timeS": 20,
+      "rate": 0,
+      "scriptedEv100": 11.5,
+      "earthLitFraction": 0.47987366034992457,
+      "limitingMagnitude": 4.1,
+      "keyLux": 9333.416186963965,
+      "floorLux": 0
+    },
+    "sunEl": 1.3959798681000388,
+    "groundLuma": 82.05101950003613,
+    "nearLuma": 42.41628797998584,
+    "console": []
+  },
+  {
+    "name": "moon-before",
+    "query": "scene=moon&view=ground&tod=1814&todrate=0",
+    "keyMode": "sun",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5129177953970295,
+      "limitingMagnitude": 6,
+      "keyLux": 3.583814640966555,
+      "floorLux": 40.271279508728526
+    },
+    "sunEl": -0.48864356305306966,
+    "groundLuma": 3.5275742968881594,
+    "nearLuma": 3.79852602000064,
+    "console": []
+  },
+  {
+    "name": "moon-after",
+    "query": "scene=moon&view=ground&tod=1814.8&todrate=0",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814.8,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5136557405639333,
+      "limitingMagnitude": 6,
+      "keyLux": 94.91606660301596,
+      "floorLux": 0
+    },
+    "sunEl": -0.5165600097183656,
+    "groundLuma": 16.193978440419386,
+    "nearLuma": 12.837749284998717,
+    "console": []
+  },
+  {
+    "name": "s05-before",
+    "query": "scene=s05&view=wide&tod=1814&todrate=0",
+    "keyMode": "sun",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5126191190074224,
+      "limitingMagnitude": 6,
+      "keyLux": 3.583814640966555,
+      "floorLux": 64.25684473011312
+    },
+    "sunEl": -0.48864356305306966,
+    "groundLuma": 45.764021296007556,
+    "nearLuma": 46.006297354969455,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  },
+  {
+    "name": "s05-after",
+    "query": "scene=s05&view=wide&tod=1814.8&todrate=0",
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 1814.8,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.5133400052612469,
+      "limitingMagnitude": 6,
+      "keyLux": 94.80240189404888,
+      "floorLux": 0
+    },
+    "sunEl": -0.5165600097183656,
+    "groundLuma": 52.250002374141275,
+    "nearLuma": 51.69277767501931,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  },
+  {
+    "name": "s01-clockin",
+    "query": "scene=s01&view=a&tod=0&todrate=0",
+    "keyMode": "sun",
+    "ev100": 10.5,
+    "dayClock": {
+      "on": true,
+      "timeS": 0,
+      "rate": 0,
+      "scriptedEv100": 10.5,
+      "earthLitFraction": 0.5,
+      "limitingMagnitude": 4.671428571428572,
+      "keyLux": 4666.708093481982,
+      "floorLux": 19.906726712523156
+    },
+    "sunEl": 0,
+    "groundLuma": 67.6855447875474,
+    "nearLuma": 48.41099086000873,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  },
+  {
+    "name": "s01-t20",
+    "query": "scene=s01&view=a&tod=20&todrate=0",
+    "keyMode": "sun",
+    "ev100": 11.5,
+    "dayClock": {
+      "on": true,
+      "timeS": 20,
+      "rate": 0,
+      "scriptedEv100": 11.5,
+      "earthLitFraction": 0.47975629064012515,
+      "limitingMagnitude": 4.1,
+      "keyLux": 9333.416186963965,
+      "floorLux": 0
+    },
+    "sunEl": 1.3959798681000388,
+    "groundLuma": 98.05472982407517,
+    "nearLuma": 76.76790658000557,
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  }
+]

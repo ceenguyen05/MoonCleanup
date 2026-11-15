@@ -7,3 +7,11 @@ export const WS_MAX_PAYLOAD_BYTES = 2048;
  * 128 KB is >20 s of backlog: a socket that stops reading is closed instead of pinning memory.
  */
 export const WS_MAX_BACKPRESSURE_BYTES = 128 * 1024;
+/**
+ * Ceiling of the bulk dust sends (DUST_SNAPSHOT slices) against a socket's buffered amount: 3/4 of the backpressure cap.
+ * The 32 KB left over is the reserve for the frames, events and streamed ledgers that keep flowing while a slow client
+ * drains, so a paced snapshot can never push the socket over `WS_MAX_BACKPRESSURE_BYTES` by itself.
+ */
+export const WS_BULK_SEND_CEILING_BYTES = (WS_MAX_BACKPRESSURE_BYTES / 4) * 3;
+/** Wire overhead assumed per bytes message (Colyseus protocol + type bytes + WebSocket frame header). */
+export const WS_SEND_OVERHEAD_BYTES = 8;

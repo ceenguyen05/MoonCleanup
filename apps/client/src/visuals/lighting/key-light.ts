@@ -31,6 +31,28 @@ export const SUN_SET_ELEVATION_DEG = -0.5;
 /** Earth must stand at least this high to act as the night key (rendering-pipeline section 5.2). */
 export const EARTH_KEY_MIN_ELEVATION_DEG = 5;
 
+/** Half-width of the terminator band (degrees): the sun's light fades between -0.5 and +0.5 (art-direction 2.2 "Sunset"). */
+export const TERMINATOR_HALF_BAND_DEG = 0.5;
+
+/**
+ * Share of the sun's light that reaches the site at `elevationDeg`: 0 at or below -0.5 degrees, 1 from +0.5, a smoothstep
+ * between (the disk sinking behind the horizon, stretched to the scripted terminator band). It ends exactly where the key
+ * hands over to the Earth (`SUN_SET_ELEVATION_DEG`), so no light switches off at the handover.
+ */
+export function sunTerminatorFraction(elevationDeg: number): number {
+  const t = Math.min(1, Math.max(0, (elevationDeg + TERMINATOR_HALF_BAND_DEG) / (2 * TERMINATOR_HALF_BAND_DEG)));
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * Bounce fill at grazing sun: below this elevation the fill stays what the dawn key (a 4 degree sun) gives, times the
+ * terminator fraction. The sin(elevation) rule is for flat ground alone; at a 1 degree sun the slopes and rocks around a
+ * site are still fully lit and keep bouncing light. Without it flats and shadows are black from about 2 degrees down
+ * (measured: ground luma 5 of 255), which is the first half minute after Clock In (the contract starts at sunrise).
+ * The same knee as the dawn exposure (`sunEv100`); elevations from this value up are unchanged.
+ */
+export const LOW_SUN_FILL_ELEVATION_DEG = 4;
+
 /** Illuminance of the sun on flat ground at `elevationDeg` (lux). */
 export function sunFlatLux(elevationDeg: number): number {
   return SUN_LUX_NORMAL * Math.max(0, Math.sin(elevationDeg * DEG));
@@ -43,6 +65,12 @@ export function sunEv100(elevationDeg: number): number {
   if (elevationDeg <= 60) return EV100.morning + ((elevationDeg - 30) / 30) * (EV100.noon - EV100.morning);
   return EV100.noon;
 }
+
+/**
+ * Weight of eye adaptation on the exposure (visual-target 6.6 sidecar field). 0: `resolveKey` scripts the EV100 from the
+ * sun / Earth state every frame and nothing in the client adapts to the picture. Change this when adaptation is built.
+ */
+export const EXPOSURE_ADAPTATION_MULTIPLIER = 0;
 
 /** CPU pre-exposure scale of the half-float buffer for an EV100 (rendering-pipeline section 8.4). */
 export function preExposureScale(ev100: number): number {
@@ -95,12 +123,19 @@ export interface KeyState {
   ev100: number;
   /** Pre-exposure scale for `ev100`. */
   scale: number;
-  /** Sun light lux (0 when the sun is down). */
+  /** Sun light lux on flat ground (0 when the sun is down). */
   sunLux: number;
+  /** Sun light lux on a surface facing the sun: `SUN_LUX_NORMAL` x the terminator fraction (0 unless the sun is the key). */
+  sunNormalLux: number;
   /** Earthshine lux on a surface facing the Earth (0 when the Earth is not the key). */
   earthLux: number;
-  /** Ambient floor lux (far-side night only). */
+  /**
+   * Ambient floor lux: the far-side night floor, or (sun mode, inside the terminator band) the night light carried as a
+   * shadowless ambient so flat ground keeps its level across the day / night handover.
+   */
   floorLux: number;
+  /** `true` when `floorLux` is carried earthshine (cool Earth white) rather than the far-side floor. */
+  floorIsEarth: boolean;
 }
 
 /** Resolves the active key from the sun elevation, the Earth elevation and the lit fraction of the Earth disk. Writes `out`. */
@@ -110,27 +145,49 @@ export function resolveKey(
   earthLitFraction: number,
   out: KeyState,
 ): KeyState {
+  const earthKey = earthElevationDeg > EARTH_KEY_MIN_ELEVATION_DEG;
+  const earthNormalLux = earthKey ? EARTHSHINE_LUX_FULL * earthPhaseFactor(earthLitFraction) : 0;
   if (sunElevationDeg > SUN_SET_ELEVATION_DEG) {
+    const fraction = sunTerminatorFraction(sunElevationDeg);
     out.mode = "sun";
-    out.sunLux = sunFlatLux(sunElevationDeg);
-    out.keyLux = out.sunLux;
-    out.ev100 = sunEv100(sunElevationDeg);
+    out.sunLux = sunFlatLux(sunElevationDeg) * fraction;
+    out.sunNormalLux = SUN_LUX_NORMAL * fraction;
+    out.keyLux = Math.max(sunFlatLux(sunElevationDeg), sunFlatLux(LOW_SUN_FILL_ELEVATION_DEG)) * fraction;
     out.earthLux = 0;
-    out.floorLux = 0;
+    out.floorIsEarth = earthKey;
+    if (fraction < 1) {
+      // Terminator band. Exposure: it opens exactly as fast as the disk sinks, so what the sun still lights holds its
+      // display level (never brighter: no blow-out, nothing new above the bloom threshold) until the night exposure is
+      // reached; the night light fades in underneath, and the stars with the exposure. No black gap, no step.
+      const nightEv = earthKey ? EV100.nightNear : EV100.nightFar;
+      out.ev100 = Math.max(nightEv, sunEv100(sunElevationDeg) + Math.log2(Math.max(fraction, 1e-6)));
+      // What flat ground receives at night: under the Earth key its direct light plus the up-facing fill.
+      const nightFlatLux = earthKey
+        ? earthNormalLux * (Math.sin(earthElevationDeg * DEG) + FILL_FRACTION.up)
+        : FAR_SIDE_FLOOR_LUX;
+      out.floorLux = nightFlatLux * (1 - fraction);
+    } else {
+      out.ev100 = sunEv100(sunElevationDeg);
+      out.floorLux = 0;
+    }
   } else if (earthElevationDeg > EARTH_KEY_MIN_ELEVATION_DEG) {
     out.mode = "earth";
     out.sunLux = 0;
-    out.earthLux = EARTHSHINE_LUX_FULL * earthPhaseFactor(earthLitFraction);
+    out.sunNormalLux = 0;
+    out.earthLux = earthNormalLux;
+    out.floorIsEarth = false;
     out.keyLux = out.earthLux;
     out.ev100 = EV100.nightNear;
     out.floorLux = 0;
   } else {
     out.mode = "floor";
     out.sunLux = 0;
+    out.sunNormalLux = 0;
     out.earthLux = 0;
     out.keyLux = 0;
     out.ev100 = EV100.nightFar;
     out.floorLux = FAR_SIDE_FLOOR_LUX;
+    out.floorIsEarth = false;
   }
   out.scale = preExposureScale(out.ev100);
   return out;
@@ -143,8 +200,10 @@ export function createKeyState(): KeyState {
     ev100: EV100.noon,
     scale: preExposureScale(EV100.noon),
     sunLux: 0,
+    sunNormalLux: 0,
     earthLux: 0,
     floorLux: 0,
+    floorIsEarth: false,
   };
 }
 

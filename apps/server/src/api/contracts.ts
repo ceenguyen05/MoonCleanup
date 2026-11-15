@@ -25,6 +25,7 @@ import {
   type ContractMember,
   type ContractSummary,
   type CreateContractResponse,
+  type GetContractResponse,
   type HttpResponse,
   type HttpRouteDef,
   type InviteRotateResponse,
@@ -55,6 +56,18 @@ export function toSummary(ctx: ApiContext, c: ContractView): ContractSummary {
     lastPlayedAt: c.lastPlayedAt === null ? null : c.lastPlayedAt.toISOString(),
     online: Math.min(MAX_PLAYERS_PER_ROOM, Math.max(0, ctx.online(c.id))),
   } as ContractSummary;
+}
+
+/**
+ * `GetContractResponse` (REST v0.3.0): the summary plus the current invite code, sent only to the Holder of a Private
+ * Shift. Staff and Solo Contracts always get `null`, never the code.
+ */
+export function toDetail(ctx: ApiContext, c: ContractView): GetContractResponse {
+  const holderOfPrivate = c.role === "holder" && c.shiftType === "private";
+  return {
+    ...toSummary(ctx, c),
+    inviteCode: (holderOfPrivate ? c.inviteCode : null) as GetContractResponse["inviteCode"],
+  };
 }
 
 export function createContractRoutes(ctx: ApiContext): HttpRouteDef[] {
@@ -124,7 +137,7 @@ export function createContractRoutes(ctx: ApiContext): HttpRouteDef[] {
     const id = idParam(request.params.id);
     if (id === undefined) return notFound();
     const contract = await ctx.repo.getContract(id, playerId);
-    return contract === null ? notFound() : { status: 200, body: toSummary(ctx, contract) };
+    return contract === null ? notFound() : { status: 200, body: toDetail(ctx, contract) };
   });
 
   const patch = authed(ctx, "contractPatch", async (request, playerId): Promise<HttpResponse> => {
@@ -146,7 +159,8 @@ export function createContractRoutes(ctx: ApiContext): HttpRouteDef[] {
       });
       switch (result.kind) {
         case "updated":
-          return { status: 200, body: toSummary(ctx, result.contract) };
+          // Holder-only caller, so a switch to Private returns the freshly drawn code (contract v0.3.0 allows it).
+          return { status: 200, body: toDetail(ctx, result.contract) };
         case "not_found":
           return notFound();
         case "forbidden":

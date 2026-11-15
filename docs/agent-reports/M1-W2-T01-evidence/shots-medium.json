@@ -1,0 +1,226 @@
+[
+  {
+    "name": "ground-medium",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground",
+    "info": {
+      "ready": true,
+      "error": null,
+      "nodes": 88,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        9,
+        9,
+        12,
+        23,
+        28
+      ],
+      "triangles": 203456,
+      "visited": 190,
+      "culledHorizon": 13,
+      "culledFrustum": 43,
+      "overflow": 0,
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.5,
+        "max": 1.7000000476837158,
+        "n": 150
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1374.5999999940395,
+        "decodeMs": 133.90000000596046
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117,
+      "frameMs": {
+        "p50": 26,
+        "p95": 29.700000002980232,
+        "max": 45.8999999910593
+      },
+      "canvas": 1280
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    ]
+  },
+  {
+    "name": "rim-medium",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=rim",
+    "info": {
+      "ready": true,
+      "error": null,
+      "nodes": 72,
+      "perLevel": [
+        0,
+        0,
+        1,
+        9,
+        9,
+        10,
+        13,
+        22,
+        8
+      ],
+      "triangles": 166464,
+      "visited": 154,
+      "culledHorizon": 12,
+      "culledFrustum": 33,
+      "overflow": 0,
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.4000000059604645,
+        "max": 1.7000000476837158,
+        "n": 187
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1214.2999999970198,
+        "decodeMs": 125.79999999701977
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 600.0000000000009,
+        "posts": 564
+      },
+      "cameraAltitudeM": 29.99999999999973,
+      "frameMs": {
+        "p50": 21,
+        "p95": 23.799999997019768,
+        "max": 25.099999994039536
+      },
+      "canvas": 1280
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    ]
+  },
+  {
+    "name": "orbit-medium",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=orbit",
+    "info": {
+      "ready": true,
+      "error": null,
+      "nodes": 6,
+      "perLevel": [
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "triangles": 13872,
+      "visited": 6,
+      "culledHorizon": 0,
+      "culledFrustum": 0,
+      "overflow": 0,
+      "selectMs": {
+        "p50": 0.09999999403953552,
+        "p95": 0.20000000298023224,
+        "max": 1.399999976158142,
+        "n": 201
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1447,
+        "decodeMs": 143.8999999910593
+      },
+      "fence": {
+        "zone": "reached",
+        "distanceToFenceM": -634.4028477337906,
+        "posts": 564
+      },
+      "cameraAltitudeM": 4409.301174356127,
+      "frameMs": {
+        "p50": 16.600000008940697,
+        "p95": 18.799999997019768,
+        "max": 21.099999994039536
+      },
+      "canvas": 1280
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    ]
+  },
+  {
+    "name": "fence-medium",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=fence",
+    "info": {
+      "ready": true,
+      "error": null,
+      "nodes": 93,
+      "perLevel": [
+        0,
+        0,
+        2,
+        7,
+        13,
+        8,
+        10,
+        25,
+        28
+      ],
+      "triangles": 215016,
+      "visited": 194,
+      "culledHorizon": 18,
+      "culledFrustum": 36,
+      "overflow": 0,
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.5,
+        "max": 2.0999999046325684,
+        "n": 173
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1370.7000000029802,
+        "decodeMs": 143.59999999403954
+      },
+      "fence": {
+        "zone": "near",
+        "distanceToFenceM": 32,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000792,
+      "frameMs": {
+        "p50": 25.299999997019768,
+        "p95": 32.5,
+        "max": 36.5
+      },
+      "canvas": 1280
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    ]
+  }
+]

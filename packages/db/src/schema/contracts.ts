@@ -1,6 +1,6 @@
 // Contract tables (data-model.md sections 3.5-3.7): contracts, contract_members, contract_saves.
 // The lease columns (contracts) and the solo save-generation columns (contract_saves.parent_seq / origin_kind) belong to
-// M1-W5-T07 and live in migration 0002; the M1-W4-T05 repositories do not read or write them.
+// M1-W5-T07 and live in migration 0002; contract_dust_chunks (migration 0003) completes the save layout of section 3.7b.
 
 import { sql } from "drizzle-orm";
 import {
@@ -134,6 +134,36 @@ export const contractSaves = pgTable(
     check("contract_saves_origin_kind_check", sql`${t.originKind} in ('room', 'solo')`),
     primaryKey({ name: "contract_saves_pk", columns: [t.contractId, t.slot] }),
     check("contract_saves_slot_check", sql`${t.slot} in ('A', 'B')`),
+  ],
+);
+
+/**
+ * Dust chunk rows, two alternating versions per chunk (data-model.md section 3.7b; created by migration 0003 for the
+ * M1-W5-T07 solo checkpoint upload, shared with the room checkpoints of M1-W5-T01). A chunk that was never touched has
+ * no rows (pristine). Never selected by list queries.
+ */
+export const contractDustChunks = pgTable(
+  "contract_dust_chunks",
+  {
+    contractId: uuid("contract_id")
+      .notNull()
+      .references(() => contracts.id, { onDelete: "cascade" }),
+    chunkId: smallint("chunk_id").notNull(),
+    ver: smallint("ver").notNull(),
+    /** `save_seq` of the header checkpoint (same transaction) that wrote this version. */
+    saveSeq: bigint("save_seq", { mode: "number" }).notNull(),
+    codec: text("codec").notNull(),
+    rawSize: integer("raw_size").notNull(),
+    blobSize: integer("blob_size").notNull(),
+    /** CRC32 of the uncompressed payload, stored as the signed 32-bit value (see contract_saves.checksum). */
+    checksum: integer("checksum").notNull(),
+    blob: blobBytea("blob").notNull(),
+    savedAt: timestamp("saved_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ name: "contract_dust_chunks_pk", columns: [t.contractId, t.chunkId, t.ver] }),
+    check("contract_dust_chunks_chunk_id_check", sql`${t.chunkId} between 0 and 640`),
+    check("contract_dust_chunks_ver_check", sql`${t.ver} in (0, 1)`),
   ],
 );
 

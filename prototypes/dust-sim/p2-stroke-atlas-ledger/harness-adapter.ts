@@ -7,7 +7,13 @@
 //                                  tick: every submitted stroke is applied and sent as is (harness cadence, 20 Hz).
 //   P2_DUST_CELL_G=<grams>         Dust Cell capacity; 0 (default) = unlimited.
 //   P2_TILES=0                     disable the CPU reference tile atlas in view() / lateJoin().
-import { monitorEventLoopDelay, performance } from "node:perf_hooks";
+//   P2_FRAME_TRACE=<file.json>     T06: per view() frame: CPU ms, rebuild ms, rebuild count, deterministic rebuild
+//                                  work, plus every GC pause of the process (S2 stall diagnosis).
+//   P2_GPU_RECORD=<dir>            T06: record the viewer's tile draw stream for the GPU lane (gpu/recorder.ts).
+// Event-loop lag is only probed when the harness runs with --realtime (a flat-out run never yields to the loop, so
+// there is nothing to measure and the metric stays NOT_RUN). Same method as P1: 10 ms timer histogram minus 10 ms.
+import { writeFileSync } from "node:fs";
+import { monitorEventLoopDelay, performance, PerformanceObserver } from "node:perf_hooks";
 import { deflateSync, inflateSync } from "node:zlib";
 import type { RobotPlotIntent, StrokeRecord } from "@moon-cleanup/shared";
 import type {
@@ -22,6 +28,7 @@ import { P2Server, type P2Options } from "./src/core/server";
 import { buildTables, type GridLike, type PlotTables } from "./src/core/tables";
 import { TILE_PRESETS, TileAtlasRef } from "./src/core/tiles";
 import type { Codec } from "./src/core/util";
+import { GpuRecorder } from "./gpu/recorder";
 
 const ZLIB: Codec = {
   deflate: (b) => deflateSync(b, { level: 6 }),
@@ -29,6 +36,7 @@ const ZLIB: Codec = {
 };
 
 const NOW = (): number => performance.now();
+const LAG_RESOLUTION_MS = 10;
 
 const OK = { ok: true } as const;
 const REJECT = [
@@ -59,6 +67,15 @@ export function createAdapter(): DustPrototypeAdapter {
   const lastPos = new Map<number, Float64Array>();
   const camDir = new Float64Array(3);
   const useTiles = process.env["P2_TILES"] !== "0";
+  const measureLag = process.argv.includes("--realtime");
+  const tracePath = process.env["P2_FRAME_TRACE"] ?? "";
+  const recordDir = process.env["P2_GPU_RECORD"] ?? "";
+  // T06 diagnosis state (only filled when the switches are set; not part of any scored metric).
+  const trace: number[] = [];
+  const gcs: number[] = [];
+  let gcObs: PerformanceObserver | null = null;
+  let recorder: GpuRecorder | null = null;
+  let recorderTiles: TileAtlasRef | null = null;
 
   const srv = (): P2Server => {
     if (server === null) throw new Error("p2 adapter: start() has not been called");
@@ -82,6 +99,11 @@ export function createAdapter(): DustPrototypeAdapter {
       tiles = new TileAtlasRef(srv().t, c.view, c.log, c.set, { ...TILE_PRESETS[quality], now: NOW });
       c.tiles = tiles;
       tilesFor = viewer;
+      if (recordDir !== "" && recorder === null) {
+        recorder = new GpuRecorder();
+        recorderTiles = tiles;
+        tiles.recorder = recorder;
+      }
     }
     return tiles;
   };
@@ -119,12 +141,38 @@ export function createAdapter(): DustPrototypeAdapter {
       persists = 0;
       restoreMsLast = 0;
       join = { blocking: 0, streamed: 0, ledgers: 0, snapshotMs: 0, rebuildMs: 0, tiles: 0 };
-      lag = monitorEventLoopDelay({ resolution: 1 });
-      lag.enable();
+      if (measureLag) {
+        lag = monitorEventLoopDelay({ resolution: LAG_RESOLUTION_MS });
+        lag.enable();
+      }
+      trace.length = 0;
+      gcs.length = 0;
+      recorder = null;
+      recorderTiles = null;
+      if (tracePath !== "") {
+        gcObs = new PerformanceObserver((list) => {
+          for (const e of list.getEntries()) gcs.push(e.startTime, e.duration);
+        });
+        gcObs.observe({ entryTypes: ["gc"] });
+      }
       return Promise.resolve();
     },
 
     stop() {
+      if (gcObs !== null) {
+        for (const e of gcObs.takeRecords()) gcs.push(e.startTime, e.duration);
+        gcObs.disconnect();
+        gcObs = null;
+      }
+      if (tracePath !== "" && trace.length > 0) {
+        writeFileSync(
+          tracePath,
+          JSON.stringify({ fields: ["t0", "cpuMs", "rebuildMs", "rebuilds", "work"], trace, gcs }),
+        );
+      }
+      if (recorder !== null && recorderTiles !== null && recorder.frame > 0) {
+        recorder.save(recordDir, recorderTiles, "harness", { quality });
+      }
       lag?.disable();
       lag = null;
       server = null;
@@ -202,15 +250,6 @@ export function createAdapter(): DustPrototypeAdapter {
       return { tick: fresh.tick, hash: fresh.serverHash(), restoreMs: restoreMsLast };
     },
 
-    /**
-     * Event-loop lag p99. With a live event loop (--realtime) this is the perf_hooks delay histogram. A flat-out
-     * simulated-time run never yields to the loop, so the fallback is the p99 of the server-side blocking time per
-     * tick (the delay a timer would see). Neither is a 0.1-CPU cgroup measurement (see exportMetrics.lagSource).
-     */
-    eventLoopLagP99Ms() {
-      if (lag !== null && lag.count >= 50) return lag.percentile(99) / 1e6;
-      return srv().tickQuantile(0.99);
-    },
     serverCpuMs: () => serverMsCarried + (server?.serverMs ?? 0),
     rssMb: () => process.memoryUsage().rss / (1024 * 1024),
 
@@ -224,7 +263,10 @@ export function createAdapter(): DustPrototypeAdapter {
       s.setPosition(viewer, camDir);
       const tl = viewerTiles();
       if (tl === null) return { cpuMs: 0 };
+      const f0 = tracePath !== "" ? performance.now() : 0;
       tl.frame(camDir);
+      if (tracePath !== "") trace.push(f0, tl.fCpuMs, tl.fRebuildMs, tl.fRebuilds, tl.fRebuildWork);
+      if (recorder !== null && tl === recorderTiles) recorder.endFrame(tl.fCpuMs);
       return { cpuMs: tl.fCpuMs, replayMs: tl.fReplayMs, tileUploads: tl.fUploads, tileRebuildMs: tl.fRebuildMs };
     },
 
@@ -266,7 +308,7 @@ export function createAdapter(): DustPrototypeAdapter {
     exportMetrics() {
       const s = server;
       if (s === null) return {};
-      const loopAlive = lag !== null && lag.count >= 50;
+      const loopAlive = lag !== null && lag.count > 0;
       let clients = 0;
       let clientLedgers = 0;
       let l0Mismatch = 0;
@@ -354,5 +396,10 @@ export function createAdapter(): DustPrototypeAdapter {
       return out;
     },
   };
+  if (measureLag) {
+    // The histogram records the gap between 10 ms timer callbacks; the lag is the excess over the interval.
+    // Not a 0.1-CPU cgroup measurement: on Windows the timer step alone is several ms (see README).
+    adapter.eventLoopLagP99Ms = () => Math.max(0, (lag?.percentile(99) ?? 0) / 1e6 - LAG_RESOLUTION_MS);
+  }
   return adapter;
 }

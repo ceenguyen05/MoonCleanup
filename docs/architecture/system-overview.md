@@ -140,7 +140,7 @@ Client wake-up states (owned by `apps/client/src/net`, rendered by `ui`):
 | `awake` | `/healthz` returned our JSON with matching `protocolVersion` | Normal flow |
 | `waking` | First probe failed or >2 s, or a non-JSON / non-CORS response | Only if the player presses Clock In: **"Waking the moon…"** screen with elapsed timer, "usually about a minute", DOT tips |
 | `slow_wake` | 120 s without `awake` | DOT message "The servers are taking longer than usual" + Retry button; probing continues every 10 s |
-| `records_offline` | `/readyz` says `db: down` | DOT message that Contract records are unavailable; Clock In disabled (see [environments.md §6](environments.md#6-aiven-postgresql-free-power-off-and-reconnect)) |
+| `records_offline` | `/readyz` says `db: down` | DOT message that Contract records are unavailable; Clock In disabled (see [environments.md §6](environments.md#6-database-reconnect-and-migrations)) |
 | `update_required` | Server `protocolVersion` ≠ client's | Older client: "New shift orders — reload" (reload button). Newer client (expected briefly after a protocol-changing push, ADR-0029): "Brightside is updating the servers", probe every 30 s for ≤ 10 min, then stop and show "Still updating — try again in a few minutes" with Retry ([netcode.md §13](netcode.md)) |
 | `at_capacity` | Join refused with 4105 at capacity / 507 storage full | DOT message: "Brightside is at capacity — join an Open Shift or try again later", Open Shifts list button |
 

@@ -126,7 +126,7 @@ export interface PlotPolishedEvent extends SimEventBase {
   readonly stampLm: Lumens;
   /** The last dust was removed by a Charge tool (x1.5 finish; "Charged" tag). */
   readonly charged: boolean;
-  /** Plots Polished after this one (Shine numerator). */
+  /** Plots Polished after this one (Polished only; the Shine numerator is Polished + Empty). */
   readonly polishedCount: number;
 }
 

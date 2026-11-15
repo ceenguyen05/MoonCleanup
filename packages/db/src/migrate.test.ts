@@ -16,9 +16,10 @@ import { DEFAULT_MIGRATIONS_FOLDER, MIGRATIONS_TABLE, runMigrations } from "./mi
 
 const url = process.env.DATABASE_URL;
 const TEST_SCHEMA = "_a3";
-const MIGRATION_COUNT = 3;
+const MIGRATION_COUNT = 4;
 const EXPECTED_TABLES = [
   "__drizzle_migrations",
+  "contract_dust_chunks",
   "contract_members",
   "contract_saves",
   "contracts",

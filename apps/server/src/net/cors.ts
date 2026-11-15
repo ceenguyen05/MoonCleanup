@@ -6,11 +6,15 @@
 // - Public paths (`/healthz`, wake probing) answer `Access-Control-Allow-Origin: *` instead.
 // - WebSocket upgrades need an allowed `Origin` header; a missing header is refused too (bots send an allowed one).
 
+import { API_EXPOSED_RESPONSE_HEADERS } from "@moon-cleanup/shared";
+
 /** Paths answered with `Access-Control-Allow-Origin: *` (no data, needed for wake probing from any page state). */
 export const PUBLIC_CORS_PATHS: readonly string[] = ["/healthz"];
 
 export const CORS_ALLOWED_HEADERS = "Authorization, Content-Type";
 export const CORS_ALLOWED_METHODS = "GET, POST, PATCH, DELETE";
+/** Response headers a cross-origin client may read (`x-save-pages`, `retry-after`; api/rest v0.4.0). */
+export const CORS_EXPOSED_HEADERS = API_EXPOSED_RESPONSE_HEADERS.join(", ");
 /** Preflight cache, seconds (security.md section 4.1). */
 export const CORS_MAX_AGE_S = 600;
 
@@ -54,7 +58,11 @@ export function createOriginPolicy(allowedOrigins: readonly string[]): OriginPol
     isAllowed,
     responseHeaders(origin): Record<string, string> {
       if (!isAllowed(origin)) return {};
-      return { "access-control-allow-origin": origin as string, vary: "Origin" };
+      return {
+        "access-control-allow-origin": origin as string,
+        "access-control-expose-headers": CORS_EXPOSED_HEADERS,
+        vary: "Origin",
+      };
     },
     preflightHeaders(origin): Record<string, string> {
       if (!isAllowed(origin)) return {};

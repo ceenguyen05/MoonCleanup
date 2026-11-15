@@ -21,7 +21,7 @@ needed for the next deliverable. Current repo instructions supersede old workflo
 Preserve completed work, source changes and real bug findings. Do not restart M0, repeat setup or reinstall unnecessarily.
 Check actual worker availability before resuming historical IDs; never duplicate a live writer.
 
-Use the pinned Sonnet 5.5, Opus 5.5 and Fable 5.2 role defaults; choose model/effort per task within MODEL_POLICY's usage
+Use the pinned Sonnet 5.5 and Opus 5.5 role defaults (premium = Opus 5.5 High; Fable retired 2026-11-15); choose model/effort per task within MODEL_POLICY's usage
 and concurrency limits. Spend premium effort on hard mechanics, gameplay feel, rendering, art, animation and world detail.
 Closely follow Moon Sweepers' experience using our own code/assets/branding. Keep the title Clean The Moon! and item names flexible.
 
@@ -44,7 +44,7 @@ existing context, never duplicate a live writer, restart M0 or repeat completed 
 or no longer in context; read only the task sections/findings needed now. Reuse valid evidence and rerun invalidated checks.
 Resume all interrupted agents and background tasks
 
-Keep the documented Sonnet/Opus/Fable routing, effort and usage limits. Continue implementation, integration, testing and
+Keep the documented Sonnet/Opus routing (4 regular + 1 premium), effort and usage limits. Continue implementation, integration, testing and
 fixes through M0–M3, protecting mechanics, graphics, animation and world/gameplay fidelity.
 No stage/commit stops or extra planning paperwork. Preserve the git safeguard; I choose when to commit/publish.
 Checkpoint compactly at meaningful progress or interruptions. Ask only for actual decisions/inputs while continuing ready work.

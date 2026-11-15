@@ -73,6 +73,8 @@ function setup(scenario: Scenario = {}) {
   const renderers: FakeRenderer[] = [];
   const pipelines: FakePipeline[] = [];
   const logs: string[] = [];
+  /** What the fake renderer's tracker reports (`RenderRuntime.readInfo`); tests change `pipelines` between frames. */
+  const info = { pipelines: 5 };
   const asReal = (renderer: FakeRenderer) => renderer as unknown as WebGPURenderer;
   const asFake = (renderer: WebGPURenderer) => renderer as unknown as FakeRenderer;
 
@@ -147,6 +149,12 @@ function setup(scenario: Scenario = {}) {
       out.drawCalls = 7;
       out.triangles = 140;
     },
+    readInfo: (_renderer, out) => {
+      out.pipelines = info.pipelines;
+      out.textureBytes = 1000;
+      out.geometryBytes = 500;
+      out.totalBytes = 1500;
+    },
   };
 
   const gpu: GpuLike | null =
@@ -178,7 +186,7 @@ function setup(scenario: Scenario = {}) {
     if (item === undefined) throw new Error("empty");
     return item;
   };
-  return { module, services, of, logs, renderers, pipelines, init, flush, frame, last, container };
+  return { module, services, of, logs, info, renderers, pipelines, init, flush, frame, last, container };
 }
 
 const RTX: GpuAdapterLike = { info: { vendor: "nvidia", description: "NVIDIA GeForce RTX 4060 Laptop GPU" } };
@@ -319,14 +327,16 @@ describe("RenderModule dynamic resolution", () => {
     const state = ctx.module.dynamicResolution;
     expect(state.scale).toBe(0.5);
     expect(state.signal).toBe("interval");
-    expect(state.targetMs).toBeCloseTo(1000 / 30, 3);
+    // 60 fps on every preset (frame-target.ts), not the contract's 30.
+    expect(state.targetMs).toBeCloseTo(1000 / 60, 3);
+    expect(state.targetFps).toBe(60);
     expect(state.p90Ms).toBe(60);
     expect(state.steps).toBe(3);
   });
 
   it("keeps the scale while the budget is met with a GPU signal that shows no headroom", async () => {
     const clock = { t: 0 };
-    const ctx = setup({ webglRenderer: WEBGL_RTX, now: () => clock.t });
+    const ctx = setup({ search: "?fps=contract", webglRenderer: WEBGL_RTX, now: () => clock.t });
     await ctx.init();
     runFrames(ctx, clock, 12, 33.3, () => ctx.module.reportGpuFrameMs(26));
     expect(ctx.pipelines[0]?.scale).toBe(0.75);
@@ -406,7 +416,7 @@ describe("RenderModule dynamic resolution", () => {
 
   it("an integrated GPU starts at the floor and probes upward once the budget is met", async () => {
     const clock = { t: 0 };
-    const ctx = setup({ adapter: IRIS, now: () => clock.t });
+    const ctx = setup({ search: "?fps=contract", adapter: IRIS, now: () => clock.t });
     await ctx.init();
     expect(ctx.pipelines[0]?.scale).toBe(0.6);
     // Vsync-locked 30 fps: budget met, no measurable headroom -> a probe after the hold, kept because frames stay on budget.
@@ -416,7 +426,7 @@ describe("RenderModule dynamic resolution", () => {
 
   it("reads the frame loop's dt, not the jittery wall clock; a wall-clock stall is dropped", async () => {
     const clock = { t: 0 };
-    const ctx = setup({ webglRenderer: WEBGL_RTX, now: () => clock.t });
+    const ctx = setup({ search: "?fps=contract", webglRenderer: WEBGL_RTX, now: () => clock.t });
     await ctx.init();
     const quality = ctx.services.get("quality");
     // dt says 33.3 ms (on budget) while the wall clock between updates swings 20..47 ms: no step.
@@ -587,5 +597,155 @@ describe("frame loop + harness hooks on the module", () => {
     await installed;
     expect(target.__mcReady).toBe(true);
     await expect(target.__mcStep?.(1, 1 / 60)).rejects.toThrow("capture");
+  });
+});
+
+describe("RenderModule render infra (M1-W2-T03)", () => {
+  function frames(ctx: ReturnType<typeof setup>, clock: { t: number }, count: number, frameMs = 1000 / 60): void {
+    const quality = ctx.services.get("quality");
+    for (let i = 0; i < count; i++) {
+      clock.t += frameMs;
+      ctx.module.update({ ...ctx.frame(quality.current), dt: frameMs / 1000 });
+    }
+  }
+
+  it("warm-up: sources on, ready when the pipeline count stands still, runtime creations counted", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: RTX, now: () => clock.t });
+    await ctx.init();
+    const { module, info, logs } = ctx;
+    expect(module.pipelineWarmup.phase).toBe("warming");
+    const source = vi.fn();
+    module.addWarmupSource(source);
+    expect(source).toHaveBeenLastCalledWith(true);
+    let ready = false;
+    void module.whenPipelinesReady().then(() => {
+      ready = true;
+    });
+
+    // Pipelines appear over the first frames, then the count stands still.
+    for (const count of [9, 14, 14, 14]) {
+      info.pipelines = count;
+      frames(ctx, clock, 1);
+      expect(module.pipelineWarmup.phase).toBe("warming");
+    }
+    frames(ctx, clock, 1);
+    expect(module.pipelineWarmup).toMatchObject({ phase: "ready", reason: "boot", pipelinesAtReady: 14, completed: 1 });
+    expect(module.pipelineWarmup.pipelinesReadyMs).toBeCloseTo(5 * (1000 / 60), 3);
+    expect(source).toHaveBeenLastCalledWith(false);
+    await ctx.flush();
+    expect(ready).toBe(true);
+    expect(logs.some((line) => line.includes("pipelines ready: reason=boot"))).toBe(true);
+
+    // A pipeline created during play is a budget failure: counted and warned about.
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    info.pipelines = 16;
+    frames(ctx, clock, 2);
+    expect(module.pipelineWarmup.pipelinesAfterWarmup).toBe(2);
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+
+    // A preset change warms up again and clears the count; resolved promises are immediate when nothing is warming.
+    ctx.services.get("quality").setPreset("medium", "user");
+    info.pipelines = 21;
+    frames(ctx, clock, 1);
+    expect(module.pipelineWarmup).toMatchObject({ phase: "warming", reason: "preset" });
+    expect(source).toHaveBeenLastCalledWith(true);
+    frames(ctx, clock, 4);
+    expect(module.pipelineWarmup).toMatchObject({ phase: "ready", completed: 2, pipelinesAfterWarmup: 0 });
+    expect(source).toHaveBeenLastCalledWith(false);
+    await expect(module.whenPipelinesReady()).resolves.toBeUndefined();
+  });
+
+  it("new post stages and requestWarmup start a warm-up; a removed source is not called again", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: RTX, now: () => clock.t });
+    await ctx.init();
+    frames(ctx, clock, 5);
+    expect(ctx.module.pipelineWarmup.phase).toBe("ready");
+    const source = vi.fn();
+    const off = ctx.module.addWarmupSource(source);
+    expect(source).not.toHaveBeenCalled();
+    ctx.module.setPipelineStages({ hdr: null });
+    expect(ctx.module.pipelineWarmup).toMatchObject({ phase: "warming", reason: "stages" });
+    expect(source).toHaveBeenCalledWith(true);
+    frames(ctx, clock, 5);
+    expect(ctx.module.pipelineWarmup.phase).toBe("ready");
+    off();
+    source.mockClear();
+    ctx.module.requestWarmup();
+    expect(ctx.module.pipelineWarmup).toMatchObject({ phase: "warming", reason: "request" });
+    expect(source).not.toHaveBeenCalled();
+  });
+
+  it("draw budget: last frame against the preset's ceiling, reset on a preset change", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: RTX, now: () => clock.t });
+    await ctx.init();
+    frames(ctx, clock, 3);
+    expect(ctx.module.drawBudget).toMatchObject({
+      drawCalls: 7,
+      triangles: 140,
+      budgetDrawCalls: 600,
+      over: false,
+      frames: 3,
+      overFrames: 0,
+    });
+    ctx.services.get("quality").setPreset("medium", "user");
+    frames(ctx, clock, 1);
+    expect(ctx.module.drawBudget).toMatchObject({ budgetDrawCalls: 350, budgetTriangles: 1_500_000, frames: 1 });
+  });
+
+  it("memory ledger: the scene pass target follows viewport and render scale; three's tracker is read per frame", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: RTX, search: "?dynres=off", now: () => clock.t });
+    await ctx.init();
+    const { module } = ctx;
+    const expected = (): number => {
+      const v = module.viewport;
+      const s = module.renderScale;
+      return Math.floor(v.widthCssPx * v.dpr * s) * Math.floor(v.heightCssPx * v.dpr * s) * 12;
+    };
+    expect(module.memory.bytesIn("renderTargets")).toBe(expected());
+    const before = module.memory.bytesIn("renderTargets");
+    // 0 clamps to the preset's floor.
+    const applied = module.setRenderScale(0);
+    expect(module.renderScale).toBe(applied);
+    expect(module.memory.bytesIn("renderTargets")).toBe(expected());
+    expect(module.memory.bytesIn("renderTargets")).toBeLessThanOrEqual(before);
+    expect(module.memory.list()[0]).toMatchObject({ owner: "render", category: "renderTargets" });
+    frames(ctx, clock, 1);
+    expect(module.rendererInfo).toMatchObject({ textureBytes: 1000, geometryBytes: 500, totalBytes: 1500 });
+    module.dispose();
+    expect(module.memory.totals.entries).toBe(0);
+  });
+
+  it("steers Medium to 60 fps: 14 ms GPU budget, pace guard on, ?fps=contract restores 28 ms", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: IRIS, now: () => clock.t });
+    await ctx.init();
+    expect(ctx.services.get("quality").current.preset).toBe("medium");
+    expect(ctx.pipelines[0]?.scale).toBe(0.6);
+    // 20 ms of GPU time and 30 fps: inside the contract's 28 ms / 33 ms, over the 60 fps goal. At the floor already:
+    // it stays there and raises the floor hint instead of climbing.
+    const quality = ctx.services.get("quality");
+    for (let t = 0; t < 14_000; t += 1000 / 30) {
+      clock.t += 1000 / 30;
+      ctx.module.reportGpuFrameMs(20);
+      ctx.module.update({ ...ctx.frame(quality.current), dt: 1 / 30 });
+    }
+    const state = ctx.module.dynamicResolution;
+    expect(state).toMatchObject({ scale: 0.6, signal: "gpu", targetMs: 14, targetFps: 60, floorHint: true });
+    expect(state.paceTargetMs).toBeCloseTo(1000 / 30, 1);
+
+    const contract = setup({ adapter: IRIS, search: "?fps=contract", now: () => clock.t });
+    await contract.init();
+    for (let t = 0; t < 14_000; t += 1000 / 30) {
+      clock.t += 1000 / 30;
+      contract.module.reportGpuFrameMs(20);
+      contract.module.update({ ...contract.frame(quality.current), dt: 1 / 30 });
+    }
+    expect(contract.module.dynamicResolution).toMatchObject({ targetMs: 28, targetFps: 30 });
+    expect(contract.module.dynamicResolution.scale).toBeGreaterThan(0.6);
   });
 });

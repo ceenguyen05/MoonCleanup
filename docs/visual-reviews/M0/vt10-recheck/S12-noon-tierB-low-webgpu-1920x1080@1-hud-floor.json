@@ -1,0 +1,284 @@
+{
+  "scene": "S12",
+  "tod": "noon",
+  "todApplied": "not applicable (DOM page, no world sun)",
+  "tier": "B",
+  "preset": "low",
+  "backend": "webgpu",
+  "requestedBackend": "webgpu",
+  "dpr": 1,
+  "dprCheck": {
+    "requested": 1,
+    "pageDpr": 1.0000000298023224,
+    "readout": "1",
+    "ok": true
+  },
+  "hudMeasure": {
+    "panelsOffDevicePx": 0,
+    "hairlines": [
+      {
+        "y": 374,
+        "h": 1,
+        "rowsOverHalfPeak": 1,
+        "peak": 224.5
+      },
+      {
+        "y": 382,
+        "h": 1,
+        "rowsOverHalfPeak": 1,
+        "peak": 224.3
+      },
+      {
+        "y": 390,
+        "h": 1,
+        "rowsOverHalfPeak": 1,
+        "peak": 224
+      }
+    ]
+  },
+  "width": 1920,
+  "height": 1080,
+  "hud": "hud",
+  "seed": "vt-standard-01",
+  "lane": "gpu",
+  "commit": "5a7cec4",
+  "treeDirty": true,
+  "serve": {
+    "mode": "production",
+    "url": "http://127.0.0.1:5182/",
+    "how": "preview-started"
+  },
+  "url": "http://127.0.0.1:5182/?scene=hud-test&backend=webgpu&preset=low&dpr=1&tier=B&tod=noon&seed=vt-standard-01&hud=1&scale=floor&capture=1",
+  "browser": "157.0.8103.79",
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "frameTimeSample": {
+    "avgMs": 48.57500157753626,
+    "p95Ms": 281.20001220703125
+  },
+  "drawCalls": 20,
+  "triangles": 20604,
+  "texPoolMB": 0,
+  "placeholderAssets": [],
+  "knobs": {
+    "renderScale": 0.5,
+    "canvasDpr": 1,
+    "aa": "fxaa",
+    "lookKnobs": "default",
+    "csm": [
+      {
+        "index": 0,
+        "texelM": 0.02,
+        "endM": 10
+      },
+      {
+        "index": 1,
+        "texelM": 0.02,
+        "endM": 80
+      }
+    ],
+    "shadowFilter": "pcf3+pcf5",
+    "skyDome": "baked",
+    "postPasses": [
+      "scene",
+      "grade",
+      "bloom",
+      "fxaa"
+    ],
+    "shadowMapSize": null,
+    "dustRingTexelCm": null,
+    "particlePool": null,
+    "notReported": [
+      "shadowMapSize",
+      "dustRingTexelCm",
+      "particlePool",
+      "adaptationMultiplier"
+    ]
+  },
+  "camera": {
+    "view": null,
+    "pose": {
+      "positionM": [
+        0,
+        1.7,
+        0
+      ],
+      "quaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ],
+      "aspect": 1.7777777777777777,
+      "nearM": 0.05,
+      "farM": 30000
+    },
+    "vfovDeg": 59.99999999999999
+  },
+  "sun": {
+    "elevationDeg": 60,
+    "azimuthDeg": 200
+  },
+  "ev100": 14.3,
+  "evSource": "sun",
+  "adaptationMultiplier": null,
+  "earth": {
+    "litFraction": 0.5511682639850036,
+    "elevationDeg": 14,
+    "azimuthDeg": 70,
+    "diameterDeg": 4.2
+  },
+  "particlesLive": null,
+  "stepFrames": 10,
+  "view": null,
+  "lookdevFacts": null,
+  "wrapGuard": {
+    "checked": true,
+    "result": "clean",
+    "attempts": [
+      {
+        "attempt": 1,
+        "how": "first",
+        "wrapped": false,
+        "bandRows": 0,
+        "dpr": 1,
+        "readbackMs": 2245.5938000000006
+      }
+    ],
+    "note": "no repeated top/bottom band"
+  },
+  "roiSpecs": [],
+  "measure": {
+    "lumaMean": {
+      "value": 55.21712345752727,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1920,
+        "h": 1080
+      }
+    },
+    "sobel": {
+      "value": 103.46679496860136,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1920,
+        "h": 1080
+      }
+    },
+    "labB": {
+      "value": -16.542306350962686,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1920,
+        "h": 1080
+      }
+    },
+    "edgeWidth1090": {
+      "value": null,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      }
+    },
+    "stars": {
+      "value": 93,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1920,
+        "h": 1080
+      }
+    },
+    "nonBlackFraction": 1,
+    "diskBytes": 486291,
+    "rois": {
+      "frame:upper": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1920,
+          "h": 216
+        },
+        "lumaMean": 28.484236843405682,
+        "labB": -17.271046050162425,
+        "sobel": 129.66755530388068,
+        "stars": 72
+      },
+      "frame:middle": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 432,
+          "w": 1920,
+          "h": 216
+        },
+        "lumaMean": 73.18614388162523,
+        "labB": -12.14513112824062,
+        "sobel": 109.06155991729254,
+        "stars": 28
+      },
+      "frame:lower": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 720,
+          "w": 1920,
+          "h": 360
+        },
+        "lumaMean": 67.78043272611444,
+        "labB": -17.73844565609719,
+        "sobel": 44.33038147245342,
+        "stars": 5
+      },
+      "frame:left": {
+        "kind": "patch",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 640,
+          "h": 1080
+        },
+        "lumaMean": 51.92631058018379,
+        "labB": -14.946523085532899,
+        "sobel": 163.23888348219663,
+        "stars": 54
+      },
+      "frame:center": {
+        "kind": "patch",
+        "rect": {
+          "x": 640,
+          "y": 360,
+          "w": 640,
+          "h": 360
+        },
+        "lumaMean": 88.9755336456663,
+        "labB": -10.068085328277075,
+        "sobel": 35.580645952117706,
+        "stars": 0
+      },
+      "frame:right": {
+        "kind": "patch",
+        "rect": {
+          "x": 1280,
+          "y": 0,
+          "w": 640,
+          "h": 1080
+        },
+        "lumaMean": 51.14799693431705,
+        "labB": -18.40512100608343,
+        "sobel": 53.493982698961524,
+        "stars": 6
+      }
+    }
+  }
+}

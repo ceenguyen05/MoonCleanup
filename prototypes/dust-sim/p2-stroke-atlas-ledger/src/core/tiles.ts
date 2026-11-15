@@ -4,7 +4,11 @@
 // has bytes to compare against. Tile channels (RGBA8): R remaining dust, G unpolish, B untrampled, A berm height.
 //
 // Replay (7.3): R <- max(0, R - round(255 s c)), G <- max(0, G - round(255 * 0.25 c)), A <- max(A, berm), with
-// c = round-capped capsule coverage with a 1-texel edge and s = min(1, depth16 / (16 L_P)). Order-independent.
+// s = min(1, depth16 / (16 L_P)) and c = area coverage of the texel by the FLAT-ENDED segment (box filter of one
+// texel across the width and along the length). Order-independent. WDS 7.3 says round-capped capsules; subtracting
+// those double counts every joint of a chain (a slow chain removed (length + width) / length passes instead of one),
+// so the tile ran ahead of the ledger wherever s < 1. Flat ends make the segments of a straight chain add up to
+// exactly one pass, as the ledger lattice does (WDS 4.5 step 3). Bends leave a thin wedge (accepted here).
 // Rebuild (7.4, corrected): replaying the logs ON TOP of a ledger-initialised tile would subtract the logged strokes
 // twice. This reference replays the logs from R = 1 and then subtracts, per 0.8 m ledger cell, only the removal the
 // logs do not explain (older strokes): R <- max(0, R - max(0, mean(R) - u_t / u0)); cells with u_t = 0 are cleared.
@@ -42,6 +46,33 @@ export const TILE_PRESETS = {
 } as const;
 
 const SW = 7;
+
+/**
+ * Optional tap on the draw stream (T06 GPU lane): everything the GPU twin needs to reproduce the atlas bytes.
+ * Live strokes and ledger-zero clears arrive as draw records; a rebuilt tile arrives whole (the rebuild is CPU work
+ * and the result is uploaded). The CPU reference behaves the same with or without a recorder.
+ */
+export interface TileRecorder {
+  /** One live stroke drawn into `slot`; endpoints in the tile's frame (mm), texel rectangle inclusive. */
+  onDraw(
+    slot: number,
+    su: number,
+    sv: number,
+    eu: number,
+    ev: number,
+    widthCm: number,
+    depth16: number,
+    level: number,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+  ): void;
+  /** Ledger-zero clear: R <- 0 in the inclusive texel rectangle of `slot`. */
+  onClear(slot: number, x0: number, y0: number, x1: number, y1: number): void;
+  /** `slot` was rebuilt; its px * px * 4 bytes start at `base` in `data`. */
+  onRebuilt(slot: number, data: Uint8Array, base: number, px: number): void;
+}
 
 export class TileAtlasRef implements TileSink {
   readonly px: number;
@@ -85,6 +116,13 @@ export class TileAtlasRef implements TileSink {
   rebuildMsTotal = 0;
   rebuildMsMax = 0;
   ledgerZeroClears = 0;
+  /** T06: draw-stream tap for the GPU lane (null = off). */
+  recorder: TileRecorder | null = null;
+  /** T06: also forward the log-replay draws of a rebuild to the recorder (GPU rebuild timing only). */
+  recordRebuildDraws = false;
+  /** T06: deterministic work of the rebuilds of the last frame() (texels visited by log replay + ledger cells). */
+  fRebuildWork = 0;
+  private inRebuild = false;
 
   constructor(
     private readonly t: PlotTables,
@@ -184,34 +222,53 @@ export class TileAtlasRef implements TileSink {
     if (x1 > px - 1) x1 = px - 1;
     if (y1 > px - 1) y1 = px - 1;
     if (x0 > x1 || y0 > y1) return 0;
+    if (this.inRebuild) this.fRebuildWork += (x1 - x0 + 1) * (y1 - y0 + 1);
+    if (this.recorder !== null && (!this.inRebuild || this.recordRebuildDraws)) {
+      this.recorder.onDraw(slot, su, sv, eu, ev, widthCm, depth16, level, x0, y0, x1, y1);
+    }
     const dx = eu - su;
     const dy = ev - sv;
-    const len2 = dx * dx + dy * dy;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const ax = len === 0 ? 0 : dx / len;
+    const ay = len === 0 ? 0 : dy / len;
+    const h = ts / 2;
     const d = this.data;
     const base = slot * px * px * 4;
     for (let y = y0; y <= y1; y++) {
       const wy = (y + 0.5) * ts - FRAME_HALF_MM - sv;
       for (let x = x0; x <= x1; x++) {
         const wx = (x + 0.5) * ts - FRAME_HALF_MM - su;
-        let tt = len2 === 0 ? 0 : (wx * dx + wy * dy) / len2;
-        if (tt < 0) tt = 0;
-        else if (tt > 1) tt = 1;
-        const ox = wx - tt * dx;
-        const oy = wy - tt * dy;
-        const dist = Math.sqrt(ox * ox + oy * oy);
         const o = base + (y * px + x) * 4;
-        let c = 0.5 + (hw - dist) / ts;
-        if (c > 0) {
+        let c: number;
+        let side: number;
+        if (len === 0) {
+          // Disc (Detailing): round, 1-texel edge.
+          side = Math.sqrt(wx * wx + wy * wy);
+          c = 0.5 + (hw - side) / ts;
           if (c > 1) c = 1;
+        } else {
+          // Flat-ended segment, box-filtered over one texel across the width and along the length. Round caps would
+          // be subtracted again by the next segment of the chain (see README finding 1).
+          const along = wx * ax + wy * ay;
+          const cr = wy * ax - wx * ay;
+          side = cr < 0 ? -cr : cr;
+          const w1 = side + h < hw ? side + h : hw;
+          const w0 = side - h > -hw ? side - h : -hw;
+          const l1 = along + h < len ? along + h : len;
+          const l0 = along - h > 0 ? along - h : 0;
+          c = w1 > w0 && l1 > l0 ? ((w1 - w0) * (l1 - l0)) / (ts * ts) : 0;
+          if (l1 <= l0) side = -1;
+        }
+        if (c > 0) {
           const r = d[o]! - Math.round(255 * s * c);
           d[o] = r > 0 ? r : 0;
           const g = d[o + 1]! - Math.round(63.75 * c);
           d[o + 1] = g > 0 ? g : 0;
         }
-        const bx = (dist - hw) / band;
-        if (bx > 0 && bx < 1) {
-          const h = Math.round(255 * s * (bx < 0.35 ? bx / 0.35 : (1 - bx) / 0.65));
-          if (h > d[o + 3]!) d[o + 3] = h;
+        const bx = (side - hw) / band;
+        if (side >= 0 && bx > 0 && bx < 1) {
+          const lip = Math.round(255 * s * (bx < 0.35 ? bx / 0.35 : (1 - bx) / 0.65));
+          if (lip > d[o + 3]!) d[o + 3] = lip;
         }
       }
     }
@@ -320,6 +377,8 @@ export class TileAtlasRef implements TileSink {
     // 1. Replay the logs of the plot and its neighbours.
     const log = this.log;
     this.seenGen++;
+    this.inRebuild = true;
+    this.fRebuildWork += LEDGER_EDGE * LEDGER_EDGE;
     for (let ci = -1; ci < 6; ci++) {
       const q = ci < 0 ? plot : this.t.neighbors[plot * 6 + ci]!;
       if (q < 0) continue;
@@ -356,6 +415,8 @@ export class TileAtlasRef implements TileSink {
       }
     }
     this.needRebuild[plot] = 0;
+    this.inRebuild = false;
+    if (this.recorder !== null) this.recorder.onRebuilt(slot, d, base, px);
   }
 
   /**
@@ -406,6 +467,15 @@ export class TileAtlasRef implements TileSink {
       const base = slot * px * px * 4;
       for (let y = y0 < 0 ? 0 : y0; y < y0 + cell && y < px; y++) {
         for (let x = x0 < 0 ? 0 : x0; x < x0 + cell && x < px; x++) this.data[base + (y * px + x) * 4] = 0;
+      }
+      if (this.recorder !== null) {
+        this.recorder.onClear(
+          slot,
+          x0 < 0 ? 0 : x0,
+          y0 < 0 ? 0 : y0,
+          x0 + cell > px ? px - 1 : x0 + cell - 1,
+          y0 + cell > px ? px - 1 : y0 + cell - 1,
+        );
       }
       this.ledgerZeroClears++;
       if (this.touched[slot] === 0) {
@@ -477,6 +547,7 @@ export class TileAtlasRef implements TileSink {
 
     // 2. Rebuilds, at most `rebuildBudget` per frame.
     const t1 = now();
+    this.fRebuildWork = 0;
     let done = 0;
     let keep = 0;
     for (let i = 0; i < this.rebuildN; i++) {

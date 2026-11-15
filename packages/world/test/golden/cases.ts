@@ -10,6 +10,8 @@ import {
   seededGroundHeights,
   standardDigests,
 } from "./lane";
+import { computeLedgerVectors } from "./ledger-lane";
+import ledgerV1 from "../vectors/ledger-v1.json";
 
 export function registerGoldenCases(lane: string): void {
   test(`[${lane}] GP(128,0) grid, point->plot and neighbour digests`, () => {
@@ -22,6 +24,13 @@ export function registerGoldenCases(lane: string): void {
 
   test(`[${lane}] H_base matches the bake's golden samples (0.02 m)`, () => {
     expect(fixtureHeightMaxError()).toBeLessThanOrEqual(0.02);
+  });
+
+  test(`[${lane}] dust ledger vectors V1 (WDS 4.5b): texel SHA-256, totals, per-actor units, saved chunk bytes`, () => {
+    const got = computeLedgerVectors();
+    expect(got.plots.length).toBeGreaterThanOrEqual(20);
+    expect(got.restoredWorldHash).toBe(got.worldHash);
+    expect(got).toEqual(ledgerV1);
   });
 
   test(`[${lane}] H_base + H_detail agrees with the Node recording`, () => {

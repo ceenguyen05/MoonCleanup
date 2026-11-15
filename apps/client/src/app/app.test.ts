@@ -109,6 +109,18 @@ describe("client config", () => {
     expect(readClientConfig({}, "?wake=1").wakeAtBoot).toBe(true);
   });
 
+  it("overlay: dev shows by default; a production build only on ?hud=1 or ?hud=dbg", () => {
+    const prod = { PROD: true };
+    expect(readClientConfig({ PROD: false }, "").showOverlay).toBe(true);
+    expect(readClientConfig(prod, "").showOverlay).toBe(false);
+    expect(readClientConfig(prod, "?capture=1").showOverlay).toBe(false);
+    expect(readClientConfig(prod, "?hud=1").showOverlay).toBe(true);
+    expect(readClientConfig(prod, "?hud=dbg").showOverlay).toBe(true);
+    expect(readClientConfig(prod, "?hud=0").showOverlay).toBe(false);
+    expect(readClientConfig(prod, "?hud=true").showOverlay).toBe(false);
+    expect(readClientConfig({}, "?hud=dbg").showOverlay).toBe(true);
+  });
+
   it("rejects bad URLs with the variable name and no value", () => {
     expect(() => readClientConfig({ VITE_SERVER_HTTP_URL: "nope" }, "")).toThrow(ClientConfigError);
     expect(() => readClientConfig({ VITE_SERVER_WS_URL: "http://x.test" }, "")).toThrow(

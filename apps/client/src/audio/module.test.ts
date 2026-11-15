@@ -150,6 +150,83 @@ describe("AudioModule", () => {
   });
 });
 
+describe("AudioModule startup (no first-gesture stall)", () => {
+  it("builds the context suspended at idle; the gesture only resumes it", async () => {
+    const { env, mod } = boot();
+    expect(env.contexts).toBe(0);
+    env.runIdle();
+    expect(env.contexts).toBe(1);
+    expect(mod.diagnostics.started).toBe(true);
+    expect(mod.running).toBe(false);
+    expect(env.ctx.resumeCalls).toBe(0);
+    env.gesture();
+    await Promise.resolve();
+    expect(env.contexts).toBe(1); // no second construction on the gesture path
+    expect(env.ctx.resumeCalls).toBe(1);
+    expect(mod.running).toBe(true);
+  });
+
+  it("starts buffer prewarm at idle, before any gesture, without playing sound", () => {
+    const { env, mod } = boot();
+    env.runIdle();
+    env.flush(8);
+    expect(env.ctx.buffers.length).toBeGreaterThan(0);
+    expect(env.ctx.sources).toHaveLength(0);
+    expect(mod.diagnostics.started).toBe(true);
+  });
+
+  it("drops cues and events while the context is suspended", () => {
+    const { env, bus, mod } = boot();
+    env.runIdle();
+    bus.emit("cell.full", { tick: 1 as never, actorSlot: 0, toolId: "t", cellCapGrams: 1, pourPointBearingDeg: null });
+    expect(mod.play("ui.click")).toBe(false);
+    expect(env.ctx.sources).toHaveLength(0);
+  });
+
+  it("falls back to creating the context on the gesture when idle never ran", async () => {
+    const { env, mod } = boot();
+    env.gesture();
+    await Promise.resolve();
+    expect(env.contexts).toBe(1);
+    expect(mod.running).toBe(true);
+    env.runIdle(); // late idle callback is a no-op
+    expect(env.contexts).toBe(1);
+  });
+
+  it("falls back to the gesture path when early creation throws", async () => {
+    const { env, mod } = boot();
+    let fail = true;
+    const create = env.createContext.bind(env);
+    env.createContext = () => {
+      if (fail) throw new Error("no audio yet");
+      return create();
+    };
+    env.runIdle();
+    expect(mod.diagnostics.started).toBe(false);
+    fail = false;
+    env.gesture();
+    await Promise.resolve();
+    expect(mod.running).toBe(true);
+  });
+
+  it("re-resumes on the next gesture if the browser suspended it before the first one", async () => {
+    const { env, mod } = boot();
+    env.runIdle();
+    env.ctx.onstatechange?.();
+    expect(env.gestureListeners.size).toBe(1);
+    env.gesture();
+    await Promise.resolve();
+    expect(mod.running).toBe(true);
+  });
+
+  it("does not build after dispose", () => {
+    const { env, mod } = boot();
+    mod.dispose();
+    env.runIdle();
+    expect(env.contexts).toBe(0);
+  });
+});
+
 describe("Ducker", () => {
   it("sums reasons, applies timed and flag ducks and only writes on change", () => {
     const writes: string[] = [];

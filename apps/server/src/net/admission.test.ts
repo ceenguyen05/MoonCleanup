@@ -126,10 +126,11 @@ describe("B1 join admission", () => {
   });
 
   it("rate-limits room creation per IP (429) without blocking joins into a room with free seats", async () => {
-    const base = await boot({ maxRooms: 3, maxClients: 100, roomCreatesPerIpPerMin: 1 });
+    const base = await boot({ maxRooms: 3, maxClients: 100, roomCreatesPerIpPerMin: 1, maxSeatsPerIp: 100 });
     expect(await reserveMany(base, 6, () => "203.0.113.7")).toEqual([200, 200, 200, 200, 200, 200]);
     const second = await reserve(base, "203.0.113.7");
     expect(second.status).toBe(429);
+    expect(Number(second.headers.get("retry-after"))).toBeGreaterThanOrEqual(1);
     expect(await second.json()).toEqual({ error: "RATE_LIMITED", message: "room creation" });
     expect((await reserve(base, "203.0.113.8")).status).toBe(200);
     // The new room has free seats now: the first IP may join it.
@@ -157,11 +158,16 @@ describe("B1 per-IP WebSocket cap at upgrade", () => {
 
 describe("N2 unknown bucket", () => {
   it("gives requests without the edge header a tighter join limit", async () => {
-    const base = await boot({ maxRooms: 3, maxClients: 100 });
+    const base = await boot({ maxRooms: 3, maxClients: 100, maxSeatsPerIp: 100 });
     const statuses: number[] = [];
     for (let i = 0; i <= ROOM_JOINS_UNKNOWN_PER_MIN; i++) statuses.push((await reserve(base)).status);
     expect(statuses.slice(0, ROOM_JOINS_UNKNOWN_PER_MIN).every((s) => s === 200)).toBe(true);
     expect(statuses[ROOM_JOINS_UNKNOWN_PER_MIN]).toBe(429);
+    const limited = await reserve(base);
+    expect(limited.status).toBe(429);
+    const retryAfter = Number(limited.headers.get("retry-after"));
+    expect(retryAfter).toBeGreaterThanOrEqual(1);
+    expect(retryAfter).toBeLessThanOrEqual(60);
     // A request with the header is unaffected.
     expect((await reserve(base, "203.0.113.20")).status).toBe(200);
   });
@@ -193,6 +199,31 @@ describe("N1 socket mode (CLIENT_IP_HEADER blank, local only)", () => {
     expect(body.ip).not.toBe("1.2.3.4");
     expect(body.ip).not.toBe("5.6.7.8");
     expect(body.ip).not.toBe(UNKNOWN_CLIENT_IP);
+  });
+});
+
+describe("NB3 duplicated client-IP header on the uWS REST path", () => {
+  it("keys the request as unknown instead of trusting either copy", async () => {
+    const base = await boot({ maxRooms: 3, maxClients: 12 });
+    const url = new URL(`${base}/v1/echo/1`);
+    const ip = await new Promise<string>((resolve, reject) => {
+      const req = httpRequest(
+        {
+          host: url.hostname,
+          port: Number(url.port),
+          path: url.pathname,
+          headers: { origin: ALLOWED, "true-client-ip": ["203.0.113.5", "1.2.3.4"] },
+        },
+        (res) => {
+          const chunks: Buffer[] = [];
+          res.on("data", (c: Buffer) => chunks.push(c));
+          res.on("end", () => resolve((JSON.parse(Buffer.concat(chunks).toString("utf8")) as { ip: string }).ip));
+        },
+      );
+      req.on("error", reject);
+      req.end();
+    });
+    expect(ip).toBe(UNKNOWN_CLIENT_IP);
   });
 });
 

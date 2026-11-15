@@ -1,0 +1,10 @@
+priority high, 3000 ledgers, budget 2 ms, load 7 -> 63 %: runs 12, slices 1364, slices over budget 0 (in 0 runs), longest slice 1.94 ms, slowest single step 1.35 ms
+priority high, 60 ledgers, budget 2 ms, load 22 -> 7 %: runs 20, slices 233, slices over budget 0 (in 0 runs), longest slice 1.85 ms, slowest single step 1.28 ms
+priority high, 4 ledgers, budget 2 ms, load 11 -> 33 %: runs 20, slices 154, slices over budget 0 (in 0 runs), longest slice 1.75 ms, slowest single step 1.43 ms
+priority high, 3000 ledgers, budget 1 ms, load 46 -> 44 %: runs 8, slices 2628, slices over budget 14 (in 6 runs), longest slice 9.03 ms, slowest single step 1.18 ms
+priority high, 4 ledgers, budget 1 ms, load 62 -> 41 %: runs 20, slices 673, slices over budget 7 (in 3 runs), longest slice 1.67 ms, slowest single step 0.78 ms
+priority normal, 3000 ledgers, budget 2 ms, load 39 -> 0 %: runs 12, slices 1039, slices over budget 0 (in 0 runs), longest slice 1.90 ms, slowest single step 1.42 ms
+priority normal, 60 ledgers, budget 2 ms, load 7 -> 48 %: runs 20, slices 290, slices over budget 5 (in 1 runs), longest slice 5.12 ms, slowest single step 1.49 ms
+priority normal, 4 ledgers, budget 2 ms, load 26 -> 15 %: runs 20, slices 159, slices over budget 1 (in 1 runs), longest slice 2.49 ms, slowest single step 2.49 ms
+priority normal, 3000 ledgers, budget 1 ms, load 16 -> 18 %: runs 8, slices 1760, slices over budget 0 (in 0 runs), longest slice 0.99 ms, slowest single step 0.72 ms
+priority normal, 4 ledgers, budget 1 ms, load 3 -> 25 %: runs 20, slices 670, slices over budget 1 (in 1 runs), longest slice 1.37 ms, slowest single step 0.59 ms

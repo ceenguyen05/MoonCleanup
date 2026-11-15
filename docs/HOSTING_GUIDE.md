@@ -277,6 +277,7 @@ Env vars. Server boot validates all of these (`apps/server/src/ops/env.ts`) and 
 | `DB_SCHEMA` / `DB_POOL_MAX` | `prod` / `4` | Fixed |
 | `CLIENT_IP_HEADER` | `true-client-ip` (Render's edge header; blank is refused unless `ENV_NAME=local`) | Fixed |
 | `MAX_CLIENTS` / `MAX_ROOMS` | `12` / `3` (cap 6 players per room) | Fixed |
+| `MAX_SEATS_PER_IP` | Optional, integer 1-64, default `6` (one full room): live seats one client IP may hold. Raise it only for demos where many players share one address | Not in yaml (default applies) |
 | `SIM_TICK_HZ` / `SNAPSHOT_HZ` | `20` / `10` (snapshot must divide tick) | Fixed |
 | `TICK_BUDGET_MS`, `CHECKPOINT_INTERVAL_S`, `SEAT_HOLD_S` | `3.5`, `30`, `60` | Fixed |
 | `LOG_LEVEL`, `SENTRY_TRACES_SAMPLE_RATE` | `info`, `0.01` | Fixed |
@@ -431,3 +432,16 @@ Verdict: **doable at $0 for solo play and small friend sessions**, with two real
 Mitigations built into the plan: solo plays from the local sim and queues checkpoint uploads (IndexedDB) while the server or DB is asleep; the client shows a waking screen for multiplayer; the Render build retries through a cold database wake and fails loudly only if it stays unreachable. The code is plain Postgres with TLS (no Neon SDK), so moving to another Postgres changes only `DATABASE_URL` (and `DATABASE_CA_CERT` for a private CA).
 
 Not verified (prove on the first deploy): whether Render counts WebSocket traffic toward the free bandwidth exactly as estimated; the real Neon wake time from Render Ohio; Node 26 on Render and Vercel; whether pnpm on Render skips a failed GitHub-tarball fetch of the optional `uWebSockets.js` dependency (read the first Render build log; at runtime the server falls back to the `ws` transport if the addon is missing).
+
+## 10. Commit hygiene for Cee (M0 close-out, 2026-11-14)
+
+Agents never run git; you choose what to commit. Checklist before the first deploy commit:
+
+| Item | Do | Why |
+| --- | --- | --- |
+| `assets/terrain/*.bin` (height cube, horizon map, fixtures) | **Commit** | The client build and Render/Vercel builds read them; without them the deployed terrain is missing |
+| `pnpm-lock.yaml` | **Commit** | `pnpm install --frozen-lockfile` on Vercel, Render and CI fails without it |
+| `docs/visual-reviews/M0/checks/**/*.png` (430 frames, about 277 MB) | **Leave ignored** (`.gitignore`) | Regenerable with `docs/visual-reviews/M0/checks/driver`; JSON sidecars and drivers stay tracked |
+| Bot and perf results (`tools/bots/results/**`, `tools/perf/results/**`, `tools/bots/reports/`, `tools/perf/captures/`) | **Ignore** (logs already ignored; `tools/bots/results/M0-closeout/` is untracked, skip it or add it to `.gitignore`) | Machine output, not source |
+| `docs/visual-reviews/M0/asset-proof/` turntable PNGs (about 38 MB) | **Your choice** | Review evidence only; not needed to build or deploy |
+| `.env`, `.env.*` (only `*.env.example` are tracked) | **Never commit** | Secrets (Neon URL, tokens); `.gitignore` already blocks them |

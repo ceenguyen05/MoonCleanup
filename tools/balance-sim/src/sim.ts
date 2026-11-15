@@ -203,12 +203,12 @@ function rawRate(ctx: Ctx, st: Stats, mode: Mode, mix: DustMix): number {
   if (mode.vehicle) {
     const v = ctx.trundle;
     if (!v) return 0;
-    return (v.widthM * v.cruiseMps * k.vehicleCoverage) / passes(mix, v.depthLevels);
+    return (v.widthM * v.cruiseMps * k.vehicleCoverage) / passes(mix, v.depthLevels, k.vehicleCoverage);
   }
   const tool = toolOf(ctx, mode.id);
   const width = tool.widthM * (1 + st.widthBonus);
   const speed = data.movement.sweepWalkMps * (1 + st.moveBonus) * (ctx.laneLockMult.get(mode.id) ?? 1);
-  return (width * speed * k.handCoverage) / passes(mix, tool.depthLevels + st.depthAdd);
+  return (width * speed * k.handCoverage) / passes(mix, tool.depthLevels + st.depthAdd, k.handCoverage);
 }
 
 function capacityKg(ctx: Ctx, st: Stats, mode: Mode): number {

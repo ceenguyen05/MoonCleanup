@@ -1,0 +1,115 @@
+[
+ {
+  "name": "dust-dust-play-low-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=dust&warm=240&freeze=1&preset=low&backend=webgpu&view=play&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "low",
+  "backend": "webgpu",
+  "renderScale": 0.5,
+  "sun": [
+   38,
+   165
+  ],
+  "shadowMapSize": 1024,
+  "adaptationMultiplier": 0,
+  "notBuilt": [
+   "dustRing",
+   "particles"
+  ],
+  "dustAtlas": {
+   "preset": "low",
+   "widthPx": 2048,
+   "heightPx": 1024,
+   "slotPx": 64,
+   "slots": 512,
+   "texelCm": 40,
+   "tilesResident": 8,
+   "rebuildBacklog": 0,
+   "rebuilds": 8,
+   "evictions": 0,
+   "strokesReplayed": 128,
+   "tileStrokeDraws": 294,
+   "liveOverflows": 0,
+   "cpuMsLast": 0,
+   "cpuMsMax": 1.7000000029802322
+  },
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922763,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.18405802202644278,
+    "endM": 80
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {},
+  "hiddenProbes": [],
+  "errors": []
+ },
+ {
+  "name": "dust-dust-play-medium-webgpu",
+  "url": "http://127.0.0.1:5194/?scene=dust&warm=240&freeze=1&preset=medium&backend=webgpu&view=play&hud=0&scale=floor&capture=1",
+  "size": [
+   1920,
+   1080
+  ],
+  "preset": "medium",
+  "backend": "webgpu",
+  "renderScale": 0.6,
+  "sun": [
+   38,
+   165
+  ],
+  "shadowMapSize": 1024,
+  "adaptationMultiplier": 0,
+  "notBuilt": [
+   "dustRing",
+   "particles"
+  ],
+  "dustAtlas": {
+   "preset": "medium",
+   "widthPx": 2048,
+   "heightPx": 2048,
+   "slotPx": 64,
+   "slots": 1024,
+   "texelCm": 40,
+   "tilesResident": 8,
+   "rebuildBacklog": 0,
+   "rebuilds": 8,
+   "evictions": 0,
+   "strokesReplayed": 128,
+   "tileStrokeDraws": 294,
+   "liveOverflows": 0,
+   "cpuMsLast": 0,
+   "cpuMsMax": 1.5
+  },
+  "cascades": [
+   {
+    "index": 0,
+    "texelM": 0.02300155612922764,
+    "endM": 10
+   },
+   {
+    "index": 1,
+    "texelM": 0.0971484014333395,
+    "endM": 42.23076211353316
+   },
+   {
+    "index": 2,
+    "texelM": 0.2761260956047685,
+    "endM": 120
+   }
+  ],
+  "shadowFilter": "pcf3+pcf5",
+  "probes": {},
+  "hiddenProbes": [],
+  "errors": []
+ }
+]

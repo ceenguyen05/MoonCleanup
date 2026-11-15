@@ -1,0 +1,290 @@
+[
+ {
+  "name": "dust-scene-webgpu-medium-play",
+  "query": "scene=dust&solo=0&audio=0&preset=medium&backend=webgpu&view=play&warm=900&freeze=1",
+  "shot": true,
+  "out": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "fps": 60,
+   "renderScale": 0.75,
+   "frameMs": {
+    "avg": 16.67,
+    "p50": 16.6,
+    "p95": 19.1,
+    "max": 21.3,
+    "n": 240
+   },
+   "cpuRenderMs": {
+    "avg": 4.53,
+    "p50": 4.7,
+    "p95": 6.6,
+    "max": 8.2,
+    "n": 240
+   },
+   "cpuVisualsMs": {
+    "avg": 0.08,
+    "p50": 0.1,
+    "p95": 0.2,
+    "max": 0.6,
+    "n": 240
+   },
+   "gpuMs": null,
+   "keys": [
+    "schema",
+    "atMs",
+    "env",
+    "frameMs",
+    "fps",
+    "cpuMs",
+    "cpuTotalMs",
+    "gpu",
+    "render",
+    "memory",
+    "net",
+    "frames"
+   ]
+  },
+  "errors": []
+ },
+ {
+  "name": "dust-scene-webgpu-medium-top-remaining",
+  "query": "scene=dust&solo=0&audio=0&preset=medium&backend=webgpu&view=top&warm=900&freeze=1&dbg=1",
+  "shot": true,
+  "out": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "fps": 57.6,
+   "renderScale": 0.75,
+   "frameMs": {
+    "avg": 17.37,
+    "p50": 17.2,
+    "p95": 20.1,
+    "max": 24.6,
+    "n": 240
+   },
+   "cpuRenderMs": {
+    "avg": 4.41,
+    "p50": 4.5,
+    "p95": 6.5,
+    "max": 8.9,
+    "n": 240
+   },
+   "cpuVisualsMs": {
+    "avg": 0.08,
+    "p50": 0.1,
+    "p95": 0.2,
+    "max": 0.3,
+    "n": 240
+   },
+   "gpuMs": null,
+   "keys": [
+    "schema",
+    "atMs",
+    "env",
+    "frameMs",
+    "fps",
+    "cpuMs",
+    "cpuTotalMs",
+    "gpu",
+    "render",
+    "memory",
+    "net",
+    "frames"
+   ]
+  },
+  "errors": []
+ },
+ {
+  "name": "dust-scene-webgl2-medium-play",
+  "query": "scene=dust&solo=0&audio=0&preset=medium&backend=webgl2&view=play&warm=900&freeze=1",
+  "shot": true,
+  "out": {
+   "backend": "webgl2",
+   "preset": "medium",
+   "fps": 60,
+   "renderScale": 0.8,
+   "frameMs": {
+    "avg": 16.67,
+    "p50": 16.7,
+    "p95": 17.5,
+    "max": 18,
+    "n": 240
+   },
+   "cpuRenderMs": {
+    "avg": 1.92,
+    "p50": 2,
+    "p95": 2.8,
+    "max": 3.4,
+    "n": 240
+   },
+   "cpuVisualsMs": {
+    "avg": 0.05,
+    "p50": 0,
+    "p95": 0.1,
+    "max": 0.3,
+    "n": 240
+   },
+   "gpuMs": null,
+   "keys": [
+    "schema",
+    "atMs",
+    "env",
+    "frameMs",
+    "fps",
+    "cpuMs",
+    "cpuTotalMs",
+    "gpu",
+    "render",
+    "memory",
+    "net",
+    "frames"
+   ]
+  },
+  "errors": []
+ },
+ {
+  "name": "dust-scene-webgpu-medium-live",
+  "query": "scene=dust&solo=0&audio=0&preset=medium&backend=webgpu&view=play&warm=300",
+  "shot": true,
+  "out": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "fps": 60.1,
+   "renderScale": 0.75,
+   "frameMs": {
+    "avg": 16.65,
+    "p50": 16.7,
+    "p95": 19.9,
+    "max": 23.3,
+    "n": 240
+   },
+   "cpuRenderMs": {
+    "avg": 4.01,
+    "p50": 3.8,
+    "p95": 6.3,
+    "max": 7.9,
+    "n": 240
+   },
+   "cpuVisualsMs": {
+    "avg": 0.25,
+    "p50": 0.1,
+    "p95": 0.9,
+    "max": 1.7,
+    "n": 240
+   },
+   "gpuMs": null,
+   "keys": [
+    "schema",
+    "atMs",
+    "env",
+    "frameMs",
+    "fps",
+    "cpuMs",
+    "cpuTotalMs",
+    "gpu",
+    "render",
+    "memory",
+    "net",
+    "frames"
+   ]
+  },
+  "errors": []
+ },
+ {
+  "name": "dust-scene-webgpu-medium-nolookup",
+  "query": "scene=dust&solo=0&audio=0&preset=medium&backend=webgpu&view=play&warm=900&freeze=1&src=0",
+  "shot": true,
+  "out": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "fps": 60,
+   "renderScale": 0.75,
+   "frameMs": {
+    "avg": 16.67,
+    "p50": 16.6,
+    "p95": 19.4,
+    "max": 22.9,
+    "n": 240
+   },
+   "cpuRenderMs": {
+    "avg": 3.92,
+    "p50": 3.7,
+    "p95": 6.1,
+    "max": 8.1,
+    "n": 240
+   },
+   "cpuVisualsMs": {
+    "avg": 0.07,
+    "p50": 0.1,
+    "p95": 0.2,
+    "max": 0.4,
+    "n": 240
+   },
+   "gpuMs": null,
+   "keys": [
+    "schema",
+    "atMs",
+    "env",
+    "frameMs",
+    "fps",
+    "cpuMs",
+    "cpuTotalMs",
+    "gpu",
+    "render",
+    "memory",
+    "net",
+    "frames"
+   ]
+  },
+  "errors": []
+ },
+ {
+  "name": "typical-webgpu-medium",
+  "query": "scene=typical&solo=0&audio=0&preset=medium&backend=webgpu",
+  "shot": true,
+  "out": {
+   "backend": "webgpu",
+   "preset": "medium",
+   "fps": 60,
+   "renderScale": 0.75,
+   "frameMs": {
+    "avg": 16.67,
+    "p50": 16.6,
+    "p95": 18.9,
+    "max": 22.7,
+    "n": 240
+   },
+   "cpuRenderMs": {
+    "avg": 7.01,
+    "p50": 7.1,
+    "p95": 9.3,
+    "max": 10.9,
+    "n": 240
+   },
+   "cpuVisualsMs": {
+    "avg": 0.07,
+    "p50": 0.1,
+    "p95": 0.2,
+    "max": 0.2,
+    "n": 240
+   },
+   "gpuMs": null,
+   "keys": [
+    "schema",
+    "atMs",
+    "env",
+    "frameMs",
+    "fps",
+    "cpuMs",
+    "cpuTotalMs",
+    "gpu",
+    "render",
+    "memory",
+    "net",
+    "frames"
+   ]
+  },
+  "errors": []
+ }
+]

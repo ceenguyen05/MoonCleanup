@@ -9,7 +9,6 @@
 // The transport is injected (`connect`) so the state machine is testable without a server; `colyseusConnect` is the
 // real implementation.
 
-import { ColyseusSDK } from "@colyseus/sdk";
 import {
   HealthResponseSchema,
   MESSAGE_CATALOG,
@@ -68,8 +67,9 @@ export interface NetSession {
   dispose(): void;
 }
 
-/** Real transport: Colyseus SDK `consumeSeatReservation`. */
+/** Real transport: Colyseus SDK `consumeSeatReservation`, loaded on demand (keeps the SDK off the solo boot path). */
 export const colyseusConnect: ConnectFn = async (wsUrl, reservation) => {
+  const { ColyseusSDK } = await import("@colyseus/sdk");
   const sdk = new ColyseusSDK(wsUrl);
   const room = await sdk.consumeSeatReservation(reservation);
   return room as unknown as RoomLike;

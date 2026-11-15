@@ -1,11 +1,16 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { LEDGER_BYTES, PlotState } from "../world";
+import { DUST_CHUNK_PAYLOAD_MAX_BYTES } from "./format";
 import {
   DUST_CHUNK_FIXED_BYTES,
+  DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES,
   DUST_CHUNK_PAYLOAD_VERSION,
   DUST_CHUNK_PLOT_RECORD_FIXED_BYTES,
+  DUST_CHUNK_PLOT_RECORD_MAX_BYTES,
   DUST_CHUNK_POLE_STATE_BYTES,
   DUST_CHUNK_STATE_BYTES,
+  DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES,
+  DUST_CHUNK_STROKE_LOG_MAX_BYTES,
   DustChunkPayloadSchema,
   type DustChunkGoldenVector,
   type DustChunkPayload,
@@ -107,6 +112,44 @@ describe("dust chunk payload", () => {
     expect(DUST_CHUNK_STATE_BYTES).toBe(64);
     // localIndex 1 + remainingFrac 1 + ledger header fixed 23 + 1024 + strokeCount 1 + strokeLogBytes 2
     expect(DUST_CHUNK_PLOT_RECORD_FIXED_BYTES).toBe(1 + 1 + 23 + 1024 + 1 + 2);
+    // chain header 17 + continuationCount 1; 32 strokes as their own chains
+    expect(DUST_CHUNK_STROKE_CHAIN_PREFIX_BYTES).toBe(18);
+    expect(DUST_CHUNK_STROKE_LOG_MAX_BYTES).toBe(576);
+    expect(DUST_CHUNK_PLOT_RECORD_MAX_BYTES).toBe(1052 + 4 * 5 + 576);
+    expect(DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES).toBe(7 + 64 + 256 * 1648);
+    expect(DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES).toBe(421_959);
+  });
+
+  it("the save limit is the layout maximum and admits a full chunk", () => {
+    expect(DUST_CHUNK_PAYLOAD_MAX_BYTES).toBe(DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES);
+    // M1-W3-T01 finding 1: 256 touched plots without contributions or logs needed 269,383 B (> the old 262,144).
+    const fullNoLogs = DUST_CHUNK_FIXED_BYTES + DUST_CHUNK_STATE_BYTES + 256 * DUST_CHUNK_PLOT_RECORD_FIXED_BYTES;
+    expect(fullNoLogs).toBe(269_383);
+    expect(fullNoLogs).toBeLessThanOrEqual(DUST_CHUNK_PAYLOAD_MAX_BYTES);
+    const max = DUST_CHUNK_GOLDEN_VECTORS.find((v) => v.length === DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES);
+    expect(max).toBeDefined();
+    expect(max?.plots.length).toBe(256);
+  });
+
+  it("bounds a stroke log by its stroke count", () => {
+    const vector = DUST_CHUNK_GOLDEN_VECTORS[1];
+    const plot0 = vector?.plots[0];
+    expect(plot0).toBeDefined();
+    if (vector === undefined || plot0 === undefined) return;
+    const good = toPayload(vector);
+    const record = good.plots[0];
+    if (record === undefined) return;
+    const at = (strokeCount: number, length: number): boolean =>
+      DustChunkPayloadSchema.safeParse({
+        ...good,
+        plots: [{ ...record, strokeCount, strokeLog: new Uint8Array(length) }, ...good.plots.slice(1)],
+      }).success;
+    expect(at(32, DUST_CHUNK_STROKE_LOG_MAX_BYTES)).toBe(true);
+    expect(at(32, DUST_CHUNK_STROKE_LOG_MAX_BYTES + 1)).toBe(false);
+    expect(at(2, 36)).toBe(true);
+    expect(at(2, 37)).toBe(false);
+    expect(at(0, 0)).toBe(true);
+    expect(at(0, 1)).toBe(false);
   });
 
   it.each(DUST_CHUNK_GOLDEN_VECTORS.map((v) => [v.name, v] as const))(

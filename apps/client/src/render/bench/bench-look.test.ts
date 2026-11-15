@@ -2,6 +2,7 @@
 // building / switching preset / disposing without a GPU.
 
 import { describe, expect, it } from "vitest";
+import { vec4 } from "three/tsl";
 import { Vector3, type PerspectiveCamera } from "three/webgpu";
 import { QUALITY_PRESETS, type FrameInfo, type QualitySettings } from "@moon-cleanup/shared";
 import type { RenderRendererService } from "../module";
@@ -99,6 +100,50 @@ describe("BenchScene on a LookProvider", () => {
     expect(calls[calls.length - 1]).toBe("dispose");
     expect(target.__mcBench).toBeUndefined();
   }, 60_000);
+});
+
+describe("visuals look: star layer and Low anti-aliasing", () => {
+  it("moves the star mesh to the post-resolve layer on TRAA presets and back into the sky group otherwise", () => {
+    const installed: (PipelineStages | null)[] = [];
+    const roots = createSceneRoots();
+    const look = createBenchLook("visuals", { roots, renderer: fakeRenderer(installed) });
+    const inSky = (): boolean => roots.sky.getObjectByName("mc:star-field") !== undefined;
+
+    look.applyQuality(QUALITY_PRESETS.high);
+    expect(inSky()).toBe(false);
+    look.applyQuality(QUALITY_PRESETS.medium);
+    expect(inSky()).toBe(true);
+    look.applyQuality(QUALITY_PRESETS.ultra);
+    expect(inSky()).toBe(false);
+    look.applyQuality(QUALITY_PRESETS.low);
+    expect(inSky()).toBe(true);
+    look.dispose();
+    expect(inSky()).toBe(false);
+  });
+
+  it("?stars=scene keeps the stars in the scene pass on a TRAA preset", () => {
+    const roots = createSceneRoots();
+    const look = createBenchLook("visuals", { roots, renderer: fakeRenderer([]), search: "?stars=scene" });
+    look.applyQuality(QUALITY_PRESETS.high);
+    expect(roots.sky.getObjectByName("mc:star-field")).toBeDefined();
+    look.dispose();
+  });
+
+  it("Low builds the FXAA display stage by default; ?aa=none drops it", () => {
+    const build = (search: string): readonly string[] => {
+      const installed: (PipelineStages | null)[] = [];
+      const roots = createSceneRoots();
+      const look = createBenchLook("visuals", { roots, renderer: fakeRenderer(installed), search });
+      look.applyQuality(QUALITY_PRESETS.low);
+      const stages = installed[installed.length - 1];
+      stages?.display?.(vec4(0, 0, 0, 1) as never, {} as never);
+      const passes = look.postPasses().slice();
+      look.dispose();
+      return passes;
+    };
+    expect(build("")).toEqual(["fxaa"]);
+    expect(build("?aa=none")).toEqual([]);
+  });
 });
 
 describe.each(["visuals", "v0"] as const)("real look %s", (id) => {

@@ -25,6 +25,48 @@ export {
 } from "./grid/golden";
 export { sha256, sha256Hex, toHex } from "./hash/sha256";
 export {
+  DUST_CREDIT_SHIFT,
+  LEDGER_CONTRIBUTION_BUCKETS,
+  LEDGER_OWNED_REACH_MM,
+  LEDGER_SHIFT_ACTOR_SLOT,
+  STROKE_MAX_AFFECTED_PLOTS,
+  WorldDustLedger,
+  fnv1a32,
+  latticePitchMm,
+  ledgerRemovalUnits,
+  mixPlotHash,
+  openedThresholdUnits,
+  polishedThresholdUnits,
+  remainingFraction255,
+  type StrokeApplySink,
+  type WorldDustLedgerOptions,
+} from "./dust/ledger";
+export {
+  LoggedStroke,
+  STROKE_LOG_DEFAULT_MAX_BYTES,
+  STROKE_LOG_RECORD_BYTES,
+  STROKE_LOG_WORDS,
+  StrokeLogStore,
+} from "./dust/stroke-log";
+export { PlotAttributeTables, computePlotAreasM2, createUniformPlotAttributes } from "./dust/plot-attributes";
+export {
+  DUST_CHUNK_LAYOUT_MAX_BYTES,
+  DUST_RESTORE_SLICE_BUDGET_MS,
+  DustChunkEncoder,
+  DustChunkScan,
+  DustRestoreJob,
+  decodeDustChunkPayload,
+  encodeDustChunkPayload,
+  encodeDustChunks,
+  restoreDustChunks,
+  scanDustChunk,
+  type DustChunkDecodeResult,
+  type DustChunkError,
+  type DustChunkErrorCode,
+  type DustRestoreResult,
+  type EncodedDustChunk,
+} from "./dust/chunk-codec";
+export {
   CUBE_FACE_ACROSS,
   CUBE_FACE_BASIS,
   CUBE_FACE_COUNT,

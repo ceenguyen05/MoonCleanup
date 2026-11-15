@@ -21,4 +21,5 @@ export const REQUIRED_SERVICES = [
   "sceneRoots",
   "quality",
   "netSession",
+  "roomHost",
 ] as const satisfies readonly ServiceKey[];

@@ -1,0 +1,1 @@
+{"bots":6,"simSeconds":600,"flushHz":10,"bytesPerSecPerClientMax":457.7,"bytesPerSecPerClientP50":436.78,"uploadBytesPerSecPerClientMax":116.93833333333333,"hashMatchPct":100,"hashChecks":720,"tickMsP99":0.92,"serverCpuMs":327.4470999998157,"rejected":{"segment_too_long":1},"texelsStale":2}

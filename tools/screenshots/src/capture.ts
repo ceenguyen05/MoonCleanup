@@ -1,3 +1,5 @@
+import { measureHud } from "./hud-measure.js";
+import { assertDprReadout } from "./dpr-check.js";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,6 +22,8 @@ import { generateIndexMd, measureImage, probeRois, type RawProbes, type RoiSpec 
 import { decodePng, type Img } from "./measure/image";
 import { captureFileName, pngSize, sidecarName, type Backend, type Preset, type Tier, type Tod } from "./naming";
 import { resolveScene, todSetup, verifyTodApplied } from "./scenes/registry";
+import { readbackPng, warmUpReadback, type ReadbackMode } from "./readback";
+import { captureWithGuard, type WrapAttempt } from "./wrap-guard";
 import { buildClient, detectServeMode, startPreview, type ServeInfo } from "./serve";
 import { sidecarExtras, type LookInfoLike } from "./sidecar";
 
@@ -75,6 +79,10 @@ export interface CaptureContext {
   readonly lane: string;
   readonly serve: ServeInfo | null;
   readonly readyTimeoutMs?: number;
+  /** Allow the wrap guard to reload and re-step the scene as a last retry (single-scene captures only). */
+  readonly reloadOnWrap?: boolean;
+  /** `cdp` (default, fast, lossless) or `playwright` (`page.screenshot`). */
+  readonly readback?: ReadbackMode;
 }
 
 export interface CaptureResult {
@@ -91,7 +99,24 @@ export async function captureCurrent(
   outDir: string,
   cc: CaptureContext,
 ): Promise<CaptureResult> {
-  const png = await page.screenshot({ type: "png" }); // lossless, native pixels = CSS size x DPR
+  // Lossless, native pixels = CSS size x DPR. Guarded against wrapped/repeated-band frames (retry, then reload).
+  const guarded = await captureWithGuard(
+    async (how: WrapAttempt["how"]) => {
+      if (how === "reload") {
+        await openScene(page, baseUrl, r, cc.readyTimeoutMs ?? 120_000);
+        if (r.stepFrames)
+          await page.evaluate(([n, dt]) => window.__mcStep?.(n as number, dt as number), [r.stepFrames, FIXED_DT]);
+      }
+      const t0 = performance.now();
+      const buf = await readbackPng(page, cc.readback ?? "cdp");
+      const readbackMs = performance.now() - t0;
+      return { png: buf, img: decodePng(buf), readbackMs };
+    },
+    r.dpr,
+    cc.reloadOnWrap ? ["first", "re-screenshot", "reload"] : ["first", "re-screenshot"],
+  );
+  const png = guarded.png;
+  const dprCheck = await assertDprReadout(page, r.dpr);
   const info = await readInfo(page);
   const look = await readLook(page);
   const probes = await readProbes(page, r.dpr);
@@ -102,7 +127,7 @@ export async function captureCurrent(
   const pngPath = join(outDir, name);
   const jsonPath = join(outDir, sidecarName(name));
   writeFileSync(pngPath, png);
-  const img = decodePng(png);
+  const img = guarded.img;
   if (img.width !== size.width || img.height !== size.height) {
     throw new Error(`PNG is ${img.width}x${img.height}, expected ${size.width}x${size.height} (CSS x DPR)`);
   }
@@ -131,6 +156,8 @@ export async function captureCurrent(
     backend,
     requestedBackend: r.backend,
     dpr: r.dpr,
+    dprCheck,
+    hudMeasure: await measureHud(page, guarded.img),
     width: size.width,
     height: size.height,
     hud: r.hud,
@@ -151,6 +178,7 @@ export async function captureCurrent(
     stepFrames: r.stepFrames ?? null,
     view: r.view ?? null,
     lookdevFacts: await page.evaluate(() => window.__mcLookdev?.probes?.().facts ?? null),
+    wrapGuard: guarded.report,
     roiSpecs,
     measure: measureImage(png, img, undefined, roiSpecs),
   };
@@ -175,7 +203,7 @@ export async function captureOne(
   await openScene(page, baseUrl, r, cc.readyTimeoutMs ?? 120_000);
   if (r.stepFrames)
     await page.evaluate(([n, dt]) => window.__mcStep?.(n as number, dt as number), [r.stepFrames, FIXED_DT]);
-  return captureCurrent(page, baseUrl, r, outDir, { lane, serve: cc.serve ?? null, ...cc });
+  return captureCurrent(page, baseUrl, r, outDir, { lane, serve: cc.serve ?? null, reloadOnWrap: true, ...cc });
 }
 
 /** Lossless PNG sequence at fixed dt (1/60 s): advance one frame, read it back, repeat. */
@@ -193,7 +221,7 @@ export async function captureSequence(
   for (let i = 0; i < frames; i++) {
     await page.evaluate((dt) => window.__mcStep?.(1, dt), FIXED_DT);
     const f = join(outDir, `${r.scene}-${r.tod}-${String(i).padStart(5, "0")}.png`);
-    writeFileSync(f, await page.screenshot({ type: "png" }));
+    writeFileSync(f, await readbackPng(page));
     files.push(f);
   }
   return files;
@@ -269,10 +297,19 @@ async function main(): Promise<void> {
   let baseUrl = args.baseUrl;
   let how: ServeInfo["how"] = "external";
   if (f["preview"]) {
-    if (f["build"]) await buildClient();
-    preview = await startPreview(portsFor(Number(f["port-offset"] ?? process.env["MC_PORT_OFFSET"] ?? 0)).client);
+    // --client-out <abs dir>: build/serve a scratch dist so a shared apps/client/dist is never overwritten.
+    const clientOut = f["client-out"];
+    if (f["build"]) await buildClient(clientOut);
+    preview = await startPreview(
+      portsFor(Number(f["port-offset"] ?? process.env["MC_PORT_OFFSET"] ?? 0)).client,
+      clientOut,
+    );
     baseUrl = preview.url;
     how = "preview-started";
+  }
+  if (args.scenes.length === 0 && !f["path"]) {
+    await preview?.stop();
+    throw new Error("no scene given (e.g. `screenshots -- S05 --lane gpu`); nothing to capture");
   }
   const serve: ServeInfo = { mode: await detectServeMode(baseUrl), url: baseUrl, how };
   if (serve.mode === "unreachable") {
@@ -306,8 +343,14 @@ async function main(): Promise<void> {
   const consoleErrors: string[] = [];
   page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
   const tods = (f["tod"] ?? "noon").split(",") as Tod[];
-  const cc: CaptureContext = { lane: args.lane, serve };
+  const cc: CaptureContext = {
+    lane: args.lane,
+    serve,
+    readback: f["readback"] === "playwright" ? "playwright" : "cdp",
+  };
   try {
+    const warmMs = await warmUpReadback(page, base.cssWidth, base.cssHeight, cc.readback ?? "cdp");
+    console.log(`readback warm-up ${Math.round(warmMs)} ms (one-time per browser)`);
     if (f["path"]) {
       const report = await capturePath(
         page,

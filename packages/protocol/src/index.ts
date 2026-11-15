@@ -71,6 +71,9 @@ export {
   deltaClass,
 } from "./codec/frame-writer";
 export {
+  ENTITY_KIND_AVATAR,
+  REC_DELTA,
+  REC_FULL,
   DustPlotDeltaList,
   FrameView,
   RobotIntentList,
@@ -86,6 +89,7 @@ export {
 export { expandStrokeChain, createStrokeRecordOut, strokeChainBytes, type StrokeRecordOut } from "./codec/dust-wire";
 export * from "./codec/quantize";
 export * from "./codec/dust-messages";
+export * from "./codec/checkpoint-upload";
 export * from "./vectors/dust-vectors";
 export * from "./interpolation/clock-sync";
 export * from "./interpolation/interpolation-buffer";

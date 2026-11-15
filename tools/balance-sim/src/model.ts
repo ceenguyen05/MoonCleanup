@@ -87,7 +87,16 @@ export function kgPerM2(model: WorldModel, mix: DustMix): number {
   return mix.shares.reduce((s, x) => s + x.frac * x.level * model.kgPerLevel, 0);
 }
 
-/** Mean passes needed at `depth` levels per pass (economy section 1.1). */
-export function passes(mix: DustMix, depth: number): number {
-  return mix.shares.reduce((s, x) => s + x.frac * Math.max(1, Math.ceil(x.level / depth)), 0);
+/**
+ * Passes needed by dust of `level` levels at tool `depth` and lane `coverage` (progression section 1.1, continuous
+ * passes): one pass if the dust fits in one stroke (level <= depth), else max(2, coverage * level / depth).
+ */
+export function passesForLevel(level: number, depth: number, coverage: number): number {
+  if (level <= depth) return 1;
+  return Math.max(2, (coverage * level) / depth);
+}
+
+/** Mean passes of a mix (economy section 1.1 rule, not ceil(L / D)). */
+export function passes(mix: DustMix, depth: number, coverage: number): number {
+  return mix.shares.reduce((s, x) => s + x.frac * passesForLevel(x.level, depth, coverage), 0);
 }

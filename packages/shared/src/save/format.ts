@@ -1,8 +1,13 @@
-// @contract save/format v1
+// @contract save/format v1.1
 // @consumers apps/server/src/persistence (envelope encode/decode, compression, slot writes), apps/client/src/sim-host
 //   (local checkpoints, CompressionStream), packages/sim (envelope codec; writes and reads the header sections it
 //   owns), packages/world and apps/server/src/world (dust chunk payloads, via ./dust-chunk), packages/db (row metadata
 //   columns), apps/server/src/api (solo upload verification), tools/bots (save fixtures v1)
+//
+// v1.1 (M1-W0-T08, 2026-11-14; envelope layout unchanged, SAVE_FORMAT_VERSION stays 1): DUST_CHUNK_PAYLOAD_MAX_BYTES
+// rises from 262,144 B to the dust chunk v1 layout maximum, 421,959 B (derived from ./dust-chunk). Widening only:
+// nothing valid before is rejected now. A server still on the old limit answers `size_limit` to a larger chunk; no
+// data migration. Consumers: apps/server/src/api/checkpoints (comments citing 256 KiB), packages/world (tests).
 //
 // Save format: layout of the header envelope stored in the two alternating slots A/B of `contract_saves` (and in the
 // local IndexedDB checkpoints of Solo, ADR-0031), plus the row-level constants of `contract_dust_chunks`.
@@ -53,6 +58,7 @@
 // only enforced relation is generation > parentGeneration. A server room writes newest + 1.
 
 import { z } from "zod";
+import { DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES } from "./dust-chunk";
 
 /** Version of the header envelope layout. */
 export const SAVE_FORMAT_VERSION = 1;
@@ -228,8 +234,13 @@ export const DUST_CHUNK_CODEC = "deflate";
 /** Validate-before-write limit for the uncompressed header envelope (data-model.md sections 5.1 and 6). */
 export const SAVE_HEADER_MAX_BYTES = 1024 * 1024;
 
-/** Validate-before-write limit for one dust chunk payload. */
-export const DUST_CHUNK_PAYLOAD_MAX_BYTES = 256 * 1024;
+/**
+ * Validate-before-write and upload limit for one uncompressed dust chunk payload: the v1 layout maximum
+ * (DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES of ./dust-chunk, 421,959 B), so every legal payload fits. Was 262,144 B before
+ * v1.1, which rejected a legal chunk with all 256 plots touched. The per-package inflate budget of the upload verifier
+ * (32 MiB, apps/server/src/api) is separate and unchanged.
+ */
+export const DUST_CHUNK_PAYLOAD_MAX_BYTES = DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES;
 
 /** Two alternating versions per dust chunk row (`ver`). */
 export const DUST_CHUNK_VERSIONS = [0, 1] as const;

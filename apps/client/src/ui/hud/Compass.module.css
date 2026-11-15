@@ -1,0 +1,211 @@
+/* Compass strip. Track ticks sit at whole device-pixel offsets (3 css px per degree); the track moves only by a whole-pixel
+   translate written from outside React. Cardinal letters are text (never scaled). */
+.compass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mc-sp-1);
+  margin-top: 0;
+}
+
+.strip {
+  position: relative;
+  width: var(--mc-compass-w);
+  height: var(--mc-compass-h);
+  overflow: hidden;
+  background: var(--mc-glass-bg);
+  border: var(--mc-hairline) solid var(--mc-glass-border);
+  border-radius: var(--mc-r-md);
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+.track {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 100%;
+  width: 0;
+  transform: translate3d(-1080px, 0, 0);
+  will-change: transform;
+}
+
+.tick {
+  position: absolute;
+  bottom: 0;
+  width: var(--mc-sp-0-5);
+  margin-left: calc(var(--mc-sp-0-5) / -2);
+  height: var(--mc-sp-2);
+  background: var(--mc-text-3);
+}
+
+.tickMajor {
+  height: var(--mc-sp-3);
+  background: var(--mc-text-1);
+}
+
+.cardinal {
+  position: absolute;
+  bottom: var(--mc-sp-3);
+  left: 0;
+  transform: translateX(-50%);
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 700;
+  color: var(--mc-text-1);
+}
+
+.fence {
+  position: absolute;
+  top: var(--mc-sp-0-5);
+  margin-left: calc(var(--mc-sp-2) * -1);
+  color: var(--mc-warn);
+}
+
+.outpostMark,
+.parcelMark {
+  position: absolute;
+  top: var(--mc-sp-0-5);
+  margin-left: calc(var(--mc-sp-2) * -1);
+}
+
+.outpostMark {
+  color: var(--mc-text-1);
+}
+
+.parcelMark {
+  color: var(--mc-lumen-gold);
+}
+
+.caret {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--mc-sp-0-5);
+  margin-left: calc(var(--mc-sp-0-5) / -2);
+  height: 100%;
+  background: var(--mc-teal-hi);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--mc-sp-1);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-sp-1);
+  padding: 0 var(--mc-sp-2);
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-text-1);
+  background: var(--mc-glass-bg);
+  border: var(--mc-hairline) solid var(--mc-glass-border);
+  border-radius: var(--mc-r-pill);
+}
+
+.chip[data-visited="false"] {
+  border-style: dashed;
+}
+
+.chipParcels[data-complete="true"] {
+  border-color: var(--mc-lumen-gold);
+}
+
+.pips {
+  display: inline-flex;
+  gap: var(--mc-sp-0-5);
+}
+
+/* Hollow ring = still out there; filled square with a gold ring = collected. */
+.pip {
+  width: var(--mc-sp-2);
+  height: var(--mc-sp-2);
+  border: var(--mc-hairline) solid var(--mc-text-2);
+  border-radius: var(--mc-r-pill);
+}
+
+.pip[data-done="true"] {
+  background: var(--mc-lumen-gold);
+  border-color: var(--mc-lumen-gold);
+  border-radius: var(--mc-r-sm);
+}
+
+.chipObjective {
+  color: #0b1d1b;
+  background: var(--mc-teal-hi);
+  border-color: var(--mc-teal-hi);
+  font-weight: 600;
+}
+
+/* ---- Plot Card ---- */
+.plot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-2);
+  min-width: calc(var(--mc-hit) * 5);
+  padding: var(--mc-sp-3) var(--mc-sp-4);
+  border-radius: var(--mc-r-lg);
+}
+
+.plotHead {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-sp-2);
+  font-family: var(--mc-font-display);
+  font-size: var(--mc-fs-value-s);
+  line-height: var(--mc-lh-value-s);
+  font-weight: 600;
+}
+
+/* State swatch: colour is the secondary cue; the glyph shape (filled / ringed / check / dash) plus the word carry the state. */
+.swatch {
+  display: inline-grid;
+  place-items: center;
+  width: var(--mc-sp-6);
+  height: var(--mc-sp-6);
+  border: var(--mc-hairline) solid var(--mc-text-1);
+  border-radius: var(--mc-r-sm);
+}
+
+.swatch[data-state="0"] {
+  background: var(--mc-state-grimy);
+  color: var(--mc-text-1);
+}
+
+.swatch[data-state="1"] {
+  background: var(--mc-state-opened);
+  color: #0b1d1b;
+}
+
+.swatch[data-state="2"],
+.swatch[data-state="3"] {
+  background: var(--mc-state-polished);
+  color: #3a2a00;
+}
+
+.plotLine {
+  margin: 0;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-text-2);
+}
+
+.plotMeter {
+  height: var(--mc-sp-2);
+  overflow: hidden;
+  background: var(--mc-glass-highlight);
+  border: var(--mc-hairline) solid var(--mc-glass-border);
+  border-radius: var(--mc-r-pill);
+}
+
+.plotFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--mc-state-opened);
+  transform-origin: left center;
+  transition: transform var(--mc-dur-fade-in) var(--mc-ease-out);
+}

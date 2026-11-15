@@ -9,7 +9,9 @@ export {
   type CreateGameServerOptions,
   type GameServer,
   type GameServerRates,
+  type ShiftServerOptions,
 } from "./game-server";
+export * from "./shift";
 export {
   DEFAULT_TRANSPORT_MODE,
   TRANSPORT_MODES,
@@ -35,11 +37,14 @@ export {
   routeParamNames,
   safeDecodeURIComponent,
   type NetLogger,
+  type RawBodyAuth,
+  type RawBodyRefusal,
 } from "./http-routes";
 export {
   AT_CAPACITY_RETRY_AFTER_S,
   Admission,
   IpRateLimiter,
+  MAX_SEATS_PER_IP,
   MAX_SOCKETS_PER_IP,
   ROOM_CREATES_PER_IP_PER_MIN,
   type AdmissionLimits,
@@ -61,6 +66,14 @@ export {
   resolveUpgradeClientIp,
   sanitizeIp,
 } from "./client-ip";
+export {
+  DEFAULT_IDLE_LIMITS,
+  HANDSHAKE_TIMEOUT_MS,
+  IdleWatch,
+  SILENCE_TIMEOUT_MS,
+  type IdleClient,
+  type IdleLimits,
+} from "./idle-watch";
 export { HELLO_ROOM_NAME, HelloRoom, HelloState, assertRates, type HelloRoomOptions } from "./hello-room";
 export {
   HELLO_JOIN_PATH,

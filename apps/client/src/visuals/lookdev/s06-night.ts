@@ -6,6 +6,7 @@ import type { QualitySettings } from "@moon-cleanup/shared";
 import { Color, PointLight, SpotLight, type Object3D } from "three/webgpu";
 import { EV100, preExposureScale } from "../lighting/key-light";
 import { LocalPointLight, LocalSpotLight, configureLampShadow, markLampCasters } from "../lighting/local-lights";
+import { createCrownLamp, CROWN_LAMP_LEVELS, updateCrownLamp } from "../lighting/crown-lamp";
 import { defaultShadowFilter } from "../lighting/sun-rig";
 import { wantsStandInGround } from "./look-ground";
 import { s01Height } from "./s01-approach";
@@ -93,27 +94,36 @@ export class S06Night implements LookScene {
     const plain = (params.get("lights") ?? "").toLowerCase() === "plain";
     const Spot = plain ? SpotLight : LocalSpotLight;
     const Point = plain ? PointLight : LocalPointLight;
-    const lamp = new Spot(new Color(1.0, 0.906, 0.784), SPOT_RING_CD * scale, 60, (30 * Math.PI) / 180, 0.4, 2);
-    lamp.name = "mc:crown-lamp";
-    lamp.position.set(0, 1.62, 0.15);
-    lamp.target.position.set(0, 0, 5);
     const off = s06Off(params);
-    lamp.castShadow = !off.has("lampshadow");
     // Own-lamp shadow map: the preset's size (rendering-pipeline 14.1: Low 512, Medium / High 1024, Ultra 2048).
     // `&lampres=<px>` overrides it (A/B captures).
     this.lampResOverride = Number(params.get("lampres") ?? 0) > 0 ? Number(params.get("lampres")) : 0;
     const lampSize = this.lampResOverride || (ctx.quality?.shadows.ownLampShadowSizePx ?? 1024);
-    lamp.shadow.mapSize.set(lampSize, lampSize);
-    // Lamp shadow pass: props only (the ground is left out of the lamp's map) and the preset's PCF kernel.
-    // `&lampshadow=plain` = every object and three's own filter (A/B captures).
-    if ((params.get("lampshadow") ?? "").toLowerCase() !== "plain") {
+    const lampFilter = ctx.quality === undefined ? "vogel5" : defaultShadowFilter(ctx.quality);
+    // `&lampshadow=plain` = every object casts and three's own filter; `&lights=plain` = three's own light nodes (A/B captures).
+    const plainShadow = (params.get("lampshadow") ?? "").toLowerCase() === "plain";
+    let lamp: SpotLight;
+    if (!plain && !plainShadow) {
+      // The game's lamp: the Crown Lamp hook at L2 Spot Ring (`lighting/crown-lamp.ts`), range 20 m, props-only shadow pass.
+      lamp = createCrownLamp(CROWN_LAMP_LEVELS["spot-ring"], { shadowSizePx: lampSize, shadowFilter: lampFilter });
       markLampCasters(group, (object) => object.name === "mc:look-ground");
-      configureLampShadow(lamp, lampSize, ctx.quality === undefined ? "vogel5" : defaultShadowFilter(ctx.quality));
+      updateCrownLamp(lamp, scale, true);
+    } else {
+      lamp = new Spot(new Color(1.0, 0.906, 0.784), SPOT_RING_CD * scale, 60, (30 * Math.PI) / 180, 0.4, 2);
+      lamp.name = "mc:crown-lamp";
+      lamp.shadow.mapSize.set(lampSize, lampSize);
+      if (!plainShadow) {
+        markLampCasters(group, (object) => object.name === "mc:look-ground");
+        configureLampShadow(lamp, lampSize, lampFilter);
+      }
+      lamp.shadow.camera.near = 0.3;
+      lamp.shadow.camera.far = 40;
+      lamp.shadow.bias = -0.0002;
+      lamp.shadow.normalBias = 0.02;
     }
-    lamp.shadow.camera.near = 0.3;
-    lamp.shadow.camera.far = 40;
-    lamp.shadow.bias = -0.0002;
-    lamp.shadow.normalBias = 0.02;
+    lamp.position.set(0, 1.62, 0.15);
+    lamp.target.position.set(0, 0, 5);
+    lamp.castShadow = !off.has("lampshadow");
     // Outpost work light: warm, unshadowed, range clamped (rendering-pipeline 5.1).
     const flood = new Spot(new Color(1.0, 0.85, 0.66), 40_000 * scale, 24, (50 * Math.PI) / 180, 0.6, 2);
     flood.name = "mc:outpost-flood";

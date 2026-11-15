@@ -8,8 +8,18 @@ import { and, asc, desc, eq, isNull, lt, ne, or, sql } from "drizzle-orm";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import { uuidv7 } from "../ids.ts";
 import * as schema from "../schema/index.ts";
-import { contractMembers, contracts, identities, players, profiles, refreshTokens } from "../schema/index.ts";
+import {
+  contractDustChunks,
+  contractMembers,
+  contractSaves,
+  contracts,
+  identities,
+  players,
+  profiles,
+  refreshTokens,
+} from "../schema/index.ts";
 import { decideRotation, type TokenRowView } from "./rotation.ts";
+import { fromSignedCrc, pickOlderSlot, pickOlderVersion, toSignedCrc } from "./save-rules.ts";
 import {
   REFRESH_RETENTION_DAYS,
   TOUCH_INTERVAL_S,
@@ -17,7 +27,10 @@ import {
   type ContractView,
   type CreateContractInput,
   type CreateContractResult,
+  type CommitSoloCheckpointInput,
+  type CommitSoloCheckpointResult,
   type CreateGuestInput,
+  type DustChunkRow,
   type HexDigest,
   type JoinByCodeResult,
   type ListMembersResult,
@@ -25,6 +38,7 @@ import {
   type MoonRepository,
   type PatchContractInput,
   type PatchContractResult,
+  type PlaytimeLedger,
   type Profile,
   type ProfilePatch,
   type ProfilePatchResult,
@@ -32,6 +46,10 @@ import {
   type RotateInviteResult,
   type RotateRefreshInput,
   type RotateResult,
+  type SaveHeadView,
+  type SaveOriginKindName,
+  type SaveSlotName,
+  type SaveSlotRow,
   type ShiftTypeName,
 } from "./types.ts";
 
@@ -62,6 +80,17 @@ function uniqueViolation(error: unknown): string | undefined {
   return undefined;
 }
 
+/** Thrown inside a transaction to roll it back and surface a typed result. */
+class RollbackWith extends Error {
+  readonly result: CommitSoloCheckpointResult;
+  constructor(result: CommitSoloCheckpointResult) {
+    super("rollback");
+    this.result = result;
+  }
+}
+
+const asBytes = (value: Uint8Array): Buffer => Buffer.from(value.buffer, value.byteOffset, value.byteLength);
+
 const toSignedSeed = (decimal: string): bigint => BigInt.asIntN(64, BigInt(decimal));
 const fromSignedSeed = (value: bigint): string => BigInt.asUintN(64, value).toString();
 
@@ -80,6 +109,7 @@ const viewColumns = {
   walletLumens: contracts.walletLumens,
   playtimeS: contracts.playtimeS,
   lastPlayedAt: contracts.lastPlayedAt,
+  createdAt: contracts.createdAt,
 };
 
 interface ViewRow {
@@ -97,6 +127,7 @@ interface ViewRow {
   walletLumens: number;
   playtimeS: number;
   lastPlayedAt: Date | null;
+  createdAt: Date;
 }
 
 const toView = (row: ViewRow, role: string): ContractView => ({
@@ -114,6 +145,7 @@ const toView = (row: ViewRow, role: string): ContractView => ({
   walletLumens: row.walletLumens,
   playtimeS: row.playtimeS,
   lastPlayedAt: row.lastPlayedAt,
+  createdAt: row.createdAt,
   role: role as ContractRoleName,
 });
 
@@ -604,6 +636,311 @@ export function createPostgresRepository(db: PgDb, options: PostgresRepositoryOp
           status: r.status as "active" | "banned",
         })),
       };
+    },
+
+    // ---- saves (data-model.md 3.7, 3.7b, 3.7c) -------------------------------------------------------------------
+    async getPlaytimeLedger(playerId): Promise<PlaytimeLedger | null> {
+      const [player] = await db.select({ createdAt: players.createdAt }).from(players).where(eq(players.id, playerId));
+      if (player === undefined) return null;
+      // Served by contracts_owner_player_id_idx; at most the 3-Contract quota plus deleted rows.
+      const [total] = await db
+        .select({ n: sql<number>`coalesce(sum(${contracts.playtimeS}), 0)::float8` })
+        .from(contracts)
+        .where(eq(contracts.ownerPlayerId, playerId));
+      return { accountCreatedAt: player.createdAt, contractsPlaytimeS: Number(total?.n ?? 0) };
+    },
+
+    async getSaveHead(contractId): Promise<SaveHeadView | null> {
+      const [slot] = await db
+        .select({
+          saveSeq: contractSaves.saveSeq,
+          parentSeq: contractSaves.parentSeq,
+          originKind: contractSaves.originKind,
+          savedAt: contractSaves.savedAt,
+          savedBy: contractSaves.savedBy,
+          simTick: contractSaves.simTick,
+          saveFormatVersion: contractSaves.saveFormatVersion,
+          gameDataVersion: contractSaves.gameDataVersion,
+        })
+        .from(contractSaves)
+        .where(eq(contractSaves.contractId, contractId))
+        .orderBy(desc(contractSaves.saveSeq))
+        .limit(1);
+      if (slot === undefined) return null;
+      const [mirror] = await db
+        .select({
+          playtimeS: contracts.playtimeS,
+          shinePolished: contracts.shinePolished,
+          walletLumens: contracts.walletLumens,
+        })
+        .from(contracts)
+        .where(eq(contracts.id, contractId));
+      return {
+        generation: slot.saveSeq,
+        parentGeneration: slot.parentSeq,
+        originKind: slot.originKind as SaveOriginKindName,
+        savedAt: slot.savedAt,
+        savedBy: slot.savedBy,
+        simTick: slot.simTick,
+        saveFormatVersion: slot.saveFormatVersion,
+        gameDataVersion: slot.gameDataVersion,
+        playtimeS: mirror?.playtimeS ?? 0,
+        shinePolished: mirror?.shinePolished ?? 0,
+        walletLumens: mirror?.walletLumens ?? 0,
+      };
+    },
+
+    async loadSaveRows(contractId) {
+      const slotRows = await db.select().from(contractSaves).where(eq(contractSaves.contractId, contractId));
+      const chunkRows = await db
+        .select()
+        .from(contractDustChunks)
+        .where(eq(contractDustChunks.contractId, contractId))
+        .orderBy(asc(contractDustChunks.chunkId), asc(contractDustChunks.ver));
+      const slots: SaveSlotRow[] = slotRows.map((r) => ({
+        slot: r.slot as SaveSlotName,
+        saveFormatVersion: r.saveFormatVersion,
+        gameDataVersion: r.gameDataVersion,
+        codec: r.codec,
+        rawSize: r.rawSize,
+        blobSize: r.blobSize,
+        checksum: fromSignedCrc(r.checksum),
+        blob: r.blob,
+        saveSeq: r.saveSeq,
+        parentSeq: r.parentSeq,
+        originKind: r.originKind as SaveOriginKindName,
+        simTick: r.simTick,
+        savedAt: r.savedAt,
+        savedBy: r.savedBy,
+      }));
+      const chunks: DustChunkRow[] = chunkRows.map((r) => ({
+        chunkId: r.chunkId,
+        ver: r.ver === 1 ? 1 : 0,
+        saveSeq: r.saveSeq,
+        codec: r.codec,
+        rawSize: r.rawSize,
+        blobSize: r.blobSize,
+        checksum: fromSignedCrc(r.checksum),
+        blob: r.blob,
+      }));
+      return { slots, chunks };
+    },
+
+    async commitSoloCheckpoint(input: CommitSoloCheckpointInput): Promise<CommitSoloCheckpointResult> {
+      try {
+        return await db.transaction(async (tx): Promise<CommitSoloCheckpointResult> => {
+          const at = await now(tx);
+          const [contract] = await tx
+            .select({
+              status: contracts.status,
+              shiftType: contracts.shiftType,
+              leaseExpiresAt: contracts.leaseExpiresAt,
+              playtimeS: contracts.playtimeS,
+              shinePolished: contracts.shinePolished,
+              walletLumens: contracts.walletLumens,
+            })
+            .from(contracts)
+            .where(eq(contracts.id, input.contractId))
+            .for("update");
+          const member = contract === undefined ? undefined : await memberRow(tx, input.contractId, input.playerId);
+          if (contract === undefined || contract.status === "deleted" || member?.status !== "active") {
+            return { kind: "not_found" };
+          }
+          if (member.role !== "holder") return { kind: "not_holder" };
+          if (contract.shiftType !== "solo") return { kind: "not_solo" };
+          if (contract.leaseExpiresAt !== null && contract.leaseExpiresAt.getTime() > at.getTime()) {
+            return { kind: "busy" };
+          }
+
+          const slots = await tx
+            .select({
+              slot: contractSaves.slot,
+              saveSeq: contractSaves.saveSeq,
+              parentSeq: contractSaves.parentSeq,
+              originKind: contractSaves.originKind,
+              savedAt: contractSaves.savedAt,
+              savedBy: contractSaves.savedBy,
+              simTick: contractSaves.simTick,
+              saveFormatVersion: contractSaves.saveFormatVersion,
+              gameDataVersion: contractSaves.gameDataVersion,
+            })
+            .from(contractSaves)
+            .where(eq(contractSaves.contractId, input.contractId));
+          const newest = slots.reduce<(typeof slots)[number] | undefined>(
+            (best, row) => (best === undefined || row.saveSeq > best.saveSeq ? row : best),
+            undefined,
+          );
+          const newestSeq = newest?.saveSeq ?? 0;
+
+          // Idempotent replay: the same device re-sent the checkpoint whose acknowledgement was lost.
+          if (
+            newest !== undefined &&
+            newest.saveSeq === input.generation &&
+            newest.parentSeq === input.parentGeneration &&
+            newest.savedBy === `solo:${input.deviceId}`
+          ) {
+            return {
+              kind: "accepted",
+              generation: newest.saveSeq,
+              savedAt: newest.savedAt,
+              storedBytes: 0,
+              replayed: true,
+            };
+          }
+          if (!input.overwrite && newestSeq !== input.baseGeneration) {
+            const server: SaveHeadView | null =
+              newest === undefined
+                ? null
+                : {
+                    generation: newest.saveSeq,
+                    parentGeneration: newest.parentSeq,
+                    originKind: newest.originKind as SaveOriginKindName,
+                    savedAt: newest.savedAt,
+                    savedBy: newest.savedBy,
+                    simTick: newest.simTick,
+                    saveFormatVersion: newest.saveFormatVersion,
+                    gameDataVersion: newest.gameDataVersion,
+                    playtimeS: contract.playtimeS,
+                    shinePolished: contract.shinePolished,
+                    walletLumens: contract.walletLumens,
+                  };
+            return { kind: "conflict", server };
+          }
+          if (input.generation <= newestSeq || input.generation <= input.parentGeneration) {
+            return { kind: "generation_not_increasing", serverGeneration: newestSeq };
+          }
+          if (newest !== undefined) {
+            const waitMs = input.minIntervalS * 1000 - (at.getTime() - newest.savedAt.getTime());
+            if (waitMs > 0) return { kind: "too_soon", retryAfterS: Math.max(1, Math.ceil(waitMs / 1000)) };
+          }
+
+          // Header: overwrite the OLDER slot only, guarded by a compare-and-set on that slot's save_seq.
+          const target = pickOlderSlot(slots.map((s) => ({ slot: s.slot as SaveSlotName, saveSeq: s.saveSeq })));
+          const slotValues = {
+            saveFormatVersion: input.saveFormatVersion,
+            gameDataVersion: input.gameDataVersion,
+            codec: input.header.codec,
+            rawSize: input.header.rawSize,
+            blobSize: input.header.blob.byteLength,
+            checksum: toSignedCrc(input.header.checksum),
+            blob: asBytes(input.header.blob),
+            saveSeq: input.generation,
+            parentSeq: input.parentGeneration,
+            originKind: "solo",
+            simTick: input.simTick,
+            savedAt: at,
+            savedBy: `solo:${input.deviceId}`,
+          };
+          const written =
+            target.expectedSeq === null
+              ? await tx
+                  .insert(contractSaves)
+                  .values({ contractId: input.contractId, slot: target.slot, ...slotValues })
+                  .onConflictDoNothing()
+                  .returning({ slot: contractSaves.slot })
+              : await tx
+                  .update(contractSaves)
+                  .set(slotValues)
+                  .where(
+                    and(
+                      eq(contractSaves.contractId, input.contractId),
+                      eq(contractSaves.slot, target.slot),
+                      eq(contractSaves.saveSeq, target.expectedSeq),
+                    ),
+                  )
+                  .returning({ slot: contractSaves.slot });
+          if (written.length === 0) throw new RollbackWith({ kind: "conflict", server: null });
+
+          // Chunks: each into its older version (an overwrite is a full snapshot: every other chunk row is dropped first).
+          if (input.overwrite) {
+            await tx.delete(contractDustChunks).where(eq(contractDustChunks.contractId, input.contractId));
+          }
+          if (input.chunks.length > 0) {
+            const existing = input.overwrite
+              ? []
+              : await tx
+                  .select({
+                    chunkId: contractDustChunks.chunkId,
+                    ver: contractDustChunks.ver,
+                    saveSeq: contractDustChunks.saveSeq,
+                  })
+                  .from(contractDustChunks)
+                  .where(eq(contractDustChunks.contractId, input.contractId));
+            const byChunk = new Map<number, { ver: 0 | 1; saveSeq: number }[]>();
+            for (const row of existing) {
+              const list = byChunk.get(row.chunkId) ?? [];
+              list.push({ ver: row.ver === 1 ? 1 : 0, saveSeq: row.saveSeq });
+              byChunk.set(row.chunkId, list);
+            }
+            await tx
+              .insert(contractDustChunks)
+              .values(
+                input.chunks.map((c) => ({
+                  contractId: input.contractId,
+                  chunkId: c.chunkId,
+                  ver: pickOlderVersion(byChunk.get(c.chunkId) ?? []),
+                  saveSeq: input.generation,
+                  codec: c.codec,
+                  rawSize: c.rawSize,
+                  blobSize: c.blob.byteLength,
+                  checksum: toSignedCrc(c.checksum),
+                  blob: asBytes(c.blob),
+                  savedAt: at,
+                })),
+              )
+              .onConflictDoUpdate({
+                target: [contractDustChunks.contractId, contractDustChunks.chunkId, contractDustChunks.ver],
+                set: {
+                  saveSeq: sql`excluded.save_seq`,
+                  codec: sql`excluded.codec`,
+                  rawSize: sql`excluded.raw_size`,
+                  blobSize: sql`excluded.blob_size`,
+                  checksum: sql`excluded.checksum`,
+                  blob: sql`excluded.blob`,
+                  savedAt: sql`excluded.saved_at`,
+                },
+              });
+          }
+
+          const [headerBytes] = await tx
+            .select({ n: sql<number>`coalesce(sum(${contractSaves.blobSize}), 0)::int` })
+            .from(contractSaves)
+            .where(eq(contractSaves.contractId, input.contractId));
+          const [chunkBytes] = await tx
+            .select({ n: sql<number>`coalesce(sum(${contractDustChunks.blobSize}), 0)::int` })
+            .from(contractDustChunks)
+            .where(eq(contractDustChunks.contractId, input.contractId));
+          const storedBytes = (headerBytes?.n ?? 0) + (chunkBytes?.n ?? 0);
+          if (storedBytes > input.hardCapBytes) throw new RollbackWith({ kind: "over_cap", storedBytes });
+
+          await tx
+            .update(contracts)
+            .set({
+              lastPlayedAt: at,
+              shinePolished: input.shinePolished,
+              walletLumens: input.walletLumens,
+              playtimeS: input.playtimeS,
+              storedBytes,
+              gameDataVersion: input.gameDataVersion,
+            })
+            .where(eq(contracts.id, input.contractId));
+          if (input.profileCredit.tenurePoints > 0 || input.profileCredit.commendations > 0) {
+            await tx
+              .update(profiles)
+              .set({
+                tenurePoints: sql`${profiles.tenurePoints} + ${input.profileCredit.tenurePoints}`,
+                commendations: sql`${profiles.commendations} + ${input.profileCredit.commendations}`,
+                version: sql`${profiles.version} + 1`,
+                updatedAt: at,
+              })
+              .where(eq(profiles.playerId, input.playerId));
+          }
+          return { kind: "accepted", generation: input.generation, savedAt: at, storedBytes, replayed: false };
+        });
+      } catch (error) {
+        if (error instanceof RollbackWith) return error.result;
+        throw error;
+      }
     },
   };
 }

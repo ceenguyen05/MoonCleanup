@@ -37,7 +37,8 @@
 }
 
 .topRight {
-  top: var(--mc-safe);
+  /* Clears the online dock (launcher / connection chip) that owns the very top-right corner. */
+  top: calc(var(--mc-safe) + var(--mc-dock-clear));
   right: var(--mc-safe);
   align-items: flex-end;
 }
@@ -417,7 +418,12 @@
   display: block;
   height: var(--mc-px);
   margin-bottom: calc(var(--mc-sp-2) - var(--mc-px));
-  background: var(--mc-text-1);
+  /* Painted as a gradient hard stop, not a solid background: Chrome snaps a box's background rect to whole CSS px
+     whenever the page DPR is emulated (DevTools / Playwright, or a display whose scale differs from the page DPR), so
+     a 0.5 or 0.667 css px tall box paints 1 css px = 2 or 1.5 device rows and the extra row shows as a faint second
+     line (VT-M0-10: rows 247/96 at DPR 1, 247/101 at DPR 2). A gradient is rasterised on the device grid, so the stop
+     at --mc-px is exactly one device row at every DPR, emulated or native. */
+  background: linear-gradient(var(--mc-text-1) 0 var(--mc-px), transparent var(--mc-px));
 }
 
 .hairChecker {
@@ -448,7 +454,8 @@
 .divider {
   width: var(--mc-hairline);
   height: var(--mc-sp-5);
-  background: var(--mc-glass-border);
+  /* Gradient hard stop for the same reason as .hairH (a solid background snaps to whole CSS px under emulated DPR). */
+  background: linear-gradient(90deg, var(--mc-glass-border) 0 var(--mc-hairline), transparent var(--mc-hairline));
 }
 
 .readout {

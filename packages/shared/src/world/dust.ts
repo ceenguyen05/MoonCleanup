@@ -1,4 +1,4 @@
-// @contract world/dust v1
+// @contract world/dust v1.3
 // @consumers packages/world (ledger rasterisation, state machine, hashes), packages/sim (Dust Cell rules, robots),
 //   packages/protocol (dust sections and bytes messages), apps/server/src/world (authority, snapshot cache, chunk
 //   payloads), apps/client/src/terrain (two ledger views, tiles, drift check), packages/db and apps/server/src/
@@ -27,6 +27,15 @@
 // v1 decisions not spelled out in the WDS (flagged [R] for the owners named in the report): the ledger hash
 // algorithm (FNV-1a 32), the chunk drift hash mix, `laneMask` as 64 lanes, DustClass code values, and the
 // dust.ack width (u24 grams).
+// v1.1 (doc only, 2026-11-14; no wire, hash or save change): `DETAILING_DIAMETER_MM` is confirmed as a diameter and is
+// superseded by game-data `trait.detailing` `diameterM` (see its comment).
+// v1.2 (2026-11-14; removal only, no wire, hash or save change): `DETAILING_DIAMETER_MM` is removed. packages/sim now
+// reads `trait.detailing` `diameterM` via SimConfig; no workspace consumer imported the constant (checked: packages,
+// apps, tools, prototypes). Migration: use `DETAILING_DIAMETER_PARAM` (config/traits.schema) and game-data `traits.json`.
+// v1.3 (2026-11-14): DUST_MODEL_VERSION 1 -> 2. packages/world snaps the lattice pitch down to a divisor of the 800 mm
+// texel edge (25, 32, 40, 50, 80, 100 mm); new strokes can differ, existing ledgers load unchanged, no wire or save
+// layout change (saves just stamp 2). Consumers: packages/world goldens (ledger-v1.json) and the sim world-ledger golden
+// were re-recorded; nothing else compares the stamp.
 
 import { z } from "zod";
 import type { PlotId } from "../ids";
@@ -37,7 +46,7 @@ import { StrokeActorSlotSchema, StrokeChainSchema, type StrokeChain } from "./st
 // ---- Plot states and classes -----------------------------------------------------------------------------------------------
 
 /** Version of the dust model (ledger rule, thresholds, hashes). Stored in the save header as `dustModelVersion`. */
-export const DUST_MODEL_VERSION = 1;
+export const DUST_MODEL_VERSION = 2;
 
 /**
  * Plot state with its 2-bit wire code. Transitions are monotonic Grimy -> Opened -> Polished; Empty never changes.
@@ -129,13 +138,17 @@ export const LEDGER_MIN_COVERAGE_MM2 = LEDGER_TEXEL_AREA_MM2 / 64;
 /** Minimum per-pass removal (units) once coverage reaches LEDGER_MIN_COVERAGE_MM2. */
 export const LEDGER_MIN_REMOVAL_UNITS = 1;
 
-/** Lattice pitch = clamp(width_mm / LEDGER_LATTICE_PITCH_DIVISOR, MIN, MAX), rounded to whole mm (section 4.5 step 3). */
+/**
+ * Lattice pitch = clamp(width_mm / LEDGER_LATTICE_PITCH_DIVISOR, MIN, MAX), rounded to whole mm, then snapped down to a
+ * divisor of LEDGER_TEXEL_SIZE_MM (section 4.5 step 3; snap added in DUST_MODEL_VERSION 2).
+ */
 export const LEDGER_LATTICE_PITCH_DIVISOR = 8;
 export const LEDGER_LATTICE_PITCH_MIN_MM = 25;
 export const LEDGER_LATTICE_PITCH_MAX_MM = 100;
 
-/** Detailing (Desk Duster RMB): a disc op of this diameter with depth16 255 (section 4.4, [R] game-designer confirms). */
-export const DETAILING_DIAMETER_MM = 500;
+// Detailing (Desk Duster RMB) disc size is game-data (`traits.json` `trait.detailing` `params.diameterM`, see
+// config/traits.schema `DETAILING_DIAMETER_PARAM`); the rasteriser needs no constant because a disc stroke carries its
+// diameter in `widthCm`.
 
 /** Opened when removed units >= ceil(initialUnits / OPENED_THRESHOLD_DIVISOR): 0.1 % (section 4.2). */
 export const OPENED_THRESHOLD_DIVISOR = 1000;

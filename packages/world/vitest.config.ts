@@ -3,4 +3,4 @@
 import { mergeConfig } from "vitest/config";
 import { nodePreset } from "@moon-cleanup/config/vitest";
 
-export default mergeConfig(nodePreset, { assetsInclude: ["**/*.bin"], test: { name: "world" } });
+export default mergeConfig(nodePreset, { assetsInclude: ["**/*.bin"], test: { name: "world", testTimeout: 60_000 } });

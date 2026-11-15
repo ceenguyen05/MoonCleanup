@@ -15,7 +15,8 @@ export interface ClientConfig {
   readonly envLabel: string;
   /** `?wake=1`: start the server probe at boot instead of at the first interaction (automation, e2e). */
   readonly wakeAtBoot: boolean;
-  /** `?hud=0|1|dbg`: `false` hides the DOM overlay. Default: shown, except in `?capture=1` mode. */
+  /** `?hud=0|1|dbg`: `false` hides the DOM overlay. Dev default: shown, except in `?capture=1` mode. Production build
+   * (`env.PROD`): hidden unless `?hud=1` or `?hud=dbg` asks for it. */
   readonly showOverlay: boolean;
 }
 
@@ -52,6 +53,6 @@ export function readClientConfig(env: RawClientEnv, search: string): ClientConfi
     buildVersion: str(env, "VITE_BUILD_VERSION", "dev"),
     envLabel: str(env, "VITE_ENV", "local"),
     wakeAtBoot: params.get("wake") === "1",
-    showOverlay: hud === null ? !capture : hud !== "0",
+    showOverlay: env["PROD"] === true ? hud === "1" || hud === "dbg" : hud === null ? !capture : hud !== "0",
   };
 }

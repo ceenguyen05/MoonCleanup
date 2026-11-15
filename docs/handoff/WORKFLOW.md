@@ -41,7 +41,7 @@ time, and always before reporting status) and does not assume "no news = fine":
   finishes. Never leave a server on a port or a polling loop running between turns.
 - **Still valid?** If code changed under a running capture (client source edits while a visual check runs), mark that
   evidence stale and rerun it; do not start a second writer or GPU job while one needs exclusive GPU.
-- A worker that stops at a turn/usage limit is resumed with the same ID (never a model swap for Fable work unless Cee
+- A worker that stops at a turn/usage limit is resumed with the same ID (never a model swap for premium work unless Cee
   says so). The lead records the check result in STATUS only when something was found wrong or stale.
 
 ## Tests and review

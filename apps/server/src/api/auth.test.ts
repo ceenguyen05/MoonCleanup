@@ -307,6 +307,8 @@ describe("profile", () => {
       body: { displayName: "Stale One", version: 0 },
     });
     expect(stale.status).toBe(409);
+    // REST contract v0.3.0: the client's retry loop keys on VERSION_CONFLICT, not BAD_REQUEST.
+    expect(ApiErrorBodySchema.parse(stale.body).error).toBe("VERSION_CONFLICT");
     expect((await h.call("PATCH", "/v1/me", { token: guest.accessToken, body: { version: 1 } })).status).toBe(400);
     expect(
       (await h.call("PATCH", "/v1/me", { token: guest.accessToken, body: { displayName: "admin", version: 1 } }))

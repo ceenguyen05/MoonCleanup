@@ -1,4 +1,4 @@
-// `audio` ClientModule. Composition: AudioEnv (browser seam) -> AudioContext created on the first user gesture ->
+// `audio` ClientModule. Composition: AudioEnv (browser seam) -> AudioContext created suspended at idle after boot (gesture only resumes) ->
 // AudioGraph + BufferStore + VoiceManager + CuePlayer + MusicDirector + EventRouter. Audio is driven only by the typed
 // event bus (and the UI store for volumes and open menus); it never mutates sim state and never reads it.
 //
@@ -17,7 +17,7 @@ import {
   type ServiceTypes,
   type Unsubscribe,
 } from "@moon-cleanup/shared";
-import { BufferStore } from "./buffer-store";
+import { BufferStore, type CueRenderRemote, type RenderReply, type RenderRequest } from "./buffer-store";
 import { Ducker } from "./ducking";
 import { EventRouter, type AudioActions } from "./event-router";
 import { AudioGraph, GROUND_MUFFLE_HZ, PANEL_MUFFLE_HZ, type VolumeSettings } from "./graph";
@@ -34,7 +34,14 @@ export interface AudioEnv {
   onVisibility(listener: (hidden: boolean) => void): () => void;
   isHidden(): boolean;
   later(fn: () => void, ms: number): void;
+  /**
+   * Runs `fn` once when the main thread is idle (after boot), never on the first-gesture path. Absent: the module
+   * falls back to `later`. The context is created here, suspended, so the gesture only has to call `resume()`.
+   */
+  idle?(fn: () => void): void;
   nowMs(): number;
+  /** Optional off-thread cue renderer (a Worker in the browser). Absent: cues render on the main thread in slices. */
+  createRenderer?(): CueRenderRemote | null;
 }
 
 export interface AudioModuleOptions {
@@ -128,6 +135,11 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
 
     this.removeGesture = this.options.env.onGesture(() => this.unlock());
     this.removeVisibility = this.options.env.onVisibility((hidden) => this.onVisibility(hidden));
+    // Context, graph, worker and prewarm are built at idle (suspended) so the first gesture only resumes.
+    const env = this.options.env;
+    const prepare = (): void => this.prepare();
+    if (env.idle !== undefined) env.idle(prepare);
+    else env.later(prepare, 500);
   }
 
   update(frame: FrameInfo): void {
@@ -153,7 +165,7 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
     this.player?.stopAll(0.01);
     this.music?.dispose();
     this.graph?.dispose();
-    this.store?.clear();
+    this.store?.dispose();
     const ctx = this.ctx;
     this.ctx = null;
     this.player = null;
@@ -168,7 +180,7 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
 
   /** Plays a cue by id. Used for sounds no event describes (Clock In, UI clicks) until `audio.cue` events exist. */
   play(id: AudioCueId, params: CuePlayParams = {}, opts?: PlayOptions): boolean {
-    return this.player?.play(id, params, opts) ?? false;
+    return this.running ? (this.player?.play(id, params, opts) ?? false) : false;
   }
 
   setMono(mono: boolean): void {
@@ -200,7 +212,22 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
     };
   }
 
-  /** Creates (first gesture) or resumes the context. Safe to call repeatedly. */
+  /**
+   * Builds the context in the suspended state (autoplay policy allows creation without a gesture; only start needs
+   * one) and begins prewarming buffers. A no-op when already built or when Web Audio is unavailable; the gesture path
+   * then retries.
+   */
+  prepare(): void {
+    if (this.disposed || this.ctx !== null || this.starting) return;
+    try {
+      this.build(this.options.env.createContext());
+    } catch {
+      return; // gesture path will try again
+    }
+    this.scheduleWarm();
+  }
+
+  /** Resumes the context (building it first only if idle preparation has not run or failed). Safe to call repeatedly. */
   unlock(): void {
     if (this.disposed) return;
     const env = this.options.env;
@@ -227,8 +254,8 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
   // ---- internals ----
 
   private readonly actions: AudioActions = {
-    play: (id, params, opts) => this.player?.play(id, params, opts) ?? false,
-    startLoop: (id, params, opts) => this.player?.startLoop(id, params, opts) ?? null,
+    play: (id, params, opts) => (this.running ? (this.player?.play(id, params, opts) ?? false) : false),
+    startLoop: (id, params, opts) => (this.running ? (this.player?.startLoop(id, params, opts) ?? null) : null),
     updateLoop: (h: LoopHandle, id, params, opts) => this.player?.update(h, id, params, opts),
     stopLoop: (h, fade) => this.player?.stop(h, fade),
     isAlive: (h) => this.player?.isAlive(h) ?? false,
@@ -251,7 +278,9 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
     const cap = AUDIO_VOICE_CAP[this.tier];
     const graph = new AudioGraph(ctx, cap);
     this.graph = graph;
-    this.store = new BufferStore(ctx);
+    const store = new BufferStore(ctx, this.options.env.createRenderer?.() ?? null);
+    store.onFallback = () => this.scheduleWarm();
+    this.store = store;
     this.manager = new VoiceManager(cap);
     const player = new CuePlayer(ctx, graph, this.store, this.manager, () => this.options.env.nowMs());
     const onCaption = this.options.onCaption;
@@ -261,7 +290,9 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
       };
     }
     this.player = player;
-    this.music = new MusicDirector(ctx, graph.input("music", "music"));
+    const music = new MusicDirector(ctx, graph.input("music", "music"), (set, layer) => store.requestLayer(set, layer));
+    store.onLayer = (set, layer, pcm) => music.acceptLayer(set, layer, pcm);
+    this.music = music;
     graph.setMono(this.mono);
     if (this.volume !== null) graph.setVolumes(this.volume);
     ctx.onstatechange = () => {
@@ -353,6 +384,44 @@ export function browserEnv(win: Window): AudioEnv {
     later: (fn, ms) => {
       win.setTimeout(fn, ms);
     },
+    idle: (fn) => {
+      // Let boot settle, then wait for an idle slice; the timeout keeps it from starving on a busy main thread.
+      const w2 = win as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+      win.setTimeout(() => {
+        if (typeof w2.requestIdleCallback === "function") w2.requestIdleCallback(fn, { timeout: 1500 });
+        else fn();
+      }, 800);
+    },
     nowMs: () => win.performance.now(),
+    createRenderer: () => createWorkerRenderer(win),
+  };
+}
+
+/** Module Worker running the pure cue recipes (render-worker.ts); null when Workers are unavailable. */
+function createWorkerRenderer(win: Window): CueRenderRemote | null {
+  if (typeof (win as unknown as { Worker?: unknown }).Worker !== "function") return null;
+  let worker: Worker | null = null;
+  return {
+    connect(onReply, onFailure) {
+      try {
+        const w = new Worker(new URL("./render-worker.ts", import.meta.url), { type: "module" });
+        worker = w;
+        w.onmessage = (e: MessageEvent<RenderReply>): void => {
+          onReply(e.data);
+        };
+        w.onerror = (): void => onFailure();
+        w.onmessageerror = (): void => onFailure();
+      } catch {
+        worker = null;
+        onFailure();
+      }
+    },
+    request(req: RenderRequest) {
+      worker?.postMessage(req);
+    },
+    dispose() {
+      worker?.terminate();
+      worker = null;
+    },
   };
 }

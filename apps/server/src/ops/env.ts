@@ -84,7 +84,16 @@ const rawSchema = z.object({
   // Default 12: owner cap is 6 players per room (MAX_PLAYERS_PER_ROOM), so 12 clients = two full rooms or
   // three smaller ones on the 0.1-CPU free tier; MAX_ROOMS stays the hard room ceiling.
   MAX_CLIENTS: int(1, 256, 12),
+  // Per-IP live seats (joined + reserved). Default 6 = one full room (net/admission MAX_SEATS_PER_IP); raise it for
+  // demos where several players share one NAT address.
+  MAX_SEATS_PER_IP: int(1, 64, 6),
   CHECKPOINT_INTERVAL_S: int(1, 30, 30),
+  // Process-wide budget for decompressing solo checkpoint uploads/downloads (api/checkpoints/inflate-budget). Defaults are
+  // sized for the 512 MB / 0.1 CPU Render Free instance: one maximum (32 MiB) upload's worth of inflate per minute, one
+  // verification at a time, three waiting. The per-upload 32 MiB cap is a code constant, not configurable here.
+  CHECKPOINT_INFLATE_MIB_PER_MIN: int(1, 1024, 32),
+  CHECKPOINT_INFLATE_CONCURRENCY: int(1, 4, 1),
+  CHECKPOINT_INFLATE_QUEUE: int(0, 16, 3),
   SEAT_HOLD_S: int(1, 600, 60),
   BUILD_VERSION: text(),
   RENDER_GIT_COMMIT: text(),
@@ -117,7 +126,15 @@ export interface ServerEnv {
   /** Lower-case header name carrying the client IP, or null for socket mode (TCP peer address; ENV_NAME=local only). */
   readonly clientIpHeader: string | null;
   readonly maxClients: number;
+  /** Live seats (joined + reserved) one client IP may hold. */
+  readonly maxSeatsPerIp: number;
   readonly checkpointIntervalS: number;
+  /** Inflated MiB per minute the whole process may spend decompressing checkpoints. */
+  readonly checkpointInflateMibPerMin: number;
+  /** Checkpoint verifications that may inflate at once. */
+  readonly checkpointInflateConcurrency: number;
+  /** Verifications that may wait for a free slot before further ones are shed (503). */
+  readonly checkpointInflateQueue: number;
   readonly seatHoldS: number;
   /** BUILD_VERSION, else the first 12 characters of RENDER_GIT_COMMIT, else `dev`. Matches BuildIdSchema. */
   readonly buildVersion: string;
@@ -256,7 +273,11 @@ export function parseServerEnv(source: Readonly<Record<string, string | undefine
     tickBudgetMs: raw.TICK_BUDGET_MS,
     clientIpHeader: header === "" ? null : header,
     maxClients: raw.MAX_CLIENTS,
+    maxSeatsPerIp: raw.MAX_SEATS_PER_IP,
     checkpointIntervalS: raw.CHECKPOINT_INTERVAL_S,
+    checkpointInflateMibPerMin: raw.CHECKPOINT_INFLATE_MIB_PER_MIN,
+    checkpointInflateConcurrency: raw.CHECKPOINT_INFLATE_CONCURRENCY,
+    checkpointInflateQueue: raw.CHECKPOINT_INFLATE_QUEUE,
     seatHoldS: raw.SEAT_HOLD_S,
     buildVersion: buildCandidate,
     gitCommit: commit === "" ? undefined : commit,
@@ -296,7 +317,11 @@ export function describeEnvForLog(env: ServerEnv): Record<string, unknown> {
     tickBudgetMs: env.tickBudgetMs,
     clientIpHeader: env.clientIpHeader,
     maxClients: env.maxClients,
+    maxSeatsPerIp: env.maxSeatsPerIp,
     checkpointIntervalS: env.checkpointIntervalS,
+    checkpointInflateMibPerMin: env.checkpointInflateMibPerMin,
+    checkpointInflateConcurrency: env.checkpointInflateConcurrency,
+    checkpointInflateQueue: env.checkpointInflateQueue,
     seatHoldS: env.seatHoldS,
     buildVersion: env.buildVersion,
     gitCommit: env.gitCommit,

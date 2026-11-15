@@ -14,6 +14,8 @@ import {
   type CheckpointPackage,
 } from "./checkpoint-package";
 import { CHECKPOINT_PACKAGE_GOLDEN_VECTORS, type CheckpointPackageGoldenVector } from "./checkpoint-vectors";
+import { DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES } from "./dust-chunk";
+import { DUST_CHUNK_PAYLOAD_MAX_BYTES } from "./format";
 
 // ---- Test-only reference codec (the real codec lives in apps/client/src/sim-host and apps/server/src/api) ----------
 
@@ -128,11 +130,34 @@ describe("MCCK checkpoint package", () => {
       { ...good, chunks: [chunk, chunk] },
       { ...good, chunks: [{ ...chunk, chunkId: 641 }] },
       { ...good, chunks: [{ ...chunk, ver: 2 }] },
-      { ...good, chunks: [{ ...chunk, rawSize: 256 * 1024 + 1 }] },
+      { ...good, chunks: [{ ...chunk, rawSize: DUST_CHUNK_PAYLOAD_MAX_BYTES + 1 }] },
       { ...good, header: new Uint8Array(CHECKPOINT_PART_MAX_BYTES + 1) },
       {},
     ];
     for (const value of bad) expect(CheckpointPackageSchema.safeParse(value).success).toBe(false);
+  });
+
+  it("accepts a chunk at the dust chunk layout maximum (M1-W0-T08)", () => {
+    const first = CHECKPOINT_PACKAGE_GOLDEN_VECTORS[0];
+    if (first === undefined) throw new Error("vector 0 exists");
+    const good = toPackage(first);
+    const chunk = good.chunks[0];
+    if (chunk === undefined) throw new Error("vector 0 has a chunk");
+    expect(DUST_CHUNK_PAYLOAD_MAX_BYTES).toBe(DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES);
+    for (const rawSize of [262_145, 269_383, DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES]) {
+      expect(CheckpointPackageSchema.safeParse({ ...good, chunks: [{ ...chunk, rawSize }] }).success).toBe(true);
+    }
+    // Carrier: a download page holding one incompressible maximum chunk alone. Deflate stored blocks cost 5 B per
+    // 65,535 B plus a few bytes of framing, so the page stays inside one part.
+    const storedDeflate =
+      DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES + 5 * Math.ceil(DUST_CHUNK_PAYLOAD_LAYOUT_MAX_BYTES / 65_535) + 6;
+    const page =
+      CHECKPOINT_PACKAGE_FIXED_BYTES +
+      CHECKPOINT_CHUNK_COUNT_BYTES +
+      CHECKPOINT_CHUNK_ENTRY_FIXED_BYTES +
+      storedDeflate +
+      CHECKPOINT_TRAILER_BYTES;
+    expect(page).toBeLessThanOrEqual(CHECKPOINT_PART_MAX_BYTES);
   });
 
   it("round-trips a parsed package through the schema", () => {

@@ -42,7 +42,7 @@ Follow [REFERENCE_TARGET](REFERENCE_TARGET.md). This catalog keeps terminology c
 | Thing | Name | Notes |
 | --- | --- | --- |
 | Main currency | **Lumens** (symbol `LM`, icon: small sunburst) | Paid per kg sold; one shared shift wallet per contract |
-| Global progress meter | **Shine Index** | % of plots Polished, shown to four decimals; secondary readout shows the moon's **albedo** rising (flavor) |
+| Global progress meter | **Shine Index** | % of plots Polished or Empty (Empty plots count as finished), shown to four decimals; secondary readout shows the moon's **albedo** rising (flavor) |
 | Meta currency (profile, persists across contracts) **(optional ★)** | **Commendations** | Earned from contract milestones and achievements; spent on cosmetics and small quality-of-life perks |
 | Profile prestige **(optional ★)** | **Tenure** (levels) | Grows with plots credited and dust you cleaned yourself; unlocks suit liveries |
 | Completion of a contract | **Contract Fulfilled** | Ending sequence + Tenure bonus; contract becomes a free-roam "showcase moon" |

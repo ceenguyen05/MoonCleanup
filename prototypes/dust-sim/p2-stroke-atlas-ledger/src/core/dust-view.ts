@@ -48,7 +48,8 @@ export function mixPlotHash(plot: number, hash: number): number {
   h = Math.imul(h ^ ((hash >>> 8) & 0xff), FNV_PRIME);
   h = Math.imul(h ^ ((hash >>> 16) & 0xff), FNV_PRIME);
   h = Math.imul(h ^ (hash >>> 24), FNV_PRIME);
-  return h >>> 0;
+  // Signed int32 (same bits): an unsigned value above 2^31 is boxed when it crosses a call that is not inlined.
+  return h;
 }
 
 export class DustView {
@@ -370,20 +371,19 @@ export class DustView {
 
   // ---- hashes -------------------------------------------------------------------------------------------------
 
-  /** FNV-1a 32 of the 1,024 texel bytes of `slot` (cached until the ledger changes). */
+  /** FNV-1a 32 of the 1,024 texel bytes of `slot` (cached until the ledger changes), as a signed int32. */
   ledgerHash(slot: number): number {
-    if (this.hashDirty[slot] === 0) return this.hashCache[slot]!;
+    if (this.hashDirty[slot] === 0) return this.hashCache[slot]! | 0;
     const tex = this.texels;
     const base = slot * LEDGER_BYTES;
     let h = FNV_BASIS;
     for (let i = 0; i < LEDGER_BYTES; i++) h = Math.imul(h ^ tex[base + i]!, FNV_PRIME);
-    h >>>= 0;
     this.hashCache[slot] = h;
     this.hashDirty[slot] = 0;
     return h;
   }
 
-  /** Hash contribution of one plot: its ledger, or the Polished marker, or 0. */
+  /** Hash contribution of one plot (signed int32): its ledger, or the Polished marker, or 0. */
   plotHash(plot: number): number {
     const slot = this.slotOf[plot]!;
     if (slot >= 0) return mixPlotHash(plot, this.ledgerHash(slot));

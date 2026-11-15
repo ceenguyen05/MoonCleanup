@@ -10,7 +10,10 @@
    positions or sizes a box (spacing, line-height, hit size, panel widths) is round()ed to --mc-px; nothing is
    centred with translate or with an odd leftover (grid/flex rows use align-self: start where the leftover could be a
    half device pixel); a panel's width is a rounded token, never its text width. Intrinsic widths (buttons, toasts)
-   only move their right edge, never a text start or a hairline. */
+   only move their right edge, never a text start or a hairline.
+   Hairline rule (VT-M0-10): a 1-device-pixel line is a box-shadow ring or a gradient hard stop at --mc-px, never a
+   solid `background` on a box whose width or height is --mc-px (Chrome snaps that rect to whole CSS px when the page
+   DPR is emulated, leaving a second faint row). ui/hairline-rule.test.ts enforces it. */
 
 #mc-ui {
   /* ---- Display metrics (defaults match DPR 1 / 1080p until JS runs) ---- */
@@ -96,6 +99,12 @@
   --mc-sp-16: round(calc(64px * var(--mc-hud-scale)), var(--mc-px));
   --mc-safe: var(--mc-sp-8); /* HUD safe area: 32 px at 1080p */
   --mc-hit: round(calc(40px * var(--mc-hud-scale)), var(--mc-px)); /* minimum hit target */
+  /* Top-right dock (online launcher / connection chip, ui/online): HUD blocks anchored top-right start below it. */
+  --mc-dock-clear: calc(var(--mc-hit) + var(--mc-sp-3));
+  /* Menus (ui/menus): panel width, compass strip width. Whole device px at any HUD scale. */
+  --mc-menu-w: round(calc(760px * var(--mc-hud-scale)), var(--mc-px));
+  --mc-compass-w: round(calc(360px * var(--mc-hud-scale)), 2px); /* even, so the centre line is a whole px */
+  --mc-compass-h: round(calc(32px * var(--mc-hud-scale)), var(--mc-px));
 
   --mc-r-xs: 4px;
   --mc-r-sm: 6px;

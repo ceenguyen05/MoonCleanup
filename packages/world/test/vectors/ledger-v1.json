@@ -1,0 +1,334 @@
+{
+  "dustModelVersion": 2,
+  "grid": "GP(128,0) R=2000",
+  "seed": 20261114,
+  "site": 71234,
+  "strokeCount": 1000,
+  "strokesSha256": "eb39dbe7690095d68597afde47c3c3a68ae0a3024050dcbff7f85d172ea62255",
+  "plots": [
+    {
+      "plotId": 70849,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 68629,
+      "version": 6,
+      "mgPerUnit": 2445,
+      "hash": 3300595670,
+      "texelsSha256": "bdc829feaa7e09dbf75a26c366fa8b99a79ca9d5fc211b08a424394919c0833b"
+    },
+    {
+      "plotId": 70976,
+      "state": 1,
+      "level": 13,
+      "ownedTexels": 499,
+      "initialUnits": 103792,
+      "remainingUnits": 101621,
+      "version": 8,
+      "mgPerUnit": 2463,
+      "hash": 2780943744,
+      "texelsSha256": "2da57f3905244f8df3780a74cc0fd9efe6c441950588b9f63762403af72fcf09"
+    },
+    {
+      "plotId": 70977,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 42456,
+      "version": 70,
+      "mgPerUnit": 2441,
+      "hash": 297393161,
+      "texelsSha256": "1ab9fec500cb7757f59c056f84f4d603ec30e3e1f9c66e2a324e07808d6cc030"
+    },
+    {
+      "plotId": 70978,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 54545,
+      "version": 32,
+      "mgPerUnit": 2445,
+      "hash": 2642716412,
+      "texelsSha256": "108d80041a58d4b573d50be1cf10cd4451dd89a0f079cd12888f9f8734ea718a"
+    },
+    {
+      "plotId": 71103,
+      "state": 1,
+      "level": 5,
+      "ownedTexels": 450,
+      "initialUnits": 36000,
+      "remainingUnits": 34921,
+      "version": 5,
+      "mgPerUnit": 2490,
+      "hash": 2355117298,
+      "texelsSha256": "91b18e4255197cf3a7b791f85e814441eb55ef9ed7db4d8ba80f43181426e7af"
+    },
+    {
+      "plotId": 71104,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 500,
+      "initialUnits": 64000,
+      "remainingUnits": 47782,
+      "version": 58,
+      "mgPerUnit": 2458,
+      "hash": 726549917,
+      "texelsSha256": "32eb2877cb1cc1741a99202b4d583b1541218fc8a4d1aa0074aace50064c79f7"
+    },
+    {
+      "plotId": 71105,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 34505,
+      "version": 88,
+      "mgPerUnit": 2441,
+      "hash": 486194068,
+      "texelsSha256": "386d83ed9f1141ca8728cff3449550fcc574de6848aadb07291717bfae58d263"
+    },
+    {
+      "plotId": 71106,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 28132,
+      "version": 88,
+      "mgPerUnit": 2441,
+      "hash": 117715035,
+      "texelsSha256": "cf575659903c9688d86a3498e74fe15e966cd27e17c32677c9e385866332b2bc"
+    },
+    {
+      "plotId": 71107,
+      "state": 1,
+      "level": 5,
+      "ownedTexels": 548,
+      "initialUnits": 43840,
+      "remainingUnits": 30474,
+      "version": 44,
+      "mgPerUnit": 2445,
+      "hash": 2754393781,
+      "texelsSha256": "0fc72de2b2a1f30bc1c139a55df6cc1847326b42fc19cba529a8b0969842c3c2"
+    },
+    {
+      "plotId": 71232,
+      "state": 1,
+      "level": 5,
+      "ownedTexels": 500,
+      "initialUnits": 40000,
+      "remainingUnits": 25461,
+      "version": 42,
+      "mgPerUnit": 2458,
+      "hash": 69946766,
+      "texelsSha256": "152565f2d45e769c11b35a1a09185d1c64c32f1abdd22cb2238fa41cb071424f"
+    },
+    {
+      "plotId": 71233,
+      "state": 1,
+      "level": 5,
+      "ownedTexels": 548,
+      "initialUnits": 43840,
+      "remainingUnits": 13957,
+      "version": 91,
+      "mgPerUnit": 2442,
+      "hash": 4083954154,
+      "texelsSha256": "1ff71023c522d49abe8913d002e364957eb3a24be27376373a87c6fa4c68c417"
+    },
+    {
+      "plotId": 71234,
+      "state": 2,
+      "level": 5,
+      "ownedTexels": 0,
+      "initialUnits": 0,
+      "remainingUnits": 0,
+      "version": 0,
+      "mgPerUnit": 0,
+      "hash": 0,
+      "texelsSha256": ""
+    },
+    {
+      "plotId": 71235,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 23862,
+      "version": 92,
+      "mgPerUnit": 2442,
+      "hash": 2751266741,
+      "texelsSha256": "7e1793524df09ab8c7cfaf2bb8c038589cd2861c6f2f9844e45504ba7c6030b4"
+    },
+    {
+      "plotId": 71236,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 46141,
+      "version": 53,
+      "mgPerUnit": 2445,
+      "hash": 1629506414,
+      "texelsSha256": "80de2df6e2abf8d6ae3a0ebf8e8ff85cf0ac2b33ca24515b6ad1444f93509ff3"
+    },
+    {
+      "plotId": 71361,
+      "state": 1,
+      "level": 5,
+      "ownedTexels": 548,
+      "initialUnits": 43840,
+      "remainingUnits": 32385,
+      "version": 30,
+      "mgPerUnit": 2442,
+      "hash": 3502409200,
+      "texelsSha256": "a1dafd7ec526bd77f5b28ced39b7246eb4cafd713d50dbe52d4253af51fd144b"
+    },
+    {
+      "plotId": 71362,
+      "state": 1,
+      "level": 13,
+      "ownedTexels": 548,
+      "initialUnits": 113984,
+      "remainingUnits": 43790,
+      "version": 95,
+      "mgPerUnit": 2443,
+      "hash": 2617065269,
+      "texelsSha256": "1cb4a8ba664587c599b9d459b15134328370f8c371efda806ef7cc883f6215d4"
+    },
+    {
+      "plotId": 71363,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 30834,
+      "version": 87,
+      "mgPerUnit": 2443,
+      "hash": 2631177787,
+      "texelsSha256": "e5fa0969db2c7310c45a2fd78ecafae7219b222e7068596fd53782ed7e2b9a92"
+    },
+    {
+      "plotId": 71364,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 49898,
+      "version": 59,
+      "mgPerUnit": 2442,
+      "hash": 1382417859,
+      "texelsSha256": "97915f0d2fdb6c510b26aad7c5e0bf1a7a32ebe5bf2bb5a3462cb49d78861771"
+    },
+    {
+      "plotId": 71365,
+      "state": 1,
+      "level": 5,
+      "ownedTexels": 547,
+      "initialUnits": 43760,
+      "remainingUnits": 42293,
+      "version": 2,
+      "mgPerUnit": 2449,
+      "hash": 3917619970,
+      "texelsSha256": "96adf117d54272ad8a58e65008e05dbc86b7c2d45407e7cf6a71cc3ab0fbd396"
+    },
+    {
+      "plotId": 71490,
+      "state": 1,
+      "level": 13,
+      "ownedTexels": 548,
+      "initialUnits": 113984,
+      "remainingUnits": 101221,
+      "version": 35,
+      "mgPerUnit": 2442,
+      "hash": 847341760,
+      "texelsSha256": "95bcefe8f4eb67cd6d2206498480ab0735cc8fcaf9844aaa616384671d8c7078"
+    },
+    {
+      "plotId": 71491,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 548,
+      "initialUnits": 70144,
+      "remainingUnits": 43423,
+      "version": 67,
+      "mgPerUnit": 2443,
+      "hash": 1244795534,
+      "texelsSha256": "b2bc84ef5d9107fd1e68c8a662fa11015903160b28247fc0ad0be4c582167b4c"
+    },
+    {
+      "plotId": 71492,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 547,
+      "initialUnits": 70016,
+      "remainingUnits": 66378,
+      "version": 12,
+      "mgPerUnit": 2446,
+      "hash": 347083279,
+      "texelsSha256": "acb81a18d2a38c04c686408318c7185a33ff45a04c9b6dffe0d0c311ff04bd83"
+    },
+    {
+      "plotId": 71619,
+      "state": 1,
+      "level": 8,
+      "ownedTexels": 547,
+      "initialUnits": 70016,
+      "remainingUnits": 64441,
+      "version": 7,
+      "mgPerUnit": 2446,
+      "hash": 1883042960,
+      "texelsSha256": "8b2b9b74966d466bd9aa936affa26064dd4bf24c9ff65207168d8d9cf7fa3e81"
+    }
+  ],
+  "actors": [
+    {
+      "actorSlot": 0,
+      "removedUnits": 64873,
+      "milligrams": 158493168
+    },
+    {
+      "actorSlot": 1,
+      "removedUnits": 75613,
+      "milligrams": 184779684
+    },
+    {
+      "actorSlot": 2,
+      "removedUnits": 50626,
+      "milligrams": 123760605
+    },
+    {
+      "actorSlot": 3,
+      "removedUnits": 61848,
+      "milligrams": 151151428
+    },
+    {
+      "actorSlot": 4,
+      "removedUnits": 61563,
+      "milligrams": 150470351
+    },
+    {
+      "actorSlot": 5,
+      "removedUnits": 52978,
+      "milligrams": 129517907
+    },
+    {
+      "actorSlot": 17,
+      "removedUnits": 90420,
+      "milligrams": 220818256
+    },
+    {
+      "actorSlot": 20,
+      "removedUnits": 47222,
+      "milligrams": 115398758
+    }
+  ],
+  "totalRemovedUnits": 505143,
+  "polishedPlots": 1,
+  "worldHash": 1057297321,
+  "chunksSha256": "3a8cd99ebe286c5bca0a0d2c9a7b6e483d01e1bb5eee66235fb479c533dd0947",
+  "chunkBytes": 34530,
+  "restoredWorldHash": 1057297321
+}

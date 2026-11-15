@@ -171,6 +171,9 @@ export interface RawProbes {
 /** Probe patch size in CSS px for world probe points. */
 export const PROBE_PATCH_CSS = 48;
 
+/** Tight probe patch (CSS px): stays inside a small shadow, where the 48 px patch straddles its edge. */
+export const PROBE_TIGHT_CSS = 16;
+
 /** ROIs from the scene's own probes: albedo chips (patch), edge lines (line), visible world probes (patch). */
 export function probeRois(p: RawProbes): RoiSpec[] {
   const out: RoiSpec[] = [];
@@ -188,6 +191,17 @@ export function probeRois(p: RawProbes): RoiSpec[] {
   for (const [id, probe] of Object.entries(p.look ?? {})) {
     if (!probe.px.visible) continue;
     const s = PROBE_PATCH_CSS * k;
+    const t = PROBE_TIGHT_CSS * k;
+    out.push({
+      kind: "patch",
+      name: `probe16:${id}`,
+      rect: {
+        x: Math.round(probe.px.x * k - t / 2),
+        y: Math.round(probe.px.y * k - t / 2),
+        w: Math.round(t),
+        h: Math.round(t),
+      },
+    });
     out.push({
       kind: "patch",
       name: `probe:${id}`,

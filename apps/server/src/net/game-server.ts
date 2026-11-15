@@ -12,13 +12,24 @@
 
 import { Server, matchMaker, type BeforeUpgradeHandler } from "@colyseus/core";
 import type { HttpRouteDef } from "@moon-cleanup/shared";
-import { Admission, type AdmissionLimits } from "./admission";
+import { Admission, SOCKET_CAP_RETRY_AFTER_S, retryAfterHeader, type AdmissionLimits } from "./admission";
 import { DEFAULT_CLIENT_IP_HEADER, resolveUpgradeClientIp } from "./client-ip";
 import { createOriginPolicy, type OriginPolicy } from "./cors";
 import { createHelloJoinRoute } from "./hello-join-route";
 import { HELLO_ROOM_NAME, HelloRoom, assertRates, type HelloRoomOptions } from "./hello-room";
-import type { NetLogger } from "./http-routes";
+import type { NetLogger, RawBodyAuth } from "./http-routes";
+import type { IdleLimits } from "./idle-watch";
+import type { GameData } from "@moon-cleanup/game-data";
+import type { SimWorld } from "@moon-cleanup/sim";
 import { createSpikeJoinRoute, defineLoadTestRoom, type SpikeStatsSink } from "./spike";
+import {
+  JoinTickets,
+  createShiftJoinRoute,
+  defineShiftRoom,
+  type ShiftDustStore,
+  type ShiftMembership,
+  type ShiftVerifyToken,
+} from "./shift";
 import {
   DEFAULT_TRANSPORT_MODE,
   selectTransport,
@@ -26,6 +37,7 @@ import {
   type TransportLoaders,
   type TransportMode,
 } from "./transport";
+import { checkUpgradeHeaders, refusalHeaders } from "./upgrade-handshake";
 
 export { WS_MAX_BACKPRESSURE_BYTES, WS_MAX_PAYLOAD_BYTES } from "./limits";
 
@@ -59,15 +71,43 @@ export interface CreateGameServerOptions {
   readonly admission?: AdmissionLimits;
   /** Register HelloRoom and `POST /v0/hello/join` (M0 connectivity). Default true. */
   readonly helloRoom?: boolean;
+  /** Handshake/silence limits for HelloRoom seats (./idle-watch); default 10 s / 120 s. */
+  readonly helloIdle?: Partial<IdleLimits>;
   /**
    * M0 netcode spike (M0-W2-T03): registers LoadTestRoom and `POST /v0/spike/join` only when `enabled` is true.
    * The composition root passes `{ enabled: env.netSpike, stats }` (NET_SPIKE, default 0; refused in production).
    */
   readonly loadTest?: { readonly enabled: boolean; readonly stats: SpikeStatsSink };
+  /**
+   * M1 ShiftRoom (`shift`, ./shift). Registered when given; the join route `POST /v1/contracts/:id/join` is mounted
+   * only when `membership` is provided (the api layer owns membership/ban checks). Default: not registered.
+   */
+  readonly shift?: ShiftServerOptions;
+  /**
+   * Bearer verifier for raw-body REST routes (solo checkpoint upload), resolving the account key or `null`. Run before
+   * an upload slot is taken (security review M1). Absent: prefix check only, slots keyed by address.
+   */
+  readonly rawBodyAuth?: RawBodyAuth;
   /** TRANSPORT (./transport): `auto` (default) tries uWebSockets.js and falls back to `ws`. */
   readonly transport?: TransportMode;
   /** Adapter loaders (tests inject a failing uWS loader). Default: dynamic imports. */
   readonly transportLoaders?: TransportLoaders;
+}
+
+/** What the composition root hands the shift room (see CreateGameServerOptions.shift). */
+export interface ShiftServerOptions {
+  readonly data: GameData;
+  readonly world: SimWorld;
+  /** Account access-token verifier (api `verifyToken`); used by the REST join route only. */
+  readonly verifyToken: ShiftVerifyToken;
+  readonly membership?: ShiftMembership;
+  readonly stats?: SpikeStatsSink;
+  readonly idle?: Partial<IdleLimits>;
+  readonly seatHoldS?: number;
+  /** Ticket store (tests inject one to mint tickets); default a fresh per-process store. */
+  readonly tickets?: JoinTickets;
+  /** Room dust persistence (restore on create, save every 30 s when dirty and on dispose). Absent: not kept. */
+  readonly dustStore?: ShiftDustStore;
 }
 
 export interface GameServer {
@@ -118,8 +158,17 @@ export async function createGameServer(options: CreateGameServerOptions): Promis
       logger.info({ origin: origin ?? null }, "websocket upgrade refused: origin not allowed");
       return new Response(null, { status: 403 });
     }
+    // Handshake shape BEFORE the slot claim (review NB2): a handshake the transport would refuse never opens, so a
+    // claimed slot would sit until the 10 s pending timer. AuthContext headers: see ./upgrade-handshake.
+    const refusal = checkUpgradeHeaders((name) => context.headers.get(name));
+    if (refusal !== null) {
+      logger.debug({ reason: refusal.reason }, "websocket upgrade refused: malformed handshake");
+      return new Response(null, { status: refusal.status, headers: refusalHeaders(refusal) });
+    }
     const ip = resolveUpgradeClientIp((name) => request.headers.get(name), clientIpHeader, context.ip);
-    if (!admission.claimSocket(context, ip)) return new Response(null, { status: 429 });
+    if (!admission.claimSocket(context, ip)) {
+      return new Response(null, { status: 429, headers: retryAfterHeader(SOCKET_CAP_RETRY_AFTER_S) });
+    }
     return undefined;
   };
 
@@ -127,21 +176,65 @@ export async function createGameServer(options: CreateGameServerOptions): Promis
   if (options.helloRoom !== false) routes.push(createHelloJoinRoute(logger, admission));
   const loadTest = options.loadTest?.enabled === true ? options.loadTest : undefined;
   if (loadTest !== undefined) routes.push(createSpikeJoinRoute(logger, admission));
+  const shift = options.shift;
+  const tickets = shift === undefined ? undefined : (shift.tickets ?? new JoinTickets());
+  if (shift?.membership !== undefined && tickets !== undefined) {
+    routes.push(
+      createShiftJoinRoute({
+        admission,
+        tickets,
+        verifyToken: shift.verifyToken,
+        membership: shift.membership,
+        logger,
+        ...(shift.dustStore?.ensureLease === undefined
+          ? {}
+          : { leases: { ensureLease: (id) => shift.dustStore!.ensureLease!(id) } }),
+      }),
+    );
+  }
 
   const bound = await selectTransport(
     options.transport ?? DEFAULT_TRANSPORT_MODE,
-    { routes, policy, clientIpHeader, logger, admission, beforeUpgrade },
+    {
+      routes,
+      policy,
+      clientIpHeader,
+      logger,
+      admission,
+      beforeUpgrade,
+      ...(options.rawBodyAuth === undefined ? {} : { rawBodyAuth: options.rawBodyAuth }),
+    },
     options.transportLoaders,
   );
 
   const colyseus = new Server({ transport: bound.transport, greet: false, gracefullyShutdown: false, logger });
   if (options.helloRoom !== false) {
-    const helloOptions: HelloRoomOptions = { ...options.rates, serverBuild: options.serverBuild };
+    const helloOptions: HelloRoomOptions = {
+      ...options.rates,
+      serverBuild: options.serverBuild,
+      ...(options.helloIdle === undefined ? {} : { idle: options.helloIdle }),
+    };
     colyseus.define(HELLO_ROOM_NAME, HelloRoom, helloOptions);
   }
   if (loadTest !== undefined) {
     defineLoadTestRoom(colyseus, { stats: loadTest.stats, serverBuild: options.serverBuild });
     logger.info({ room: "load_test" }, "NET_SPIKE=1: LoadTestRoom registered");
+  }
+
+  if (shift !== undefined && tickets !== undefined) {
+    defineShiftRoom(colyseus, {
+      data: shift.data,
+      world: shift.world,
+      simTickHz: options.rates.simTickHz,
+      snapshotHz: options.rates.snapshotHz,
+      serverBuild: options.serverBuild,
+      tickets,
+      ...(shift.stats === undefined ? {} : { stats: shift.stats }),
+      ...(shift.idle === undefined ? {} : { idle: shift.idle }),
+      ...(shift.seatHoldS === undefined ? {} : { seatHoldS: shift.seatHoldS }),
+      ...(shift.dustStore === undefined ? {} : { dustStore: shift.dustStore }),
+      logger,
+    });
   }
 
   let boundPort = options.port;

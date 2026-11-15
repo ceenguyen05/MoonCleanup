@@ -1,0 +1,239 @@
+[
+  {
+    "name": "control-sun14",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&scale=0.65&dynres=0&backend=webgpu",
+    "sunEl": 14,
+    "sunAz": 215,
+    "keyMode": "sun",
+    "ev100": 12.307692307692308,
+    "dayClock": {
+      "on": false,
+      "timeS": -1,
+      "rate": 1,
+      "scriptedEv100": 12.307692307692308,
+      "earthLitFraction": 0.8821831521845417,
+      "limitingMagnitude": 3.638461538461538,
+      "keyLux": 32369.14963123554,
+      "floorLux": 0
+    },
+    "groundLuma": 99.60248480704402,
+    "skyLuma": 24.066347638023547,
+    "stars": 8,
+    "frameMs": {
+      "p50": 13.600000008940697,
+      "p95": 15.800000011920929,
+      "max": 17.599999994039536
+    },
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 4,
+        "avg": 11.02316225,
+        "min": 9.758098999999998,
+        "max": 11.800898000000002,
+        "p50": 11.260994000000002,
+        "p95": 11.800898000000002,
+        "p99": 11.800898000000002
+      },
+      "computeMs": {
+        "samples": 4,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 10.12708333277454,
+      "min": 5.200000017881393,
+      "max": 15.099999994039536,
+      "p50": 10.399999991059303,
+      "p95": 12.999999985098839,
+      "p99": 14.100000008940697
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.4674999997640649,
+      "min": 0.20000000298023224,
+      "max": 1.1000000089406967,
+      "p50": 0.4000000059604645,
+      "p95": 0.7999999970197678,
+      "p99": 1
+    },
+    "draws": 30,
+    "triangles": 356371,
+    "renderScale": 0.65,
+    "backend": "webgpu",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in"
+    ]
+  },
+  {
+    "name": "t0900-noon",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&scale=0.65&dynres=0&backend=webgpu&tod=900&todrate=0",
+    "sunEl": 40,
+    "sunAz": 62,
+    "keyMode": "sun",
+    "ev100": 13.833333333333334,
+    "dayClock": {
+      "on": true,
+      "timeS": 900,
+      "rate": 0,
+      "scriptedEv100": 13.833333333333334,
+      "earthLitFraction": 0.04322727117869957,
+      "limitingMagnitude": 2.7666666666666666,
+      "keyLux": 86004.98217605895,
+      "floorLux": 0
+    },
+    "groundLuma": 134.2801697907589,
+    "skyLuma": 29.326205119787694,
+    "stars": 4,
+    "frameMs": {
+      "p50": 13.900000005960464,
+      "p95": 17.400000005960464,
+      "max": 35
+    },
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 5,
+        "avg": 11.1598926,
+        "min": 9.89793,
+        "max": 11.906399,
+        "p50": 11.052329,
+        "p95": 11.906399,
+        "p99": 11.906399
+      },
+      "computeMs": {
+        "samples": 5,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 10.42041666706403,
+      "min": 4.9000000059604645,
+      "max": 32.69999998807907,
+      "p50": 10.700000002980232,
+      "p95": 13.299999997019768,
+      "p99": 14.5
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.6308333341653148,
+      "min": 0.20000000298023224,
+      "max": 23.299999997019768,
+      "p50": 0.5,
+      "p95": 0.9000000059604645,
+      "p99": 1.7999999970197678
+    },
+    "draws": 30,
+    "triangles": 344059,
+    "renderScale": 0.65,
+    "backend": "webgpu",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in"
+    ]
+  },
+  {
+    "name": "t2700-midnight",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&scale=0.65&dynres=0&backend=webgpu&tod=2700&todrate=0",
+    "sunEl": -20,
+    "sunAz": 242,
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 2700,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.9987820251299122,
+      "limitingMagnitude": 6,
+      "keyLux": 299.41537206235785,
+      "floorLux": 0
+    },
+    "groundLuma": 49.239632426903924,
+    "skyLuma": 16.26401396614867,
+    "stars": 123,
+    "frameMs": {
+      "p50": 14.5,
+      "p95": 17.5,
+      "max": 24.599999994039536
+    },
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 4,
+        "avg": 10.927078,
+        "min": 10.323256000000002,
+        "max": 12.055642,
+        "p50": 10.613,
+        "p95": 12.055642,
+        "p99": 12.055642
+      },
+      "computeMs": {
+        "samples": 4,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 9.522083333445092,
+      "min": 3.300000011920929,
+      "max": 30.799999982118607,
+      "p50": 9.5,
+      "p95": 14,
+      "p99": 18.799999997019768
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.6462499996647239,
+      "min": 0.20000000298023224,
+      "max": 10.099999994039536,
+      "p50": 0.5999999940395355,
+      "p95": 1,
+      "p99": 1.5
+    },
+    "draws": 29,
+    "triangles": 355721,
+    "renderScale": 0.65,
+    "backend": "webgpu",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+      "warning: The resource http://localhost:5262/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in"
+    ]
+  }
+]

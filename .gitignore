@@ -109,3 +109,7 @@ $RECYCLE.BIN/
 # Bulk M0 visual-check capture frames (430 PNG, ~277 MB). Reports, JSON sidecars and driver scripts stay tracked;
 # regenerate frames with docs/visual-reviews/M0/checks/driver. Remove this line to commit the frames.
 docs/visual-reviews/M0/checks/**/*.png
+
+# Generated bot/perf run output (reports in docs/agent-reports stay tracked)
+tools/bots/results/
+tools/perf/results/

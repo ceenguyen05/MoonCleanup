@@ -1,0 +1,520 @@
+[
+  {
+    "name": "control-sun14",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2",
+    "sunEl": 14,
+    "sunAz": 215,
+    "keyMode": "sun",
+    "ev100": 12.307692307692308,
+    "dayClock": {
+      "on": false,
+      "timeS": -1,
+      "rate": 1,
+      "scriptedEv100": 12.307692307692308,
+      "earthLitFraction": 0.8821831521845417,
+      "limitingMagnitude": 3.638461538461538,
+      "keyLux": 32369.14963123554,
+      "floorLux": 0
+    },
+    "groundLuma": 99.60402005948532,
+    "skyLuma": 24.023535445315236,
+    "stars": 8,
+    "frameMs": {
+      "p50": 16.599999994039536,
+      "p95": 18.200000002980232,
+      "max": 26.099999994039536
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 2.929166666790843,
+      "min": 1.5,
+      "max": 7.5,
+      "p50": 2.7999999970197678,
+      "p95": 4.799999997019768,
+      "p99": 5.9000000059604645
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.38750000031044085,
+      "min": 0.09999999403953552,
+      "max": 1.0999999940395355,
+      "p50": 0.3999999910593033,
+      "p95": 0.5,
+      "p99": 0.8999999910593033
+    },
+    "draws": 30,
+    "triangles": 356371,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": []
+  },
+  {
+    "name": "t0058-dawn",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2&tod=58&todrate=0",
+    "sunEl": 4.042251887317853,
+    "sunAz": 337.8,
+    "keyMode": "sun",
+    "ev100": 11.503412652437211,
+    "dayClock": {
+      "on": true,
+      "timeS": 58,
+      "rate": 0,
+      "scriptedEv100": 11.503412652437211,
+      "earthLitFraction": 0.4418349268042382,
+      "limitingMagnitude": 4.098049912893023,
+      "keyLux": 9431.842030783739,
+      "floorLux": 0
+    },
+    "groundLuma": 105.83264716936303,
+    "skyLuma": 29.46005543229137,
+    "stars": 13,
+    "frameMs": {
+      "p50": 16.700000002980232,
+      "p95": 18.19999998807907,
+      "max": 19.599999994039536
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 2.620000000173847,
+      "min": 1.5,
+      "max": 5.5999999940395355,
+      "p50": 2.5,
+      "p95": 4.0999999940395355,
+      "p99": 5.100000008940697
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.34916666684051356,
+      "min": 0.19999998807907104,
+      "max": 0.7999999970197678,
+      "p50": 0.30000001192092896,
+      "p95": 0.5,
+      "p99": 0.7000000029802322
+    },
+    "draws": 30,
+    "triangles": 355723,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": []
+  },
+  {
+    "name": "t0450-morning",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2&tod=450&todrate=0",
+    "sunEl": 28.2842712474619,
+    "sunAz": 17,
+    "keyMode": "sun",
+    "ev100": 13.461421908448845,
+    "dayClock": {
+      "on": true,
+      "timeS": 450,
+      "rate": 0,
+      "scriptedEv100": 13.461421908448845,
+      "earthLitFraction": 0.1354142001556558,
+      "limitingMagnitude": 2.9791874808863748,
+      "keyLux": 63400.65953876774,
+      "floorLux": 0
+    },
+    "groundLuma": 139.29118444109858,
+    "skyLuma": 39.68620326562466,
+    "stars": 4,
+    "frameMs": {
+      "p50": 16.700000002980232,
+      "p95": 18,
+      "max": 18.700000002980232
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 2.6662500002111,
+      "min": 1.5,
+      "max": 5.600000008940697,
+      "p50": 2.5999999940395355,
+      "p95": 4.100000008940697,
+      "p99": 5.0999999940395355
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.34125000033527614,
+      "min": 0.10000000894069672,
+      "max": 0.6000000089406967,
+      "p50": 0.30000001192092896,
+      "p95": 0.5,
+      "p99": 0.5
+    },
+    "draws": 30,
+    "triangles": 352483,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": []
+  },
+  {
+    "name": "t0900-noon",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2&tod=900&todrate=0",
+    "sunEl": 40,
+    "sunAz": 62,
+    "keyMode": "sun",
+    "ev100": 13.833333333333334,
+    "dayClock": {
+      "on": true,
+      "timeS": 900,
+      "rate": 0,
+      "scriptedEv100": 13.833333333333334,
+      "earthLitFraction": 0.04322727117869957,
+      "limitingMagnitude": 2.7666666666666666,
+      "keyLux": 86004.98217605895,
+      "floorLux": 0
+    },
+    "groundLuma": 134.2798560441769,
+    "skyLuma": 29.281907744787706,
+    "stars": 4,
+    "frameMs": {
+      "p50": 16.69999998807907,
+      "p95": 17.799999997019768,
+      "max": 18.599999994039536
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 2.052916666927437,
+      "min": 1.3999999910593033,
+      "max": 4.0999999940395355,
+      "p50": 1.8999999910593033,
+      "p95": 3.1000000089406967,
+      "p99": 3.5999999940395355
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.29250000044703484,
+      "min": 0.10000000894069672,
+      "max": 0.5,
+      "p50": 0.29999999701976776,
+      "p95": 0.4000000059604645,
+      "p99": 0.5
+    },
+    "draws": 30,
+    "triangles": 344059,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": []
+  },
+  {
+    "name": "t1742-dusk",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2&tod=1742&todrate=0",
+    "sunEl": 4.042251887317855,
+    "sunAz": 146.2,
+    "keyMode": "sun",
+    "ev100": 11.503412652437211,
+    "dayClock": {
+      "on": true,
+      "timeS": 1742,
+      "rate": 0,
+      "scriptedEv100": 11.503412652437211,
+      "earthLitFraction": 0.441834926804238,
+      "limitingMagnitude": 4.098049912893023,
+      "keyLux": 9431.842030783742,
+      "floorLux": 0
+    },
+    "groundLuma": 24.6535774065932,
+    "skyLuma": 23.37679911719061,
+    "stars": 13,
+    "frameMs": {
+      "p50": 16.700000002980232,
+      "p95": 18,
+      "max": 18.599999994039536
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 2.6679166672130425,
+      "min": 1.5,
+      "max": 5.399999991059303,
+      "p50": 2.5999999940395355,
+      "p95": 4.0999999940395355,
+      "p99": 5.0999999940395355
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.359583333072563,
+      "min": 0.19999998807907104,
+      "max": 1.2000000029802322,
+      "p50": 0.3999999910593033,
+      "p95": 0.5,
+      "p99": 0.6000000089406967
+    },
+    "draws": 30,
+    "triangles": 353779,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": []
+  },
+  {
+    "name": "t1800-terminator",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2&tod=1800&todrate=0",
+    "sunEl": 0,
+    "sunAz": 152,
+    "keyMode": "sun",
+    "ev100": 10.5,
+    "dayClock": {
+      "on": true,
+      "timeS": 1800,
+      "rate": 0,
+      "scriptedEv100": 10.5,
+      "earthLitFraction": 0.5000000000000001,
+      "limitingMagnitude": 4.671428571428572,
+      "keyLux": 2334.776329397315,
+      "floorLux": 19.153681011764967
+    },
+    "groundLuma": 6.008442800772961,
+    "skyLuma": 19.15339298437341,
+    "stars": 30,
+    "frameMs": {
+      "p50": 16.700000002980232,
+      "p95": 18,
+      "max": 18.200000002980232
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 2.420416667374472,
+      "min": 1.5,
+      "max": 6.799999997019768,
+      "p50": 2.000000014901161,
+      "p95": 4.4000000059604645,
+      "p99": 5.9000000059604645
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.3366666665300727,
+      "min": 0.09999999403953552,
+      "max": 0.8999999910593033,
+      "p50": 0.29999999701976776,
+      "p95": 0.5999999940395355,
+      "p99": 0.7000000029802322
+    },
+    "draws": 30,
+    "triangles": 353779,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": []
+  },
+  {
+    "name": "t2700-midnight",
+    "url": "http://localhost:5262/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2&tod=2700&todrate=0",
+    "sunEl": -20,
+    "sunAz": 242,
+    "keyMode": "earth",
+    "ev100": 7.3,
+    "dayClock": {
+      "on": true,
+      "timeS": 2700,
+      "rate": 0,
+      "scriptedEv100": 7.3,
+      "earthLitFraction": 0.9987820251299122,
+      "limitingMagnitude": 6,
+      "keyLux": 299.41537206235785,
+      "floorLux": 0
+    },
+    "groundLuma": 49.239283582177485,
+    "skyLuma": 16.21658245833616,
+    "stars": 123,
+    "frameMs": {
+      "p50": 16.700000002980232,
+      "p95": 17.899999991059303,
+      "max": 19.099999994039536
+    },
+    "gpu": {
+      "source": "none",
+      "measured": false,
+      "renderMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "computeMs": {
+        "samples": 0,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "cpuTotalMs": {
+      "samples": 240,
+      "avg": 2.5150000004718702,
+      "min": 1.5,
+      "max": 6.5,
+      "p50": 2.2999999970197678,
+      "p95": 3.8999999910593033,
+      "p99": 5.200000002980232
+    },
+    "visualsCpuMs": {
+      "samples": 240,
+      "avg": 0.3337500000372529,
+      "min": 0.19999998807907104,
+      "max": 0.6000000089406967,
+      "p50": 0.29999999701976776,
+      "p95": 0.5,
+      "p99": 0.5
+    },
+    "draws": 29,
+    "triangles": 355721,
+    "renderScale": 0.65,
+    "backend": "webgl2",
+    "gpuName": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "canvas": 1280,
+    "console": []
+  }
+]

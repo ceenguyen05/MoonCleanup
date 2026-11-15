@@ -139,6 +139,12 @@ export class StrokeLog {
     return this.slab[(slot * this.ring + ((first + k) % this.ring)) * LOG_WORDS + w]!;
   }
 
+  /** Changes whenever the ring of `plot` is written (a process-wide write counter); 0 = no ring. Cache key. */
+  stamp(plot: number): number {
+    const slot = this.slotOf[plot]!;
+    return slot < 0 ? 0 : this.lastWrite[slot]!;
+  }
+
   /** Strokes currently held for `plot` (0 .. ring). */
   count(plot: number): number {
     const slot = this.slotOf[plot]!;

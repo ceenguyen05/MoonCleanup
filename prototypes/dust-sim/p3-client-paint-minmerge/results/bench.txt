@@ -1,0 +1,11 @@
+geom build (first touch of a plot)                              0.3095 ms   1071.01 B/call
+client paint: Desk Duster 60 cm, 0.15 m                          2.048 us      1.45 B/call
+client paint: Bristle Broom 120 cm, 0.075 m                      2.340 us      0.15 B/call
+client paint: Bulldust 300 cm, 1 m                              11.017 us      0.15 B/call
+client paint: largest legal record 1023 cm, 3.95 m              95.786 us      0.15 B/call
+whole tick, 1 clients (paint+upload+merge+flush+apply)           3.725 us      2.78 B/call
+whole tick, 6 clients (paint+upload+merge+flush+apply)          26.988 us      1.31 B/call
+whole tick, 16 clients (paint+upload+merge+flush+apply)         70.163 us      2.46 B/call
+server: setPose + receive(one upload) + 2 steps (1 flush x16)     3.198 us      1.86 B/call
+  rejects reach/rate/malformed: 0 / 0 / 0; merged texels 13077
+gc exposed: yes

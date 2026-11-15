@@ -6,24 +6,24 @@ Import from `../render` (the barrel) only; at run time use the service registry.
 
 ## Files
 
-| File | Content | three |
-| --- | --- | --- |
-| `backend.ts` | Section 2.1 detection (override, adapter, software adapter, blocklist, unsupported); backend read-back | no |
-| `tier.ts` | GPU class, tier A/B/C, default preset, backend limits, `resolveQuality` | no |
-| `gpu-classes.json`, `blocklist.json` | Data for the two above (regular expressions; blocklist is empty until a failure is recorded) | no |
-| `quality-service.ts` | `quality` service: current settings, capabilities, `setPreset`, `stepDown`, `quality.changed` | no |
-| `url-options.ts` | `?backend ?preset ?dpr ?scale ?dynres ?scene ?capture` | no |
-| `viewport.ts` | CSS size + capped DPR, polled once per frame | no |
-| `render-scale.ts` | Render scale range, clamp and pins (`floor`, `ceil`, fixed number) | no |
-| `dynres.ts` | `DynamicResolution`: the section 9 control law (p90 window, hysteresis, vsync probe), no allocation per sample | no |
-| `renderer-host.ts` | Create / init / device-lost recreation state machine, frame scheduler | no |
-| `frame-loop.ts` | Per-frame module order, `mc:<module>:update` spans, manual stepping, frame-time stats | no |
-| `harness-hooks.ts` | `__mcReady`, `__mcStep`, `__mcInfo` for the screenshot harness and e2e smoke; `__mcDynres()`, `__mcRenderScale(s)` for perf tools | no |
-| `three-renderer.ts` | `WebGPURenderer` driver, canvas mount, WebGL2 probe, feature probe | yes |
-| `pipeline.ts` | `RenderPipeline` skeleton: HDR scene pass, `renderOutput`, stage hooks | yes |
-| `scene-roots.ts` | Scene, root groups, main camera and its depth range | yes |
-| `smoke-scene.ts` | `?scene=smoke` parity test mesh | yes |
-| `module.ts` | `RenderModule` (ClientModule + `renderer` service) | types |
+| File                                 | Content                                                                                                                           | three |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `backend.ts`                         | Section 2.1 detection (override, adapter, software adapter, blocklist, unsupported); backend read-back                            | no    |
+| `tier.ts`                            | GPU class, tier A/B/C, default preset, backend limits, `resolveQuality`                                                           | no    |
+| `gpu-classes.json`, `blocklist.json` | Data for the two above (regular expressions; blocklist is empty until a failure is recorded)                                      | no    |
+| `quality-service.ts`                 | `quality` service: current settings, capabilities, `setPreset`, `stepDown`, `quality.changed`                                     | no    |
+| `url-options.ts`                     | `?backend ?preset ?dpr ?scale ?dynres ?scene ?capture`                                                                            | no    |
+| `viewport.ts`                        | CSS size + capped DPR, polled once per frame                                                                                      | no    |
+| `render-scale.ts`                    | Render scale range, clamp and pins (`floor`, `ceil`, fixed number)                                                                | no    |
+| `dynres.ts`                          | `DynamicResolution`: the section 9 control law (p90 window, hysteresis, vsync probe), no allocation per sample                    | no    |
+| `renderer-host.ts`                   | Create / init / device-lost recreation state machine, frame scheduler                                                             | no    |
+| `frame-loop.ts`                      | Per-frame module order, `mc:<module>:update` spans, manual stepping, frame-time stats                                             | no    |
+| `harness-hooks.ts`                   | `__mcReady`, `__mcStep`, `__mcInfo` for the screenshot harness and e2e smoke; `__mcDynres()`, `__mcRenderScale(s)` for perf tools | no    |
+| `three-renderer.ts`                  | `WebGPURenderer` driver, canvas mount, WebGL2 probe, feature probe                                                                | yes   |
+| `pipeline.ts`                        | `RenderPipeline` skeleton: HDR scene pass, `renderOutput`, stage hooks                                                            | yes   |
+| `scene-roots.ts`                     | Scene, root groups, main camera and its depth range                                                                               | yes   |
+| `smoke-scene.ts`                     | `?scene=smoke` parity test mesh                                                                                                   | yes   |
+| `module.ts`                          | `RenderModule` (ClientModule + `renderer` service)                                                                                | types |
 
 ## Services
 
@@ -42,7 +42,7 @@ Events: `render.backendSelected` (at boot; again only if a recreated renderer ru
 - The scale applies to the scene pass (and the look's prepass) through `setResolutionScale`; canvas and DOM UI stay native.
 - `renderer.setRenderScale(scale)`: set it now, clamped to the preset's range (returns the scale in effect; a pin wins).
   `renderer.setDynamicResolution(on)`, `renderer.dynamicResolution` (read-out: `enabled, pinned, scale, scaleMin, scaleMax,
-  signal, p90Ms, targetMs, steps, floorHint`), `renderer.reportGpuFrameMs(ms)` (a GPU-time reporter; while reports are
+signal, p90Ms, targetMs, steps, floorHint`), `renderer.reportGpuFrameMs(ms)` (a GPU-time reporter; while reports are
   younger than 1 s the controller steers on GPU ms against `dynres.gpuBudgetMs`, else on the frame loop's `dt` against
   `1000 / dynres.targetFps`).
 - Law: every 0.5 s on the p90 of the last 30 frames; over 1.05 x target: -0.10; under 0.80 x target for 4 s: +0.05; no
@@ -58,6 +58,58 @@ Events: `render.backendSelected` (at boot; again only if a recreated renderer ru
   `?perf=1`: the debug module owns the same pump instead (never both). No `timestamp-query` or WebGL2: no query is issued
   and dynres steers on the frame interval (CPU frame pacing).
 - Not wired yet: no TRAA history resample on a step, no "Lower preset?" toast for `floorHint`.
+
+### Frame-rate goal and pace guard (M1-W2-T03)
+
+- **60 fps on every preset** (`frame-target.ts`): the controller steers to `max(contract targetFps, 60)` and at most a
+  14 ms GPU budget. The shared contract still says 30 fps / 28 ms for Low and Medium; with those numbers the UHD 620
+  climbed to scale 0.85 and ran at 42 to 54 fps. `?fps=contract` restores the contract's targets, `?fps=<n>` sets
+  another goal. `renderer.dynamicResolution.targetFps` reports the goal in effect.
+- **Pace guard** (`dynres.ts`): with the GPU signal the controller also watches the frame interval. Over budget = GPU
+  p90 over its budget **or** interval p90 over the frame period (never tighter than the display's own interval). A step
+  up on GPU headroom is judged like a vsync probe: taken back after 2 s if the budget breaks, and the next try waits twice
+  as long (4, 8, 16, 32 s). Read-out: `paceP90Ms`, `paceTargetMs`, `paceLimited`.
+- A failed probe is now taken back after 2 s, not 1 s (acceptance: at most one change per 2 s).
+- Warm-up frames are not sampled, and the window restarts when a warm-up ends.
+
+## Culling and LOD (`culling.ts`, M1-W2-T03)
+
+Pure math, no three, nothing allocated per call. Owners keep their own bounding spheres and call these.
+
+- `cullDistanceM(class, quality.current)`: props 150 m, pucks 120 m, builds 400 m, times `distances.objectMult`; robots
+  use the preset's `distances.robotRenderM`.
+- `HorizonCuller`: `setCamera(x, y, z, moonRadius + lowestGround)` once per frame (moon-centred metres), then
+  `isHidden(x, y, z, radius)`. Conservative: it hides a sphere only when all of it is behind the horizon.
+- `SideFrustum`: `setFromMatrix(projectionViewMatrix.elements)`, `intersectsSphere(...)`. Side planes only, so it is the
+  same on reversed-Z WebGPU and on WebGL2.
+- `cullSpheres(spheres, count, camera..., maxDistance, horizon, frustum, visibleOut, counts)`: all three tests over a
+  packed `x, y, z, r` list; writes a `Uint8Array` and reject counts. Feed the result to `InstancedSet` / `BatchedPool`.
+- `projectedSizePx(radius, distance, vfovRad, viewportHeightPx)` and `selectLod(current, sizePx, thresholdsPx,
+quality.current.distances.objectMult)`: screen-size LOD with 10 % hysteresis. Use the OUTPUT height, not the render
+  scale, so LOD does not move when dynamic resolution steps.
+- Terrain nodes are culled by the terrain module (CDLOD); three still frustum-culls ordinary meshes by itself.
+
+## Draw budget, warm-up, memory (M1-W2-T03)
+
+- `renderer.drawBudget`: last frame's draws and triangles (all passes) against `quality.budgets` (350 Low / Medium, 600
+  High / Ultra), `over`, `overFrames`, peaks. Reset on a preset change.
+- **Warm-up** (`warmup.ts`): three r187 `compileAsync` leaves the game black when a frame renders during it, so warm-up
+  is a run of ordinary synchronous frames. A warm-up starts at boot, on a preset change, on new post stages, after a
+  device loss and on `renderer.requestWarmup()`; it ends when the pipeline count stood still for 3 frames (at least 2
+  frames, at most 8 s). `renderer.pipelineWarmup`: `phase`, `pipelinesReadyMs` (boot warm-up), `pipelinesAfterWarmup`
+  (budget 0; every later pipeline is counted and warned about). `renderer.whenPipelinesReady()` gates Clock In and the
+  "Applying settings" overlay.
+- **Warm-up sources**: `renderer.addWarmupSource((active) => ...)`. On `true` show one instance of every variant you will
+  ever draw (both lamp states, every LOD, VFX quads, with `frustumCulled = false`), on `false` hide them again. Whatever
+  is not on screen during warm-up compiles on first use and shows up in `pipelinesAfterWarmup`.
+- **Memory ledger** (`memory-ledger.ts`, `renderer.memory`): `add(owner, category, label, bytes)` when a GPU resource
+  is created, `resize(id, bytes)`, `remove(id)` in `dispose()`. Categories and budgets are the section 13 table
+  (`MEMORY_BUDGET_MB`); `totals` is the per-category sum against the preset. `textureBytes(w, h, bytesPerPixel, { mips,
+layers })` sizes an entry. The render module records the scene pass target itself; every other owner records its own.
+  `renderer.rendererInfo` is what three's own tracker counts (textures, geometry, total), as a cross-check.
+- `window.__mcRender()` (dev / perf tools): warm-up, draw budget, ledger, three's tracker and dynres in one object.
+- Not built: `pipelines.manifest.ts` and its CI check (no material families exist yet to list); the count-based check
+  above stands in for it.
 
 ## Hooks for other roles
 

@@ -1,7 +1,15 @@
 // Shared plumbing of the look-dev scenes S01, S05, S06: the scene contract, the shared sun / Earth state, the ground mesh and
 // camera views. A scene adds its objects under `roots.world`, owns them, and removes them in `dispose()`.
 
-import { Group, Mesh, type BufferGeometry, type MeshStandardNodeMaterial, type PerspectiveCamera } from "three/webgpu";
+import {
+  Group,
+  Mesh,
+  type BufferGeometry,
+  type Camera,
+  type MeshStandardNodeMaterial,
+  type PerspectiveCamera,
+  type Vector3,
+} from "three/webgpu";
 import type { QualitySettings } from "@moon-cleanup/shared";
 import type { SceneRoots } from "../../render";
 import { buildCapGeometry, sphereDrop } from "./cap-geometry";
@@ -18,6 +26,18 @@ export interface LookState {
   /** Sun elevation change per second (VT-M0-04b moves it 0.1 deg/s). */
   sunRateDegPerS: number;
   earthDiameterDeg: number;
+  /**
+   * Day clock (M1-W2-T02): contract time in seconds that drives the sun along the D1 path (`lighting/day-clock.ts`).
+   * Negative = clock off: the sun stays where `sunElevationDeg` / `sunAzimuthDeg` put it (look-dev scenes, captures).
+   */
+  dayTimeS: number;
+  /** Clock speed: 1 = real time, 60 = the P5 time-lapse, 0 = frozen at `dayTimeS` (exposure exactly the script). */
+  dayRate: number;
+  /**
+   * 0..1: how far the Earth's lighting direction is turned toward the viewer. 0 = the physical phase from the sun
+   * direction (VT-M1-11); 0.5 = the reference-mood default (a readable, mostly lit Earth).
+   */
+  earthFullness: number;
 }
 
 export interface Pose {
@@ -34,11 +54,27 @@ export interface SceneContext {
   readonly quality?: QualitySettings;
 }
 
-/** A named world point a check measures (patch centre), recomputed when the sun moves. */
-export type ProbeFn = (state: Readonly<LookState>) => readonly [number, number, number];
+/**
+ * A named world point a check measures (patch centre), recomputed when the sun moves. `null` = the probe does not exist at
+ * this sun (a shadow that left its receiver); `__mcLook.probes()` then leaves the name out, so nothing measures a wrong patch.
+ */
+export type ProbeFn = (state: Readonly<LookState>) => readonly [number, number, number] | null;
+
+/**
+ * Local frame of a scene's site in world axes. The sun and Earth angles of `LookState` are read in it: azimuth 0 is
+ * `x`, azimuth 90 is `z`, elevation is measured from the plane normal to `up`. Absent = world axes (+Y up), which is
+ * the frame of a site at the north pole (Outpost Boreal) and of the flat look-dev scenes.
+ */
+export interface SiteFrame {
+  readonly x: Vector3;
+  readonly up: Vector3;
+  readonly z: Vector3;
+}
 
 export interface LookScene {
   readonly id: string;
+  /** Local frame the sun / Earth angles are read in (scenes on the sphere away from the pole). */
+  readonly siteFrame?: SiteFrame | null;
   /** Far-occluder (horizon map) visibility of the scene's ground, when it has one (VT-M0-15 spike). */
   readonly horizon?: HorizonVisibility | null;
   /** `true` once async content (the baked terrain) has been built. */
@@ -49,6 +85,12 @@ export interface LookScene {
   /** Called when the quality preset changes (after construction), for what the scene sizes from it. */
   applyQuality?(settings: QualitySettings): void;
   update(dtS: number, timeS: number): void;
+  /**
+   * Called after the sun rig update with the cascades that cast this frame: shadow cameras (matrices of the last
+   * shadow render), their far ends in metres and the layer of cascade 0 (`KEY_CASCADE_LAYER_BASE`). For scenes that
+   * cast per cascade (the CDLOD terrain).
+   */
+  updateShadowCascades?(cameras: readonly Camera[], endsM: readonly number[], layerBase: number): void;
   dispose(): void;
 }
 
@@ -75,6 +117,9 @@ export function createLookState(): LookState {
     earthAzimuthDeg: 70,
     sunRateDegPerS: 0,
     earthDiameterDeg: 4.2,
+    dayTimeS: -1,
+    dayRate: 1,
+    earthFullness: 0.5,
   };
 }
 

@@ -1,0 +1,18 @@
+[
+  {
+    "scene": "scene=s05&view=wide",
+    "frameMaxDiff": 0,
+    "frameMeanDiff": 0,
+    "over2Fraction": 0,
+    "groundMaxDiff": 0,
+    "groundMeanDiff": 0
+  },
+  {
+    "scene": "scene=moon&view=ground&tod=900&todrate=0",
+    "frameMaxDiff": 0,
+    "frameMeanDiff": 0,
+    "over2Fraction": 0,
+    "groundMaxDiff": 0,
+    "groundMeanDiff": 0
+  }
+]
