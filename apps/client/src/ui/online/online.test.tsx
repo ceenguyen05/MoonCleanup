@@ -14,10 +14,12 @@ import {
   groupCode,
   isOnlineActive,
   parseEntryTarget,
+  parseInviteLink,
   spellCode,
   type OnlineAuthPort,
   type OnlineEntryPort,
 } from "./online-model";
+import { copyText, inviteUrl } from "./clipboard";
 import OnlinePanel from "./OnlinePanel";
 import { OnlineEntry } from "./OnlineEntry";
 import { initialPanelState, panelReducer } from "./panel-model";
@@ -311,6 +313,52 @@ describe("store-driven rendering", () => {
   });
 });
 
+describe("invite links", () => {
+  it("reads /join/<code> and ?join=<code>, normalising look-alikes and separators", () => {
+    expect(parseInviteLink("", "/join/7qxk2m9t")).toBe("7QXK2M9T");
+    expect(parseInviteLink("", "/join/7QXK-2M9T/")).toBe("7QXK2M9T");
+    expect(parseInviteLink("?join=7QXK%202M9T", "/")).toBe("7QXK2M9T");
+    expect(parseInviteLink("?play=1&join=7QXK2M9T", "/index.html")).toBe("7QXK2M9T");
+  });
+  it("falls back to ?join= when the /join/<x> path code is invalid", () => {
+    expect(parseInviteLink("?join=7QXK2M9T", "/join/nope")).toBe("7QXK2M9T");
+    expect(parseInviteLink("?join=7QXK2M9T", "/join/%E0%A4%A")).toBe("7QXK2M9T");
+    // A valid path code wins over the query.
+    expect(parseInviteLink("?join=AAAAAAAA", "/join/7QXK2M9T")).toBe("7QXK2M9T");
+    expect(parseInviteLink("?join=nope", "/join/nope")).toBeNull();
+  });
+  it("ignores missing, malformed and hostile values", () => {
+    expect(parseInviteLink("", "/")).toBeNull();
+    expect(parseInviteLink("?join=", "/")).toBeNull();
+    expect(parseInviteLink("?join=nope", "/")).toBeNull();
+    expect(parseInviteLink("", "/join/%E0%A4%A")).toBeNull();
+    expect(parseInviteLink("", "/join/<script>")).toBeNull();
+  });
+  it("relabels the launcher and opens the join form pre-filled, without redeeming anything", () => {
+    const port = fakePort(fakeAuth());
+    const entry = renderWith(<OnlineEntry port={port} invite="7QXK2M9T" />);
+    expect(entry).toContain('data-invite="pending"');
+    expect(entry).toContain("Join shift");
+    const panel = renderWith(<OnlinePanel port={port} onClose={() => undefined} initialInvite="7QXK2M9T" />);
+    expect(panel).toContain('data-view="private"');
+    expect(panel).toContain('value="7QXK 2M9T"');
+    expect(port.opened).toHaveLength(0);
+  });
+  it("shows the connection chip, not the invite launcher, once a room is open", () => {
+    const port = fakePort(fakeAuth());
+    const html = renderWith(<OnlineEntry port={port} invite="7QXK2M9T" />, (s) =>
+      s.dispatch({ type: "session.set", patch: { conn: "connected", rttMs: 30, closeCode: null } }),
+    );
+    expect(html).toContain("online-chip");
+    expect(html).not.toContain("data-invite");
+  });
+  it("starts on the Solo / Private choice with no invite", () => {
+    expect(initialPanelState(false).view).toBe("choose");
+    expect(initialPanelState(false, true).view).toBe("private");
+    expect(initialPanelState(true, true).view).toBe("onShift");
+  });
+});
+
 describe("solo cost", () => {
   const dir = fileURLToPath(new URL(".", import.meta.url));
   const read = (name: string): string => readFileSync(`${dir}${name}`, "utf8");
@@ -328,5 +376,44 @@ describe("solo cost", () => {
         /from ["'][^"']*(\/net|online-room|three|sim-host|\/gameplay|\/visuals)["']/,
       );
     }
+  });
+});
+
+describe("copy invite link", () => {
+  it("builds the full link from the origin and the canonical code", () => {
+    expect(inviteUrl("https://play.example.com", "7QXK2M9T")).toBe("https://play.example.com/join/7QXK2M9T");
+    expect(inviteUrl("http://localhost:5173/", "7QXK2M9T")).toBe("http://localhost:5173/join/7QXK2M9T");
+    // the link parses back to the same code
+    expect(parseInviteLink("", new URL(inviteUrl("https://x.test", "7QXK2M9T")).pathname)).toBe("7QXK2M9T");
+  });
+  it("offers Copy invite link beside the code on the on-shift view", () => {
+    const html = renderWith(<OnlinePanel port={fakePort(fakeAuth())} onClose={() => undefined} />, (s) => {
+      s.dispatch({ type: "session.set", patch: { conn: "connected", rttMs: 30, closeCode: null } });
+      s.dispatch({ type: "shift.set", patch: { inviteCode: "7QXK2M9T" } });
+    });
+    expect(html).toContain("7QXK 2M9T");
+    expect(html).toContain('data-testid="copy-invite-link"');
+    expect(html).toContain("Copy invite link");
+    expect(html).toContain("Copy code");
+  });
+  it("uses the async clipboard when it works", async () => {
+    const writeText = vi.fn(() => Promise.resolve());
+    const legacyCopy = vi.fn(() => true);
+    expect(await copyText("hello", { clipboard: { writeText }, legacyCopy })).toBe(true);
+    expect(writeText).toHaveBeenCalledWith("hello");
+    expect(legacyCopy).not.toHaveBeenCalled();
+  });
+  it("falls back to the legacy copy when the clipboard is missing or denied, and reports failure otherwise", async () => {
+    const legacyCopy = vi.fn(() => true);
+    expect(await copyText("a", { legacyCopy })).toBe(true);
+    const denied = { writeText: () => Promise.reject(new Error("denied")) };
+    expect(await copyText("b", { clipboard: denied, legacyCopy })).toBe(true);
+    expect(legacyCopy).toHaveBeenCalledTimes(2);
+    expect(await copyText("c", { clipboard: denied, legacyCopy: () => false })).toBe(false);
+    const throwing = (): boolean => {
+      throw new Error("x");
+    };
+    expect(await copyText("d", { legacyCopy: throwing })).toBe(false);
+    expect(await copyText("e", {})).toBe(false);
   });
 });

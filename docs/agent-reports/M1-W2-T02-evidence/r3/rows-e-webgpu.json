@@ -1,0 +1,85 @@
+[
+ {
+  "name": "def",
+  "ms": 26575,
+  "frameP50": 18.700000002980232,
+  "frameP95": 55.100000001490116,
+  "gpu": {
+   "samples": 2,
+   "avg": 12.805969000000001,
+   "min": 12.702389,
+   "max": 12.909549,
+   "p50": 12.702389,
+   "p95": 12.909549,
+   "p99": 12.909549
+  },
+  "ev": 11.580769230769231,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 3727.5,
+   "decodeMs": 451.80000000447035
+  },
+  "errs": []
+ },
+ {
+  "name": "p65",
+  "ms": 28735,
+  "frameP50": 3308.2999999970198,
+  "frameP95": 3308.2999999970198,
+  "gpu": {
+   "samples": 0,
+   "avg": 0,
+   "min": 0,
+   "max": 0,
+   "p50": 0,
+   "p95": 0,
+   "p99": 0
+  },
+  "ev": 11.580769230769231,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 2525.2999999970198,
+   "decodeMs": 397.1000000014901
+  },
+  "errs": []
+ },
+ {
+  "name": "p17",
+  "error": "Error: page.goto: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5271/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&sun=5&scale=0.85&dynres=off&pverts=17\", waiting until \"load\"\u001b[22m\n",
+  "errs": []
+ },
+ {
+  "name": "sdf0",
+  "ms": 23871,
+  "frameP50": 25,
+  "frameP95": 1803.3999999985099,
+  "gpu": {
+   "samples": 1,
+   "avg": 15.147179999999997,
+   "min": 15.147179999999997,
+   "max": 15.147179999999997,
+   "p50": 15.147179999999997,
+   "p95": 15.147179999999997,
+   "p99": 15.147179999999997
+  },
+  "ev": 11.580769230769231,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 3196.10000000149,
+   "decodeMs": 571.7000000029802
+  },
+  "errs": []
+ }
+]

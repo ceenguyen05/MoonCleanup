@@ -1,9 +1,10 @@
-// @contract ui/store v1.1
+// @contract ui/store v1.2
 // @consumers apps/client/src/ui (reads, renders; React `useSyncExternalStore`), apps/client/src/net,
 //   apps/client/src/sim-host and apps/client/src/gameplay (write through actions), apps/client/src/app (creates the
 //   store and applies the actions), this package's client/module
 //
-// Version note: v1.1 (M1-W0-T06) adds the saveSync slice and its two request actions; additive.
+// Version note: v1.1 (M1-W0-T06) adds the saveSync slice and its two request actions; additive. v1.2 adds the optional
+// `compass.objectiveDistanceM` (metres, nullable) for the HUD objective label; set through `compass.set`; additive.
 //
 // UI store shape and actions. Specification: docs/architecture/module-boundaries.md sections 2 and 4;
 // docs/design/ui-screens-and-flows.md section 1.3. The UI reads a snapshot of plain read-only data; writers change it
@@ -199,7 +200,7 @@ export const INITIAL_UI_STATE = {
   },
   wallet: { lm: 0, lastDeltas: [], pendingSpendLm: 0 },
   shine: { polished: 0, total: 163_842, pct: 0, albedo: 0, dustRemovedKg: 0, milestonePct: 0 },
-  compass: { outposts: [], pings: [], fenceBearingDeg: null, objectiveMarkerId: null },
+  compass: { outposts: [], pings: [], fenceBearingDeg: null, objectiveMarkerId: null, objectiveDistanceM: null },
   holster: { slots: [], active: -1, slotCount: 1, laneLock: false, trait: null },
   suit: {
     lampLevel: 0,

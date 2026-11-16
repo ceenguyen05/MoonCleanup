@@ -3,6 +3,8 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { TERRAIN_BAKE_HASH } from "@moon-cleanup/world";
+
 import { runBake } from "./pipeline.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -29,6 +31,11 @@ console.log(
     2,
   ),
 );
+if (summary.manifest.bakeHash !== TERRAIN_BAKE_HASH) {
+  console.warn(
+    `bakeHash changed: update TERRAIN_BAKE_HASH in packages/world/src/height/bake-hash.ts to ${summary.manifest.bakeHash} (bake-hash.test.ts fails until you do).`,
+  );
+}
 console.log(
   JSON.stringify(
     {

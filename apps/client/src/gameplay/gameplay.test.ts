@@ -343,6 +343,63 @@ describe("GameplayModule dev readout (QA D2)", () => {
     p.dispose();
   });
 
+  describe("tool select intent", () => {
+    function fakeHost(sent: unknown[]): unknown {
+      return {
+        kind: "remote",
+        state: "running",
+        simTickHz: 20,
+        sendInput: () => undefined,
+        sendIntent: (i: unknown) => sent.push(i),
+        onFrame: () => () => undefined,
+        onShiftState: () => () => undefined,
+        onEvent: () => () => undefined,
+        onStateChange: () => () => undefined,
+      };
+    }
+    function make(sent: unknown[], online?: { current: unknown }): GameplayModule {
+      const host = fakeHost(sent);
+      const roots = { camera: null, world: { add: () => undefined } };
+      const services = {
+        get: (k: string) => (k === "sceneRoots" ? roots : { current: host, onChange: () => () => undefined }),
+      };
+      const m = new GameplayModule({
+        win: null,
+        cameraControl: false,
+        placeholder: false,
+        prediction: false,
+        ...(online === undefined ? {} : { online: online as never }),
+      });
+      m.init({ services, events: {} } as never);
+      return m;
+    }
+    const frame = { dt: 1 / 60 } as never;
+
+    it("Solo: a slot key sends select_tool to the host", () => {
+      const sent: unknown[] = [];
+      const m = make(sent);
+      m.input.keyDown("Digit3");
+      m.update(frame);
+      expect(sent).toEqual([{ kind: "select_tool", slot: 2 }]);
+      m.dispose();
+    });
+
+    it("online: a slot key still reaches the host's sendIntent (no onlineRoom guard)", () => {
+      const sent: unknown[] = [];
+      const room = {
+        state: "running",
+        sendInput: () => undefined,
+        predictor: { ready: false, state: { px: 0, py: 0, pz: 1, moveState: 0 }, offset: new Float64Array(3) },
+      };
+      const m = make(sent, { current: room });
+      m.input.keyDown("Digit2");
+      m.update(frame);
+      expect(sent).toEqual([{ kind: "select_tool", slot: 1 }]);
+      expect(m.stats.intents).toBe(1);
+      m.dispose();
+    });
+  });
+
   it("counts inputs sent with a tool held", () => {
     const s = new InputState();
     const pump = new InputPump(s, 20);

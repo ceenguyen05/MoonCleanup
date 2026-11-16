@@ -359,7 +359,7 @@ export const QUALITY_PRESETS = {
   medium: {
     preset: "medium",
     dprCap: 1.0,
-    dynres: { targetFps: 30, gpuBudgetMs: 28, scaleMin: 0.6, scaleMax: 0.85 },
+    dynres: { targetFps: 30, gpuBudgetMs: 28, scaleMin: 0.75, scaleMax: 0.85 },
     shadows: {
       cascades: 3,
       cascadeSizePx: 1024,
@@ -384,7 +384,7 @@ export const QUALITY_PRESETS = {
     lights: { maxLocalLights: 16, unshadowedLampRangeM: 8, envProbeFacePx: 128 },
     terrain: {
       cdlodLeafLevel: 8,
-      cdlodPatchVerts: 33,
+      cdlodPatchVerts: 17, // 17 on Medium: about -2.5 ms GPU p50 at ground (M1-W2-T01 round 6)
       cdlodRangeMult: 1.0,
       detailCraterBands: 3,
       detailNoiseOctaves: 1,

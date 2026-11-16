@@ -1,4 +1,4 @@
-// Colyseus Schema of `ShiftState` (contract protocol/shift-state-schema v1, netcode.md section 4.4). Field ORDER is
+// Colyseus Schema of `ShiftState` (contract protocol/shift-state-schema v1.1,netcode.md section 4.4). Field ORDER is
 // the wire contract (Schema field indexes follow declaration order): it mirrors SHIFT_STATE_SCHEMA_FIELDS and a test
 // compares names and types. Encode once for all clients: no StateView, patches only on frame ticks.
 //
@@ -66,6 +66,7 @@ export const ShiftStateSchemaClass = schema(
     robotCounts: t.map("uint16"),
     permissions: t.ref(PermissionsState),
     fulfilled: t.boolean(),
+    nearParcelsCollected: t.uint8(),
   },
   "ShiftState",
 );
@@ -90,6 +91,23 @@ export const SHIFT_STATE_CLASS_FIELDS = [
   ["robotCounts", "map<uint16>"],
   ["permissions", "Permissions"],
   ["fulfilled", "boolean"],
+  ["nearParcelsCollected", "uint8"],
 ] as const;
+
+/** The sim surface `nearParcelsMask` reads (MoonRoomSim satisfies it). */
+export interface NearParcelSource {
+  readonly nearParcelCount: number;
+  nearParcel(k: number, out: { x: number; y: number; z: number }): boolean;
+}
+
+const parcelScratch = { x: 0, y: 0, z: 0 };
+
+/** `ShiftState.nearParcelsCollected`: bit k set when Near Parcel k is collected (at most 8 parcels). No allocation. */
+export function nearParcelsMask(sim: NearParcelSource): number {
+  const n = Math.min(sim.nearParcelCount, 8);
+  let mask = 0;
+  for (let k = 0; k < n; k++) if (sim.nearParcel(k, parcelScratch)) mask |= 1 << k;
+  return mask;
+}
 
 export { ArraySchema, MapSchema };

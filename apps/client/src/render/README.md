@@ -49,6 +49,8 @@ signal, p90Ms, targetMs, steps, floorHint`), `renderer.reportGpuFrameMs(ms)` (a 
   reverse within 4 s; one change per 2 s. Interval signal only: after 8 s on budget it probes +0.05 (vsync hides headroom)
   and takes a failed probe back within about 1.5 s, doubling the hold up to 64 s.
 - Start: integrated GPUs start at the range floor and climb; everything else starts at the ceiling.
+- Ranges (`shared/render/quality.ts`): Low 0.50-0.75, Medium 0.75-0.85 (floor raised from 0.60, owner 2026-11-16), High 0.75-1.00,
+  Ultra 0.85-1.00.
 - Off: `?scale=floor|ceil|<0.25..1>` (a number is a fixed pin, not limited to the preset range: `?scale=1` is 1.0 on any
   preset), `?capture=1` (ceiling), `?dynres=off` (holds the start scale; the setter still works).
 - GPU signal: `GpuTimingPump` (`gpu-timing.ts`) resolves three's timestamp queries sparsely (every 16 frames; every 8 in the
@@ -99,6 +101,12 @@ quality.current.distances.objectMult)`: screen-size LOD with 10 % hysteresis. Us
   frames, at most 8 s). `renderer.pipelineWarmup`: `phase`, `pipelinesReadyMs` (boot warm-up), `pipelinesAfterWarmup`
   (budget 0; every later pipeline is counted and warned about). `renderer.whenPipelinesReady()` gates Clock In and the
   "Applying settings" overlay.
+- **Warm-up holds** (`renderer.holdWarmup()` returns `release`): content that loads asynchronously (baked terrain, models)
+  is not on screen in the first frames, so a still pipeline count says nothing about it (measured: `?scene=moon` on WebGL2
+  ended the boot warm-up after 0.7 s, then built 8 pipelines when the terrain arrived). Take a hold in `init` before the
+  load starts and call `release()` right after the content (and its warm-up instances) is in the scene. The warm-up cannot
+  settle while a hold is out; its 8 s cap counts from the last release; a hold never released ends after 60 s.
+  `pipelineWarmup.holds` shows how many are out.
 - **Warm-up sources**: `renderer.addWarmupSource((active) => ...)`. On `true` show one instance of every variant you will
   ever draw (both lamp states, every LOD, VFX quads, with `frustumCulled = false`), on `false` hide them again. Whatever
   is not on screen during warm-up compiles on first use and shows up in `pipelinesAfterWarmup`.
@@ -109,7 +117,8 @@ layers })` sizes an entry. The render module records the scene pass target itsel
   `renderer.rendererInfo` is what three's own tracker counts (textures, geometry, total), as a cross-check.
 - `window.__mcRender()` (dev / perf tools): warm-up, draw budget, ledger, three's tracker and dynres in one object.
 - Not built: `pipelines.manifest.ts` and its CI check (no material families exist yet to list); the count-based check
-  above stands in for it.
+  above stands in for it. The count is three's `info.memory.programs` (shader stages): a new pipeline that reuses
+  existing stages with other render state is not seen.
 
 ## Hooks for other roles
 

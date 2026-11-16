@@ -13,7 +13,7 @@
 // cascades hold back faces, so there is no self-shadow acne to push away.
 // `?debug=cascades` tints the sunlight by the cascade a pixel reads (VT-M0-03 debug view).
 
-import { float, mix, positionView, step, vec3, vec4 } from "three/tsl";
+import { float, mix, positionView, smoothstep, step, uniform, vec3, vec4 } from "three/tsl";
 import {
   AmbientLight,
   Color,
@@ -55,6 +55,16 @@ export const HORIZON_VISIBILITY_KEY = "mcHorizonVisibility";
  */
 export const KEY_CASCADE_LAYER_BASE = 10;
 
+/** Sun elevations (degrees) over which terrain receivers hand far cascades over to the horizon map (`MoonShadowNode.lowSun`). */
+export const HANDOVER_LOW_DEG = 6;
+export const HANDOVER_HIGH_DEG = 10;
+
+/** 1 at or below `HANDOVER_LOW_DEG`, 0 at or above `HANDOVER_HIGH_DEG`, smoothstep between. */
+export function lowSunHandover(elevationDeg: number, lowDeg = HANDOVER_LOW_DEG, highDeg = HANDOVER_HIGH_DEG): number {
+  const t = Math.min(1, Math.max(0, (elevationDeg - lowDeg) / (highDeg - lowDeg)));
+  return 1 - t * t * (3 - 2 * t);
+}
+
 /** Light margin above the highest point of a cascade (rim shadows at grazing sun), metres. */
 const LIGHT_MARGIN_M = 300;
 /** Smallest sun elevation used for the CSM direction: avoids a degenerate light-space box at exactly 0. */
@@ -90,6 +100,18 @@ function cascadeTintNode(endsM: readonly number[]): TslNode {
 export class MoonShadowNode extends CSMShadowNode {
   onCascades: ((lights: CSMShadowNode["lights"]) => void) | null = null;
   debugEndsM: readonly number[] | null = null;
+  /**
+   * Low-sun handover on TERRAIN receivers (M1-W2-T02, "toothed far shadows"): 0 = cascades as usual, 1 = past
+   * `handoverEndM` the terrain is shadowed by the horizon map alone. At a grazing sun the terrain casters' cascade shadow
+   * on the terrain itself is a comb of long teeth (one map texel spans about 11 texels of ground along the light at 5
+   * degrees, and the caster mesh is not the receiver mesh), while the horizon map draws the same ridge and crater shadows
+   * per pixel with no texels along the light. Cascade 0 (near the player) keeps the cascades, so the player's and nearby
+   * props' shadows stay; props past it lose their shadow ON THE TERRAIN at a low sun only. Props as receivers keep the
+   * cascades. Driven by `SunRig.update` from the key's elevation (`lowSunHandover`).
+   */
+  readonly lowSun = uniform(0);
+  readonly handoverStartM = uniform(8);
+  readonly handoverEndM = uniform(10);
 
   override setup(builder: NodeBuilder): Node | null | undefined {
     const first = this.camera === null;
@@ -107,7 +129,14 @@ export class MoonShadowNode extends CSMShadowNode {
     if (node === null || node === undefined) return node;
     const material = builder.material as { userData?: Record<string, unknown> } | null | undefined;
     const horizon = material?.userData?.[HORIZON_VISIBILITY_KEY] as TslNode | undefined;
-    if (horizon !== undefined) node = (node as TslNode).mul(horizon);
+    if (horizon !== undefined) {
+      // Terrain receiver: past cascade 0, a low sun hands the cascades over to the horizon map (`lowSunHandover`).
+      const depth = positionView.z.negate();
+      const away = smoothstep(this.handoverStartM, this.handoverEndM, depth);
+      const csmWeight = float(1).sub(this.lowSun.mul(away));
+      // mix(1, csm, w) written for any vector width of the cascade result.
+      node = (node as TslNode).sub(1).mul(csmWeight).add(1).mul(horizon);
+    }
     if (this.debugEndsM !== null) node = (node as TslNode).mul(cascadeTintNode(this.debugEndsM));
     return node;
   }
@@ -192,6 +221,8 @@ export class SunRig {
   private lastFov = -1;
   private lastFar = -1;
   private readonly _dir = new Vector3();
+  /** Low-sun handover of terrain receivers (`?handover=1`; off by default, see `MoonShadowNode.lowSun`). */
+  terrainHandover = false;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -317,6 +348,14 @@ export class SunRig {
     }
     this.fill.updateMatrixWorld();
     keyDirectionUniform.value.copy(this._dir);
+    if (csm !== null) {
+      const sinEl = siteUp === undefined ? directionToKey.y : directionToKey.dot(siteUp);
+      const elevationDeg = Math.asin(Math.min(1, Math.max(-1, sinEl))) / DEG;
+      csm.lowSun.value = this.terrainHandover && key.mode === "sun" ? lowSunHandover(elevationDeg) : 0;
+      const end0 = this.cascadeInfo[0]?.endM ?? 10;
+      csm.handoverStartM.value = end0 * 0.8;
+      csm.handoverEndM.value = end0;
+    }
     this.key.position.copy(this._dir).multiplyScalar(500);
     this.key.target.position.set(0, 0, 0);
     this.key.updateMatrixWorld();

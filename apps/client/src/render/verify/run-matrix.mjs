@@ -1,3 +1,4 @@
+import { OFFSCREEN_CHROME_ARGS } from "../../offscreen-chrome-args.mjs";
 // Driver of the r187 feature-verification matrix (M0-W2-T07). Not part of the app bundle: run it by hand against a
 // running dev server.
 //
@@ -44,6 +45,7 @@ const launch =
         headless: false,
         channel: "chrome",
         args: [
+          ...OFFSCREEN_CHROME_ARGS,
           "--enable-unsafe-webgpu",
           "--enable-features=Vulkan,WebGPU",
           "--ignore-gpu-blocklist",

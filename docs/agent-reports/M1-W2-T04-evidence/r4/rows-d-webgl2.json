@@ -1,0 +1,64 @@
+[
+ {
+  "name": "a5",
+  "ms": 104464,
+  "frameP50": 1015.5,
+  "frameP95": 1687.7000000001863,
+  "gpu": {
+   "samples": 0,
+   "avg": 0,
+   "min": 0,
+   "max": 0,
+   "p50": 0,
+   "p95": 0,
+   "p99": 0
+  },
+  "ev": 11.580769230769231,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 54227,
+   "decodeMs": 392
+  },
+  "errs": []
+ },
+ {
+  "name": "a30",
+  "ms": 41781,
+  "frameP50": 17.200000000186265,
+  "frameP95": 38.1999999997206,
+  "gpu": {
+   "samples": 0,
+   "avg": 0,
+   "min": 0,
+   "max": 0,
+   "p50": 0,
+   "p95": 0,
+   "p99": 0
+  },
+  "ev": 13.6,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 9808.600000000093,
+   "decodeMs": 435.29999999981374
+  },
+  "errs": []
+ },
+ {
+  "name": "a60",
+  "error": "TimeoutError: page.goto: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5281/?scene=moon&solo=0&preset=medium&backend=webgl2&sun=60\", waiting until \"load\"\u001b[22m\n",
+  "errs": []
+ },
+ {
+  "name": "b30",
+  "error": "Error: page.goto: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5281/?scene=moon&solo=0&preset=medium&backend=webgl2&sun=30&regolith=0\", waiting until \"load\"\u001b[22m\n",
+  "errs": []
+ }
+]

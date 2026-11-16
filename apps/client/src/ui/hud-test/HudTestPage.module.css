@@ -280,7 +280,7 @@
 }
 
 .gearButton:active {
-  transform: translateY(var(--mc-px));
+  transform: var(--mc-press-transform);
 }
 
 .gearOn {
@@ -560,7 +560,7 @@
 }
 
 .chipButton:active:not(:disabled) {
-  transform: translateY(var(--mc-px));
+  transform: var(--mc-press-transform);
 }
 
 .chipButton:disabled {

@@ -1,0 +1,34 @@
+DPR 1 metrics {"dpr":1,"viewport":[1280,720],"rect":{"x":260,"y":32,"w":760,"h":656,"bottom":688},"panelScroll":{"sh":719,"ch":656,"scrolls":true},"total":33,"minFs":14,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":314,"h":40,"x":301,"y":411},{"t":"Use the server copy","w":314,"h":40,"x":665,"y":411},{"t":"Decide later","w":125.796875,"h":40,"x":284,"y":651}],"cards":[{"x":284,"y":170,"w":348,"h":350},{"x":648,"y":170,"w":348,"h":350}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}
+DPR 1 after Tab active: save-choose-keep_local
+DPR 1.25 metrics {"dpr":1.25,"viewport":[1280,720],"rect":{"x":260,"y":32,"w":760,"h":656,"bottom":688},"panelScroll":{"sh":719,"ch":656,"scrolls":true},"total":33,"minFs":14,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":314,"h":40,"x":301,"y":410.59375},{"t":"Use the server copy","w":314,"h":40,"x":665,"y":410.59375},{"t":"Decide later","w":125.796875,"h":40,"x":284,"y":650.59375}],"cards":[{"x":284,"y":169.59375,"w":348,"h":350},{"x":648,"y":169.59375,"w":348,"h":350}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}
+DPR 1.25 after Tab active: save-choose-keep_local
+DPR 1.5 metrics {"dpr":1.5,"viewport":[1280,720],"rect":{"x":260,"y":32,"w":760,"h":656,"bottom":688},"panelScroll":{"sh":719,"ch":656,"scrolls":true},"total":33,"minFs":14,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":314,"h":40,"x":301,"y":411},{"t":"Use the server copy","w":314,"h":40,"x":665,"y":411},{"t":"Decide later","w":125.796875,"h":40,"x":284,"y":651}],"cards":[{"x":284,"y":170,"w":348,"h":350},{"x":648,"y":170,"w":348,"h":350}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}
+DPR 1.5 after Tab active: save-choose-keep_local
+DPR 2 metrics {"dpr":2,"viewport":[1280,720],"rect":{"x":260,"y":32,"w":760,"h":656,"bottom":688},"panelScroll":{"sh":719,"ch":656,"scrolls":true},"total":33,"minFs":14,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":314,"h":40,"x":301,"y":411},{"t":"Use the server copy","w":314,"h":40,"x":665,"y":411},{"t":"Decide later","w":125.796875,"h":40,"x":284,"y":651}],"cards":[{"x":284,"y":170,"w":348,"h":350},{"x":648,"y":170,"w":348,"h":350}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}
+DPR 2 after Tab active: save-choose-keep_local
+DPR 3 metrics {"dpr":3,"viewport":[1280,720],"rect":{"x":260,"y":32,"w":760,"h":656,"bottom":688},"panelScroll":{"sh":719,"ch":656,"scrolls":true},"total":33,"minFs":14,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":314,"h":40,"x":301,"y":411},{"t":"Use the server copy","w":314,"h":40,"x":665,"y":411},{"t":"Decide later","w":125.796875,"h":40,"x":284,"y":651}],"cards":[{"x":284,"y":170,"w":348,"h":350},{"x":648,"y":170,"w":348,"h":350}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}
+DPR 3 after Tab active: save-choose-keep_local
+initial focus: H2:Which copy?
+after Enter on heading, prompt still there: 1 status=""
+Tab order x5: save-choose-keep_local > save-choose-use_server > save-decide-later > save-choose-keep_local > save-choose-use_server
+Shift+Tab x4: save-choose-keep_local > save-decide-later > save-choose-use_server > save-choose-keep_local
+arrows: ArrowRight->save-choose-use_server | ArrowDown->save-decide-later | ArrowUp->save-choose-keep_local | ArrowLeft->save-decide-later | ArrowDown->save-decide-later | ArrowDown->save-decide-later
+pad-equivalent moveFocus: right:true->save-choose-use_server | down:true->save-decide-later | up:true->save-choose-keep_local | left:true->save-decide-later
+hud still mounted: 1
+keydown reaching window while dialog focused (expect 0): 0
+working status: "Working on it"
+prompt count after choice settled: 0 hud-sync="Saved to cloud"
+errors: []
+fail status: "That did not go through. Nothing changed. Try again."
+after Esc prompt count: 0 indicator: "Choose a copy in Settings"
+DPR 1 confirm focus: settings-save-restore-cancel
+DPR 2 confirm focus: settings-save-restore-cancel
+indicator synced: "Saved to cloud"
+indicator pending: "Saving to cloud"
+indicator offline: "Offline, saved here"
+indicator error: "Cloud save paused"
+indicator local_only: "Saved on this device"
+indicator uploading: "Saving to cloud"
+720x540 metrics {"dpr":1,"viewport":[720,540],"rect":{"x":32,"y":32,"w":656,"h":476,"bottom":508},"panelScroll":{"sh":997,"ch":476,"scrolls":true},"total":33,"minFs":14,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":574,"h":40,"x":73,"y":387},{"t":"Use the server copy","w":574,"h":40,"x":73,"y":709},{"t":"Decide later","w":125.796875,"h":40,"x":56,"y":929}],"cards":[{"x":56,"y":170,"w":608,"h":306},{"x":56,"y":492,"w":608,"h":306}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}
+1280x720-ui130 metrics {"dpr":1,"viewport":[1280,720],"rect":{"x":146,"y":42,"w":988,"h":636,"bottom":678},"panelScroll":{"sh":934,"ch":636,"scrolls":true},"total":33,"minFs":18,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":408.5,"h":52,"x":199,"y":533},{"t":"Use the server copy","w":408.5,"h":52,"x":672.5,"y":533},{"t":"Decide later","w":164.484375,"h":52,"x":177,"y":846}],"cards":[{"x":177,"y":221,"w":452.5,"h":454},{"x":650.5,"y":221,"w":452.5,"h":454}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}
+1024x600 metrics {"dpr":1,"viewport":[1024,600],"rect":{"x":132,"y":32,"w":760,"h":536,"bottom":568},"panelScroll":{"sh":719,"ch":536,"scrolls":true},"total":33,"minFs":14,"offGrid":0,"clipped":[],"buttons":[{"t":"Keep this device","w":314,"h":40,"x":173,"y":411},{"t":"Use the server copy","w":314,"h":40,"x":537,"y":411},{"t":"Decide later","w":125.796875,"h":40,"x":156,"y":651}],"cards":[{"x":156,"y":170,"w":348,"h":350},{"x":520,"y":170,"w":348,"h":350}],"active":"H2:Which copy?","hudBehind":true,"hairline":"1px"}

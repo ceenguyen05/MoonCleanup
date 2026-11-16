@@ -3,7 +3,7 @@
 // (sim-host/readouts.ts) at most 10 Hz and turns each unit direction into a compass bearing from the avatar's position
 // (`sphereBearingDeg`, world north = +Y: ICO_NORTH in packages/world). The UI store only publishes on a changed value, and
 // the buffers here are reused, so a frame without change allocates nothing. Without a source (online, no host) it stays
-// idle and leaves the last values.
+// idle; when a source goes away the near parcels are cleared once (`clearNearParcels`), outposts keep their last values.
 
 import { HUD_WRITE_HZ } from "./hud-writer";
 
@@ -28,6 +28,8 @@ export interface ParcelUiTarget {
     bearing?: (dir: Readonly<Dir>) => number | null,
   ): void;
   setOutpostBearing(id: string, bearingDeg: number | null): void;
+  /** Drops the near parcels (count, mask, bearings); outposts stay. No-op when already empty. */
+  clearNearParcels?(): void;
 }
 
 export interface ParcelFeedOptions {
@@ -42,6 +44,7 @@ export interface ParcelFeedOptions {
 export class ParcelFeed {
   private readonly minIntervalMs = 1000 / HUD_WRITE_HZ;
   private lastMs = Number.NEGATIVE_INFINITY;
+  private hadSource = false;
   private readonly pos: Dir = { x: 0, y: 1, z: 0 };
   private readonly unit: Dir = { x: 0, y: 1, z: 0 };
   private readonly outpost: Dir & { id: string } = { id: "", x: 0, y: 1, z: 0 };
@@ -53,7 +56,13 @@ export class ParcelFeed {
   pump(nowMs: number): void {
     if (nowMs - this.lastMs < this.minIntervalMs) return;
     const src = this.options.source();
-    if (src === null) return;
+    if (src === null) {
+      // Source gone (host left / went online without parcels): drop stale near parcels once (no-op when empty).
+      if (this.hadSource) this.options.ui.clearNearParcels?.();
+      this.hadSource = false;
+      return;
+    }
+    this.hadSource = true;
     this.lastMs = nowMs;
     const p = this.pos;
     if (!this.options.samplePos(p)) return;

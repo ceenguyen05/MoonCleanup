@@ -58,8 +58,17 @@ export function assertLocalUrl(url: string): void {
   }
 }
 
+export const OFFSCREEN_CHROME_ARGS = [
+  "--window-position=-32000,-32000",
+  "--window-size=1280,720",
+  "--disable-backgrounding-occluded-windows",
+  "--disable-renderer-backgrounding",
+  "--disable-background-timer-throttling",
+];
+
 export function chromeArgs(adapter: AdapterFlag): string[] {
   const args = [
+    ...OFFSCREEN_CHROME_ARGS,
     "--enable-unsafe-webgpu",
     "--enable-features=Vulkan,WebGPU",
     "--ignore-gpu-blocklist",

@@ -24,7 +24,7 @@ import { MoonRoomSim, createRoomDustLedger, type SimWorld } from "@moon-cleanup/
 import { createPlotGrid, type WorldDustLedger } from "@moon-cleanup/world";
 import { describe, expect, it } from "vitest";
 import { inflateRaw } from "./inflate-raw";
-import { RemoteDust } from "./remote-dust";
+import { RemoteDust, WANTED_PLOT_MAX_REQUESTS } from "./remote-dust";
 
 const data = loadGameData();
 const grid = createPlotGrid(STANDARD_GRID_PARAMS);
@@ -199,6 +199,122 @@ describe("RemoteDust (client dust mirror)", () => {
     expect(delta).toBeLessThan(512 * 1024);
   });
 
+  it("the 5 s DUST_CHECK chunk summary repairs a deliberately corrupted chunk (chunk -> detail -> plots -> ledger)", () => {
+    const server = new Server();
+    for (let t = 0; t < 300; t++) server.step(t);
+    const sl = server.ledger;
+    const client = new RemoteDust(createRoomDustLedger(grid, data, { tickHz: 20, initialLedgerSlots: 1024 }), {
+      framesEvery: F,
+    });
+    const out = new Uint8Array(8192);
+    const chunkCheck = (hashXor = 0): Uint8Array => {
+      const seen = new Set<number>();
+      const chunks: { chunkId: number; xorHash: number }[] = [];
+      for (let s = 0; s < sl.slotHigh; s++) {
+        const p = sl.plotOfSlot[s]!;
+        if (p < 0 || sl.state[p] !== PlotState.Opened) continue;
+        const c = grid.chunkOf(p as never) as number;
+        if (!seen.has(c)) chunks.push({ chunkId: c, xorHash: (sl.chunkHash(c) ^ hashXor) >>> 0 });
+        seen.add(c);
+      }
+      const n = encodeDustCheck({ mode: "chunks", chunks }, out);
+      expect(n).toBeGreaterThan(0);
+      return out.slice(0, n);
+    };
+    const detail = (chunkId: number): Uint8Array => {
+      const plots: { plotId: never; ledgerVersion: number; hash: number }[] = [];
+      for (let k = 0; k < 256; k++) {
+        const p = grid.plotAtChunkLocal(chunkId as never, k) as number;
+        if (sl.slotOf[p]! >= 0 && sl.state[p] === PlotState.Opened) {
+          plots.push({ plotId: p as never, ledgerVersion: sl.version[sl.slotOf[p]!]!, hash: sl.ledgerHash(p) });
+        }
+      }
+      return out.slice(0, encodeDustCheck({ mode: "detail", chunkId, plots }, out));
+    };
+
+    // Before the snapshot a summary is ignored (nothing to compare).
+    expect(client.applyBytes(chunkCheck())).toBe(true);
+    expect(client.wantedCount).toBe(0);
+    client.installSnapshot(decodeSnapshotRaw(inflateRaw(server.snapshot(), 1 << 20)!, grid.count)!);
+    // In sync: the summary matches, nothing is requested.
+    expect(client.applyBytes(chunkCheck())).toBe(true);
+    expect(client.wantedCount).toBe(0);
+    expect(client.stats.chunkMismatches).toBe(0);
+
+    // Corrupt one texel of one client ledger.
+    const plot = sl.plotOfSlot[0]!;
+    const chunk = grid.chunkOf(plot as never) as number;
+    const texels = new Uint8Array(LEDGER_BYTES);
+    client.ledger.copyTexels(plot, texels, 0);
+    const at = texels.findIndex((v) => v > 0);
+    texels[at] = texels[at]! - 1;
+    expect(client.ledger.installLedger(plot, texels, 0, 1)).toBeGreaterThanOrEqual(0);
+    expect(client.ledger.ledgerHash(plot)).not.toBe(sl.ledgerHash(plot));
+    const goodChunk = sl.chunkHash(chunk);
+    expect(client.ledger.chunkHash(chunk)).not.toBe(goodChunk);
+
+    // The next summary flags the chunk -> a chunk DUST_REQUEST.
+    expect(client.applyBytes(chunkCheck())).toBe(true);
+    expect(client.stats.chunkMismatches).toBeGreaterThanOrEqual(1);
+    expect(client.wantedCount).toBeGreaterThanOrEqual(1);
+    let n = client.nextRequest(out);
+    expect(decodeDustRequest(out.slice(0, n), grid.count)).toEqual({ kind: "chunk", chunkId: chunk });
+    // The detail answer names exactly the corrupted plot -> a plots DUST_REQUEST for it.
+    expect(client.applyBytes(detail(chunk))).toBe(true);
+    expect(client.stats.checkMismatches).toBe(1);
+    n = client.nextRequest(out);
+    expect(decodeDustRequest(out.slice(0, n), grid.count)).toEqual({ kind: "plots", plotIds: [plot] });
+    // The server's ledger answer repairs it: hashes equal, nothing wanted, the next summary is clean.
+    n = encodeDustLedger(plot, ledgerInput(sl, plot), deflate, out);
+    expect(client.applyBytes(out.slice(0, n))).toBe(true);
+    expect(client.ledger.ledgerHash(plot)).toBe(sl.ledgerHash(plot));
+    expect(client.ledger.chunkHash(chunk)).toBe(goodChunk);
+    expect(client.applyBytes(chunkCheck())).toBe(true);
+    expect(client.wantedCount).toBe(0);
+    expect(client.ledger.worldHash()).toBe(sl.worldHash());
+  });
+
+  it("a summary that differs but whose detail has nothing to fetch is requested once, not every 5 s", () => {
+    const server = new Server();
+    for (let t = 0; t < 300; t++) server.step(t);
+    const sl = server.ledger;
+    const client = new RemoteDust(createRoomDustLedger(grid, data, { tickHz: 20, initialLedgerSlots: 1024 }), {
+      framesEvery: F,
+    });
+    client.installSnapshot(decodeSnapshotRaw(inflateRaw(server.snapshot(), 1 << 20)!, grid.count)!);
+    const plot = sl.plotOfSlot[0]!;
+    const chunk = grid.chunkOf(plot as never) as number;
+    const out = new Uint8Array(8192);
+    // The server counts fewer ledgers in this chunk than the client holds (left behind beyond the stream hysteresis).
+    const skewed = (sl.chunkHash(chunk) ^ 0x5a5a5a5a) >>> 0;
+    const summary = (xorHash: number): Uint8Array =>
+      out.slice(0, encodeDustCheck({ mode: "chunks", chunks: [{ chunkId: chunk, xorHash }] }, out));
+    expect(client.applyBytes(summary(skewed))).toBe(true);
+    expect(client.wantedCount).toBe(1);
+    let n = client.nextRequest(out);
+    expect(decodeDustRequest(out.slice(0, n), grid.count)).toEqual({ kind: "chunk", chunkId: chunk });
+    const plots: { plotId: never; ledgerVersion: number; hash: number }[] = [];
+    for (let k = 0; k < 256; k++) {
+      const p = grid.plotAtChunkLocal(chunk as never, k) as number;
+      if (sl.slotOf[p]! >= 0 && sl.state[p] === PlotState.Opened) {
+        plots.push({ plotId: p as never, ledgerVersion: 1, hash: sl.ledgerHash(p) });
+      }
+    }
+    n = encodeDustCheck({ mode: "detail", chunkId: chunk, plots }, out);
+    expect(client.applyBytes(out.slice(0, n))).toBe(true);
+    expect(client.wantedCount).toBe(0);
+    // The same pair again: suppressed. A different server hash (real drift) asks again.
+    expect(client.applyBytes(summary(skewed))).toBe(true);
+    expect(client.wantedCount).toBe(0);
+    expect(client.applyBytes(summary(skewed ^ 1))).toBe(true);
+    expect(client.wantedCount).toBe(1);
+    // Garbage and truncated summaries are refused without throwing.
+    const good = summary(skewed);
+    expect(client.applyBytes(good.slice(0, good.length - 1))).toBe(false);
+    expect(client.applyBytes(new Uint8Array([MESSAGE_CATALOG.DUST_CHECK.id as number]))).toBe(false);
+    expect(client.applyBytes(new Uint8Array([MESSAGE_CATALOG.DUST_CHECK.id as number, 0, 255, 255, 255]))).toBe(false);
+  });
+
   it("dust.plots, DUST_LEDGER install and DUST_CHECK repair (mismatch -> DUST_REQUEST -> ledger)", () => {
     const server = new Server();
     for (let t = 0; t < 300; t++) server.step(t);
@@ -249,5 +365,86 @@ describe("RemoteDust (client dust mirror)", () => {
     expect(client.stateOf(free)).toBe(PlotState.Opened);
     expect(client.fracOf(free)).toBe(200);
     expect(client.stateOf(free + 1)).toBe(PlotState.Polished);
+  });
+
+  it("a wanted plot that becomes Polished is dropped from the wants (the server answers nothing for it)", () => {
+    const server = new Server();
+    for (let t = 0; t < 300; t++) server.step(t);
+    const client = new RemoteDust(createRoomDustLedger(grid, data, { tickHz: 20, initialLedgerSlots: 1024 }), {
+      framesEvery: F,
+    });
+    const full = decodeSnapshotRaw(inflateRaw(server.snapshot(), 1 << 20)!, grid.count)!;
+    client.installSnapshot({ ...full, ledgers: [] });
+    let plot = -1;
+    for (let s = 0; s < server.ledger.slotHigh && plot < 0; s++) plot = server.ledger.plotOfSlot[s]!;
+    const out = new Uint8Array(4096);
+    const n = encodeDustCheck(
+      {
+        mode: "detail",
+        chunkId: grid.chunkOf(plot as never),
+        plots: [{ plotId: plot as never, ledgerVersion: 1, hash: server.ledger.ledgerHash(plot) }],
+      },
+      out,
+    );
+    expect(client.applyBytes(out.slice(0, n))).toBe(true);
+    expect(client.wantedCount).toBe(1);
+    // The plot is Polished before the server answers the request: the 2 Hz dust.plots delta carries it.
+    const view = new FrameView();
+    view.dustPlots.count = 1;
+    view.dustPlots.plotId[0] = plot;
+    view.dustPlots.state[0] = PlotState.Polished;
+    view.dustPlots.remainingFrac[0] = 0;
+    client.applyFrame(view);
+    expect(client.stateOf(plot)).toBe(PlotState.Polished);
+    expect(client.wantedCount).toBe(0);
+    expect(client.nextRequest(out)).toBe(0);
+  });
+
+  it("F4: a wanted plot the server never answers expires after a few requests and does not block chunk repair", () => {
+    const server = new Server();
+    for (let t = 0; t < 300; t++) server.step(t);
+    const client = new RemoteDust(createRoomDustLedger(grid, data, { tickHz: 20, initialLedgerSlots: 1024 }), {
+      framesEvery: F,
+    });
+    const full = decodeSnapshotRaw(inflateRaw(server.snapshot(), 1 << 20)!, grid.count)!;
+    client.installSnapshot({ ...full, ledgers: [] });
+    let plot = -1;
+    for (let s = 0; s < server.ledger.slotHigh && plot < 0; s++) plot = server.ledger.plotOfSlot[s]!;
+    const chunk = grid.chunkOf(plot as never) as number;
+    const out = new Uint8Array(4096);
+    // A plot detail mismatch, then a chunk summary mismatch for a different chunk queued behind it.
+    let n = encodeDustCheck(
+      {
+        mode: "detail",
+        chunkId: chunk,
+        plots: [{ plotId: plot as never, ledgerVersion: 1, hash: server.ledger.ledgerHash(plot) }],
+      },
+      out,
+    );
+    expect(client.applyBytes(out.slice(0, n))).toBe(true);
+    const otherChunk = chunk === 0 ? 1 : 0;
+    n = encodeDustCheck({ mode: "chunks", chunks: [{ chunkId: otherChunk, xorHash: 0x12345678 }] }, out);
+    expect(client.applyBytes(out.slice(0, n))).toBe(true);
+    expect(client.wantedCount).toBe(2);
+    // The server never answers: the plot is requested exactly WANTED_PLOT_MAX_REQUESTS times, then the chunk goes out.
+    for (let i = 0; i < WANTED_PLOT_MAX_REQUESTS; i++) {
+      n = client.nextRequest(out);
+      expect(decodeDustRequest(out.slice(0, n), grid.count)).toEqual({ kind: "plots", plotIds: [plot] });
+    }
+    n = client.nextRequest(out);
+    expect(decodeDustRequest(out.slice(0, n), grid.count)).toEqual({ kind: "chunk", chunkId: otherChunk });
+    expect(client.wantedCount).toBe(1); // only the chunk remains wanted
+    // A fresh check that names the plot again starts a new bounded round (the want is not lost for good).
+    n = encodeDustCheck(
+      {
+        mode: "detail",
+        chunkId: chunk,
+        plots: [{ plotId: plot as never, ledgerVersion: 1, hash: server.ledger.ledgerHash(plot) }],
+      },
+      out,
+    );
+    expect(client.applyBytes(out.slice(0, n))).toBe(true);
+    n = client.nextRequest(out);
+    expect(decodeDustRequest(out.slice(0, n), grid.count)).toEqual({ kind: "plots", plotIds: [plot] });
   });
 });

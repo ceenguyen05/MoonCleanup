@@ -23,6 +23,7 @@ import {
   sunTerminatorFraction,
 } from "./lighting/key-light";
 import { KEY_CASCADE_LAYER_BASE, SunRig } from "./lighting/sun-rig";
+import { farKernelFloorX, farKernelFloorY, nearKernelFloorX, nearKernelFloorY } from "./lighting/shadow-filter";
 import { CameraOnlyVelocity } from "./post/camera-velocity";
 import { createLookStages, LOOK_GRADE, NEUTRAL_GRADE, type LookGrade, type LookStageHandles } from "./post/look-stages";
 import { applyLookKnobs, DEFAULT_LOOK_KNOBS, describeLookKnobs, parseLookKnobs, type LookKnobs } from "./look-knobs";
@@ -41,7 +42,8 @@ import { createLookState, type LookScene, type LookState, type SiteFrame } from 
 import { createGroundBumpHandle } from "./lookdev/bump-handle";
 import { readDustAtlasInfo } from "./dust/atlas-info";
 import { DUST_SCENE_ID, DustWorksite, type DustFeedPort } from "./dust/dust-worksite";
-import { MOON_SCENE_ID, TerrainScene } from "../terrain";
+import { applyTerrainSurface, createPlainTerrainMaterial, MOON_SCENE_ID, TerrainScene } from "../terrain";
+import { TerrainRegolithProvider } from "./materials/terrain-regolith-provider";
 
 /** Local direction (x = azimuth 0, y = up, z = azimuth 90) to world axes, in place. */
 function toSiteFrame(v: Vector3, site: SiteFrame): void {
@@ -98,6 +100,9 @@ export class VisualsModule implements ClientModule<RenderServices> {
   private dust: DustWorksite | null = null;
   /** S02 / S03: scenes with their own hooks (`__mcLookdev`) that set the sun in `state` and are lit by this rig. */
   private lookdev: LookdevScene | null = null;
+  /** Production regolith on the moon terrain (M1-W2-T04): the terrain's material factory (hook H1) and its resources. */
+  private regolith: TerrainRegolithProvider | null = null;
+  private removeRegolithHook: (() => void) | null = null;
   private stages: LookStageHandles | null = null;
   private readonly velocity = new CameraOnlyVelocity();
   private readonly key = createKeyState();
@@ -105,6 +110,8 @@ export class VisualsModule implements ClientModule<RenderServices> {
   private appliedQuality: FrameInfo["quality"] | null = null;
   private readonly off: Unsubscribe[] = [];
   private removeHooks: (() => void) | null = null;
+  /** URL params of `init` (the dust scene is rebuilt with them when its feed is swapped). */
+  private params: URLSearchParams | null = null;
   /** Per-feature URL knobs (`look-knobs.ts`): `?sky=0` black space, `?grade=neutral` calibration grade, cost splits. */
   private knobs: LookKnobs = DEFAULT_LOOK_KNOBS;
   /** Grade set through `__mcLook.setGrade` (look-dev tuning); `null` = the URL's grade. */
@@ -146,9 +153,13 @@ export class VisualsModule implements ClientModule<RenderServices> {
     const quality = ctx.services.get("quality");
 
     this.rig = new SunRig(roots.scene);
+    // `?handover=1`: terrain hands its far cascades to the horizon map at a low sun (experiment, off by default: the
+    // horizon map misses mid-scale ridge shadows; `MoonShadowNode.lowSun`).
+    this.rig.terrainHandover = params.get("handover") === "1";
     this.sky = new SkyRig(roots.sky, this.knobs);
 
     this.dayCycle = this.options.dayCycle ?? DEFAULT_DAY_CYCLE;
+    this.params = params;
     const sceneCtx = { roots, params, state: this.state, quality: quality.current };
     if (sceneParam === "s01") this.scene = new S01Approach(sceneCtx);
     else if (sceneParam === "s05") this.scene = new S05ShadowLab(sceneCtx);
@@ -157,8 +168,26 @@ export class VisualsModule implements ClientModule<RenderServices> {
     else if (sceneParam === DUST_SCENE_ID)
       this.scene = this.dust = new DustWorksite(sceneCtx, this.options.dustFeed ?? null);
     // `?scene=moon` (M1-W2-T01): the CDLOD sphere terrain on the baked height cube, owned by the terrain module.
-    else if (sceneParam === MOON_SCENE_ID) this.scene = new TerrainScene(sceneCtx);
-    else {
+    // Its surface wears the production regolith (`&regolith=0`: no factory, the terrain's plain material).
+    else if (sceneParam === MOON_SCENE_ID) {
+      const regolith = (this.regolith = new TerrainRegolithProvider(params, () => quality.current.preset));
+      const terrainMaterial = regolith.factory(applyTerrainSurface);
+      this.scene = new TerrainScene({
+        ...sceneCtx,
+        render: renderer,
+        ...(terrainMaterial === undefined ? {} : { terrainMaterial }),
+      });
+      // `__mcRegolith.swap(name)` (diagnostics): in-page cost A/B of the terrain material, same thermal state.
+      if (regolith.enabled) {
+        const host = globalThis as unknown as { __mcRegolith?: unknown };
+        host.__mcRegolith = {
+          swap: (name: string) => regolith.swap(roots.world, name, applyTerrainSurface, createPlainTerrainMaterial),
+        };
+        this.removeRegolithHook = () => {
+          delete host.__mcRegolith;
+        };
+      }
+    } else {
       this.lookdev = createLookdevScene(sceneParam, {
         roots,
         renderer,
@@ -177,6 +206,22 @@ export class VisualsModule implements ClientModule<RenderServices> {
     }
     const todRate = params.get("todrate");
     if (todRate !== null && Number.isFinite(Number(todRate))) this.state.dayRate = Math.max(0, Number(todRate));
+    // `?kernelfloor=`, `?kernelfloorx=`, `?kernelfloory=` (0..1): floors of the far cascades' receiver-aware kernel
+    // (`shadow-filter.ts`; A/B of the comb fix).
+    for (const [name, target] of [
+      ["kernelfloor", null],
+      ["kernelfloorx", farKernelFloorX],
+      ["kernelfloory", farKernelFloorY],
+      ["kernelfloor0", null],
+      ["kernelfloor0x", nearKernelFloorX],
+      ["kernelfloor0y", nearKernelFloorY],
+    ] as const) {
+      const raw = params.get(name);
+      if (raw === null || raw.trim() === "" || !Number.isFinite(Number(raw))) continue;
+      const v = Math.min(1, Math.max(0, Number(raw)));
+      const both = name === "kernelfloor0" ? [nearKernelFloorX, nearKernelFloorY] : [farKernelFloorX, farKernelFloorY];
+      for (const u of target === null ? both : [target]) u.value = v;
+    }
     const earthFull = params.get("earthfull");
     if (earthFull !== null && Number.isFinite(Number(earthFull))) {
       this.state.earthFullness = Math.min(1, Math.max(0, Number(earthFull)));
@@ -322,10 +367,34 @@ export class VisualsModule implements ClientModule<RenderServices> {
             : 0.3),
       earthLit: lit,
       earthFullness: state.earthFullness,
+      siteUp: site?.up ?? null,
     });
     const horizon = this.scene?.horizon;
     if (horizon !== undefined && horizon !== null) horizon.keyDirection.value.copy(this.keyDir);
     this.velocity.update(camera);
+  }
+
+  /**
+   * `?scene=dust` only: swaps the scene's stroke source (online room open: the room's mirror feed; close: the Solo feed
+   * again, or the seeded scenario for null). The dust worksite builds its atlas and ground around one ledger, so it is
+   * rebuilt on the new feed (a cold path: room open / close, never per frame). Returns false (no-op) for any other
+   * scene, before `init`, or when `feed` is already the current source.
+   */
+  setDustFeed(feed: DustFeedPort | null): boolean {
+    const old = this.dust;
+    const ctx = this.ctx;
+    const params = this.params;
+    if (old === null || ctx === null || params === null || old.feed === feed) return false;
+    old.dispose();
+    const quality = ctx.services.get("quality");
+    const sceneCtx = { roots: ctx.services.get("sceneRoots"), params, state: this.state, quality: quality.current };
+    const next = new DustWorksite(sceneCtx, feed);
+    this.scene = this.dust = next;
+    const renderer = ctx.services.get("renderer").renderer;
+    if (renderer !== null) next.bindRenderer(renderer);
+    const scene: LookScene = next;
+    scene.applyQuality?.(applyLookKnobs(quality.current, this.knobs));
+    return true;
   }
 
   dispose(): void {
@@ -339,6 +408,10 @@ export class VisualsModule implements ClientModule<RenderServices> {
     this.stages = null;
     this.scene?.dispose();
     this.scene = null;
+    this.removeRegolithHook?.();
+    this.removeRegolithHook = null;
+    this.regolith?.dispose();
+    this.regolith = null;
     this.dust = null;
     this.lookdev?.dispose();
     this.lookdev = null;

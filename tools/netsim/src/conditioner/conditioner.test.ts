@@ -62,4 +62,48 @@ describe("startProxy", () => {
     await p.close();
     await new Promise<void>((r) => echo.close(() => r()));
   });
+
+  // Regression (M1 netsim desync): chunks clamped to the same delivery time used to get separate setTimeouts with
+  // different durations; Node's cached integer-ms timer clock let a later chunk fire first, reordering the TCP stream
+  // (WebSocket messages swapped -> bots saw serverTick/ack regressions and FRAME decode failures).
+  it("never reorders chunks under heavy jitter (one FIFO drain per direction)", async () => {
+    const echo = net.createServer((s) => s.pipe(s));
+    await new Promise<void>((r) => echo.listen(0, "127.0.0.1", () => r()));
+    const targetPort = (echo.address() as net.AddressInfo).port;
+    const p = await startProxy({
+      profile: { name: "t", latencyMs: 20, jitterMs: 40, loss: 0.05 },
+      listenPort: 0,
+      targetPort,
+      seed: 9,
+    });
+    const n = 400;
+    const got = await new Promise<number[]>((resolve) => {
+      const c = net.connect(p.port, "127.0.0.1");
+      c.setNoDelay(true);
+      let buf = Buffer.alloc(0);
+      c.on("data", (d: Buffer) => {
+        buf = Buffer.concat([buf, d]);
+        if (buf.length >= n * 4) {
+          const out: number[] = [];
+          for (let i = 0; i < n; i++) out.push(buf.readUInt32LE(i * 4));
+          c.destroy();
+          resolve(out);
+        }
+      });
+      let i = 0;
+      const send = () => {
+        if (i >= n) return;
+        const b = Buffer.alloc(4);
+        b.writeUInt32LE(i++);
+        c.write(b);
+        // Alternate same-tick and next-tick writes so chunks land both within one loop turn and across turns.
+        if (i % 3 === 0) setTimeout(send, 0);
+        else setImmediate(send);
+      };
+      c.on("connect", send);
+    });
+    expect(got).toEqual(Array.from({ length: n }, (_, k) => k));
+    await p.close();
+    await new Promise<void>((r) => echo.close(() => r()));
+  }, 20_000);
 });

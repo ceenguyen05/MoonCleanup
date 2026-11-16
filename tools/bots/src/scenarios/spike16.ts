@@ -41,7 +41,7 @@ export function isLocalUrl(url: string): boolean {
   return host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1";
 }
 
-async function startNetsim(profile: string, listen: number, target: number, seed: number): Promise<ChildProcess> {
+export async function startNetsim(profile: string, listen: number, target: number, seed: number): Promise<ChildProcess> {
   // netsim is its own tool package; the bots run it as a child process rather than importing it.
   const child = spawn(
     process.execPath,
@@ -71,7 +71,7 @@ async function startNetsim(profile: string, listen: number, target: number, seed
   return child;
 }
 
-async function stopNetsim(child: ChildProcess): Promise<Record<string, number> | null> {
+export async function stopNetsim(child: ChildProcess): Promise<Record<string, number> | null> {
   let stats: Record<string, number> | null = null;
   child.stdout?.on("data", (d: Buffer) => {
     for (const line of d.toString().split("\n")) {

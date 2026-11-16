@@ -1,0 +1,356 @@
+/* "Which copy?" prompt. Whole-px sizes from tokens; text is never transformed (only the dialog moves); focus ring from
+   tokens; the two copies are text plus a drive / cloud glyph, never colour alone. No choice is styled as the default. */
+.scrim {
+  --mc-prompt-top: round(down, calc((100vh - 600px * var(--mc-hud-scale)) / 2), var(--mc-px));
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* above the menu frame, below nothing else */
+  display: flex;
+  align-items: flex-start; /* top-anchored at a rounded offset: centring a panel of odd height would land on a half pixel */
+  justify-content: center;
+  padding: var(--mc-safe);
+  padding-top: max(var(--mc-safe), var(--mc-prompt-top));
+  pointer-events: auto;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 42%, rgba(30, 44, 62, 0.82), rgba(5, 8, 14, 0.94) 72%), var(--mc-scrim);
+}
+
+.stage {
+  width: min(100%, round(calc(760px * var(--mc-hud-scale)), var(--mc-px)));
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The panel never scrolls itself: the copies scroll inside .body, the foot ("Decide later", key hints) stays pinned,
+   so the way out is always on screen whatever the viewport height or UI size. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-3);
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--mc-sp-6);
+  border-radius: var(--mc-r-xl);
+  box-shadow: var(--mc-e-2);
+  color: var(--mc-text-1);
+  background-image: linear-gradient(180deg, rgba(255, 243, 218, 0.05), transparent 38%);
+}
+
+/* Scrolls when the content is taller than the screen. The 4 px pad / pull-back keeps focus rings (2 px + 2 px offset)
+   inside the scroll box. A card cut at the bottom edge plus the thumb say "more"; the foot stays put. */
+.bodyWrap {
+  --mc-ring-room: calc(var(--mc-focus-width) + var(--mc-focus-offset));
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+  margin: calc(-1 * var(--mc-ring-room));
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  gap: var(--mc-sp-4);
+  min-height: 0;
+  padding: var(--mc-ring-room);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding: var(--mc-sp-3);
+  scrollbar-width: thin;
+  scrollbar-color: var(--mc-text-3) var(--mc-glass-highlight);
+}
+
+/* "More below" cue: a bottom fade plus a small pill, shown only while the body is scrollable and not at its end
+   (data-visible, set from scroll position). Opacity-only transition; decorative, so it never takes pointer input. */
+.more {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: calc(var(--mc-sp-8) + var(--mc-ring-room));
+  padding-bottom: calc(var(--mc-sp-1) + var(--mc-ring-room));
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(12, 16, 20, 0), rgba(12, 16, 20, 0.96) 78%);
+  opacity: 0;
+  transition: opacity var(--mc-dur-fade-out) var(--mc-ease-in-out);
+}
+
+.more[data-visible="true"] {
+  opacity: 1;
+  transition-duration: var(--mc-dur-fade-in);
+}
+
+.morePill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-sp-1);
+  padding: 0 var(--mc-sp-3);
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 600;
+  color: var(--mc-text-1);
+  background: var(--mc-graphite);
+  border-radius: var(--mc-r-pill);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-text-3);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--mc-font-display);
+  font-size: var(--mc-fs-title);
+  line-height: var(--mc-lh-title);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.title:focus,
+.title:focus-visible {
+  outline: none;
+}
+
+.intro {
+  margin: 0;
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+  color: var(--mc-text-2);
+  text-wrap: pretty;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mc-sp-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-3);
+  min-width: 0;
+  padding: var(--mc-sp-4);
+  background: var(--mc-glass-highlight);
+  border: var(--mc-hairline) solid var(--mc-glass-border);
+  border-radius: var(--mc-r-lg);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-sp-3);
+}
+
+.cardIcon {
+  display: inline-grid;
+  place-items: center;
+  width: var(--mc-hit);
+  height: var(--mc-hit);
+  color: var(--mc-ivory);
+  background: var(--mc-graphite);
+  border-radius: var(--mc-r-md);
+}
+
+.cardTitle {
+  flex: 1 1 auto;
+  margin: 0;
+  font-family: var(--mc-font-display);
+  font-size: var(--mc-fs-value-s);
+  line-height: var(--mc-lh-value-s);
+  font-weight: 600;
+}
+
+/* Information only: the newer copy is tagged, never preselected or highlighted as the answer. */
+.newer {
+  padding: 0 var(--mc-sp-2);
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 600;
+  letter-spacing: var(--mc-caption-tracking);
+  text-transform: uppercase;
+  color: var(--mc-text-1);
+  border-radius: var(--mc-r-sm);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-text-2);
+}
+
+/* One shared two-column grid (label column sized to its widest label) so values line up and have the room to stay on one line. */
+.rows {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--mc-sp-1) var(--mc-sp-4);
+  margin: 0;
+}
+
+.row {
+  display: contents;
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+}
+
+.row dt,
+.row dd {
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+}
+
+.row dt {
+  color: var(--mc-text-2);
+}
+
+.row dd {
+  margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* Both choices look identical on purpose: neither is the default. */
+.choose {
+  min-height: var(--mc-hit);
+  padding: 0 var(--mc-sp-4);
+  font: inherit;
+  font-size: var(--mc-fs-body);
+  font-weight: 600;
+  color: var(--mc-text-1);
+  background: transparent;
+  border: calc(var(--mc-hairline) * 2) solid var(--mc-teal-hi);
+  border-radius: var(--mc-r-md);
+  cursor: pointer;
+  transition:
+    background-color var(--mc-dur-hover-in) var(--mc-ease-out),
+    color var(--mc-dur-hover-in) var(--mc-ease-out),
+    transform var(--mc-dur-press) var(--mc-ease-out);
+}
+
+.choose:hover {
+  color: #0b1d1b;
+  background: var(--mc-teal-hi);
+}
+
+.choose:active {
+  transform: var(--mc-press-transform);
+}
+
+.choose[aria-disabled="true"] {
+  cursor: progress;
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.choose[data-chosen="true"] {
+  color: #0b1d1b;
+  background: var(--mc-teal-hi);
+  opacity: 1;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-text-2);
+}
+
+.safety {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  padding: var(--mc-sp-3) var(--mc-sp-4);
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+  background: var(--mc-glass-highlight);
+  border: var(--mc-hairline) solid var(--mc-glass-border);
+  border-radius: var(--mc-r-md);
+}
+
+/* Status shares the foot row with the "Decide later" note (it replaces that note while shown), so a message never moves the layout. */
+.status {
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-warn);
+}
+
+.foot {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: var(--mc-sp-2);
+  padding-top: var(--mc-sp-3);
+  border-top: var(--mc-hairline) solid var(--mc-glass-border);
+}
+
+.footRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: var(--mc-sp-2);
+}
+
+.later {
+  margin-right: var(--mc-sp-4);
+  min-height: var(--mc-hit);
+  padding: 0 var(--mc-sp-4);
+  font: inherit;
+  font-size: var(--mc-fs-body);
+  font-weight: 500;
+  color: var(--mc-text-1);
+  background: transparent;
+  border: var(--mc-hairline) solid var(--mc-glass-border);
+  border-radius: var(--mc-r-md);
+  cursor: pointer;
+}
+
+.later:hover {
+  border-color: var(--mc-text-2);
+}
+
+.laterHint,
+.keys {
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-text-2);
+}
+
+.keys {
+  margin: 0;
+}
+
+.stage button:focus-visible {
+  outline: var(--mc-focus-width) solid var(--mc-focus);
+  outline-offset: var(--mc-focus-offset);
+}
+
+@media (max-width: 720px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Short screens (720p laptops and below): tighter rhythm so the whole prompt fits without scrolling at 100% UI size. */
+@media (max-height: 800px) {
+  .scrim {
+    padding: var(--mc-sp-4);
+    padding-top: max(var(--mc-sp-4), var(--mc-prompt-top));
+  }
+
+  .panel {
+    padding: var(--mc-sp-4) var(--mc-sp-6);
+  }
+
+  .body {
+    gap: var(--mc-sp-3);
+  }
+
+  .card {
+    gap: var(--mc-sp-2);
+    padding: var(--mc-sp-3);
+  }
+
+  .safety {
+    padding: var(--mc-sp-2) var(--mc-sp-3);
+  }
+}

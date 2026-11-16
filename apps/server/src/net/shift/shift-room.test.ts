@@ -10,6 +10,7 @@ import {
   MAX_PLAYERS_PER_ROOM,
   MESSAGE_CATALOG,
   PROTOCOL_VERSION,
+  PurchaseResultPayloadSchema,
   STANDARD_GRID_PARAMS,
 } from "@moon-cleanup/shared";
 import { inflateRawSync } from "node:zlib";
@@ -259,6 +260,18 @@ describe("ShiftRoom with 6 players", () => {
     expect(results[0]).toMatchObject({ ok: false });
     expect(clients[1]!.messages.get(MESSAGE_CATALOG.ERROR.id)?.[0]).toMatchObject({ code: "INVALID" });
     expect(clients[2]!.messages.get(MESSAGE_CATALOG.ERROR.id)?.[0]).toMatchObject({ code: "FORBIDDEN" });
+    // Purchase bucket (burst 5): a burst over it answers purchase_result `rate_limited`, the lower-case reject reason
+    // the client schema accepts (it was "RATE_LIMITED", which the client dropped, leaving the purchase pending).
+    for (let i = 0; i < 12; i++) {
+      clients[1]!.room.send(MESSAGE_CATALOG.PURCHASE.id, {
+        requestId: `00000000-0000-4000-8000-00000000f1${i.toString(16).padStart(2, "0")}`,
+        itemId: "tool.does_not_exist",
+      });
+    }
+    await sleep(300);
+    const burst = clients[1]!.messages.get(MESSAGE_CATALOG.PURCHASE_RESULT.id) ?? [];
+    for (const r of burst) expect(PurchaseResultPayloadSchema.safeParse(r).success).toBe(true);
+    expect(burst.some((r) => (r as { code?: string }).code === "rate_limited")).toBe(true);
     const t = room.tickStats();
     console.info(
       `[shift room] 6 clients over ws, ${t.n} ticks: p50 ${t.p50.toFixed(3)} ms, p95 ${t.p95.toFixed(3)} ms, max ${t.max.toFixed(3)} ms, overruns ${room.overruns}`,

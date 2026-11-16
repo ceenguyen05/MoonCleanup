@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "generator": "@moon-cleanup/asset-pipeline assets:build",
+  "assets": {
+    "custodian_blockout": {
+      "file": "custodian_blockout.bccd6394ce40.glb",
+      "class": "custodianBlockout",
+      "bytes": 136828,
+      "sha256": "bccd6394ce40f3735b2f9498d6f5d38f5d60860eeda7832e1d32924e190205f6",
+      "source": "assets/models/characters/blockout/custodian_blockout.py",
+      "textureFormat": "none",
+      "placeholder": true,
+      "replaceBy": "M1-W4-T07 (production custodian suit, art-direction 13.5)"
+    },
+    "desk_duster_v0": {
+      "file": "desk_duster_v0.76cc1f1c6b11.glb",
+      "class": "handTool",
+      "bytes": 20452,
+      "sha256": "76cc1f1c6b11c5e29c004cde1ce139a9d5c50cbcae2f244da4d755599d4b1ace",
+      "source": "assets/models/tools/blockout/desk_duster_v0.py",
+      "textureFormat": "none",
+      "placeholder": true,
+      "replaceBy": "M1-W4-T07 (production T1-T4 hand tools, art-direction 13.5)"
+    }
+  }
+}

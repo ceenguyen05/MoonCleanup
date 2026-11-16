@@ -16,13 +16,21 @@ const OnlinePanel = lazy(() => import("./OnlinePanel"));
 
 const T = STRINGS.online;
 
-export function OnlineEntry({ port }: { readonly port: OnlineEntryPort }): ReactElement {
+export function OnlineEntry({
+  port,
+  invite = null,
+}: {
+  readonly port: OnlineEntryPort;
+  /** Canonical code from an invite link (`parseInviteLink`): relabels the launcher and pre-fills the join form. */
+  readonly invite?: string | null;
+}): ReactElement {
   const conn = useUiSelector((state) => state.session.conn);
   const rttMs = useUiSelector((state) => state.session.rttMs);
   const closeCode = useUiSelector((state) => state.session.closeCode);
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const active = isOnlineActive(conn);
+  const pendingInvite = active ? null : invite;
   const view = connView(conn, rttMs);
   const lostReason = conn === "lost" ? failureOfCloseCode(closeCode) : null;
 
@@ -63,11 +71,12 @@ export function OnlineEntry({ port }: { readonly port: OnlineEntryPort }): React
             data-testid="online-launcher"
             aria-haspopup="dialog"
             aria-expanded={open}
-            title={T.launcherHint}
+            data-invite={pendingInvite === null ? undefined : "pending"}
+            title={pendingInvite === null ? T.launcherHint : T.inviteHint}
             onClick={() => setOpen(true)}
           >
             <Icon icon={Users} size={20} />
-            <span>{T.launcher}</span>
+            <span>{pendingInvite === null ? T.launcher : T.inviteLauncher}</span>
           </button>
         )}
         <div className={styles["reason"]} role="status" aria-live="polite" aria-label={T.a11y.status}>
@@ -76,7 +85,11 @@ export function OnlineEntry({ port }: { readonly port: OnlineEntryPort }): React
       </div>
       {open && (
         <Suspense fallback={null}>
-          <OnlinePanel port={port} onClose={close} />
+          <OnlinePanel
+            port={port}
+            onClose={close}
+            {...(pendingInvite === null ? {} : { initialInvite: pendingInvite })}
+          />
         </Suspense>
       )}
     </>

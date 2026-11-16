@@ -35,6 +35,8 @@ import type {
   StrokeRecord,
   Tick,
   Unsubscribe,
+  VehicleComponent,
+  VehicleInfo,
 } from "@moon-cleanup/shared";
 import {
   AVATAR_FLAG_BIT,
@@ -122,6 +124,15 @@ import {
 import { decodeCheckpointPucks, encodeCheckpointPucks, SIM_CHECKPOINT_PUCKS_VERSION } from "../cargo/checkpoint";
 import { groundSlopeTan } from "../movement/steep";
 import {
+  MOTOR_POOL_ITEM_ID,
+  RoomVehicles,
+  VEHICLE_ENTITY_ID_BASE,
+  VehicleReadout,
+  type VehicleHost,
+  type VehicleItem,
+} from "../vehicles/room-vehicles";
+import type { VehicleState } from "../vehicles/vehicle";
+import {
   CheckpointFail,
   checkpointLimits,
   CheckpointTally,
@@ -166,6 +177,11 @@ export interface MoonRoomSimOptions {
   readonly spawnDirection?: { readonly x: number; readonly y: number; readonly z: number };
   /** Restored wallet (default economy.startWalletLm). */
   readonly walletLm?: number;
+  /**
+   * Restored Near Parcel mask (bit k = parcel k already collected; default 0). Bits past the parcel count are dropped.
+   * A host that restores `walletLm` must restore this too, or a restart re-pays the parcels.
+   */
+  readonly nearParcelsCollected?: number;
   /** Restored suit-gear / Dust Cell levels (`gear.hop_pack` -> level, `cellLevel.<toolId>` -> level). */
   readonly suitGear?: Readonly<Record<string, number>>;
   /**
@@ -197,7 +213,24 @@ export interface MoonRoomSimOptions {
   readonly achievementIds?: readonly string[];
   /** Tick to start at (restored checkpoint), default 0. */
   readonly startTick?: number;
+  /** Vehicles sold (default `MVP_SCOPE.vehicleIds`: the Trundle). */
+  readonly vehicleIds?: readonly string[];
+  /**
+   * Vehicle upgrade lines sold. Default: Gear Ratio and Cargo Expander (the M1-W7-T01 card). NOTE: mvp-scope says "the
+   * Trundle only, with no upgrade lines"; pass `[]` to follow mvp-scope (open scope decision, see the W7-T01 report).
+   */
+  readonly vehicleUpgradeLineIds?: readonly string[];
+  /** Motor Pools the shift starts with (default 1: the MVP slice has the Motor Pool pre-built). */
+  readonly motorPoolsBuilt?: number;
+  /** Motor Pool positions as unit directions (default: the spawn direction, until the outpost layout exists). */
+  readonly motorPoolPoints?: readonly { readonly x: number; readonly y: number; readonly z: number }[];
 }
+
+/** Upgrade lines the M1-W7-T01 card puts in the MVP. */
+export const DEFAULT_VEHICLE_UPGRADE_LINE_IDS: readonly string[] = [
+  "vehicle_upgrade.gear_ratio",
+  "vehicle_upgrade.cargo_expander",
+];
 
 /** Plot Card (C) data of one plot (GDD section 10; ui-screens `plotCard`). Mutable, reused by the caller. */
 export class PlotCardData {
@@ -432,6 +465,25 @@ export class MoonRoomSim implements RoomSim {
   private readonly pickDir = { x: 0, y: 1, z: 0 };
   private pickHint = 0;
   private readonly hasher = new Fnv1a32();
+  /** Motor Pool, Trundle, upgrade lines, vehicle cleaning (packages/sim/src/vehicles). */
+  readonly vehicles: RoomVehicles;
+  private readonly vehicleHost: VehicleHost;
+  private readonly handleTmp = new Float64Array(3);
+  /** The driver rides the handle: position follows the vehicle, no walking, no tool. */
+  private readonly syncDriver = (slot: number, v: VehicleState): void => {
+    const a = this.avatars[slot]!;
+    const h = this.handleTmp;
+    this.vehicles.handlePoint(v, this.world.ground, h);
+    a.px = h[0]!;
+    a.py = h[1]!;
+    a.pz = h[2]!;
+    a.vx = a.vy = a.vz = 0;
+    a.fx = v.fx;
+    a.fy = v.fy;
+    a.fz = v.fz;
+    a.moveState = MOVE_GROUNDED;
+    a.heightAboveGround = 0;
+  };
   /** Codes of the cleaning tools by ascending tier (Holster order), fixed at construction. */
   private readonly cleaningOrder: readonly number[];
   /** Bitmask of the free cleaning tools (Standard Issue from the start). */
@@ -529,6 +581,7 @@ export class MoonRoomSim implements RoomSim {
     this.parcelLm = near?.lm ?? 0;
     this.parcelDirs = new Float64Array(3 * this.parcelCount);
     placeNearParcels(seedOfString(options.contractId), this.parcelCount, cfg.moonRadiusM, this.parcelDirs);
+    this.parcelsCollected = (options.nearParcelsCollected ?? 0) & ((1 << this.parcelCount) - 1);
     this.achievements = new AchievementTracker(
       options.data,
       options.achievementIds ?? MVP_SCOPE.achievementIds,
@@ -563,6 +616,30 @@ export class MoonRoomSim implements RoomSim {
     const sd = options.spawnDirection ?? { x: 0.02, y: 1, z: 0.02 };
     const sl = Math.sqrt(sd.x * sd.x + sd.y * sd.y + sd.z * sd.z);
     this.spawnDir = { x: sd.x / sl, y: sd.y / sl, z: sd.z / sl };
+    this.vehicles = new RoomVehicles(options.data, cfg, {
+      offeredKindIds: options.vehicleIds ?? MVP_SCOPE.vehicleIds,
+      offeredLineIds: options.vehicleUpgradeLineIds ?? DEFAULT_VEHICLE_UPGRADE_LINE_IDS,
+      motorPoolsBuilt: options.motorPoolsBuilt ?? 1,
+      motorPoolPoints: options.motorPoolPoints ?? [this.spawnDir],
+    });
+    this.vehicleHost = {
+      config: cfg,
+      ground: options.world.ground,
+      grid,
+      ledger: this.ledger,
+      emit: (name, payload) => this.emit(name, payload),
+      gateNear: (x, y, z, reachM) => {
+        for (let k = 0; k < this.sellKind.length; k++) {
+          if (this.sellKind[k] === 1 && this.nearSellPoint(x, y, z, k, reachM)) return true;
+        }
+        return false;
+      },
+      sellAtGate: (owner, grams, tick) => this.sellAtGate(owner, grams, tick),
+      strokeApplied: (stroke, tick) => {
+        if (this.strokes < this.strokePool.length) copyStroke(stroke, this.strokePool[this.strokes++]!);
+        this.drainPlotEvents(false, tick);
+      },
+    };
     this.copiesBought = new Int32Array(cfg.tools.length);
     for (let s = 0; s < MAX_PLAYERS_PER_ROOM; s++) {
       this.avatars.push(new AvatarState());
@@ -587,6 +664,7 @@ export class MoonRoomSim implements RoomSim {
     // The Roost count rides in the same META key list (`robot.sandpiper` -> Roosts owned).
     this.gearMaxLevel.set(ROOST_ITEM_ID, this.roostCap);
     this.gearMaxLevel.set(NEAR_PARCEL_SAVE_KEY, (1 << this.parcelCount) - 1);
+    this.vehicles.registerKeys(this.gearMaxLevel);
     for (let s = 0; s < MAX_PLAYERS_PER_ROOM; s++) {
       this.gearMaxLevel.set(`${ACHIEVEMENT_SAVE_KEY_PREFIX}${s}`, (1 << this.achievements.ids.length) - 1);
       this.gearMaxLevel.set(`${HOLSTER_SAVE_KEY_PREFIX}${s}`, 0xff);
@@ -614,6 +692,7 @@ export class MoonRoomSim implements RoomSim {
       if (!a.active) continue;
       this.stepActor(s, a, night, tick);
     }
+    this.vehicles.step(tick, night, this.vehicleHost, this.syncDriver);
     stepCargo(cfg, this.cargo, this.avatars, this.world.ground, tick);
     this.stepGateIntake(tick);
     this.stepParcels(tick);
@@ -714,7 +793,10 @@ export class MoonRoomSim implements RoomSim {
   removeActor(actor: ActorSlot): void {
     const a = this.avatars[actor];
     if (!a) return;
-    if (a.active) dropAllCarried(this.config, this.cargo, a, this.world.ground, actor, this.tickNo);
+    if (a.active) {
+      this.vehicles.removeActor(actor, this.tickNo, this.vehicleHost);
+      dropAllCarried(this.config, this.cargo, a, this.world.ground, actor, this.tickNo);
+    }
     a.active = false;
     if (this.pourAt[actor]! >= 0) this.endPour(actor, this.tickNo);
     this.cargo.formHeld[actor] = -1;
@@ -770,7 +852,8 @@ export class MoonRoomSim implements RoomSim {
           hopCharges: a.hopCharges,
           flags:
             (t.inContact ? 1 << AVATAR_FLAG_BIT.cleaning : 0) | (this.infos[s]!.lampOn ? 1 << AVATAR_FLAG_BIT.lamp : 0),
-          vehicleId: null,
+          vehicleId:
+            this.vehicles.driving[s]! >= 0 ? ((VEHICLE_ENTITY_ID_BASE + this.vehicles.driving[s]!) as EntityId) : null,
           seat: 0,
           plotId: a.plotHint as PlotId,
         },
@@ -789,11 +872,13 @@ export class MoonRoomSim implements RoomSim {
         carrying: this.carryingIds(s),
       });
     }
+    const vehicles: VehicleComponent[] = [];
+    this.vehicles.components(vehicles, entityIds);
     return {
       tick: this.tickNo as Tick,
       shift: this.shiftState(),
       actors,
-      vehicles: [],
+      vehicles,
       robots: [],
       cargo: this.cargoComponents(),
       buildings: [],
@@ -914,6 +999,9 @@ export class MoonRoomSim implements RoomSim {
       h.real(c.vy[i]!);
       h.real(c.vz[i]!);
     }
+    // Vehicles only once the shift has bought one or moved off the default Motor Pools, so a shift without them hashes
+    // as before; vehicles out always count.
+    if (this.vehicles.dirty || this.vehicles.store.activeCount() > 0) this.vehicles.hash(h);
     return h.value;
   }
 
@@ -939,6 +1027,7 @@ export class MoonRoomSim implements RoomSim {
         ...(this.parcelsCollected !== 0 ? { [NEAR_PARCEL_SAVE_KEY]: this.parcelsCollected } : {}),
         ...this.announcedRecord(),
         ...this.holsterRecord(),
+        ...this.vehicles.captureKeys(),
       },
     });
     let count = 0;
@@ -1032,6 +1121,7 @@ export class MoonRoomSim implements RoomSim {
     delete gear[ROOST_ITEM_ID];
     this.parcelsCollected = gear[NEAR_PARCEL_SAVE_KEY] ?? 0;
     delete gear[NEAR_PARCEL_SAVE_KEY];
+    this.vehicles.restoreKeys(gear);
     for (let s = 0; s < MAX_PLAYERS_PER_ROOM; s++) {
       const key = `${ACHIEVEMENT_SAVE_KEY_PREFIX}${s}`;
       this.achievements.setAnnouncedMask(s, gear[key] ?? 0);
@@ -1134,6 +1224,14 @@ export class MoonRoomSim implements RoomSim {
     const released = inp.prevButtons & ~b;
     const M = INPUT_BUTTON_MASK;
 
+    // Driving a vehicle: the avatar rides the handle (no walking, no tool); the vehicle step reads the intent.
+    const driving = this.vehicles.driving[s]!;
+    if (driving >= 0) {
+      this.stepDriver(s, driving, pressed, tick);
+      inp.prevButtons = b;
+      return;
+    }
+
     // Holster cycling and swap timer.
     if (t.swapTicks > 0) t.swapTicks--;
     if (pressed & M.holsterNext) this.cycleHolster(s, 1);
@@ -1193,7 +1291,35 @@ export class MoonRoomSim implements RoomSim {
     }
     this.stepActorCargo(s, a, t, b, pressed, released, inp.yaw, tick);
     this.stepPour(s, a, t, b, tick);
+    if ((pressed & (M.interact | M.seatSwitch)) !== 0) this.onFootVehicleKeys(s, a, t, pressed, tick);
     inp.prevButtons = b;
+  }
+
+  /** On foot: `interact` sits down at a Trundle handle within reach, `seatSwitch` calls / returns it at the Motor Pool. */
+  private onFootVehicleKeys(s: number, a: AvatarState, t: ToolState, pressed: number, tick: number): void {
+    const M = INPUT_BUTTON_MASK;
+    if ((pressed & M.interact) !== 0 && this.pourAt[s]! < 0) {
+      const role = this.infos[s]!.role;
+      const shared = role !== "temp" || this.tempPerms.tempCanDriveShared;
+      if (this.vehicles.tryEnter(s, a.px, a.py, a.pz, shared, tick, this.vehicleHost)) {
+        t.sweeping = t.detailing = t.wasActive = t.inContact = t.anchorValid = false;
+        t.laneLocked = false;
+        return;
+      }
+    }
+    if ((pressed & M.seatSwitch) !== 0) {
+      this.vehicles.callOrReturn(s, a.px, a.py, a.pz, a.fx, a.fy, a.fz, tick, this.vehicleHost);
+    }
+  }
+
+  /** One tick of a seated driver: the exit button lets go, otherwise the input becomes the vehicle's intent. */
+  private stepDriver(s: number, vehicleIndex: number, pressed: number, tick: number): void {
+    const inp = this.inputs[s]!;
+    if ((pressed & INPUT_BUTTON_MASK.interact) !== 0) {
+      this.vehicles.leave(s, tick, this.vehicleHost);
+      return;
+    }
+    this.vehicles.driverIntent(vehicleIndex, inp.moveX, inp.moveY, inp.buttons, inp.prevButtons);
   }
 
   private acceptStroke(s: number, t: ToolState, st: MutableStroke, tick: number): void {
@@ -1575,6 +1701,13 @@ export class MoonRoomSim implements RoomSim {
    */
   quotePriceLm(actor: ActorSlot, itemId: string): number {
     const n = this.board.indexOf(itemId);
+    if (n < 0) {
+      const vi = this.vehicles.classify(itemId);
+      if (vi !== null) {
+        const q = this.vehicles.quote(vi, this.purchaseDiscountFrac);
+        return q < 0 ? -1 : q;
+      }
+    }
     if (n >= 0) {
       const board = this.board;
       const level = this.boardLevels[n]!;
@@ -1603,6 +1736,11 @@ export class MoonRoomSim implements RoomSim {
     const repeat = tool.tier >= cfg.repeatRequisitionMinTier && this.copiesBought[tool.code]! > 0;
     const list = repeat ? Math.round(tool.priceLm * cfg.repeatRequisitionFrac) : tool.priceLm;
     return discountedPriceLm(list, this.purchaseDiscountFrac);
+  }
+
+  /** HUD read-out of the vehicle `slot` is driving; false (out untouched) on foot. Allocation-free. */
+  vehicleReadout(slot: ActorSlot, out: VehicleReadout): boolean {
+    return this.vehicles.readout(slot, out);
   }
 
   /** Hop Pack bursts, max and refill progress of `slot` into `out`. False (out untouched) for an inactive slot. */
@@ -1797,12 +1935,14 @@ export class MoonRoomSim implements RoomSim {
     const replay = this.purchaseGuard.replayWalletAfter(actor, requestId, itemId);
     if (replay >= 0) return { requestId, ok: true, walletAfter: replay };
     const n = this.board.indexOf(itemId);
-    // Temps buy only their own tools (Loaner Kit); shared items (board, suit gear, Roosts) need the Holder's
-    // `tempCanSpendShared` (security section 2 "Temp defaults").
-    const shared = n >= 0 || this.gearIndexById.has(itemId) || itemId === ROOST_ITEM_ID;
+    const vehicleItem = n >= 0 ? null : this.vehicles.classify(itemId);
+    // Temps buy only their own tools (Loaner Kit); shared items (board, suit gear, Roosts, Motor Pool, vehicles) need the
+    // Holder's `tempCanSpendShared` (security section 2 "Temp defaults").
+    const shared = n >= 0 || vehicleItem !== null || this.gearIndexById.has(itemId) || itemId === ROOST_ITEM_ID;
     if (shared && this.infos[actor]!.role === "temp" && !this.tempPerms.tempCanSpendShared) {
       return this.rejectPurchase(actor, requestId, itemId, "role_blocked");
     }
+    if (vehicleItem !== null) return this.purchaseVehicleItem(actor, requestId, itemId, vehicleItem);
     if (n >= 0) return this.purchaseNode(actor, requestId, itemId, n);
     const g = this.gearIndexById.get(itemId);
     if (g !== undefined) return this.purchaseGear(actor, requestId, itemId, g);
@@ -1875,6 +2015,32 @@ export class MoonRoomSim implements RoomSim {
     }
     if (tool.cleans) this.holsterTool(actor, tool.code);
     return this.completePurchase(actor, requestId, itemId, 1, price);
+  }
+
+  /** Motor Pool, a vehicle, or a vehicle upgrade line: prerequisites and prices in `RoomVehicles.quote`. */
+  private purchaseVehicleItem(actor: ActorSlot, requestId: RequestId, itemId: string, item: VehicleItem): IntentResult {
+    const price = this.vehicles.quote(item, this.purchaseDiscountFrac);
+    if (price < 0) {
+      const code: PurchaseRejectReason =
+        price === -2 ? "prereq_missing" : price === -3 ? "max_level" : price === -4 ? "cap_reached" : "unknown_item";
+      return this.rejectPurchase(actor, requestId, itemId, code);
+    }
+    if (this.walletLm < price) return this.rejectPurchase(actor, requestId, itemId, "insufficient_funds");
+    this.walletLm -= price;
+    const level = this.vehicles.apply(item);
+    if (item.type === 0 && level === 1) {
+      // The first Motor Pool opens the vehicles on sale (an ordinary prerequisite).
+      for (const k of this.vehicles.tuning.kinds) {
+        if (!this.vehicles.isOffered(k.code)) continue;
+        this.emit("unlock.granted", {
+          tick: this.tickNo as Tick,
+          kind: "vehicle",
+          unlockId: k.id,
+          viaItemId: MOTOR_POOL_ITEM_ID,
+        });
+      }
+    }
+    return this.completePurchase(actor, requestId, itemId, level, price);
   }
 
   /** Next level of board node `n`: on sale, below its top level, prerequisites met, no race, affordable. */
@@ -2143,6 +2309,7 @@ export class MoonRoomSim implements RoomSim {
 
   private shiftState(): ShiftState {
     const players: PlayerInfo[] = [];
+    const ownedVehicles = this.vehicles.ownedKindIds();
     for (let s = 0; s < MAX_PLAYERS_PER_ROOM; s++) {
       if (!this.avatars[s]!.active) continue;
       const inf = this.infos[s]!;
@@ -2159,9 +2326,11 @@ export class MoonRoomSim implements RoomSim {
         hidden: false,
         toolsOwned: t.owned & 0xff,
         equippedTool: t.toolCode,
-        vehicleIds: [],
+        vehicleIds: ownedVehicles,
       });
     }
+    const vehicleRecords: VehicleInfo[] = [];
+    this.vehicles.shiftRecords((slot) => this.infos[slot]!.playerId, vehicleRecords);
     return {
       contractId: this.contractId,
       shiftType: this.shiftType,
@@ -2176,7 +2345,7 @@ export class MoonRoomSim implements RoomSim {
       visitedOutposts: 0,
       beacons: Array.from({ length: BEACON_COUNT }, () => ({ plotId: 0 as PlotId, active: false })),
       players,
-      vehicles: [],
+      vehicles: vehicleRecords,
       robotCounts: this.roostCount > 0 ? { [ROOST_ITEM_ID]: this.roostCount } : {},
       permissions: { ...this.tempPerms },
       fulfilled: false,

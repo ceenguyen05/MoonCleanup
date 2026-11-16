@@ -1,0 +1,47 @@
+[
+ {
+  "round": 0,
+  "name": "a60",
+  "frameP50": 16.300000000745058,
+  "gpuP50": 9.756514000000001,
+  "gpuN": 6,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "g60",
+  "frameP50": 18.5,
+  "gpuP50": 15.793004000000003,
+  "gpuN": 1,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "f60",
+  "frameP50": 16.5,
+  "gpuP50": 9.864178,
+  "gpuN": 4,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "gf60",
+  "frameP50": 1984.0999999996275,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "b60",
+  "frameP50": 1528.699999999255,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ }
+]

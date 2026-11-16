@@ -20,9 +20,11 @@ import {
   type ParcelsStore,
 } from "./hud/parcels-store";
 import { activateFocused, moveFocus, type UiNavAction } from "./menus/focus-nav";
-import { NO_INTENTS, type UiIntentPort } from "./menus/intents";
+import { NO_INTENTS, type PlotCardActivation, type UiIntentPort } from "./menus/intents";
 import { MENU_NAV_ATTR } from "./menus/MenuHost";
-import type { OnlineEntryPort } from "./online/online-model";
+import { promptVisible } from "./save/save-sync-model";
+import { SAVE_PROMPT_ATTR } from "./save/SaveConflictPrompt";
+import { parseInviteLink, type OnlineEntryPort } from "./online/online-model";
 import { UiProvider } from "./ui-context";
 import { parseUiUrlOptions } from "./ui-options";
 import { UiRoot } from "./UiRoot";
@@ -59,6 +61,8 @@ export interface UiModuleOptions {
    * defaults, `subscribe` notifies after any change. Absent: the screen says remapping is not available.
    */
   readonly controls?: ControlsPort;
+  /** Stored Plot Card activation, so Settings shows the live value at boot (default "toggle"). */
+  readonly plotCardMode?: PlotCardActivation;
 }
 
 export const UI_HOST_ID = "mc-ui";
@@ -70,11 +74,15 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
   private metrics: DisplayMetricsHandle | null = null;
   private preloads: HTMLLinkElement[] = [];
   private onVisibility: (() => void) | null = null;
-  private readonly prefs: UiPrefsStore = createUiPrefsStore();
+  private readonly prefs: UiPrefsStore;
   private readonly parcels: ParcelsStore = createParcelsStore();
   private readonly teardown: Array<() => void> = [];
 
-  constructor(private readonly options: UiModuleOptions) {}
+  constructor(private readonly options: UiModuleOptions) {
+    this.prefs = createUiPrefsStore(
+      options.plotCardMode !== undefined ? { plotCardMode: options.plotCardMode } : undefined,
+    );
+  }
 
   init(ctx: ModuleContext<S>): void {
     const { win, store, search } = this.options;
@@ -132,6 +140,11 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
     };
     doc.addEventListener("visibilitychange", this.onVisibility);
 
+    // Invite link (`/join/<code>` or `?join=<code>`): only meaningful when the app offers online play.
+    const invite =
+      this.options.online === undefined
+        ? null
+        : parseInviteLink(search, (win as { location?: Location }).location?.pathname ?? "");
     this.root = createRoot(host);
     this.root.render(
       <UiProvider
@@ -145,6 +158,7 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
         <UiRoot
           options={urlOptions}
           online={this.options.online ?? null}
+          invite={invite}
           intents={this.intents()}
           prefs={this.prefs}
           parcels={this.parcels}
@@ -183,9 +197,22 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
     this.parcels.setNearParcels(source, bearing, rewardLm);
   }
 
+  /** Leaving / changing parcels: clears the Near Parcels chip and markers (outpost markers stay). No-op when already empty. */
+  clearNearParcels(): void {
+    this.parcels.clearNearParcels();
+  }
+
   /** Bearing of an outpost on the compass track (whole degrees, 0 = north); `null` removes the marker. */
   setOutpostBearing(id: string, bearingDeg: number | null): void {
     this.parcels.setOutpostBearing(id, bearingDeg);
+  }
+
+  /**
+   * Bearing of an objective marker on the compass track (whole degrees, 0 = north), by `compass.objectives` id such as
+   * `landing_apron`, `assay_counter`, `requisitions_desk` or `near_parcel`; `null` removes the marker. Change-only.
+   */
+  setMarkerBearing(id: string, bearingDeg: number | null): void {
+    this.parcels.setMarkerBearing(id, bearingDeg);
   }
 
   /** Per-frame heading for the compass strip (degrees, 0 = north, clockwise). A direct whole-pixel DOM write, no React render. */
@@ -213,7 +240,20 @@ export class UiModule<S extends ServiceTypes = ServiceTypes> implements ClientMo
    */
   navigate(action: UiNavAction): boolean {
     const host = this.host;
-    if (host === null || this.options.store.getState().menus.open === null) return false;
+    if (host === null) return false;
+    // The "Which copy?" prompt sits above any menu: it takes the pad first. Back = "Decide later" (never a choice).
+    const state = this.options.store.getState();
+    if (promptVisible(state.saveSync, this.prefs.getState().savePromptDismissed)) {
+      if (action === "back") {
+        this.prefs.setSavePromptDismissed(true);
+        return true;
+      }
+      const prompt = host.querySelector<HTMLElement>(`[${SAVE_PROMPT_ATTR}]`);
+      if (prompt === null) return false;
+      if (action === "confirm") return activateFocused(prompt);
+      return moveFocus(prompt, action);
+    }
+    if (state.menus.open === null) return false;
     if (action === "back") {
       this.options.store.dispatch({ type: "menus.back" });
       return true;

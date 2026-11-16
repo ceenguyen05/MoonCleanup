@@ -12,6 +12,7 @@ import {
   SaveSyncStateSchema,
   SaveUploadFailureKindSchema,
   type SaveConflictChoice,
+  type SaveUploadFailureKind,
 } from "./sync-rules";
 
 describe("save/sync-rules v1", () => {
@@ -37,6 +38,29 @@ describe("save/sync-rules v1", () => {
     expect(SaveRestoreSourceSchema.safeParse("cloud").success).toBe(false);
     expect(SaveUploadFailureKindSchema.safeParse("rejected").success).toBe(true);
     expect(SaveStorageWarningSchema.safeParse("disk_full").success).toBe(false);
+  });
+
+  it("keeps every earlier failure kind and adds local_store_failed at the end (additive)", () => {
+    expect(SAVE_UPLOAD_FAILURE_KINDS).toEqual([
+      "offline",
+      "rate_limited",
+      "rejected",
+      "version_unsupported",
+      "too_large",
+      "server_error",
+      "local_store_failed",
+    ]);
+    expect(SaveUploadFailureKindSchema.parse("local_store_failed")).toBe("local_store_failed");
+    expect(SaveUploadFailureKindSchema.safeParse("local_failed").success).toBe(false);
+    expectTypeOf<SaveUploadFailureKind>().toEqualTypeOf<
+      | "offline"
+      | "rate_limited"
+      | "rejected"
+      | "version_unsupported"
+      | "too_large"
+      | "server_error"
+      | "local_store_failed"
+    >();
   });
 
   it("keeps the facts the prompt rule refers to", () => {

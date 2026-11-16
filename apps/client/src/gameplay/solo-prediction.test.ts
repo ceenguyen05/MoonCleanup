@@ -10,7 +10,17 @@ import {
 } from "@moon-cleanup/sim";
 import { loadGameData } from "@moon-cleanup/game-data";
 import { createPlotGrid } from "@moon-cleanup/world";
-import { FLAT_GROUND, InputState, PlotFrameMapper, SoloPredictor, createInputCommand, type SelfLike } from "./index";
+import {
+  CameraRig,
+  FLAT_GROUND,
+  InputState,
+  PlotFrameMapper,
+  SoloPredictor,
+  TangentPlaneMapper,
+  createInputCommand,
+  type RenderMapper,
+  type SelfLike,
+} from "./index";
 
 const cfg: SimConfig = createSimConfig(loadGameData(), { tickHz: 20 });
 
@@ -168,6 +178,58 @@ describe("SoloPredictor Steep rule (mirrors MoonRoomSim.stepActor)", () => {
     const broomGentle = sweepSpeed(tilted(tan(20)), "tool.bristle_broom");
     const broomSteep = sweepSpeed(tilted(tan(32)), "tool.bristle_broom");
     expect(broomSteep / broomGentle).toBeCloseTo(1, 2);
+  });
+});
+
+describe("input -> screen direction under each render mapper (dust scene mirror)", () => {
+  const cross = (a: number[], b: number[]): number[] => [
+    a[1]! * b[2]! - a[2]! * b[1]!,
+    a[2]! * b[0]! - a[0]! * b[2]!,
+    a[0]! * b[1]! - a[1]! * b[0]!,
+  ];
+  const dot = (a: number[], b: number[]): number => a[0]! * b[0]! + a[1]! * b[1]! + a[2]! * b[2]!;
+
+  /** Screen-right (render F x U) vs the render image of the sim's strafe-right and of the yaw-increase direction. */
+  function check(mapper: RenderMapper & { mirrored?: boolean }, feet: Float64Array, yaw: number): void {
+    const rig = new CameraRig();
+    rig.update(feet, { yawRad: yaw, pitchRad: 0 }, { dt: 1 / 60 });
+    const out = new Float64Array(3);
+    const map = (v: ArrayLike<number>): number[] => {
+      mapper.direction(Float64Array.from([v[0]!, v[1]!, v[2]!]), 0, out, 0);
+      return [out[0]!, out[1]!, out[2]!];
+    };
+    const F = map(rig.forward);
+    const U = map(rig.up);
+    const screenRight = cross(F, U);
+    // sim strafe-right = forward x n (packages/sim stepAvatar)
+    const simRight = cross(Array.from(rig.heading), Array.from(rig.up));
+    const input = new InputState();
+    input.mirrored = mapper.mirrored === true;
+    input.keyDown("KeyD");
+    const moveX = input.sample(createInputCommand()).moveX;
+    expect(dot(map(simRight.map((c) => c * Math.sign(moveX))), screenRight)).toBeGreaterThan(0);
+    // yaw increases along d(forward)/d(yaw) = simRight; mouse +x must turn the screen view to the right.
+    const y0 = input.yawRad;
+    input.lookBy({ movementX: 50, movementY: 0 });
+    let dy = input.yawRad - y0;
+    if (dy > Math.PI) dy -= 2 * Math.PI;
+    expect(dot(map(simRight.map((c) => c * Math.sign(dy))), screenRight)).toBeGreaterThan(0);
+  }
+
+  it("standard tangent frame: D strafes right and the mouse turns right on screen", () => {
+    const feet = new Float64Array([0.2, 0.3, 0.93]);
+    const l = Math.hypot(feet[0]!, feet[1]!, feet[2]!);
+    for (let i = 0; i < 3; i++) feet[i] = (feet[i]! / l) * 1_737_400;
+    const mapper = new TangentPlaneMapper(feet);
+    for (const yaw of [0, 1, 2.5, 4]) check(mapper, feet, yaw);
+  });
+
+  it("dust scene plot frame (mirrored): the same holds because input flips on the mirror", () => {
+    const grid = createPlotGrid(STANDARD_GRID_PARAMS);
+    const R = grid.params.radiusM;
+    const mapper = PlotFrameMapper.fromGrid(grid, 1234 as PlotId, R);
+    const feet = new Float64Array([mapper.axes[0]! * R, mapper.axes[1]! * R, mapper.axes[2]! * R]);
+    for (const yaw of [0, 1, 2.5, 4]) check(mapper, feet, yaw);
   });
 });
 

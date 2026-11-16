@@ -13,7 +13,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests",
     "generate": "drizzle-kit generate",
-    "migrate": "node src/migrate-cli.ts"
+    "migrate": "node src/migrate-cli.ts",
+    "restore-archive": "node src/restore-archive-cli.ts"
   },
   "dependencies": {
     "@moon-cleanup/shared": "workspace:*",

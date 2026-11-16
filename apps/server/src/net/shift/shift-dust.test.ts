@@ -29,7 +29,8 @@ import { loadGameData } from "@moon-cleanup/game-data";
 import { createPlotGrid, type WorldDustLedger } from "@moon-cleanup/world";
 import { createRoomDustLedger, type SimWorld } from "@moon-cleanup/sim";
 import { describe, expect, it } from "vitest";
-import { ShiftCore, type ShiftSink } from "./shift-core";
+import { SNAPSHOT_EGRESS_BYTES_PER_S, SNAPSHOT_EGRESS_DEBT_FLOOR_BYTES, ShiftCore, type ShiftSink } from "./shift-core";
+import { ShiftDust } from "./shift-dust";
 
 const CONTRACT = "00000000-0000-4000-8000-0000000000d7" as ContractId;
 const data = loadGameData();
@@ -267,13 +268,101 @@ describe("ShiftCore dust streaming to a late joiner", () => {
     for (let k = 0; k < 2; k++, t++) step(core, sink, 1, t);
     expect(m.stats.ledgers).toBeGreaterThan(ledgersBefore);
     expect(m.ledger.ledgerHash(plot)).toBe(core.ledger.ledgerHash(plot));
-    expect(m.checks).toHaveLength(1);
-    const check = m.checks[0] as { mode: string; plots: { plotId: number; hash: number }[] };
+    // (the 5 s chunk summaries of the 10 s run are also in `checks`; the detail answer is the only "detail" one)
+    const details = m.checks.filter((c) => (c as { mode: string }).mode === "detail");
+    expect(details).toHaveLength(1);
+    const check = details[0] as { mode: string; plots: { plotId: number; hash: number }[] };
     expect(check.mode).toBe("detail");
     for (const e of check.plots) expect(e.hash).toBe(core.ledger.ledgerHash(e.plotId));
     expect(core.receiveDustRequest(0, new Uint8Array([7, 7, 7]))).toBe(false);
     expect(core.receiveDustRequest(0, new Uint8Array(64))).toBe(false);
     expect(core.counters.dustRequestsInvalid).toBe(1);
+  });
+
+  it("sends the 5 s DUST_CHECK chunk summary: every 5 s, one build per frame tick, equal to the client's chunk hashes", () => {
+    const core = new ShiftCore({ data, world, contractId: CONTRACT, shiftType: "private", simTickHz: 20 }, 0);
+    const mirrors: (Mirror | undefined)[] = [];
+    const sink = sinkFor(mirrors, []);
+    core.addSeat(player(0), 0);
+    core.addSeat(player(1), 0);
+    const m0 = new Mirror(core.framesEvery);
+    const m1 = new Mirror(core.framesEvery);
+    mirrors[0] = m0;
+    mirrors[1] = m1;
+    const ticksOf: number[][] = [[], []];
+    const seen = [0, 0];
+    const mark = (t: number): void => {
+      [m0, m1].forEach((m, i) => {
+        if (m.stats.checks > seen[i]!) ticksOf[i]!.push(t);
+        seen[i] = m.stats.checks;
+      });
+    };
+    let t = 0;
+    for (; t < 300; t++) {
+      step(core, sink, 2, t); // sweeping: ledgers appear
+      mark(t);
+    }
+    expect(core.ledger.ledgerCount).toBeGreaterThan(2);
+    for (; t < 460; t++) {
+      core.step(sink); // quiet: no input, everything the clients should hold has been streamed
+      mark(t);
+    }
+    expect(core.counters.dustSnapshotsSent).toBe(2);
+    for (const m of [m0, m1]) {
+      const chunk = m.checks.filter((c) => (c as { mode: string }).mode === "chunks");
+      expect(chunk.length).toBe(m.checks.length);
+      expect(m.checks.length).toBeGreaterThanOrEqual(3);
+    }
+    // Cadence: DUST_CHECK_INTERVAL_S (5 s = 100 ticks) per seat; two seats are never built on the same frame tick.
+    for (const ticks of ticksOf) {
+      for (let i = 1; i < ticks.length; i++) expect(ticks[i]! - ticks[i - 1]!).toBeGreaterThanOrEqual(100);
+      for (let i = 1; i < ticks.length; i++) expect(ticks[i]! - ticks[i - 1]!).toBeLessThanOrEqual(104);
+    }
+    for (const t0 of ticksOf[0]!) expect(ticksOf[1]).not.toContain(t0);
+    expect(core.dust.counters.chunkChecksSent).toBe(m0.checks.length + m1.checks.length);
+    // Cost of one summary on a heavier ledger (1,500 Opened ledgers, all marked as sent: more than a 220 m radius holds).
+    const big = createRoomDustLedger(grid, data, { tickHz: 20, initialLedgerSlots: 2048 });
+    const template = new Uint8Array(1024);
+    const src = core.ledger.plotOfSlot[0]!;
+    core.ledger.copyTexels(src, template, 0);
+    const allSent = new Uint8Array(grid.count);
+    for (let p = 20000; p < 21500; p++) {
+      if (big.isEmptyPlot(p as never) || big.installLedger(p, template, 0, 1) < 0) continue;
+      big.refreshPlot(p);
+      allSent[p] = 1;
+    }
+    const bigDust = new ShiftDust(big, 1737400);
+    bigDust.chunkCheckBody(allSent); // warm
+    const t1 = performance.now();
+    let bytes = 0;
+    for (let i = 0; i < 200; i++) bytes = bigDust.chunkCheckBody(allSent)?.byteLength ?? 0;
+    console.info(
+      `[dust check] ${big.ledgerCount} ledgers: ${((performance.now() - t1) / 200).toFixed(3)} ms per summary, ${bytes + 1} B`,
+    );
+    // The last summary equals what each client computes over its own ledgers (the sync is exact once streamed).
+    for (const m of [m0, m1]) {
+      const last = m.checks[m.checks.length - 1] as { mode: string; chunks: { chunkId: number; xorHash: number }[] };
+      expect(last.chunks.length).toBeGreaterThan(0);
+      for (const c of last.chunks) {
+        expect(m.ledger.chunkHash(c.chunkId)).toBe(c.xorHash);
+        expect(core.ledger.chunkHash(c.chunkId)).toBe(c.xorHash);
+      }
+      // ...and it is a drift detector: one flipped texel in a client ledger changes that chunk's hash.
+      const c0 = last.chunks[0]!;
+      let plot = -1;
+      for (let s = 0; s < m.ledger.slotHigh && plot < 0; s++) {
+        const p = m.ledger.plotOfSlot[s]!;
+        if (p >= 0 && grid.chunkOf(p as never) === c0.chunkId && m.ledger.state[p] === PlotState.Opened) plot = p;
+      }
+      expect(plot).toBeGreaterThanOrEqual(0);
+      const texels = new Uint8Array(1024);
+      m.ledger.copyTexels(plot, texels, 0);
+      const at = texels.findIndex((v) => v > 0);
+      expect(at).toBeGreaterThanOrEqual(0);
+      texels[at] = texels[at]! - 1;
+      expect(m.ledger.installLedger(plot, texels, 0, 1)).toBeGreaterThanOrEqual(0);
+      expect(m.ledger.chunkHash(c0.chunkId)).not.toBe(c0.xorHash);
+    }
   });
 
   it("a resync re-sends the snapshot, but at most one per 2 s per seat", () => {
@@ -298,5 +387,132 @@ describe("ShiftCore dust streaming to a late joiner", () => {
     core.setHidden(0, false);
     for (let k = 0; k < 4; k++, t++) step(core, sink, 1, t);
     expect(core.counters.dustSnapshotsSent).toBe(3);
+  });
+});
+
+describe("ShiftDust hardening (server dust review follow-ups)", () => {
+  function sweptCore(): { core: ShiftCore; sink: ShiftSink } {
+    const core = new ShiftCore({ data, world, contractId: CONTRACT, shiftType: "private", simTickHz: 20 }, 0);
+    const sink = sinkFor([], []);
+    core.addSeat(player(0), 0);
+    for (let t = 0; t < 200; t++) step(core, sink, 1, t);
+    return { core, sink };
+  }
+  function detailPlots(body: Uint8Array | null): number {
+    expect(body).not.toBeNull();
+    const msg = new Uint8Array(body!.byteLength + 1);
+    msg[0] = DUST_CHECK_ID;
+    msg.set(body!, 1);
+    const d = decodeDustCheck(msg, grid.count);
+    expect(d?.mode).toBe("detail");
+    return d?.mode === "detail" ? d.plots.length : -1;
+  }
+
+  it("N2: the detail answer lists only the ledgers marked sent for that seat (the set the chunk summary hashes)", () => {
+    const { core } = sweptCore();
+    const l = core.ledger;
+    expect(l.ledgerCount).toBeGreaterThan(0);
+    let plot = -1;
+    for (let s = 0; s < l.slotHigh && plot < 0; s++) {
+      const p = l.plotOfSlot[s]!;
+      if (p >= 0 && (l.state[p]! & 3) === PlotState.Opened) plot = p;
+    }
+    expect(plot).toBeGreaterThanOrEqual(0);
+    const chunk = grid.chunkOf(plot as never) as number;
+    const all = detailPlots(core.dust.checkDetailBody(chunk));
+    expect(all).toBeGreaterThan(0);
+    const sent = new Uint8Array(grid.count);
+    expect(detailPlots(core.dust.checkDetailBody(chunk, sent))).toBe(0); // client holds none of them
+    sent[plot] = 2; // queued, not yet delivered: still not listed
+    expect(detailPlots(core.dust.checkDetailBody(chunk, sent))).toBe(0);
+    sent[plot] = 1;
+    expect(detailPlots(core.dust.checkDetailBody(chunk, sent))).toBe(1);
+  });
+
+  it("F1: snapshot egress is charged per seat; a seat out of credit waits for the refill instead of rebuilding every 2 s", () => {
+    const core = new ShiftCore({ data, world, contractId: CONTRACT, shiftType: "private", simTickHz: 20 }, 0);
+    const sink = sinkFor([], []);
+    core.addSeat(player(0), 0);
+    const seat = (core as unknown as { seats: { snapshotCredit: number }[] }).seats[0]!;
+    let t = 0;
+    for (; t < 10; t++) step(core, sink, 1, t);
+    expect(core.counters.dustSnapshotsSent).toBe(1);
+    // Spent budget (a seat that resyncs with big snapshots): the 2 s interval alone no longer releases the next one.
+    seat.snapshotCredit = -10 * SNAPSHOT_EGRESS_BYTES_PER_S;
+    core.setHidden(0, false);
+    for (let k = 0; k < 8 * 20; k++, t++) step(core, sink, 1, t); // 8 s later: past the 2 s interval, still in debt
+    expect(core.counters.dustSnapshotsSent).toBe(1);
+    // Repeated requests keep it pending, never multiply it; the refill (about 10 s of debt) releases exactly one.
+    core.setHidden(0, false);
+    for (let k = 0; k < 4 * 20; k++, t++) step(core, sink, 1, t);
+    expect(core.counters.dustSnapshotsSent).toBe(2);
+    // A seat with a normal (small) snapshot cost keeps the legit resume behaviour: the next resync a few seconds later.
+    core.setHidden(0, false);
+    for (let k = 0; k < 3 * 20; k++, t++) step(core, sink, 1, t);
+    expect(core.counters.dustSnapshotsSent).toBe(3);
+  });
+
+  it("N1: an in-hold reconnect caps the egress debt, so its resync snapshot waits about 8 s, not ~40 s", () => {
+    const core = new ShiftCore({ data, world, contractId: CONTRACT, shiftType: "private", simTickHz: 20 }, 0);
+    const sink = sinkFor([], []);
+    core.addSeat(player(0), 0);
+    const seat = (core as unknown as { seats: { snapshotCredit: number }[] }).seats[0]!;
+    let t = 0;
+    for (; t < 10; t++) step(core, sink, 1, t);
+    expect(core.counters.dustSnapshotsSent).toBe(1);
+    // A heavy cleaner's first snapshot left a ~163 KB debt (review N1): ~40 s of refill without the cap.
+    seat.snapshotCredit = -163 * 1024;
+    core.holdSeat(0);
+    core.resumeSeat(0, t * 50);
+    expect(seat.snapshotCredit).toBe(SNAPSHOT_EGRESS_DEBT_FLOOR_BYTES);
+    const waitS = -SNAPSHOT_EGRESS_DEBT_FLOOR_BYTES / SNAPSHOT_EGRESS_BYTES_PER_S; // 8 s
+    for (let k = 0; k < (waitS - 1) * 20; k++, t++) step(core, sink, 1, t); // 7 s: still waiting for the refill
+    expect(core.counters.dustSnapshotsSent).toBe(1);
+    for (let k = 0; k < 2 * 20; k++, t++) step(core, sink, 1, t); // 9 s: refilled past zero, snapshot sent
+    expect(core.counters.dustSnapshotsSent).toBe(2);
+    // A debt already inside the cap is left alone (the floor only lifts, never grants credit).
+    seat.snapshotCredit = -1000;
+    core.holdSeat(0);
+    core.resumeSeat(0, t * 50);
+    expect(seat.snapshotCredit).toBe(-1000);
+  });
+
+  it("F2: a chunk DUST_REQUEST from a seat that has no snapshot yet is not answered", () => {
+    const core = new ShiftCore({ data, world, contractId: CONTRACT, shiftType: "private", simTickHz: 20 }, 0);
+    const m = new Mirror(core.framesEvery);
+    const sink = sinkFor([m], []);
+    core.addSeat(player(0), 0);
+    let t = 0;
+    for (; t < 400; t++) step(core, sink, 1, t);
+    const l = core.ledger;
+    const plot = l.plotOfSlot[0]!;
+    const out = new Uint8Array(32);
+    const n = encodeDustRequest({ kind: "chunk", chunkId: grid.chunkOf(plot as never) }, out);
+    // A fresh seat that stays hidden never builds a snapshot, so `dustSent` is null.
+    core.addSeat(player(1), t * 50);
+    core.setHidden(1, true);
+    const m1 = new Mirror(core.framesEvery);
+    const sink1 = sinkFor([m, m1], []);
+    expect(core.receiveDustRequest(1, out.slice(1, n))).toBe(true);
+    for (let k = 0; k < 4; k++, t++) step(core, sink1, 2, t);
+    expect(m1.stats.checks).toBe(0);
+    // The seat with a snapshot still gets its answer.
+    expect(core.receiveDustRequest(0, out.slice(1, n))).toBe(true);
+    const before = m.stats.checks;
+    for (let k = 0; k < 4; k++, t++) step(core, sink1, 2, t);
+    expect(m.stats.checks).toBeGreaterThan(before);
+  });
+
+  it("N3: a ledger reset() after the moon-wide cache was built invalidates it (no stale plot states)", () => {
+    const { core } = sweptCore();
+    const before = core.dust.moonWide();
+    expect(before.opened.length).toBeGreaterThan(0);
+    core.ledger.clearDirtyPlots(); // nothing dirty: only l0Version tells the cache that the ledger changed
+    core.ledger.reset();
+    const builds = core.dust.counters.moonWideBuilds;
+    const after = core.dust.moonWide();
+    expect(core.dust.counters.moonWideBuilds).toBe(builds + 1);
+    expect(after.opened.length).toBe(0);
+    expect(after.states.every((b) => b === 0)).toBe(true);
   });
 });

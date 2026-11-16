@@ -175,7 +175,7 @@ export interface BotReport {
   readonly server: ServerLogSummary | null;
   readonly netsim: Record<string, number> | null;
   /** Spike clients carry no simulated world state, so desync is not measurable here (arrives with the real sim). */
-  readonly desync: { readonly count: null; readonly note: string };
+  readonly desync: { readonly count: number | null; readonly note: string };
   readonly rejectedInputs: {
     readonly late: number | null;
     readonly rateLimited: number | null;
@@ -256,7 +256,7 @@ export function renderMarkdown(r: BotReport): string {
   out.push(
     `| Joins / disconnects / unexpected drops / scripted reconnects | ${b.joins} / ${b.disconnects} / ${b.unexpectedDrops} / ${b.reconnects} |`,
   );
-  out.push(`| Desync count | n/a (${r.desync.note}) |`);
+  out.push(`| Desync count | ${r.desync.count === null ? "n/a" : r.desync.count} (${r.desync.note}) |`);
   out.push(
     `| Server RSS first to last | ${s?.rssMB ? `${s.rssMB.first} to ${s.rssMB.last} MB (growth ${s.rssMB.growth})` : "n/a"} |`,
   );

@@ -450,7 +450,7 @@ describe("cost", () => {
     console.log(
       `MEASURED sim step: ${usPerActorTick.toFixed(2)} us per actor-tick (6 sweeping actors, fixture terrain)`,
     );
-    expect(usPerActorTick).toBeLessThan(100); // loose CI guard; the budget check is the logged figure
+    expect(usPerActorTick).toBeLessThan(250); // loose guard (parallel `pnpm verify` load roughly doubles it); the budget check is the logged figure
   });
 
   test("avatar step alone (walking, no tool) on real terrain (report the measured mean)", () => {
@@ -466,6 +466,6 @@ describe("cost", () => {
     for (let t = 2000; t < 2000 + n; t++) step(t);
     const us = ((performance.now() - t0) * 1000) / (n * 6);
     console.log(`MEASURED avatar step: ${us.toFixed(2)} us per actor-tick (6 loping actors, no tool)`);
-    expect(us).toBeLessThan(100);
+    expect(us).toBeLessThan(250);
   });
 });

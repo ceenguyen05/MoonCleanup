@@ -329,13 +329,105 @@ describe("PipelineWarmup (rendering-pipeline 12)", () => {
   });
 
   it("gives up on the time cap instead of blocking play", () => {
-    const warmup = new PipelineWarmup({ minFrames: 2, stableFrames: 3, maxMs: 500 });
+    const warmup = new PipelineWarmup({ minFrames: 2, stableFrames: 3, maxMs: 500, maxHeldMs: 5000 });
     warmup.begin("boot", 0);
     let done = false;
     for (let i = 1; i <= 40 && !done; i++) done = warmup.frame(i, i * 16);
     expect(done).toBe(true);
     expect(warmup.state.timedOut).toBe(true);
     expect(warmup.state.lastMs).toBeGreaterThanOrEqual(500);
+  });
+
+  it("a hold keeps the warm-up open while content loads; the count must stand still again after the release", () => {
+    const warmup = new PipelineWarmup({ minFrames: 2, stableFrames: 3, maxMs: 500, maxHeldMs: 5000 });
+    warmup.begin("boot", 0);
+    expect(warmup.hold(0)).toBe(false);
+    // 2 s of an empty scene with a still count: no settle, and no time cap (it counts from the release).
+    for (let t = 16; t <= 2000; t += 16) expect(warmup.frame(29, t)).toBe(false);
+    expect(warmup.state).toMatchObject({ phase: "warming", holds: 1 });
+    warmup.release(2000);
+    warmup.release(2000); // An extra release is ignored.
+    expect(warmup.state.holds).toBe(0);
+    // The terrain draws from the next frame: 8 more pipelines, then still.
+    const done = [37, 37, 37, 37].map((c, i) => warmup.frame(c, 2016 + i * 16));
+    expect(done).toEqual([false, false, false, true]);
+    expect(warmup.state).toMatchObject({ phase: "ready", timedOut: false, pipelinesAtReady: 37 });
+    expect(warmup.state.pipelinesReadyMs).toBeGreaterThan(2000);
+  });
+
+  it("a hold taken after warm-up starts a new one; a forgotten hold ends on maxHeldMs", () => {
+    const warmup = new PipelineWarmup({ minFrames: 2, stableFrames: 3, maxMs: 500, maxHeldMs: 3000 });
+    warmup.begin("boot", 0);
+    for (let i = 1; i <= 5; i++) warmup.frame(20, i * 16);
+    expect(warmup.state.phase).toBe("ready");
+    expect(warmup.hold(100)).toBe(true);
+    expect(warmup.state).toMatchObject({ phase: "warming", reason: "request" });
+    let done = false;
+    let t = 100;
+    while (!done && t < 10_000) done = warmup.frame(20, (t += 16));
+    expect(done).toBe(true);
+    expect(warmup.state.timedOut).toBe(true);
+    expect(t - 100).toBeGreaterThanOrEqual(3000);
+    expect(t - 100).toBeLessThan(3100);
+  });
+
+  it("a forgotten hold is dropped on the held time-out: later warm-ups settle, its late release is a no-op", () => {
+    const warmup = new PipelineWarmup({ minFrames: 2, stableFrames: 3, maxMs: 500, maxHeldMs: 3000 });
+    warmup.hold(0);
+    const leakedGeneration = warmup.holdGeneration;
+    let t = 0;
+    while (!warmup.frame(10, (t += 16)) && t < 10_000);
+    expect(warmup.state).toMatchObject({ phase: "ready", timedOut: true, holds: 0 });
+    expect(warmup.holdGeneration).toBe(leakedGeneration + 1);
+
+    // A preset warm-up with a stable count settles on the count, not on maxHeldMs.
+    const start = t;
+    warmup.begin("preset", t);
+    while (!warmup.frame(10, (t += 16)) && t < 20_000);
+    expect(warmup.state.timedOut).toBe(false);
+    expect(t - start).toBeLessThan(200);
+
+    // A new owner's hold is not cancelled by the stale release of the dropped one.
+    warmup.hold(t);
+    const current = warmup.holdGeneration;
+    warmup.release(t, leakedGeneration);
+    expect(warmup.state.holds).toBe(1);
+    warmup.release(t, current);
+    expect(warmup.state.holds).toBe(0);
+  });
+
+  it("restart (renderer recreated): the clock, cap and stable run start over; holds stay out", () => {
+    const warmup = new PipelineWarmup({ minFrames: 2, stableFrames: 3, maxMs: 500, maxHeldMs: 3000 });
+    warmup.begin("boot", 0);
+    warmup.frame(10, 16);
+    // 2 s of recovery with no frames, then the new renderer: without a restart the first frame times out.
+    warmup.restart(2000);
+    expect(warmup.frame(4, 2016)).toBe(false);
+    expect(warmup.state.phase).toBe("warming");
+    let t = 2016;
+    while (!warmup.frame(4, (t += 16)) && t < 4000);
+    expect(warmup.state).toMatchObject({ phase: "ready", timedOut: false });
+    expect(warmup.state.lastMs).toBeLessThan(200);
+
+    // Holds survive a restart and still wait out maxHeldMs from the restart.
+    const held = new PipelineWarmup({ minFrames: 2, stableFrames: 3, maxMs: 500, maxHeldMs: 3000 });
+    held.hold(0);
+    held.restart(2900);
+    expect(held.frame(4, 2916)).toBe(false);
+    expect(held.state.holds).toBe(1);
+    expect(held.frame(4, 5800)).toBe(false);
+    expect(held.frame(4, 5950)).toBe(true);
+    expect(held.state).toMatchObject({ timedOut: true, holds: 0 });
+
+    // Ready or idle: the stale pipeline count of the lost renderer is forgotten, no phantom runtime creation.
+    const ready = new PipelineWarmup({ minFrames: 1, stableFrames: 1, maxMs: 500, maxHeldMs: 3000 });
+    ready.begin("boot", 0);
+    ready.frame(30, 16);
+    ready.frame(30, 32);
+    expect(ready.state.phase).toBe("ready");
+    ready.restart(100);
+    ready.frame(40, 116);
+    expect(ready.state.pipelinesAfterWarmup).toBe(0);
   });
 
   it("budget: 4 s on Tier A, 8 s otherwise", () => {

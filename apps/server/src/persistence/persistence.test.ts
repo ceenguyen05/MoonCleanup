@@ -2,6 +2,7 @@
 // Fake timers drive both the "database clock" and the link clock (Date), so no test sleeps.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { TERRAIN_BAKE_HASH } from "@moon-cleanup/world";
 import { BandwidthCounter } from "../ops/bandwidth";
 import { DurableShiftDustStore, LEASE_RENEW_INTERVAL_MS } from "./durable-dust-store";
 import { MemoryRoomSaveRepository } from "./memory-room-repository";
@@ -135,6 +136,22 @@ describe("restore and save", () => {
     b.dispose();
   });
 
+  it("round-trips the room state (wallet) through the header, also on a header-only checkpoint", async () => {
+    const repo = new MemoryRoomSaveRepository();
+    const a = store(repo, "a");
+    await a.load(C);
+    expect(await a.loadState(C)).toBeNull(); // never saved
+    await a.save(C, [{ chunkId: 1, payload: payload(1) }], 10, { walletLm: 50 });
+    await a.save(C, [], 20, { walletLm: 75.5 }); // wallet changed, no dirty chunk
+    await a.release(C);
+    const b = store(repo, "b");
+    expect((await b.load(C)).map((c) => c.chunkId)).toEqual([1]);
+    expect(await b.loadState(C)).toEqual({ walletLm: 75.5 });
+    expect(await b.loadState(C)).toBeNull(); // one-shot
+    a.dispose();
+    b.dispose();
+  });
+
   it("strict: an unreachable database refuses the room (storage_down) and returns the lease", async () => {
     const repo = new MemoryRoomSaveRepository();
     const a = store(repo, "a");
@@ -220,18 +237,97 @@ describe("corrupt saves and the bake hash", () => {
     b.dispose();
   });
 
-  it("refuses a save written for another bake (save_corrupt) and returns the lease untouched", async () => {
+  it("archives a save written for another bake (kept recoverable) and starts a fresh room, lease kept", async () => {
+    const repo = new MemoryRoomSaveRepository();
+    const a = new DurableShiftDustStore({ repo, instance: "a", bakeHash: BAKE_A });
+    await a.load(C);
+    await a.save(C, [{ chunkId: 1, payload: payload(1) }], 10, { walletLm: 77, nearParcelsMask: 3 });
+    await a.release(C);
+    const warn = vi.fn();
+    const other = new DurableShiftDustStore({
+      repo,
+      instance: "b",
+      bakeHash: BAKE_B,
+      logger: { warn, error: vi.fn(), info: vi.fn() },
+    });
+    expect(await other.load(C)).toEqual([]); // fresh room: no chunks
+    expect(await other.loadState(C)).toBeNull(); // and no old wallet/parcels/gear
+    expect(other.counters.archives).toBe(1);
+    expect(warn).toHaveBeenCalledWith(expect.objectContaining({ contractId: C }), expect.stringContaining("archived"));
+    // The old world is archived verbatim, never deleted.
+    expect(repo.archives).toHaveLength(1);
+    expect(repo.archives[0]).toMatchObject({ contractId: C, reason: "bake_mismatch", bakeHash: BAKE_A, generation: 1 });
+    expect(repo.archives[0]!.state).toEqual({ walletLm: 77, nearParcelsMask: 3 });
+    expect([...repo.archives[0]!.chunks.keys()]).toEqual([1]);
+    expect(await repo.loadRoomSave(C)).toBeNull();
+    expect(other.holdsLease(C)).toBe(true);
+    // The fresh room's first checkpoint stamps the new bake and loads cleanly afterwards.
+    await other.save(C, [{ chunkId: 2, payload: payload(2) }], 5);
+    expect((await repo.loadRoomSave(C))!.bakeHash).toBe(BAKE_B);
+    await other.release(C);
+    const again = new DurableShiftDustStore({ repo, instance: "c", bakeHash: BAKE_B });
+    expect((await again.load(C)).map((c) => c.chunkId)).toEqual([2]);
+    expect(repo.archives).toHaveLength(1); // a matching bake archives nothing more
+    a.dispose();
+    other.dispose();
+    again.dispose();
+  });
+
+  it("does not archive when the database is down during the archive step: the room is refused, the save stays", async () => {
     const repo = new MemoryRoomSaveRepository();
     const a = new DurableShiftDustStore({ repo, instance: "a", bakeHash: BAKE_A });
     await a.load(C);
     await a.save(C, [{ chunkId: 1, payload: payload(1) }], 10);
     await a.release(C);
+    repo.archiveRoomSave = () => Promise.reject(Object.assign(new Error("down"), { code: "ECONNRESET" }));
     const other = new DurableShiftDustStore({ repo, instance: "b", bakeHash: BAKE_B });
-    await expect(other.load(C)).rejects.toMatchObject({ reason: "save_corrupt" });
-    expect(repo.leaseHolder(C)).toBeNull();
-    expect(repo.commits).toBe(1); // nothing was written over the real save
+    await expect(other.load(C)).rejects.toMatchObject({ reason: "storage_down" });
+    expect(repo.archives).toHaveLength(0);
+    expect((await repo.loadRoomSave(C))!.bakeHash).toBe(BAKE_A); // still the original world
+    expect(other.holdsLease(C)).toBe(false); // the failed room does not keep the lease (it expires on its own)
     a.dispose();
     other.dispose();
+  });
+
+  it("stamps the real TERRAIN_BAKE_HASH: a save of that bake restores unchanged, any other bake is archived", async () => {
+    const real = TERRAIN_BAKE_HASH;
+    const stale = real.replace(/^./, real.startsWith("0") ? "1" : "0"); // a re-bake changed one nibble
+    const repo = new MemoryRoomSaveRepository();
+    const a = new DurableShiftDustStore({ repo, instance: "a", bakeHash: real });
+    await a.load(C);
+    await a.save(C, [{ chunkId: 1, payload: payload(1) }], 10);
+    await a.release(C);
+    expect((await repo.loadRoomSave(C))!.bakeHash).toBe(real);
+
+    // Match: loads unchanged, nothing archived.
+    const current = new DurableShiftDustStore({ repo, instance: "c", bakeHash: real });
+    expect((await current.load(C)).length).toBe(1);
+    expect(repo.archives).toHaveLength(0);
+    await current.release(C);
+
+    // Mismatch: archived, fresh start.
+    const staleServer = new DurableShiftDustStore({ repo, instance: "b", bakeHash: stale });
+    expect(await staleServer.load(C)).toEqual([]);
+    expect(repo.archives).toHaveLength(1);
+    expect(repo.archives[0]!.bakeHash).toBe(real);
+    expect(repo.commits).toBe(1); // nothing was written over the real save: it was moved, not overwritten
+    a.dispose();
+    staleServer.dispose();
+    current.dispose();
+  });
+
+  it("loads a legacy save that recorded no bake hash (v0/v1 era) unchanged and archives nothing", async () => {
+    const repo = new MemoryRoomSaveRepository();
+    const legacy = store(repo, "a"); // no bakeHash: its checkpoints record none, like a pre-stamp header
+    await legacy.load(C);
+    await legacy.save(C, [{ chunkId: 1, payload: payload(1) }], 10);
+    await legacy.release(C);
+    expect((await repo.loadRoomSave(C))!.bakeHash).toBeNull();
+    const stamped = new DurableShiftDustStore({ repo, instance: "b", bakeHash: BAKE_B });
+    expect((await stamped.load(C)).length).toBe(1);
+    expect(repo.archives).toHaveLength(0);
+    legacy.dispose();
+    stamped.dispose();
   });
 
   it("checks nothing while the server world has no bake hash", async () => {

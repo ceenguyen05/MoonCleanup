@@ -191,6 +191,97 @@ export function runRoomSuite(label: string, driver: RoomSuiteDriver): void {
       await repo.commitRoomCheckpoint({ owner: owner("a"), simTick: 1, chunks: [{ chunkId: 4, payload: payload(4) }] });
       expect((await repo.loadRoomSave(contractId))!.bakeHash).toBeNull();
     });
+
+    it("persists the room state in the header, also on a header-only checkpoint, and keeps the last one", async () => {
+      const { repo, contractId, owner } = await setup();
+      await repo.acquireLease(owner("a"));
+      await repo.commitRoomCheckpoint({
+        owner: owner("a"),
+        simTick: 1,
+        chunks: [{ chunkId: 4, payload: payload(4) }],
+        bakeHash: BAKE,
+        state: { walletLm: 12.5 },
+      });
+      expect(await repo.loadRoomSave(contractId)).toMatchObject({ bakeHash: BAKE, state: { walletLm: 12.5 } });
+      // Header-only: no dirty chunk, the wallet changed. The older chunk stays, the newest header wins.
+      await repo.commitRoomCheckpoint({
+        owner: owner("a"),
+        simTick: 2,
+        chunks: [],
+        bakeHash: BAKE,
+        state: { walletLm: 40.25, nearParcelsMask: 0b101 },
+      });
+      const snapshot = await repo.loadRoomSave(contractId);
+      expect(snapshot).toMatchObject({ generation: 2, simTick: 2, bakeHash: BAKE });
+      // Review B1: the collected Near Parcel mask travels with the wallet.
+      expect(snapshot!.state).toEqual({ walletLm: 40.25, nearParcelsMask: 0b101 });
+      expect(snapshot!.chunks.map((c) => c.chunkId)).toEqual([4]);
+      await repo.commitRoomCheckpoint({ owner: owner("a"), simTick: 3, chunks: [] });
+      expect(await repo.loadRoomSave(contractId)).toMatchObject({ bakeHash: null, state: null });
+    });
+
+    it("archives the save (never deletes it): the Contract loads as pristine, the lease guard applies, a new save starts at generation 1", async () => {
+      const { repo, contractId, owner } = await setup();
+      expect(await repo.acquireLease(owner("a"))).toBe("acquired");
+      expect(await repo.archiveRoomSave(owner("a"), "bake_mismatch")).toEqual({ kind: "nothing" });
+      await repo.commitRoomCheckpoint({
+        owner: owner("a"),
+        simTick: 1,
+        chunks: [{ chunkId: 4, payload: payload(4) }],
+        bakeHash: BAKE,
+        state: { walletLm: 9 },
+      });
+      await repo.commitRoomCheckpoint({
+        owner: owner("a"),
+        simTick: 2,
+        chunks: [{ chunkId: 4, payload: payload(5) }],
+        bakeHash: BAKE,
+        state: { walletLm: 10 },
+      });
+      // Another owner cannot archive someone else's room.
+      expect(await repo.archiveRoomSave(owner("b"), "bake_mismatch")).toEqual({ kind: "lease_lost" });
+      expect(await repo.loadRoomSave(contractId)).toMatchObject({ generation: 2 });
+      const archived = await repo.archiveRoomSave(owner("a"), "bake_mismatch");
+      expect(archived).toMatchObject({ kind: "archived", generation: 2 });
+      expect(await repo.loadRoomSave(contractId)).toBeNull();
+      expect(await repo.archiveRoomSave(owner("a"), "bake_mismatch")).toEqual({ kind: "nothing" });
+      // The fresh room saves from generation 1 again and loads only its own data.
+      await repo.commitRoomCheckpoint({
+        owner: owner("a"),
+        simTick: 1,
+        chunks: [{ chunkId: 7, payload: payload(7) }],
+        bakeHash: BAKE,
+      });
+      const fresh = await repo.loadRoomSave(contractId);
+      expect(fresh).toMatchObject({ generation: 1, simTick: 1, state: null });
+      expect(fresh!.chunks.map((c) => c.chunkId)).toEqual([7]);
+    });
+
+    it("rejects an archive reason that is empty or too long", async () => {
+      const { repo, owner } = await setup();
+      await repo.acquireLease(owner("a"));
+      await expect(repo.archiveRoomSave(owner("a"), "")).rejects.toThrow(RangeError);
+      await expect(repo.archiveRoomSave(owner("a"), "x".repeat(65))).rejects.toThrow(RangeError);
+    });
+
+    it("refuses a negative or non-finite wallet and writes nothing", async () => {
+      const { repo, contractId, owner } = await setup();
+      await repo.acquireLease(owner("a"));
+      for (const walletLm of [-1, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER * 2]) {
+        await expect(
+          repo.commitRoomCheckpoint({ owner: owner("a"), simTick: 1, chunks: [], state: { walletLm } }),
+        ).rejects.toThrow(RangeError);
+      }
+      await expect(
+        repo.commitRoomCheckpoint({
+          owner: owner("a"),
+          simTick: 1,
+          chunks: [],
+          state: { walletLm: 1, nearParcelsMask: 300 },
+        }),
+      ).rejects.toThrow(RangeError);
+      expect(await repo.loadRoomSave(contractId)).toBeNull();
+    });
   });
 
   describe(`UsageRepository (${label})`, () => {

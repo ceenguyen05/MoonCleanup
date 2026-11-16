@@ -1,0 +1,96 @@
+/* Settings > Save and sync. Reuses the menu field / button styles; only the status block and the restore confirmation
+   are new. Text plus glyph, never colour alone; nothing animates. */
+.status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mc-sp-3);
+  padding: var(--mc-sp-3) var(--mc-sp-4);
+  background: var(--mc-glass-highlight);
+  border: var(--mc-hairline) solid var(--mc-glass-border);
+  border-radius: var(--mc-r-md);
+}
+
+.statusGlyph {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--mc-hit);
+  height: var(--mc-hit);
+  color: var(--mc-ivory);
+  background: var(--mc-graphite);
+  border-radius: var(--mc-r-md);
+}
+
+.statusBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-1);
+  min-width: 0;
+}
+
+.statusText {
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+  font-weight: 500;
+}
+
+.problem {
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 600;
+  color: var(--mc-warn);
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-3);
+  padding: var(--mc-sp-3) var(--mc-sp-4);
+  border: var(--mc-hairline) dashed var(--mc-warn);
+  border-radius: var(--mc-r-md);
+}
+
+.confirmText {
+  margin: 0;
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-body);
+}
+
+.confirmActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mc-sp-3);
+}
+
+.sent {
+  min-height: var(--mc-lh-caption);
+  margin: 0;
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  color: var(--mc-teal-hi);
+}
+
+/* The destructive confirmation is outlined (amber, dashed focus-safe) so it never reads as the default action. */
+.danger {
+  min-width: calc(var(--mc-hit) * 3);
+  min-height: var(--mc-hit);
+  padding: 0 var(--mc-sp-4);
+  font: inherit;
+  font-size: var(--mc-fs-body);
+  font-weight: 600;
+  color: var(--mc-text-1);
+  background: transparent;
+  border: calc(var(--mc-hairline) * 2) solid var(--mc-warn);
+  border-radius: var(--mc-r-md);
+  cursor: pointer;
+}
+
+.danger:hover {
+  color: #1d1600;
+  background: var(--mc-warn);
+}
+
+.danger:focus-visible {
+  outline: var(--mc-focus-width) solid var(--mc-focus);
+  outline-offset: var(--mc-focus-offset);
+}

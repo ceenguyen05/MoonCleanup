@@ -16,7 +16,7 @@ import {
 import { AnimationModule } from "../animation";
 import { AudioModule, browserEnv } from "../audio";
 import { DebugModule } from "../debug";
-import { GameplayModule, PlotFrameMapper, type GameplayDebugHost } from "../gameplay";
+import { GameplayModule, PlotFrameMapper, type GameplayDebugHost, type PlotCardMode } from "../gameplay";
 import { UiModule, sphereBearingDeg, type OnlineEntryPort } from "../ui";
 import { DUST_SCENE_SITE, VisualsModule, type DustFeedPort } from "../visuals";
 import type { CreateLocalRoomHostOptions, LocalRoomHostImpl, SoloDustView } from "../sim-host";
@@ -66,9 +66,13 @@ import {
 } from "./solo-host";
 import { createUiStore } from "./ui-store";
 import { HudWriter, withHudPump } from "./hud-writer";
+import { installHandbookKey } from "./handbook-key";
+import { ObjectiveMarkers, markerSink, type MarkerStation } from "./objective-markers";
+import { OnboardingWriter, createOnboardingStorage } from "./onboarding-writer";
 import { createPurchasePort, InteractionWriter, outpostStations } from "./hud-interaction";
 import { MenuWriter, UiFrameBridge, catalogItemIds, createMenuPricing, menuCatalogFromGameData } from "./menu-writer";
-import { createControlsPort, toBindingTable } from "./controls-port";
+import { createControlsPort } from "./controls-port";
+import { applyInputSettings, choosePlotCardMode } from "./input-settings";
 import { createSettingsStorage } from "./settings-storage";
 import { createUiIntents } from "./ui-intents";
 import { ReadoutLink } from "./readout-link";
@@ -159,8 +163,19 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     // in a lazy chunk off the first-frame path.
     const hudWriter = new HudWriter({ store });
     disposers.push(hudWriter.follow(roomHost), () => hudWriter.dispose());
+    // Induction Checklist, DOT lines and achievements from real room events (progress persists in localStorage).
+    const onboarding = new OnboardingWriter({
+      store,
+      storage: createOnboardingStorage(safeLocalStorage(win), (source, error) => boundary.report(source, error)),
+    });
+    disposers.push(onboarding.follow(roomHost), () => onboarding.dispose());
     void import("@moon-cleanup/game-data")
       .then((data) => {
+        const gameData = data.loadGameData();
+        onboarding.setCatalog({
+          induction: gameData.onboarding.induction.map((s) => ({ id: s.id, trigger: s.trigger })),
+          achievementIds: gameData.achievements.achievements.map((a) => a.id),
+        });
         const tools = data.loadGameData().tools.tools;
         const catalog = menuCatalogFromGameData(data.loadGameData());
         menuWriter.setCatalog(catalog);
@@ -192,11 +207,13 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
       bridge: UiFrameBridge | null;
       attachSimReadouts(source: SimReadoutSource | null): void;
       parcels: ParcelFeed | null;
+      markers: ObjectiveMarkers | null;
       pump(nowMs: number): void;
     } = {
       writer: null,
       bridge: null,
       parcels: null,
+      markers: null,
       attachSimReadouts(source) {
         attachSimReadouts({ readouts: readoutWriter, menus: menuWriter, mySlot: readoutSlot }, source);
       },
@@ -205,12 +222,15 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         menuWriter.pump(nowMs);
         readoutWriter.pump(nowMs);
         this.parcels?.pump(nowMs);
+        this.markers?.pump(nowMs);
         this.bridge?.pump();
       },
     };
     disposers.push(() => interactionPump.attachSimReadouts(null));
     // Solo: the worker-fed read-out cache of the published local host; remote hosts stay unfed.
     let nearSource: ParcelReadoutSource | null = null;
+    // Assay Counter / Desk positions for the Induction objective marker (set with the interaction stations).
+    let markerStations: readonly MarkerStation[] = [];
     const readoutLink = new ReadoutLink((source) => {
       nearSource = source;
       interactionPump.attachSimReadouts(source);
@@ -312,6 +332,9 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     // code loads only on `open` (dynamic import inside online-launch). The `__mcOnline` console hook stays dev/perf-only.
     // Animation pool (M1-W5-T04): unbound in Solo (update is one null check); an open room binds its avatar entities.
     const animation = new AnimationModule();
+    // `?scene=dust`: an open room's mirror feed replaces the Solo feed (setDustFeed is a no-op for every other scene;
+    // a cold path on room open / close only, so solo frames pay nothing).
+    const visuals = new VisualsModule({ search: moduleSearch, dustFeed });
     const onlineHooks = createOnlineDevHooks(
       online,
       {
@@ -320,11 +343,17 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         clientBuild: config.buildVersion,
         events,
         onProblem: (source, error) => boundary.report(source, error),
+        ...(dustFeed !== null ? { sitePlot: DUST_SCENE_SITE } : {}),
       },
       (source, error) => boundary.report(source, error),
       // While a room is open its RemoteRoomHost is the `roomHost` (gameplay / UI bind unchanged); the Solo host is
       // paused and restored on close. Reconnect token refreshes go through the shared guest account.
-      { publisher: roomHost, auth: () => loadGuestAuth(), animation },
+      {
+        publisher: roomHost,
+        auth: () => loadGuestAuth(),
+        animation,
+        dustFeed: { bind: (feed) => void visuals.setDustFeed(feed ?? dustFeed) },
+      },
     );
     disposers.push(() => onlineHooks.close());
     const netModule = new AppNetModule({
@@ -380,6 +409,7 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
             sim.ASSAY_POUR_REACH_M,
             sim.DUMP_PLATE_RADIUS_M,
           );
+          markerStations = stations;
           if (perfEnabled) {
             win.__mcStations = () => stations; // dev / perf only (smoke tests teleport next to the Desk)
           }
@@ -400,18 +430,21 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     }
     // Rebinding: the real input binding table (stored rebind first; a corrupt one is reported and ignored).
     let controls: ReturnType<typeof createControlsPort> | undefined;
+    let plotCardMode: PlotCardMode = "toggle";
     if (gameplay !== null) {
-      let initial: ReturnType<typeof toBindingTable> | null = null;
-      const stored = settings.loadBindings();
-      if (stored !== null) {
-        try {
-          initial = toBindingTable(stored);
-          gameplay.input.setBindings(initial);
-        } catch (error) {
-          boundary.report("stored key bindings", error);
-        }
-      }
-      controls = createControlsPort({ input: gameplay.input, initial, save: (t) => settings.saveBindings(t) });
+      const inputSettings = applyInputSettings({
+        input: gameplay.input,
+        storage: safeLocalStorage(win),
+        storedBindings: settings.loadBindings(),
+        saveBindings: (t) => settings.saveBindings(t),
+        report: (source, error) => boundary.report(source, error),
+      });
+      plotCardMode = inputSettings.plotCardMode;
+      controls = createControlsPort({
+        input: gameplay.input,
+        initial: inputSettings.initial,
+        save: (t) => settings.saveBindings(t),
+      });
     }
     const uiModule = new UiModule<ClientServices>({
       store: withHudPump(store, hudWriter, interactionPump),
@@ -423,7 +456,16 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         purchase: (itemId, priceLm) => purchasePort.purchase(itemId, priceLm),
         quality: { setPreset: (preset, source) => services.get("quality").setPreset(preset, source) },
         saveQuality: (preset) => settings.saveQuality(preset),
+        ...(gameplay !== null
+          ? {
+              setPlotCardMode: (mode: PlotCardMode) => {
+                if (!choosePlotCardMode(gameplay.input, safeLocalStorage(win), mode))
+                  boundary.report("settings save", new Error("Plot Card mode could not be saved"));
+              },
+            }
+          : {}),
       }),
+      plotCardMode,
       ...(controls !== undefined ? { controls } : {}),
     });
     if (gameplay !== null) {
@@ -440,6 +482,23 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         },
         bearing: sphereBearingDeg,
       });
+      interactionPump.markers = new ObjectiveMarkers({
+        store,
+        setMarkerBearing: markerSink(uiModule, (message) => console.warn(`[app] ${message}`)),
+        step: () => (onboarding.inductionComplete ? null : onboarding.currentStepId),
+        source: () => nearSource,
+        stations: () => markerStations,
+        samplePos: (out) => {
+          if (gameplay.stats.posedFrames === 0) return false;
+          out.x = feet[0]!;
+          out.y = feet[1]!;
+          out.z = feet[2]!;
+          return true;
+        },
+        bearing: sphereBearingDeg,
+      });
+      // H opens / closes the DOT Handbook (keyboard + mouse).
+      disposers.push(installHandbookKey({ win, store }));
       interactionPump.bridge = new UiFrameBridge({
         store,
         ui: uiModule,
@@ -448,12 +507,13 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         onInspect: (on) => {
           readoutWriter.setInspecting(on);
           readoutLink.setInspecting(on);
+          if (on) onboarding.plotCardOpened();
         },
       });
     }
     const registered = new Map<ClientModuleId, ClientModule<ClientServices>>([
       ["render", render],
-      ["visuals", new VisualsModule({ search: moduleSearch, dustFeed })],
+      ["visuals", visuals],
       ["animation", animation],
       ["net", netModule],
       ["ui", uiModule],

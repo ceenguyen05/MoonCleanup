@@ -1,0 +1,29 @@
+[
+ {
+  "round": 0,
+  "name": "nc60",
+  "frameP50": 1718.9000000003725,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "nf60",
+  "frameP50": 3451.5,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "b60",
+  "frameP50": 1481,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ }
+]

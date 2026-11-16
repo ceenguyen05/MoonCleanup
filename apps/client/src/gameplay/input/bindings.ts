@@ -67,8 +67,11 @@ export const DEFAULT_BINDINGS: BindingTable = {
   Mouse2: "toolSecondary",
   WheelUp: "holsterPrev",
   WheelDown: "holsterNext",
-  // Standard gamepad: A jump, B descend, X interact, Y puck, LB/RB holster, LT trait, RT sweep, L3 lope, R3 lane lock,
-  // Select camera, D-pad up lamp, D-pad down ballast, D-pad left pickup, D-pad right seat.
+  // Standard gamepad (game-feel-and-controls 6.4): A jump, B descend, X interact, Y puck, LB/RB holster, LT trait,
+  // RT sweep, L3 lope, R3 lane lock, D-pad Up Plot Card (tap) / camera 1P-3P (hold, InputState.holdThresholdS),
+  // D-pad down ballast, D-pad left pickup, D-pad right lamp. b9 Menu (Start) stays reserved for Pause; b16 Home is the
+  // browser's. Interim until their spec features exist: View (b8) seat switch (spec: Survey Globe / Shift Roster);
+  // ballast on D-pad down (spec: Ping wheel, ballast on D-pad left); pickup on D-pad left (spec: B).
   Pad0: "jump",
   Pad1: "descend",
   Pad2: "interact",
@@ -77,13 +80,13 @@ export const DEFAULT_BINDINGS: BindingTable = {
   Pad5: "holsterNext",
   Pad6: "toolSecondary",
   Pad7: "toolPrimary",
-  Pad8: "cameraMode",
+  Pad8: "seatSwitch",
   Pad10: "lope",
   Pad11: "laneLock",
-  Pad12: "lampCycle",
+  Pad12: "plotCard",
   Pad13: "ballast",
   Pad14: "pickupDrop",
-  Pad15: "seatSwitch",
+  Pad15: "lampCycle",
 };
 
 /** Action codes of the compiled table: 0..15 logical button bits, then the extras. */
@@ -146,6 +149,67 @@ export function compileBindings(table: BindingTable): CompiledBindings {
     else throw new Error("bindings: empty device name");
   }
   return { keys, mouse, pad, wheelUp, wheelDown };
+}
+
+/**
+ * Revision of DEFAULT_BINDINGS. A stored table replaces the defaults wholesale, so a default changed later never
+ * reaches a player with a stored rebind unless it is migrated once. Rev 1 = tables stored before the revision existed;
+ * rev 2 moves the pad layout to the spec D-pad: Pad12 lamp -> Plot Card (tap) / camera (hold), lamp to Pad15, seat
+ * switch from Pad15 to Pad8 (whose camera toggle moves to the Pad12 hold).
+ */
+export const BINDINGS_REV = 2;
+
+/** One device rewrite: applied when the stored device holds `from` (undefined = unbound). */
+interface Rewrite {
+  readonly device: string;
+  readonly from: InputAction | undefined;
+  readonly to: InputAction;
+}
+
+/** Rewrites per revision; a group applies atomically, only if every `from` still matches (an untouched layout). */
+const REV_REWRITES: Readonly<Record<number, readonly Rewrite[]>> = {
+  2: [
+    { device: "Pad8", from: "cameraMode", to: "seatSwitch" },
+    { device: "Pad12", from: "lampCycle", to: "plotCard" },
+    { device: "Pad15", from: "seatSwitch", to: "lampCycle" },
+  ],
+};
+
+function hasPadBinding(table: BindingTable, action: InputAction): boolean {
+  for (const [device, bound] of Object.entries(table)) if (bound === action && /^Pad\d{1,2}$/.test(device)) return true;
+  return false;
+}
+
+export interface BindingsMigration {
+  readonly table: BindingTable;
+  /** Always >= BINDINGS_REV after migrating; store it next to the table. */
+  readonly rev: number;
+  /** Whether `table` differs from the input (the caller then re-saves it). */
+  readonly changed: boolean;
+}
+
+/**
+ * Brings a stored table (saved at `storedRev`; `null` = saved before revisions existed = 1) up to BINDINGS_REV. A
+ * revision's rewrites apply only when the player has not touched those devices (every `from` matches) and the moved-in
+ * Plot Card has no pad binding yet, so a player's own layout is never overwritten. Runs once per revision: once the rev
+ * is stored, later rebinds stay as the player left them.
+ */
+export function migrateBindings(stored: BindingTable, storedRev: number | null): BindingsMigration {
+  const from = storedRev ?? 1;
+  if (from >= BINDINGS_REV) return { table: stored, rev: from, changed: false };
+  let next: Record<string, InputAction> | null = null;
+  for (let rev = from + 1; rev <= BINDINGS_REV; rev++) {
+    const group = REV_REWRITES[rev];
+    if (group === undefined) continue;
+    const cur: BindingTable = next ?? stored;
+    if (!group.every((r) => cur[r.device] === r.from)) continue;
+    if (group.some((r) => r.to === "plotCard") && hasPadBinding(cur, "plotCard")) continue;
+    next ??= { ...stored };
+    for (const r of group) next[r.device] = r.to;
+  }
+  if (next === null) return { table: stored, rev: BINDINGS_REV, changed: false };
+  compileBindings(next); // validate
+  return { table: next, rev: BINDINGS_REV, changed: true };
 }
 
 /** Returns a copy of `base` with `device` rebound to `action` (or unbound with `null`). */

@@ -173,7 +173,10 @@ export class HudWriter {
     }
     if (s === null) return;
     dispatch({ type: "wallet.set", patch: { lm: s.walletLumens } });
-    const total = s.plotCount;
+    // The Shine total is always a real plot count: a snapshot without one (0, not finite) keeps the last known total
+    // (the slice starts at the standard Moon's count), so the "Which copy?" prompt never falls back to plot counts.
+    const known = this.options.store.getState().shine.total;
+    const total = Number.isFinite(s.plotCount) && s.plotCount > 0 ? s.plotCount : known;
     dispatch({
       type: "shine.set",
       patch: { polished: s.shinePolished, total, pct: total > 0 ? (s.shinePolished / total) * 100 : 0 },

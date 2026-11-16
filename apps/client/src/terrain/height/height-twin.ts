@@ -35,6 +35,7 @@ import {
   type HeightDetailParams,
   type PadMask,
 } from "@moon-cleanup/world";
+import { buildHeightMips } from "./height-mips";
 
 export type TslNode = any;
 const t = TSL as unknown as Record<string, (...args: any[]) => any>;
@@ -84,34 +85,17 @@ export function createHeightTexture(cube: HeightCube): DataArrayTexture {
  */
 export function createHeightMipTextures(cube: HeightCube, count = 3): DataArrayTexture[] {
   const out: DataArrayTexture[] = [];
-  let size = cube.faceSize;
-  const p = cube.padded;
-  let previous = new Uint16Array(6 * size * size);
-  for (let face = 0; face < 6; face++) {
-    for (let y = 0; y < size; y++) {
-      const from = face * p * p + (y + 1) * p + 1;
-      previous.set(cube.data.subarray(from, from + size), (face * size + y) * size);
-    }
-  }
-  for (let level = 1; level <= count && size >= 4; level++) {
-    const half = size >> 1;
-    const next = new Uint16Array(6 * half * half);
-    for (let face = 0; face < 6; face++) {
-      for (let y = 0; y < half; y++) {
-        for (let x = 0; x < half; x++) {
-          const k = (face * size + y * 2) * size + x * 2;
-          next[(face * half + y) * half + x] =
-            (previous[k]! + previous[k + 1]! + previous[k + size]! + previous[k + size + 1]! + 2) >> 2;
-        }
-      }
-    }
+  // Padded levels (1-texel gutter from the neighbouring faces, `height-mips.ts`): no slope seam at cube edges.
+  for (const [k, mip] of buildHeightMips(cube, count).entries()) {
+    const next = mip.data;
+    const padded = mip.size + 2;
     const bytes = new Uint8Array(next.length * 2);
-    for (let k = 0; k < next.length; k++) {
-      bytes[k * 2] = next[k]! & 0xff;
-      bytes[k * 2 + 1] = next[k]! >> 8;
+    for (let i = 0; i < next.length; i++) {
+      bytes[i * 2] = next[i]! & 0xff;
+      bytes[i * 2 + 1] = next[i]! >> 8;
     }
-    const texture = new DataArrayTexture(bytes, half, half, 6);
-    texture.name = "mc:height-cube-mip" + String(level);
+    const texture = new DataArrayTexture(bytes, padded, padded, 6);
+    texture.name = "mc:height-cube-mip" + String(k + 1);
     texture.format = RGFormat;
     texture.type = UnsignedByteType;
     texture.colorSpace = NoColorSpace;
@@ -124,8 +108,6 @@ export function createHeightMipTextures(cube: HeightCube, count = 3): DataArrayT
     texture.unpackAlignment = 1;
     texture.needsUpdate = true;
     out.push(texture);
-    previous = next;
-    size = half;
   }
   return out;
 }
@@ -215,6 +197,11 @@ export interface HeightTwin {
   frame(face: TslNode): FaceFrame;
   /** H_base at face coordinates (4 taps). Call inside a `Fn`. */
   base(face: TslNode, a: TslNode, b: TslNode): TslNode;
+  /**
+   * vec3(H_base, dH_base/da, dH_base/db) at face coordinates: central differences at +-1/2 texel, equal to five `base`
+   * calls, read from one 3x3 texel window (9 taps). Call inside a `Fn`.
+   */
+  baseSlope(face: TslNode, a: TslNode, b: TslNode): TslNode;
   /** H_detail and its slope terms at `dir` = direction of (face, a, b). Call inside a `Fn`. */
   detail(dir: TslNode, face: TslNode, a: TslNode, b: TslNode, weights: DetailWeights | null): DetailResult;
   /** H at a unit direction (face by major axis), all detail at full weight: the node the readback check renders. */
@@ -299,6 +286,72 @@ export function createHeightTwin(options: HeightTwinOptions): HeightTwin {
     return mix(top, bottom, fy).mul(cube.scaleM).add(cube.offsetM);
   };
 
+  // H_base and its central differences at +-1/2 texel from one 3x3 texel window (9 taps instead of 5 x 4). The five
+  // bilinear samples at x, x +- 1/2 (and y likewise) all fall in the columns floor(x - 1/2) .. floor(x - 1/2) + 2, so
+  // the result equals `base` at the five points (same weights; inside the valid face range no clamp is reached).
+  const baseSlope = (face: TslNode, a: TslNode, b: TslNode): TslNode => {
+    const x = clamp(
+      a
+        .add(1)
+        .mul(n / 2)
+        .add(0.5),
+      0,
+      p - 1,
+    ).toVar();
+    const y = clamp(
+      b
+        .add(1)
+        .mul(n / 2)
+        .add(0.5),
+      0,
+      p - 1,
+    ).toVar();
+    const sxf = max(floor(x.sub(0.5)), 0).toVar();
+    const syf = max(floor(y.sub(0.5)), 0).toVar();
+    const x0 = floor(x);
+    const y0 = floor(y);
+    const fx = x.sub(x0).toVar();
+    const fy = y.sub(y0).toVar();
+    // Window offset of the centre sample's first column / row (0 or 1).
+    const cx = x0.greaterThan(sxf);
+    const cy = y0.greaterThan(syf);
+    // Weight of the +-1/2 samples inside their texel pair.
+    const ux = x.sub(0.5).sub(sxf).toVar();
+    const uy = y.sub(0.5).sub(syf).toVar();
+    const sx = int(sxf).toVar();
+    const sy = int(syf).toVar();
+    const cols = [sx, min(sx.add(1), int(p - 1)).toVar(), min(sx.add(2), int(p - 1)).toVar()];
+    const rows = [sy, min(sy.add(1), int(p - 1)).toVar(), min(sy.add(2), int(p - 1)).toVar()];
+    const tap = (ix: TslNode, iy: TslNode): TslNode => {
+      const texel = textureLoad(texture, ivec2(ix, iy)).depth(face);
+      return floor(texel.g.mul(255).add(0.5))
+        .mul(256)
+        .add(floor(texel.r.mul(255).add(0.5)))
+        .toVar();
+    };
+    // Per row: the value at x (centre), x - 1/2 (west) and x + 1/2 (east).
+    const rowC: TslNode[] = [];
+    const rowW: TslNode[] = [];
+    const rowE: TslNode[] = [];
+    for (let j = 0; j < 3; j++) {
+      const t0 = tap(cols[0], rows[j]);
+      const t1 = tap(cols[1], rows[j]);
+      const t2 = tap(cols[2], rows[j]);
+      rowC.push(mix(select(cx, t1, t0), select(cx, t2, t1), fx).toVar());
+      rowW.push(mix(t0, t1, ux));
+      rowE.push(mix(t1, t2, ux));
+    }
+    const atY = (r: TslNode[]): TslNode => mix(select(cy, r[1], r[0]), select(cy, r[2], r[1]), fy);
+    const h = atY(rowC);
+    const hW = atY(rowW);
+    const hE = atY(rowE);
+    const hS = mix(rowC[0], rowC[1], uy);
+    const hN = mix(rowC[1], rowC[2], uy);
+    // Raw units -> metres; differences span one texel = 2 / n in face coordinates.
+    const slope = cube.scaleM * (n / 2);
+    return vec3(h.mul(cube.scaleM).add(cube.offsetM), hE.sub(hW).mul(slope), hN.sub(hS).mul(slope));
+  };
+
   /** Bilinear H_base from a level texture of `size` texels per edge with `pad` gutter texels. */
   const levelSample = (
     tex: DataArrayTexture,
@@ -342,7 +395,7 @@ export function createHeightTwin(options: HeightTwinOptions): HeightTwin {
     return mix(top, bottom, y.sub(y0)).mul(cube.scaleM).add(cube.offsetM);
   };
   const levels: { tex: DataArrayTexture; size: number; pad: number }[] = [{ tex: texture, size: n, pad: 1 }];
-  (options.mips ?? []).forEach((tex, k) => levels.push({ tex, size: n >> (k + 1), pad: 0 }));
+  (options.mips ?? []).forEach((tex, k) => levels.push({ tex, size: n >> (k + 1), pad: 1 }));
   const slopeOf = (k: number, face: TslNode, a: TslNode, b: TslNode): TslNode => {
     const { tex, size, pad } = levels[k]!;
     const e = 1 / size;
@@ -426,6 +479,7 @@ export function createHeightTwin(options: HeightTwinOptions): HeightTwin {
     return {
       frame,
       base,
+      baseSlope,
       detail: none,
       heightAtDirection: heightAtWith(none),
       ...farApi,
@@ -702,6 +756,7 @@ export function createHeightTwin(options: HeightTwinOptions): HeightTwin {
   return {
     frame,
     base,
+    baseSlope,
     detail,
     heightAtDirection: heightAtWith(detail),
     ...farApi,

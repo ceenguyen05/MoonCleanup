@@ -11,6 +11,7 @@ import { Icon } from "../icons/Icon";
 import { fadeTransition } from "../motion/presets";
 import { STRINGS } from "../strings";
 import { useReducedMotion, useSpring, useUi, useUiSelector } from "../ui-context";
+import { Handbook } from "../onboarding/Handbook";
 import { useCloseControls } from "./ControlsScreen";
 import { focusables, moveFocus, type NavDirection } from "./focus-nav";
 import { OpsConsole } from "./OpsConsole";
@@ -162,6 +163,12 @@ export function MenuHost(): ReactElement {
     frame = (
       <MenuFrame key={open} surface={open} title={M.console.title}>
         <OpsConsole />
+      </MenuFrame>
+    );
+  else if (open === "handbook")
+    frame = (
+      <MenuFrame key={open} surface={open} title={STRINGS.handbook.title}>
+        <Handbook />
       </MenuFrame>
     );
   else if (open === "settings")

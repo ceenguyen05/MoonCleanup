@@ -1,0 +1,54 @@
+[
+ {
+  "name": "g5a",
+  "ms": 47053,
+  "frameP50": 16.600000001490116,
+  "frameP95": 18.69999999552965,
+  "gpu": {
+   "samples": 0,
+   "avg": 0,
+   "min": 0,
+   "max": 0,
+   "p50": 0,
+   "p95": 0,
+   "p99": 0
+  },
+  "ev": 11.580769230769231,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 35636.29999999702,
+   "decodeMs": 208.29999999701977
+  },
+  "errs": []
+ },
+ {
+  "name": "g30a",
+  "ms": 13599,
+  "frameP50": 16.700000002980232,
+  "frameP95": 19,
+  "gpu": {
+   "samples": 0,
+   "avg": 0,
+   "min": 0,
+   "max": 0,
+   "p50": 0,
+   "p95": 0,
+   "p99": 0
+  },
+  "ev": 13.6,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 783.7999999970198,
+   "decodeMs": 233.80000000447035
+  },
+  "errs": []
+ }
+]

@@ -8,7 +8,7 @@ stylized PBR lighting and satisfying low-gravity motion. TypeScript, three.js We
 
 **Current state: M0 foundation is in progress.** Many package build/dev/lint scripts are still placeholders.
 A command exiting successfully does not yet prove the game builds or runs. See [STATUS](docs/STATUS.md).
-Target delivery: **November 17, 2026**; preserve gameplay/visual quality and report scope risk honestly.
+No delivery deadline; preserve gameplay/visual quality and report scope risk honestly.
 
 Primary design goal: a close Moon Sweepers-like experience in gameplay, mechanisms, graphics, animation and whole-moon
 progression, with authored assets/branding. [Reference target and flexible naming](docs/design/REFERENCE_TARGET.md)

@@ -26,9 +26,9 @@ export type PanelAction =
   | { readonly type: "recoveryConfirmed" }
   | { readonly type: "clearError" };
 
-export function initialPanelState(active: boolean): PanelState {
+export function initialPanelState(active: boolean, hasInvite = false): PanelState {
   return {
-    view: active ? "onShift" : "choose",
+    view: active ? "onShift" : hasInvite ? "private" : "choose",
     busy: null,
     error: null,
     inviteCode: null,

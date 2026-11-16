@@ -1,3 +1,4 @@
+import { OFFSCREEN_CHROME_ARGS } from "../../../offscreen-chrome-args.mjs";
 // Driver of the light / sky browser checks (M1-W2-T02). Not part of the app bundle: run it by hand against a running
 // client dev server (pnpm --filter @moon-cleanup/client exec vite --port 5262 --strictPort).
 //
@@ -44,6 +45,7 @@ const browser = await chromium.launch({
   headless: false,
   channel: "chrome",
   args: [
+    ...OFFSCREEN_CHROME_ARGS,
     "--enable-unsafe-webgpu",
     "--enable-features=Vulkan,WebGPU",
     "--ignore-gpu-blocklist",

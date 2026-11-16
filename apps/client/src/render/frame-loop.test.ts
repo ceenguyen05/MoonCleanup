@@ -355,7 +355,7 @@ describe("viewport, render scale and camera range", () => {
   it("RenderScale rests at the preset ceiling, clamps requests and honours pins", () => {
     const scale = new RenderScale(QUALITY_PRESETS.medium.dynres);
     expect(scale.current).toBe(0.85);
-    expect(scale.set(0.1)).toBe(0.6);
+    expect(scale.set(0.1)).toBe(0.75);
     expect(scale.set(2)).toBe(0.85);
     scale.setRange(QUALITY_PRESETS.high.dynres);
     expect(scale.current).toBe(1);

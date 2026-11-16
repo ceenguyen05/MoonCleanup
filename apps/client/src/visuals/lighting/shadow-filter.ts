@@ -132,6 +132,39 @@ export function receiverKernelScale(nDotL: number, k: number = RECEIVER_KERNEL_K
   return Math.min(1, Math.max(0, k * nDotL));
 }
 
+/**
+ * Smallest kernel scale of the FAR kernel (`pcf5`, cascades past 0) on a grazed receiver, per map axis (M1-W2-T02, "toothed
+ * far shadows"). With the scale going to 0 the far cascades fell back to one bilinear comparison, so every texel step of a
+ * terrain shadow edge showed: at a 5 degree sun one texel row of the map is about 11 texels of ground along the light, and
+ * the edges of crater and ridge shadows became combs of long teeth (`?scene=moon`, ground view). X is the map axis across
+ * the light, Y the one along it on the ground. Cascade 0 (`pcf3`, 2 cm texels, seen close) keeps the floorless rule.
+ * `?kernelfloorx=` / `?kernelfloory=` (or `?kernelfloor=` for both) set them for A/B (0 = the rule before). Final pick
+ * (M1-W2-T02 close-out, `M1-W2-T02-evidence/r4/`): Y 1 (full tent along the light), which visibly smooths the far ridge
+ * comb at 5 and 10 degrees over 0.4 and 0.7, with no visible change to the S05 post shadow on Low at a 1 degree sun; X
+ * stays 0.4 so thin casters across the light are not widened.
+ */
+export const FAR_KERNEL_FLOOR_X = 0.4;
+export const FAR_KERNEL_FLOOR_Y = 1;
+export const farKernelFloorX = uniform(FAR_KERNEL_FLOOR_X);
+export const farKernelFloorY = uniform(FAR_KERNEL_FLOOR_Y);
+
+/**
+ * Same floors for the NEAR kernel (`pcf3`, cascade 0). The comb of the ground view at a 5 degree sun sits 3 to 10 m from
+ * the camera, inside cascade 0: there one 2 cm texel row is about 20 cm of ground along the light, and the floorless rule
+ * fell back to one comparison. A/B at 5 degrees (`M1-W2-T02-evidence/r3/`): the comb is in the map's Y (along the light),
+ * so Y keeps the full 3x3 tent (20 cm of ground along the light; a 0.38 m rock is about 19 texels there, so nothing thin
+ * is diluted), while X (across the light, where posts and legs are thin) keeps the 0.4 floor. `?kernelfloor0x=` / `?kernelfloor0y=` (or `?kernelfloor0=` for both) for A/B.
+ */
+export const NEAR_KERNEL_FLOOR_X = 0.4;
+export const NEAR_KERNEL_FLOOR_Y = 1;
+export const nearKernelFloorX = uniform(NEAR_KERNEL_FLOOR_X);
+export const nearKernelFloorY = uniform(NEAR_KERNEL_FLOOR_Y);
+
+/** Pure mirror of the far kernel's scale on one axis (`receiverKernelScale` with that axis' floor), for tests. */
+export function farKernelScale(nDotL: number, floor: number, k: number = RECEIVER_KERNEL_K): number {
+  return Math.max(floor, receiverKernelScale(nDotL, k));
+}
+
 /** Kernel scale at the fragment (`null` when the filter is not receiver-aware). */
 function kernelScaleNode(receiverAware: boolean): TslNode {
   if (!receiverAware) return null;
@@ -159,6 +192,8 @@ const makePcf3 = (receiverAware: boolean): ShadowFilterFn =>
     const { mapSize } = uniformsOf(inputs.shadow);
     const { st, baseUv, texel } = tentBase(inputs, mapSize);
     const scale = kernelScaleNode(receiverAware);
+    const scaleX: TslNode = scale === null ? null : scale.max(nearKernelFloorX).toVar();
+    const scaleY: TslNode = scale === null ? null : scale.max(nearKernelFloorY).toVar();
     const lookupY: TslNode = inputs.shadowCoord.y;
     const lookupX: TslNode = inputs.shadowCoord.x;
     // Per axis: two taps, weights (3 - 2s) and (1 + 2s), offsets chosen so each bilinear tap reproduces two tent weights.
@@ -166,10 +201,10 @@ const makePcf3 = (receiverAware: boolean): ShadowFilterFn =>
     const w1: TslNode = st.mul(2).add(1).toVar();
     const o0: TslNode = st.negate().add(2).div(w0).sub(1).mul(texel).toVar();
     const o1: TslNode = st.div(w1).add(1).mul(texel).toVar();
-    const y0: TslNode = tapAt(baseUv.y.add(o0.y), lookupY, scale);
-    const y1: TslNode = tapAt(baseUv.y.add(o1.y), lookupY, scale);
-    const x0: TslNode = tapAt(baseUv.x.add(o0.x), lookupX, scale);
-    const x1: TslNode = tapAt(baseUv.x.add(o1.x), lookupX, scale);
+    const y0: TslNode = tapAt(baseUv.y.add(o0.y), lookupY, scaleY);
+    const y1: TslNode = tapAt(baseUv.y.add(o1.y), lookupY, scaleY);
+    const x0: TslNode = tapAt(baseUv.x.add(o0.x), lookupX, scaleX);
+    const x1: TslNode = tapAt(baseUv.x.add(o1.x), lookupX, scaleX);
     const tap = (x: TslNode, y: TslNode, wx: TslNode, wy: TslNode): TslNode =>
       compareAt(inputs, vec2(x, y)).mul(wx.mul(wy));
     return (add as (...nodes: TslNode[]) => TslNode)(
@@ -186,6 +221,8 @@ const makePcf5 = (receiverAware: boolean): ShadowFilterFn =>
     const { mapSize } = uniformsOf(inputs.shadow);
     const { st, baseUv, texel } = tentBase(inputs, mapSize);
     const scale = kernelScaleNode(receiverAware);
+    const scaleX: TslNode = scale === null ? null : scale.max(farKernelFloorX).toVar();
+    const scaleY: TslNode = scale === null ? null : scale.max(farKernelFloorY).toVar();
     const lookupY: TslNode = inputs.shadowCoord.y;
     const lookupX: TslNode = inputs.shadowCoord.x;
     const w0: TslNode = st.mul(-3).add(4).toVar();
@@ -194,8 +231,8 @@ const makePcf5 = (receiverAware: boolean): ShadowFilterFn =>
     const o1: TslNode = st.add(3).div(7).mul(texel).toVar();
     const o2: TslNode = st.div(w2).add(2).mul(texel).toVar();
     const seven: TslNode = float(7);
-    const columns: TslNode[] = [o0.x, o1.x, o2.x].map((ox) => tapAt(baseUv.x.add(ox), lookupX, scale));
-    const rows: TslNode[] = [o0.y, o1.y, o2.y].map((oy) => tapAt(baseUv.y.add(oy), lookupY, scale));
+    const columns: TslNode[] = [o0.x, o1.x, o2.x].map((ox) => tapAt(baseUv.x.add(ox), lookupX, scaleX));
+    const rows: TslNode[] = [o0.y, o1.y, o2.y].map((oy) => tapAt(baseUv.y.add(oy), lookupY, scaleY));
     const wx: TslNode[] = [w0.x, seven, w2.x];
     const wy: TslNode[] = [w0.y, seven, w2.y];
     const taps: TslNode[] = [];

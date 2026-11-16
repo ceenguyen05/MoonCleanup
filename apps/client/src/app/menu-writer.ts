@@ -337,7 +337,9 @@ export class UiFrameBridge {
 
   pump(): void {
     const { input, ui, store } = this.o;
-    const menuOpen = store.getState().menus.open !== null;
+    // A modal (the save-conflict "Which copy?" prompt) suspends game input and takes pad navigation like a menu.
+    const menus = store.getState().menus;
+    const menuOpen = menus.open !== null || menus.modal !== null;
     input.setSuspended(menuOpen);
     let nav = input.takeNav();
     const presses = input.takeInteractPresses();

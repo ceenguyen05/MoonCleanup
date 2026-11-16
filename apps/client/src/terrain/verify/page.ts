@@ -24,7 +24,7 @@ import { loadTerrainAsset } from "../height-asset";
 import { createHeightTexture, createHeightTwin } from "../height/height-twin";
 
 const t = TSL as unknown as Record<string, (...args: any[]) => any>;
-const { Fn, floor, ivec2, screenCoordinate, textureLoad, vec4 } = t as any;
+const { Fn, abs, floor, ivec2, max, screenCoordinate, textureLoad, vec4 } = t as any;
 
 function mulberry(seed: number): () => number {
   let a = seed >>> 0;
@@ -106,9 +106,20 @@ async function main(): Promise<unknown> {
   material.depthTest = false;
   material.depthWrite = false;
   material.toneMapped = false;
+  // `&slope=1`: the 9-tap `baseSlope` against five 4-tap `base` calls at the same point. Written as the largest
+  // difference in metres (height, and height change over one texel); the comparison below takes 0 as the reference.
+  const slopeMode = q.get("slope") === "1";
   material.fragmentNode = Fn(() => {
     const texel = textureLoad(dirTexture, ivec2(floor(screenCoordinate.xy))).toVar();
-    return vec4(twin.heightAtDirection(texel.xyz), texel.w, 0, 1);
+    if (!slopeMode) return vec4(twin.heightAtDirection(texel.xyz), texel.w, 0, 1);
+    const c = twin.faceCoords(texel.xyz);
+    const e = twin.halfTexelAB;
+    const s9 = twin.baseSlope(c.face, c.a, c.b).toVar();
+    const h = twin.base(c.face, c.a, c.b);
+    const dA = twin.base(c.face, c.a.add(e), c.b).sub(twin.base(c.face, c.a.sub(e), c.b));
+    const dB = twin.base(c.face, c.a, c.b.add(e)).sub(twin.base(c.face, c.a, c.b.sub(e)));
+    const diff = max(abs(s9.x.sub(h)), max(abs(s9.y.mul(2 * e).sub(dA)), abs(s9.z.mul(2 * e).sub(dB))));
+    return vec4(diff, texel.w, 0, 1);
   })();
 
   const target = new RenderTarget(side, side, { type: FloatType, format: RGBAFormat, depthBuffer: false });
@@ -152,7 +163,7 @@ async function main(): Promise<unknown> {
     const x = dirs[k * 4]!;
     const y = dirs[k * 4 + 1]!;
     const z = dirs[k * 4 + 2]!;
-    const js = ground.heightAtXYZ(x, y, z);
+    const js = slopeMode ? 0 : ground.heightAtXYZ(x, y, z);
     const gpu = pixels[pix * 4]!;
     const e = Math.abs(gpu - js);
     errors[k] = e;
@@ -164,7 +175,7 @@ async function main(): Promise<unknown> {
   const result = {
     backend,
     requestedBackend: wantWebGL ? "webgl2" : "webgpu",
-    part,
+    part: slopeMode ? "baseSlope-vs-base" : part,
     points: count,
     pointsReadBack: seen,
     toleranceM: 0.02,

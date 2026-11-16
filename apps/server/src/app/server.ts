@@ -16,7 +16,7 @@ import {
 import { loadGameData } from "@moon-cleanup/game-data";
 import { STANDARD_GRID_PARAMS } from "@moon-cleanup/shared";
 import type { SimWorld } from "@moon-cleanup/sim";
-import { createPlotGrid } from "@moon-cleanup/world";
+import { TERRAIN_BAKE_HASH, createPlotGrid } from "@moon-cleanup/world";
 import { createAccountApi, createHealthRoutes, type VerifyToken } from "../api";
 import { randomUUID } from "node:crypto";
 import {
@@ -88,7 +88,7 @@ export interface StartServerOptions {
   readonly purgeIntervalMs?: number;
   /** Test seam: the room/usage repository (default: SQL for PERSISTENCE_DRIVER=postgres, a fresh memory one otherwise). */
   readonly roomRepository?: RoomSaveRepository & UsageRepository;
-  /** Test seam: bake hash of the server world (64 lower-case hex). Default none (the server world is not baked yet). */
+  /** Test seam: bake hash stamped on and required of room saves (64 lower-case hex). Default `TERRAIN_BAKE_HASH`. */
   readonly bakeHash?: string;
   /** SIGTERM room-checkpoint deadline in ms (default `SHUTDOWN_CHECKPOINT_DEADLINE_MS`). */
   readonly shutdownCheckpointDeadlineMs?: number;
@@ -172,7 +172,7 @@ export async function startServer(env: ServerEnv, options: StartServerOptions = 
     repo: roomRepo,
     instance: `${env.envName}:${env.buildVersion}:${randomUUID()}`,
     logger,
-    ...(options.bakeHash === undefined ? {} : { bakeHash: options.bakeHash }),
+    bakeHash: options.bakeHash ?? TERRAIN_BAKE_HASH,
   });
   const usage = new UsagePersister({ repo: roomRepo, bandwidth: stats.bandwidth, logger });
 

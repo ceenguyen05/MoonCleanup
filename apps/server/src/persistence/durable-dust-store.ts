@@ -17,7 +17,7 @@
 
 import { randomUUID } from "node:crypto";
 import { DUST_CHUNK_PAYLOAD_MAX_BYTES } from "@moon-cleanup/shared";
-import type { ShiftDustStore, StoredDustChunk } from "../net/shift/shift-persistence";
+import type { ShiftDustStore, ShiftRoomState, StoredDustChunk } from "../net/shift/shift-persistence";
 import {
   ContractUnavailableError,
   RoomSaveCorruptError,
@@ -48,7 +48,9 @@ export interface DurableShiftDustStoreOptions {
   readonly wakeTimeoutMs?: number;
   /**
    * Lower-case hex SHA-256 of this build's world bake. Written with every checkpoint; a stored save that recorded a
-   * different one is refused (`save_corrupt`, 4108). Absent until the server world is baked (then nothing is checked).
+   * different one is archived (kept recoverable) and the room starts fresh (owner decision 2026-11-16; a header this
+   * build cannot read, whose bake is unknowable, is still refused with `save_corrupt`, 4108). Absent until the server
+   * world is baked (then nothing is checked).
    */
   readonly bakeHash?: string;
 }
@@ -71,9 +73,18 @@ export class DurableShiftDustStore implements ShiftDustStore {
   private readonly renewMs: number;
   private readonly wakeMs: number;
   private readonly bakeHash: string | undefined;
+  private readonly loadedStates = new Map<string, ShiftRoomState>();
   private readonly held = new Map<string, Held>();
   private readonly acquiring = new Map<string, Promise<Held>>();
-  readonly counters = { leaseAcquired: 0, leaseBusy: 0, leaseLost: 0, renewFailures: 0, saves: 0, loads: 0 };
+  readonly counters = {
+    leaseAcquired: 0,
+    leaseBusy: 0,
+    leaseLost: 0,
+    renewFailures: 0,
+    saves: 0,
+    loads: 0,
+    archives: 0,
+  };
 
   constructor(options: DurableShiftDustStoreOptions) {
     this.repo = options.repo;
@@ -206,11 +217,55 @@ export class DurableShiftDustStore implements ShiftDustStore {
           throw error;
         }
       }, this.wakeMs);
+      this.loadedStates.delete(contractId);
       if (snapshot === null) return [];
       // World identity (data-model 3.7 / format.ts bakeHash): a save written for another terrain bake never loads.
+      // Owner decision 2026-11-16: no migration. The old save is ARCHIVED (moved verbatim, never deleted, recoverable)
+      // and the room starts fresh; the next checkpoint writes the new bake's stamp.
       if (this.bakeHash !== undefined && snapshot.bakeHash !== null && snapshot.bakeHash !== this.bakeHash) {
-        throw new ContractUnavailableError("save_corrupt", "bake_mismatch: the save belongs to another world bake");
+        const owner = this.held.get(contractId)?.owner;
+        if (owner === undefined) throw new ContractUnavailableError("lease_lost");
+        const archived = await this.link.run(() => this.repo.archiveRoomSave(owner, "bake_mismatch"), this.wakeMs);
+        if (archived.kind === "lease_lost") {
+          const held = this.held.get(contractId);
+          if (held !== undefined) this.markLost(held, "archive found another owner");
+          throw new ContractUnavailableError("lease_lost");
+        }
+        this.counters.archives++;
+        this.logger?.warn(
+          {
+            contractId,
+            archiveId: archived.kind === "archived" ? archived.archiveId : null,
+            generation: snapshot.generation,
+            savedBake: snapshot.bakeHash,
+            currentBake: this.bakeHash,
+          },
+          "room save belongs to another terrain bake: archived (kept recoverable), starting a fresh room",
+        );
+        return [];
       }
+      if (snapshot.ignoredHeaderCodec != null) {
+        // Rollback (reviews N3, N5): a newer build wrote a header this build cannot read, so the bake hash inside it is
+        // unknown too. A build that stamps saves (bakeHash set) must not load a world it cannot identify, and the next
+        // checkpoint would overwrite the newer header: fail closed. The rows stay untouched until the newer build runs
+        // again (roll forward). A build without a bake hash checks nothing by design and keeps the N3 behaviour: dust
+        // loads, header state (wallet, parcels, gear) starts fresh, logged.
+        if (this.bakeHash !== undefined) {
+          this.logger?.error(
+            { contractId, codec: snapshot.ignoredHeaderCodec, generation: snapshot.generation },
+            "room header codec not readable by this build and its bake hash cannot be checked; room refused (roll forward)",
+          );
+          throw new ContractUnavailableError(
+            "save_corrupt",
+            "bake_unverifiable: the save header is newer than this build",
+          );
+        }
+        this.logger?.warn(
+          { contractId, codec: snapshot.ignoredHeaderCodec, generation: snapshot.generation },
+          "room header codec not readable by this build; dust restored, header state reset",
+        );
+      }
+      if (snapshot.state !== null) this.loadedStates.set(contractId, snapshot.state);
       return snapshot.chunks.map((c: RoomChunk) => {
         if (c.payload.byteLength > DUST_CHUNK_PAYLOAD_MAX_BYTES) throw new ContractUnavailableError("save_corrupt");
         return { chunkId: c.chunkId, payload: c.payload };
@@ -222,7 +277,19 @@ export class DurableShiftDustStore implements ShiftDustStore {
     }
   }
 
-  async save(contractId: string, chunks: readonly StoredDustChunk[], simTick: number): Promise<void> {
+  /** Room state of the header `load` just read (one-shot: the entry is consumed). */
+  loadState(contractId: string): Promise<ShiftRoomState | null> {
+    const state = this.loadedStates.get(contractId) ?? null;
+    this.loadedStates.delete(contractId);
+    return Promise.resolve(state);
+  }
+
+  async save(
+    contractId: string,
+    chunks: readonly StoredDustChunk[],
+    simTick: number,
+    state?: ShiftRoomState,
+  ): Promise<void> {
     const held = this.held.get(contractId);
     if (held === undefined || held.lost) throw new ContractUnavailableError("lease_lost");
     const result = await this.link.run(() =>
@@ -230,6 +297,16 @@ export class DurableShiftDustStore implements ShiftDustStore {
         owner: held.owner,
         simTick,
         chunks,
+        ...(state === undefined
+          ? {}
+          : {
+              state:
+                state.nearParcelsMask === undefined
+                  ? { walletLm: state.walletLm }
+                  : state.simMeta === undefined
+                    ? { walletLm: state.walletLm, nearParcelsMask: state.nearParcelsMask }
+                    : { walletLm: state.walletLm, nearParcelsMask: state.nearParcelsMask, simMeta: state.simMeta },
+            }),
         ...(this.bakeHash === undefined ? {} : { bakeHash: this.bakeHash }),
       }),
     );

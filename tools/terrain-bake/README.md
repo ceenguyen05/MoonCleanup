@@ -41,7 +41,8 @@ each run. Timings and peak RAM go to the git-ignored `assets/terrain/cache/bake-
 ## Contracts proposed to others
 
 See the T05 report: cube layout v1 and the CTMH/CTMW containers (consumed by `packages/world` M1-W1-T01 and the client
-terrain loader), `bakeHash` for the save header.
+terrain loader), `bakeHash` for the save header. After a re-bake, copy the new `bakeHash` into `TERRAIN_BAKE_HASH`
+(`packages/world/src/height/bake-hash.ts`, exported from `@moon-cleanup/world`); `src/bake-hash.test.ts` fails on drift and the bake CLI warns.
 
 ## Credits
 

@@ -33,6 +33,7 @@ import {
   type BindingTable,
   type CompiledBindings,
 } from "./bindings";
+import { DEFAULT_PLOT_CARD_MODE, type PlotCardMode } from "./plot-card-mode";
 
 /**
  * Frame time handed to hot-path calls as an object: V8 boxes a double passed to (or returned from) a call it does not
@@ -83,6 +84,11 @@ export interface LookSettings {
   invertY: boolean;
 }
 
+/** Tap vs hold threshold (s) of dual-use pad buttons (game-feel-and-controls 6.5; accessibility range 0.2-0.8). */
+export const DEFAULT_HOLD_THRESHOLD_S = 0.3;
+/** Largest frame dt counted toward the pad hold timer: one hitch (tab return, shader compile) must not turn a tap into a hold. */
+export const MAX_HOLD_FRAME_DT_S = 0.1;
+
 export const DEFAULT_LOOK: Readonly<LookSettings> = { mouseRadPerPx: 0.0022, padRadPerS: 2.6, invertY: false };
 
 /** Applies a radial dead zone and rescales the rest to 0..1; writes into `out[0..1]`. */
@@ -128,7 +134,14 @@ const PAD_NAV_OF_BUTTON: readonly number[] = [
   0,
 ];
 
+/** Buttons that change meaning while the player drives a vehicle: held `from` is sent as `to` (rebinding stays on `from`). */
+export const DRIVER_REMAP: readonly { readonly from: number; readonly to: number }[] = [
+  { from: INPUT_BUTTON_MASK.lope, to: INPUT_BUTTON_MASK.boost },
+];
+
 export class InputState {
+  /** The player is seated in a vehicle (set by the gameplay module from `vehicle.entered` / `vehicle.exited`). */
+  driving = false;
   /** Live look angles: yaw about local up (0 = heading-frame north, + toward east), pitch + up. */
   yawRad = 0;
   pitchRad = -0.35;
@@ -142,6 +155,11 @@ export class InputState {
    * strafing flip so that "right" on screen stays right. The sim sees a mirrored but consistent player.
    */
   mirrored = false;
+  /**
+   * Tap/hold threshold (s) of a pad button bound to the Plot Card (D-pad Up): released sooner = Plot Card toggle,
+   * held this long = camera 1P/3P toggle (game-feel-and-controls 4.2 / 6.4 b12). Relaxed Timing sets 0.5.
+   */
+  holdThresholdS = DEFAULT_HOLD_THRESHOLD_S;
   /** Counted per sample; read by tests and the perf HUD. */
   samples = 0;
   /** Bumped on every press, release and gamepad move change (instrumentation). */
@@ -162,6 +180,15 @@ export class InputState {
   private cameraToggles = 0;
   private interactPresses = 0;
   private plotCardToggles = 0;
+  /** "toggle": each press flips the card; "hold": the card shows while the bound input is held (settings). */
+  private plotCardMode: PlotCardMode = DEFAULT_PLOT_CARD_MODE;
+  /** Hold mode: a press opened the card and its release (or a clear) has not closed it yet. */
+  private plotCardShown = false;
+  /** Pad Plot Card button down and not yet resolved as tap or hold; `padPlotHeldS` = time held so far. */
+  private padPlotPending = false;
+  private padPlotHeldS = 0;
+  /** Set by `clear()` while the pad Plot Card button was down: ignore it until it is seen released. */
+  private padPlotSuppressed = false;
   /** Rising edges of gamepad buttons 0..16 since the last `takePadEdges` (bit i = Pad<i>), recorded while suspended too. */
   private padEdges = 0;
   /** A menu is open: game actions are ignored (look and gamepad menu edges still work). */
@@ -214,6 +241,12 @@ export class InputState {
     if (deltaY === 0) return;
     const action = deltaY < 0 ? this.bindings.wheelUp : this.bindings.wheelDown;
     if (action === ACTION_NONE) return;
+    if (action === ACTION_PLOT_CARD && this.plotCardMode === "hold") {
+      // A notch has no duration to hold, so press+release would net zero flips: a wheel notch always toggles.
+      this.changes++;
+      if (!this.suspended) this.plotCardToggles++;
+      return;
+    }
     this.press(action);
     this.release(action);
   }
@@ -254,6 +287,15 @@ export class InputState {
       }
       const action = pad[i]!;
       if (action === ACTION_NONE) continue;
+      if (action === ACTION_PLOT_CARD) {
+        if (this.padPlotSuppressed) {
+          // Still held from before a clear(): wait for the release, do nothing on it.
+          if (down === 0) this.padPlotSuppressed = false;
+          continue;
+        }
+        this.padPlotCard(down === 1);
+        continue;
+      }
       if (down === 1) this.press(action);
       else this.release(action);
     }
@@ -261,6 +303,14 @@ export class InputState {
 
   /** Per rendered frame: integrates the gamepad look stick. Takes the frame object (a double argument would box). */
   advance(t: FrameTime): void {
+    if (this.padPlotPending) {
+      this.padPlotHeldS += t.dt > MAX_HOLD_FRAME_DT_S ? MAX_HOLD_FRAME_DT_S : t.dt;
+      if (this.padPlotHeldS >= this.holdThresholdS) {
+        // Held: camera 1P/3P; the release then does nothing.
+        this.padPlotPending = false;
+        this.cameraToggles++;
+      }
+    }
     if (this.padLookX === 0 && this.padLookY === 0) return;
     const r = this.look.padRadPerS * t.dt;
     this.turn(
@@ -271,6 +321,16 @@ export class InputState {
 
   /** Releases everything (window blur, pointer-lock loss, rebind): no key may stay stuck. */
   clear(): void {
+    if (this.plotCardShown) {
+      // Hold mode: whatever held the card is released now, so the card closes (one more flip for the bridge).
+      this.plotCardShown = false;
+      this.plotCardToggles++;
+    }
+    this.padPlotPending = false;
+    const pad = this.bindings.pad;
+    for (let i = 0; i < PAD_BUTTONS; i++) {
+      if (this.padDown[i] === 1 && pad[i] === ACTION_PLOT_CARD) this.padPlotSuppressed = true;
+    }
     this.held.fill(0);
     this.downKeys.clear();
     this.mouseDown.fill(0);
@@ -309,7 +369,12 @@ export class InputState {
     cmd.moveY = Math.round(my * INPUT_AXIS_MAX);
     cmd.yaw = yawToCode(this.yawRad);
     cmd.pitch = pitchToCode(this.pitchRad);
-    cmd.buttons = (this.heldButtons() | this.latched) & 0xffff;
+    let buttons = (this.heldButtons() | this.latched) & 0xffff;
+    // Driver context (game-feel section 6.3): the lope key is the Afterburner while seated (data: DRIVER_REMAP).
+    if (this.driving) {
+      for (const r of DRIVER_REMAP) if ((buttons & r.from) !== 0) buttons = (buttons & ~r.from) | r.to;
+    }
+    cmd.buttons = buttons;
     const tp = Math.round(this.toolParam);
     cmd.toolParam = tp < 0 ? 0 : tp > INPUT_TOOL_PARAM_MAX ? INPUT_TOOL_PARAM_MAX : tp;
     this.latched = 0;
@@ -349,7 +414,25 @@ export class InputState {
     this.interactPresses = 0;
     this.cameraToggles = 0;
     this.plotCardToggles = 0;
+    this.plotCardShown = false;
+    this.padPlotPending = false;
     this.changes++;
+  }
+
+  get plotCardActivation(): PlotCardMode {
+    return this.plotCardMode;
+  }
+
+  /**
+   * Plot Card activation of keys / mouse (settings): "toggle" (default) or "hold". A pad button bound to the Plot Card
+   * is always tap = Plot Card, hold = camera (see `holdThresholdS`). In both modes the card is driven through
+   * `takePlotCardToggles` (hold = one flip on press, one on release), so the app's toggle logic needs no change.
+   * Changing the mode resets the hold latch; the card itself is closed by the menu the setting lives in.
+   */
+  setPlotCardMode(mode: PlotCardMode): void {
+    if (mode === this.plotCardMode) return;
+    this.plotCardMode = mode;
+    this.plotCardShown = false;
   }
 
   /** Holster slot 0..5 pressed since the last call (a `select_tool` intent), or -1. */
@@ -376,7 +459,10 @@ export class InputState {
     return n;
   }
 
-  /** Plot Card key presses (C) since the last call (the app toggles the card with them). */
+  /**
+   * Plot Card flips since the last call (the app toggles the card with them): toggle mode = presses of the bound key
+   * (C); hold mode = one on press and one on release; pad (D-pad Up) = one per tap. An odd count = "the card changed".
+   */
   takePlotCardToggles(): number {
     const n = this.plotCardToggles;
     this.plotCardToggles = 0;
@@ -400,6 +486,21 @@ export class InputState {
     return n;
   }
 
+  /** Pad button bound to the Plot Card: tap (release before `holdThresholdS`) = Plot Card flip; hold = camera. */
+  private padPlotCard(down: boolean): void {
+    this.changes++;
+    if (down) {
+      if (this.suspended) return;
+      this.padPlotPending = true;
+      this.padPlotHeldS = 0;
+    } else if (this.padPlotPending) {
+      this.padPlotPending = false;
+      this.plotCardToggles++;
+      // Hold mode with C held (card shown): the tap closes it and consumes the hold, so releasing C cannot reopen it.
+      if (this.plotCardShown) this.plotCardShown = false;
+    }
+  }
+
   private turn(dYaw: number, dPitch: number): void {
     let y = this.yawRad + dYaw;
     if (y >= TWO_PI || y < 0) y -= Math.floor(y / TWO_PI) * TWO_PI;
@@ -421,7 +522,11 @@ export class InputState {
     } else if (action === ACTION_CAMERA_MODE) {
       this.cameraToggles++;
     } else if (action === ACTION_PLOT_CARD) {
-      this.plotCardToggles++;
+      if (this.plotCardMode === "toggle") this.plotCardToggles++;
+      else if (!this.plotCardShown) {
+        this.plotCardShown = true;
+        this.plotCardToggles++;
+      }
     }
   }
 
@@ -429,5 +534,9 @@ export class InputState {
     this.changes++;
     const n = this.held[action]!;
     this.held[action] = n > 0 ? n - 1 : 0;
+    if (action === ACTION_PLOT_CARD && n <= 1 && this.plotCardShown) {
+      this.plotCardShown = false;
+      this.plotCardToggles++;
+    }
   }
 }

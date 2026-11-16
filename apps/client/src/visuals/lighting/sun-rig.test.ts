@@ -92,3 +92,19 @@ describe("shadowMapSizePx (`__mcLook.info().shadowMapSize`, VT-M0-03)", () => {
     rig.dispose();
   });
 });
+
+describe("low-sun handover of terrain receivers (M1-W2-T02)", () => {
+  it("is 1 at a grazing sun, 0 from HANDOVER_HIGH_DEG up, monotone between", async () => {
+    const { HANDOVER_HIGH_DEG, HANDOVER_LOW_DEG, lowSunHandover } = await import("./sun-rig");
+    expect(lowSunHandover(0)).toBe(1);
+    expect(lowSunHandover(HANDOVER_LOW_DEG)).toBe(1);
+    expect(lowSunHandover(HANDOVER_HIGH_DEG)).toBe(0);
+    expect(lowSunHandover(30)).toBe(0);
+    let last = 1;
+    for (let el = HANDOVER_LOW_DEG; el <= HANDOVER_HIGH_DEG; el += 0.25) {
+      const v = lowSunHandover(el);
+      expect(v).toBeLessThanOrEqual(last);
+      last = v;
+    }
+  });
+});

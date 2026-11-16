@@ -1,0 +1,52 @@
+[
+ {
+  "name": "g5a",
+  "error": "Error: page.evaluate: Execution context was destroyed, most likely because of a navigation.",
+  "errs": []
+ },
+ {
+  "name": "r5a",
+  "ms": 14403,
+  "frameP50": 16.69999999552965,
+  "frameP95": 18,
+  "gpu": {
+   "samples": 0,
+   "avg": 0,
+   "min": 0,
+   "max": 0,
+   "p50": 0,
+   "p95": 0,
+   "p99": 0
+  },
+  "ev": 11.580769230769231,
+  "key": "sun",
+  "sky": "baked",
+  "horizon": {
+   "wanted": true,
+   "on": true,
+   "bytes": 12582912,
+   "fetchMs": 1062.1000000014901,
+   "decodeMs": 289.09999999403954
+  },
+  "errs": []
+ },
+ {
+  "name": "fly",
+  "ms": 17622,
+  "frameP50": 16.600000001490116,
+  "frameP95": 19,
+  "gpu": {
+   "samples": 0,
+   "avg": 0,
+   "min": 0,
+   "max": 0,
+   "p50": 0,
+   "p95": 0,
+   "p99": 0
+  },
+  "ev": 11.5,
+  "key": "sun",
+  "sky": "baked",
+  "errs": []
+ }
+]

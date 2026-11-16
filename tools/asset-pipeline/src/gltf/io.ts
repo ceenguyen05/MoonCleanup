@@ -40,7 +40,8 @@ export async function createIo(): Promise<NodeIO> {
 export async function optimizeDocument(document: Document): Promise<void> {
   await document.transform(
     dedup(),
-    prune(),
+    // keepLeaves: socket / pivot empties (custodian hand, name tag, limb pivots) are leaf nodes and must survive.
+    prune({ keepLeaves: true }),
     weld(),
     // UVs tile along trim sheets (range > 1), so they get 14 bits instead of the default 12.
     meshopt({ encoder: MeshoptEncoder, level: "medium", quantizeTexcoord: 14 }),

@@ -3,7 +3,7 @@
 // the focused form; every control is a native button or input (gamepad focus navigation walks them in DOM order).
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, Check, Copy, LogOut, TriangleAlert, User, Users, X } from "lucide-react";
+import { ArrowLeft, Check, Copy, Link2, LogOut, TriangleAlert, User, Users, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -21,6 +21,7 @@ import { fadeTransition } from "../motion/presets";
 import { formatString, STRINGS } from "../strings";
 import { useReducedMotion, useSpring, useUiSelector } from "../ui-context";
 import { ConnGlyph } from "./ConnGlyph";
+import { copyText, inviteUrl } from "./clipboard";
 import { runOnlineEntry, type OnlineIntent } from "./online-flow";
 import {
   connView,
@@ -39,6 +40,8 @@ const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [href], [tabin
 export interface OnlinePanelProps {
   readonly port: OnlineEntryPort;
   readonly onClose: () => void;
+  /** Canonical invite code from a link: opens on the join form with the code filled in (never auto-redeemed). */
+  readonly initialInvite?: string;
 }
 
 function ErrorLine({ failure }: { readonly failure: OnlineFailure }): ReactElement {
@@ -52,17 +55,19 @@ function ErrorLine({ failure }: { readonly failure: OnlineFailure }): ReactEleme
   );
 }
 
-export default function OnlinePanel({ port, onClose }: OnlinePanelProps): ReactElement {
+export default function OnlinePanel({ port, onClose, initialInvite }: OnlinePanelProps): ReactElement {
   const conn = useUiSelector((state) => state.session.conn);
   const rttMs = useUiSelector((state) => state.session.rttMs);
   const storeInvite = useUiSelector((state) => state.shift.inviteCode);
   const reduced = useReducedMotion();
   const spring = useSpring("ui");
-  const [state, dispatch] = useReducer(panelReducer, conn !== "asleep", initialPanelState);
+  const [state, dispatch] = useReducer(panelReducer, conn !== "asleep", (active) =>
+    initialPanelState(active, initialInvite !== undefined),
+  );
   const [name, setName] = useState<string>(T.nameDefault);
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialInvite === undefined ? "" : groupCode(initialInvite));
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"code" | "link" | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   const aliveRef = useRef(true);
@@ -176,17 +181,22 @@ export default function OnlinePanel({ port, onClose }: OnlinePanelProps): ReactE
     }
   };
 
-  const copy = (value: string): void => {
-    void navigator.clipboard.writeText(value).then(
-      () => {
-        setCopied(true);
-        window.setTimeout(() => {
-          if (aliveRef.current) setCopied(false);
-        }, 2000);
-      },
-      () => undefined,
-    );
+  const copy = (value: string, what: "code" | "link"): void => {
+    void copyText(value).then((ok) => {
+      if (!ok || !aliveRef.current) return;
+      setCopied(what);
+      window.setTimeout(() => {
+        if (aliveRef.current) setCopied(null);
+      }, 2000);
+    });
   };
+  const copyLink = (code: string): void => copy(inviteUrl(window.location.origin, code), "link");
+  const linkButton = (code: string): ReactElement => (
+    <button type="button" className={styles["ghost"]} data-testid="copy-invite-link" onClick={() => copyLink(code)}>
+      <Icon icon={copied === "link" ? Check : Link2} size={16} />
+      {copied === "link" ? T.created.copied : T.created.copyLink}
+    </button>
+  );
 
   const leave = (): void => {
     port.close();
@@ -376,9 +386,13 @@ export default function OnlinePanel({ port, onClose }: OnlinePanelProps): ReactE
                       {state.recoveryCode}
                     </p>
                     <div className={styles["footer"]}>
-                      <button type="button" className={styles["ghost"]} onClick={() => copy(state.recoveryCode ?? "")}>
-                        <Icon icon={copied ? Check : Copy} size={16} />
-                        {copied ? T.created.copied : T.created.copy}
+                      <button
+                        type="button"
+                        className={styles["ghost"]}
+                        onClick={() => copy(state.recoveryCode ?? "", "code")}
+                      >
+                        <Icon icon={copied === "code" ? Check : Copy} size={16} />
+                        {copied === "code" ? T.created.copied : T.created.copy}
                       </button>
                       <button
                         type="button"
@@ -405,10 +419,15 @@ export default function OnlinePanel({ port, onClose }: OnlinePanelProps): ReactE
                       {groupCode(state.inviteCode)}
                     </p>
                     <div className={styles["footer"]}>
-                      <button type="button" className={styles["ghost"]} onClick={() => copy(state.inviteCode ?? "")}>
-                        <Icon icon={copied ? Check : Copy} size={16} />
-                        {copied ? T.created.copied : T.created.copy}
+                      <button
+                        type="button"
+                        className={styles["ghost"]}
+                        onClick={() => copy(state.inviteCode ?? "", "code")}
+                      >
+                        <Icon icon={copied === "code" ? Check : Copy} size={16} />
+                        {copied === "code" ? T.created.copied : T.created.copy}
                       </button>
+                      {linkButton(state.inviteCode)}
                       <button type="button" className={styles["primary"]} onClick={onClose} data-testid="created-done">
                         {T.created.done}
                       </button>
@@ -436,10 +455,11 @@ export default function OnlinePanel({ port, onClose }: OnlinePanelProps): ReactE
                         >
                           {groupCode(invite)}
                         </span>
-                        <button type="button" className={styles["ghost"]} onClick={() => copy(invite)}>
-                          <Icon icon={copied ? Check : Copy} size={16} />
-                          {copied ? T.created.copied : T.created.copy}
+                        <button type="button" className={styles["ghost"]} onClick={() => copy(invite, "code")}>
+                          <Icon icon={copied === "code" ? Check : Copy} size={16} />
+                          {copied === "code" ? T.created.copied : T.created.copy}
                         </button>
+                        {linkButton(invite)}
                       </div>
                     ) : (
                       <p className={styles["lead"]}>{T.onShift.none}</p>

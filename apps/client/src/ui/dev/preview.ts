@@ -175,6 +175,7 @@ const previewIntents: UiIntentPort = {
     events.emit("quality.changed", { settings: QUALITY_PRESETS[clamped], previous: null, source: "user" });
   },
   openControls: () => undefined,
+  setPlotCardMode: () => undefined,
 };
 const previewMaxPreset = (params.get("maxpreset") ?? "ultra") as QualityPresetId;
 services.register("quality", { current: QUALITY_PRESETS.medium, maxPreset: previewMaxPreset } as never);
@@ -250,6 +251,88 @@ const conn = params.get("conn") as NetConnectionState | null;
 if (conn !== null) dispatchConn(conn);
 const next = params.get("next") as NetConnectionState | null;
 if (next !== null) window.setTimeout(() => dispatchConn(next), Number(params.get("after") ?? "6") * 1000);
+
+// `?save=conflict|synced|pending|uploading|offline|local_only|error|backup` seeds the `saveSync` slice and answers its
+// requests like the net module would (sandbox only): a choice or restore settles after 700 ms; `&savefail=1` answers the
+// first choice with a failure so the retry path can be seen. `&savedevice=...` renames the device of the local copy.
+const saveMode = params.get("save");
+if (saveMode !== null) {
+  const now = Date.now();
+  const copy = (minutesAgo: number, device: string, playtimeS: number, polished: number, lm: number) => ({
+    generation: 7,
+    parentGeneration: 6,
+    originKind: "checkpoint" as never,
+    savedAt: new Date(now - minutesAgo * 60_000).toISOString(),
+    simTick: playtimeS * 20,
+    playtimeS,
+    shinePolished: polished,
+    walletLumens: lm,
+    saveFormatVersion: 1,
+    gameDataVersion: "preview",
+    deviceLabel: device,
+  });
+  const states = ["local_only", "synced", "pending", "uploading", "offline", "error"] as const;
+  type SyncStateName = (typeof states)[number];
+  const seeded: SyncStateName | null = (states as readonly string[]).includes(saveMode)
+    ? (saveMode as SyncStateName)
+    : null;
+  store.dispatch({
+    type: "saveSync.set",
+    patch:
+      saveMode === "conflict"
+        ? {
+            state: "conflict",
+            localGeneration: 7,
+            serverGeneration: 6,
+            conflict: {
+              local: copy(4, params.get("savedevice") ?? "Windows PC", 11_460, 7_000, 12_480),
+              server: copy(190, "Android", 9_240, 5_300, 9_870),
+            },
+          }
+        : saveMode === "backup"
+          ? {
+              state: "synced",
+              backupAvailable: true,
+              backupExpiresAtMs: now + 6 * 86_400_000,
+              lastSyncedAtMs: now - 120_000,
+            }
+          : {
+              state: seeded ?? "local_only",
+              localGeneration: 7,
+              lastSyncedAtMs: seeded === "local_only" ? null : now - 17 * 60_000,
+              pendingSinceMs:
+                seeded === "pending" || seeded === "offline" || seeded === "error" ? now - 9 * 60_000 : null,
+              error: seeded === "error" ? { kind: "rejected", reason: "bake_mismatch" } : null,
+            },
+  });
+  let failNext = params.get("savefail") === "1";
+  store.subscribe(() => {
+    const request = store.getState().saveSync.request;
+    if (request === null) return;
+    store.dispatch({ type: "saveSync.set", patch: { request: null } });
+    window.setTimeout(() => {
+      if (request.kind === "resolve_conflict" && failNext) {
+        failNext = false;
+        store.dispatch({ type: "saveSync.set", patch: { error: { kind: "server_error", reason: null } } });
+        return;
+      }
+      store.dispatch({
+        type: "saveSync.set",
+        patch:
+          request.kind === "resolve_conflict"
+            ? {
+                state: "synced",
+                conflict: null,
+                error: null,
+                backupAvailable: true,
+                backupExpiresAtMs: Date.now() + 7 * 86_400_000,
+                lastSyncedAtMs: Date.now(),
+              }
+            : { state: "pending", backupAvailable: false, backupExpiresAtMs: null, pendingSinceMs: Date.now() },
+      });
+    }, 700);
+  });
+}
 
 const frame = (now: number): void => {
   store.flush(now); // the same call UiModule.update makes each frame

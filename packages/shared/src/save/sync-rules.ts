@@ -78,7 +78,12 @@ export const SAVE_RESTORE_SOURCES = ["local", "server", "backup"] as const;
 export const SaveRestoreSourceSchema = z.enum(SAVE_RESTORE_SOURCES);
 export type SaveRestoreSource = (typeof SAVE_RESTORE_SOURCES)[number];
 
-/** Why an upload did not complete (`save.upload_failed`; `rejected` carries a CheckpointRejectReason). */
+/**
+ * Why an upload did not complete (`save.upload_failed`; `rejected` carries a CheckpointRejectReason). Additive entry
+ * `local_store_failed`: the SERVER was not at fault; this device could not write the local store or install a copy it
+ * already holds (a restore or a "Which copy?" choice). It never comes from an HTTP answer and carries no reason. A
+ * consumer that does not know it must treat it like `server_error` for retry purposes (not transient-offline).
+ */
 export const SAVE_UPLOAD_FAILURE_KINDS = [
   "offline",
   "rate_limited",
@@ -86,6 +91,7 @@ export const SAVE_UPLOAD_FAILURE_KINDS = [
   "version_unsupported",
   "too_large",
   "server_error",
+  "local_store_failed",
 ] as const;
 export const SaveUploadFailureKindSchema = z.enum(SAVE_UPLOAD_FAILURE_KINDS);
 export type SaveUploadFailureKind = (typeof SAVE_UPLOAD_FAILURE_KINDS)[number];

@@ -1,0 +1,215 @@
+[
+ {
+  "round": 0,
+  "name": "b30",
+  "frameP50": 16.5,
+  "gpuP50": 10.507085,
+  "gpuN": 32,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "a30",
+  "frameP50": 17.199999999254942,
+  "gpuP50": 12.26656,
+  "gpuN": 27,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "nb30",
+  "frameP50": 16.90000000037253,
+  "gpuP50": 11.465072000000003,
+  "gpuN": 24,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "gf30",
+  "frameP50": 17.09999999962747,
+  "gpuP50": 11.505652999999999,
+  "gpuN": 14,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "nc30",
+  "frameP50": 16.600000001490116,
+  "gpuP50": 10.462003,
+  "gpuN": 27,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "brim",
+  "frameP50": 16.600000001490116,
+  "gpuP50": 8.916444000000002,
+  "gpuN": 33,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "arim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.141008000000001,
+  "gpuN": 31,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "nbrim",
+  "error": "Error: page.evaluate: Execution context was destroyed, most likely because of a navigation.",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "b30",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 9.425187000000001,
+  "gpuN": 35,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "a30",
+  "frameP50": 16.800000000745058,
+  "gpuP50": 12.313053999999998,
+  "gpuN": 35,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "nb30",
+  "frameP50": 17.299999998882413,
+  "gpuP50": 12.133479999999997,
+  "gpuN": 27,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "gf30",
+  "frameP50": 17,
+  "gpuP50": 11.628403,
+  "gpuN": 29,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "nc30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 11.682813999999999,
+  "gpuN": 38,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "brim",
+  "frameP50": 16.600000001490116,
+  "gpuP50": 9.296522000000001,
+  "gpuN": 34,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "arim",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.477073000000003,
+  "gpuN": 43,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "nbrim",
+  "frameP50": 16.799999998882413,
+  "gpuP50": 11.017247,
+  "gpuN": 31,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "b30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.573253000000005,
+  "gpuN": 38,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "a30",
+  "frameP50": 16.899999998509884,
+  "gpuP50": 10.631666000000001,
+  "gpuN": 30,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "nb30",
+  "frameP50": 16.90000000037253,
+  "gpuP50": 10.867078999999997,
+  "gpuN": 29,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "gf30",
+  "frameP50": 16.700000001117587,
+  "gpuP50": 12.048563000000001,
+  "gpuN": 45,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "nc30",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.305323000000001,
+  "gpuN": 35,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "brim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 9.133108,
+  "gpuN": 40,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "arim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 11.551154,
+  "gpuN": 40,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "nbrim",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 12.245145,
+  "gpuN": 45,
+  "backend": "webgpu",
+  "errs": []
+ }
+]

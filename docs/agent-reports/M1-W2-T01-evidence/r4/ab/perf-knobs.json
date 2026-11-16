@@ -1,0 +1,1107 @@
+[
+  {
+    "run": 0,
+    "name": "base",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off",
+    "frames": 214,
+    "p50": 18.099999997764826,
+    "p95": 28,
+    "over20": 0.34579439252336447,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 20,
+        "avg": 13.734285949999997,
+        "min": 10.905914,
+        "max": 19.426948000000003,
+        "p50": 13.129458000000003,
+        "p95": 17.616561000000004,
+        "p99": 19.426948000000003
+      },
+      "computeMs": {
+        "samples": 20,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 30,
+    "triangles": 278779,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 124848,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 787,
+        "decodeMs": 289.5
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.4000000059604645,
+        "p95": 1,
+        "max": 7.400000095367432,
+        "n": 217
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.699999988079071,
+        "max": 4.400000095367432,
+        "n": 217
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1902.3999999985099,
+        "decodeMs": 179.69999999925494
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 7591,
+      "lastMs": 7591,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 37,
+      "pipelinesAtReady": 37,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 0,
+    "name": "pverts17",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&pverts=17",
+    "frames": 107,
+    "p50": 16.5,
+    "p95": 100.19999999925494,
+    "over20": 0.16822429906542055,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 12,
+        "avg": 10.25696575,
+        "min": 8.150706999999999,
+        "max": 16.299832,
+        "p50": 9.575685000000002,
+        "p95": 16.299832,
+        "p99": 16.299832
+      },
+      "computeMs": {
+        "samples": 12,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 30,
+    "triangles": 115451,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 34992,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 208.89999999850988,
+        "decodeMs": 240.30000000074506
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.4000000059604645,
+        "p95": 1,
+        "max": 5.199999809265137,
+        "n": 110
+      },
+      "selectMs": {
+        "p50": 0.30000001192092896,
+        "p95": 0.6000000238418579,
+        "max": 3.0999999046325684,
+        "n": 110
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 948.0999999977648,
+        "decodeMs": 206
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 9906.199999999255,
+      "lastMs": 9906.199999999255,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 37,
+      "pipelinesAtReady": 37,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 0,
+    "name": "leaf14",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&leafrange=14",
+    "error": "Error: page.evaluate: Execution context was destroyed, most likely because of a navigation.",
+    "console": []
+  },
+  {
+    "run": 0,
+    "name": "detail0",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&detail=0",
+    "frames": 356,
+    "p50": 16.699999999254942,
+    "p95": 19.900000002235174,
+    "over20": 0.0449438202247191,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 37,
+        "avg": 10.836227162162166,
+        "min": 8.568366,
+        "max": 18.442295,
+        "p50": 10.51917,
+        "p95": 14.616105000000001,
+        "p99": 18.442295
+      },
+      "computeMs": {
+        "samples": 37,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 30,
+    "triangles": 278779,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 124848,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 418.5,
+        "decodeMs": 241.79999999701977
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.4000000059604645,
+        "max": 0.8999999761581421,
+        "n": 240
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.30000001192092896,
+        "max": 1.399999976158142,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1690.199999999255,
+        "decodeMs": 185.09999999776483
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 4267.699999999255,
+      "lastMs": 4267.699999999255,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 37,
+      "pipelinesAtReady": 37,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 0,
+    "name": "noterrain",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&terrain=0",
+    "frames": 360,
+    "p50": 16.5,
+    "p95": 19.400000002235174,
+    "over20": 0.027777777777777776,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 42,
+        "avg": 8.038929761904763,
+        "min": 6.84564,
+        "max": 10.736664,
+        "p50": 7.813294,
+        "p95": 10.128008000000001,
+        "p99": 10.736664
+      },
+      "computeMs": {
+        "samples": 42,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 29,
+    "triangles": 153931,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 124848,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 151.10000000149012,
+        "decodeMs": 163.19999999925494
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.30000001192092896,
+        "max": 2,
+        "n": 240
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.30000001192092896,
+        "max": 0.5,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 672.5,
+        "decodeMs": 135.39999999850988
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 3049.39999999851,
+      "lastMs": 3049.39999999851,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 35,
+      "pipelinesAtReady": 35,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 1,
+    "name": "base",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off",
+    "frames": 287,
+    "p50": 17.599999997764826,
+    "p95": 24,
+    "over20": 0.1951219512195122,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 26,
+        "avg": 12.910843,
+        "min": 10.377669000000001,
+        "max": 17.728056000000002,
+        "p50": 12.138645000000004,
+        "p95": 17.328313,
+        "p99": 17.728056000000002
+      },
+      "computeMs": {
+        "samples": 26,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 30,
+    "triangles": 278779,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 124848,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 282.8999999985099,
+        "decodeMs": 274.20000000298023
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.30000001192092896,
+        "p95": 0.5,
+        "max": 1.2000000476837158,
+        "n": 240
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.5,
+        "max": 1,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 977.8999999985099,
+        "decodeMs": 190.80000000074506
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 6522.300000000745,
+      "lastMs": 6522.300000000745,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 37,
+      "pipelinesAtReady": 37,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 1,
+    "name": "pverts17",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&pverts=17",
+    "frames": 274,
+    "p50": 16.699999999254942,
+    "p95": 19.699999999254942,
+    "over20": 0.043795620437956206,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 30,
+        "avg": 10.069961999999999,
+        "min": 8.334537,
+        "max": 14.175945999999996,
+        "p50": 10.282170999999998,
+        "p95": 13.897861999999998,
+        "p99": 14.175945999999996
+      },
+      "computeMs": {
+        "samples": 30,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 30,
+    "triangles": 115451,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 34992,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 410.5,
+        "decodeMs": 262.4000000022352
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.30000001192092896,
+        "p95": 0.5,
+        "max": 1.100000023841858,
+        "n": 240
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.4000000059604645,
+        "max": 1,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1243.2000000029802,
+        "decodeMs": 201.19999999925494
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 7552.599999997765,
+      "lastMs": 7552.599999997765,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 37,
+      "pipelinesAtReady": 37,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 1,
+    "name": "leaf14",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&leafrange=14",
+    "frames": 301,
+    "p50": 16.800000000745058,
+    "p95": 20.5,
+    "over20": 0.0664451827242525,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 30,
+        "avg": 11.798699233333334,
+        "min": 9.920179000000003,
+        "max": 16.399746,
+        "p50": 11.095909000000004,
+        "p95": 16.267826999999997,
+        "p99": 16.399746
+      },
+      "computeMs": {
+        "samples": 30,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 30,
+    "triangles": 204115,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 36,
+      "perLevel": [
+        0,
+        0,
+        4,
+        3,
+        5,
+        6,
+        6,
+        6,
+        6
+      ],
+      "triangles": 83232,
+      "visited": 98,
+      "culledHorizon": 7,
+      "culledFrustum": 32,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 511.69999999925494,
+        "decodeMs": 255.60000000149012
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 113,
+      "shadowPerCascade": [
+        22,
+        46,
+        45,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.4000000059604645,
+        "max": 2.299999952316284,
+        "n": 240
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.30000001192092896,
+        "max": 0.5,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1736.5,
+        "decodeMs": 192.69999999925494
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 6449,
+      "lastMs": 6449,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 37,
+      "pipelinesAtReady": 37,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 1,
+    "name": "detail0",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&detail=0",
+    "frames": 358,
+    "p50": 16.899999998509884,
+    "p95": 19.5,
+    "over20": 0.0223463687150838,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 34,
+        "avg": 11.078444617647062,
+        "min": 9.078355,
+        "max": 13.890365999999998,
+        "p50": 10.681417999999999,
+        "p95": 13.555788999999995,
+        "p99": 13.890365999999998
+      },
+      "computeMs": {
+        "samples": 34,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 30,
+    "triangles": 278779,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 124848,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 517.8000000007451,
+        "decodeMs": 285.3999999985099
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.30000001192092896,
+        "p95": 0.4000000059604645,
+        "max": 0.5,
+        "n": 240
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.4000000059604645,
+        "max": 0.8999999761581421,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1293.5,
+        "decodeMs": 208
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 4506,
+      "lastMs": 4506,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 37,
+      "pipelinesAtReady": 37,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  },
+  {
+    "run": 1,
+    "name": "noterrain",
+    "url": "http://localhost:5193/?scene=moon&solo=0&preset=medium&backend=webgpu&view=ground&scale=0.85&dynres=off&terrain=0",
+    "frames": 359,
+    "p50": 16.599999997764826,
+    "p95": 19.300000000745058,
+    "over20": 0.03064066852367688,
+    "gpu": {
+      "source": "timestamp-query",
+      "measured": true,
+      "renderMs": {
+        "samples": 40,
+        "avg": 8.6419107,
+        "min": 6.454234,
+        "max": 11.202576999999998,
+        "p50": 8.393703,
+        "p95": 10.732165000000002,
+        "p99": 11.202576999999998
+      },
+      "computeMs": {
+        "samples": 40,
+        "avg": 0,
+        "min": 0,
+        "max": 0,
+        "p50": 0,
+        "p95": 0,
+        "p99": 0
+      },
+      "perPass": "unavailable"
+    },
+    "draws": 29,
+    "triangles": 153931,
+    "terrain": {
+      "ready": true,
+      "error": null,
+      "nodes": 54,
+      "perLevel": [
+        0,
+        0,
+        1,
+        6,
+        8,
+        9,
+        9,
+        7,
+        14
+      ],
+      "triangles": 124848,
+      "visited": 142,
+      "culledHorizon": 13,
+      "culledFrustum": 41,
+      "overflow": 0,
+      "horizon": {
+        "wanted": true,
+        "on": true,
+        "bytes": 12582912,
+        "fetchMs": 247.90000000223517,
+        "decodeMs": 241.5
+      },
+      "siteUp": [
+        0.06489102999632648,
+        0.9971888181122075,
+        0.03746485363637116
+      ],
+      "shadowInstances": 164,
+      "shadowPerCascade": [
+        22,
+        63,
+        79,
+        0
+      ],
+      "casterOverflow": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "cuts": 0,
+      "warmupHeld": false,
+      "casterSelectMs": {
+        "p50": 0.30000001192092896,
+        "p95": 0.699999988079071,
+        "max": 1.399999976158142,
+        "n": 240
+      },
+      "selectMs": {
+        "p50": 0.20000000298023224,
+        "p95": 0.5,
+        "max": 0.699999988079071,
+        "n": 240
+      },
+      "heightTextureBytes": 12632112,
+      "minMaxBytes": 2097144,
+      "asset": {
+        "file": "height-cube-1024.0d70550a0d75.bin",
+        "fetchMs": 1579.4000000022352,
+        "decodeMs": 216.09999999776483
+      },
+      "fence": {
+        "zone": "inside",
+        "distanceToFenceM": 750.0000000000014,
+        "posts": 564
+      },
+      "cameraAltitudeM": 1.7000000000000117
+    },
+    "warmup": {
+      "phase": "ready",
+      "reason": "boot",
+      "completed": 1,
+      "pipelinesReadyMs": 4091.39999999851,
+      "lastMs": 4091.39999999851,
+      "lastFrames": 10,
+      "timedOut": false,
+      "pipelines": 35,
+      "pipelinesAtReady": 35,
+      "pipelinesAfterWarmup": 0,
+      "runtimeCreationFrames": 0,
+      "holds": 0
+    },
+    "console": []
+  }
+]

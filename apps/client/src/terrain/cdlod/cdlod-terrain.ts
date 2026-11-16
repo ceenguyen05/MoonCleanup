@@ -22,6 +22,7 @@ import { SHADOW_FLAT_RECEIVER_KEY } from "../../visuals/lighting/cascade-shadow-
 import { ALBEDO_GRIME, GRIME_TINT } from "../../visuals/materials/regolith-constants";
 import { createHeightMipTextures, createHeightTexture, createHeightTwin } from "../height/height-twin";
 import { HeightMinMax } from "./min-max";
+import { DETAIL_REFERENCE_LEAF_RANGE_M, leafRangeFor } from "./lod-tuning";
 import { buildPatchGrid, type PatchGrid } from "./patch-grid";
 import { CdlodSelector, createCdlodView, sidePlanesFromViewProjection, type CdlodView } from "./select";
 import { applyTerrainSurface, createTerrainSurface, DETAIL_FADES_M, type TerrainSurface } from "./terrain-surface";
@@ -46,15 +47,24 @@ export interface CdlodTerrainOptions {
   readonly heightAt: (x: number, y: number, z: number) => number;
   /** World position of the moon centre (default: the origin, the game's world frame). */
   readonly center?: Vector3;
-  /** Reuse a pyramid / texture built for the same cube (a preset change rebuilds the terrain, not these). */
+  /**
+   * Reuse a pyramid / textures built for the same cube (a preset change rebuilds the terrain, not these). The terrain
+   * disposes only what it built itself.
+   */
   readonly minMax?: HeightMinMax;
   readonly heightTexture?: DataArrayTexture;
+  /** Far-normal mips (`createHeightMipTextures`); built here when absent and far normals are on. */
+  readonly heightMips?: DataArrayTexture[];
   /** Instance capacity (default 512). */
   readonly maxInstances?: number;
+  /** Range of the leaf level before the range multiplier, metres (selector default: 20 for leaf 8). */
+  readonly leafRangeM?: number;
   /** Per-fragment far-field normals from the height cube (default on). */
   readonly farNormals?: boolean;
   /** Horizon-map term in the material (default on; inert until `surface.horizon.setTextures`). */
   readonly horizon?: boolean;
+  /** Main-pass texel reads for H_base and its slope: 9 (default) or 20 (the old five bilinear samples, A/B only). */
+  readonly baseNormalTaps?: 9 | 20;
 }
 
 /**
@@ -62,6 +72,9 @@ export interface CdlodTerrainOptions {
  * hooks. Diffuse only: a standard material's specular lobe (roughness 0.95) is several times the diffuse term at
  * grazing view toward a low light, which regolith does not do.
  */
+/** Builds the terrain surface material from the terrain's shared surface nodes (the shape of the two factories below). */
+export type TerrainMaterialFactory = (surface: TerrainSurface) => NodeMaterial;
+
 export function createPlainTerrainMaterial(surface: TerrainSurface): NodeMaterial {
   const material = new MeshLambertNodeMaterial();
   material.name = "mc:terrain-plain";
@@ -85,14 +98,22 @@ export function createSpecularTerrainMaterial(surface: TerrainSurface): NodeMate
   return material;
 }
 
-/** Farthest receiver of a cascade from the camera, as a multiple of its far end (corner of a 16:9, 60 degree frustum: 1.55). */
-const RECEIVER_REACH = 1.7;
 /**
- * Shadow passes draw the surface this much lower, metres. The casters are coarser than the lit surface and leave out
- * the small craters and the noise, so without it their back faces poke through lit ground near the terminator and
- * draw a comb of dark stripes (seen at a 14 degree sun; gone at 0.3 m).
+ * Shadow passes push the surface away from the light by as much light depth as a vertical drop of this many metres
+ * gives (`CASTER_DROP_M * sin(elevation)`, along the light direction). The casters are coarser than the lit surface and
+ * leave out the small craters and the noise, so without it their back faces poke through lit ground near the terminator
+ * and draw a comb of dark stripes (seen at a 14 degree sun; gone at 0.3 m). Along the light the offset moves no shadow
+ * sideways: a vertical drop shortened every contact shadow by 0.3 / tan(elevation) (3.4 m at 5 degrees, review F4).
  */
 export const CASTER_DROP_M = 0.3;
+/** Main-view nodes this near the camera skip the frustum test (near-plane slack; the casters do the shadow work). */
+const FRUSTUM_EXEMPT_M = 2;
+/** The same when the main mesh casts into every cascade (no per-cascade casters): it must hold the off-screen casters. */
+const FRUSTUM_EXEMPT_CASTING_M = 60;
+/** Instance capacity of one cascade's casters (measured worst case 79 at ground, rim, high; see `cascadeOverflow`). */
+const CASTER_CAPACITY = 384;
+/** A camera jump larger than this (metres per frame) invalidates the one-frame-old cascade boxes (review F6). */
+const CAMERA_CUT_M = 2;
 /** Casters of a cascade nearer than this fraction of the previous cascade end may be coarser (covers the fade band). */
 const CASCADE_LOD_FLOOR = 0.7;
 
@@ -127,8 +148,22 @@ export class CdlodTerrain {
   private readonly lodAttribute: InstancedBufferAttribute;
   private readonly center: Vector3;
   private readonly heightAt: (x: number, y: number, z: number) => number;
-  private readonly ownsShared: boolean;
+  private readonly leafRangeM: number | undefined;
+  private readonly ownsTexture: boolean;
+  private readonly ownsMips: boolean;
   private readonly vp = new Float64Array(16);
+  /** Frustum exemption of the main view while the per-cascade casters cast (`FRUSTUM_EXEMPT_M`) and while the main mesh does. */
+  frustumExemptM = FRUSTUM_EXEMPT_M;
+  frustumExemptCastingM = FRUSTUM_EXEMPT_CASTING_M;
+  /** Farthest receiver of a cascade as a multiple of its far end: corner factor of the main camera's frustum. */
+  private receiverReach = 1.7;
+  private lastCamX = Number.NaN;
+  private lastCamY = 0;
+  private lastCamZ = 0;
+  /** Frames left in which the main mesh casts instead of the per-cascade casters (their boxes are stale). */
+  private invalidFrames = 0;
+  /** Camera cuts seen (diagnostic). */
+  cuts = 0;
   private readonly quality: CdlodQuality;
   private readonly radiusM: number;
   private readonly casters: CascadeCasters[] = [];
@@ -150,6 +185,8 @@ export class CdlodTerrain {
   shadowInstances = 0;
   /** `true` once a host drives per-cascade casters; until then the main mesh casts (every cascade draws all of it). */
   private cascadeCasting = false;
+  /** `false` after a host passed no cascades (`&cast=0`): the terrain casts nothing. */
+  private castingEnabled = true;
 
   constructor(options: CdlodTerrainOptions, material?: (surface: TerrainSurface) => NodeMaterial) {
     const { cube, quality } = options;
@@ -157,19 +194,26 @@ export class CdlodTerrain {
     this.quality = quality;
     this.radiusM = options.radiusM;
     this.heightAt = options.heightAt;
-    this.ownsShared = options.minMax === undefined;
+    this.ownsTexture = options.heightTexture === undefined;
     this.minMax = options.minMax ?? new HeightMinMax(cube);
     this.heightTexture = options.heightTexture ?? createHeightTexture(cube);
     this.patch = buildPatchGrid(quality.cdlodPatchVerts - 1);
+    const leafRangeM = options.leafRangeM ?? leafRangeFor(quality.cdlodLeafLevel);
+    // Detail fades follow the grid: they scale with the leaf range as with the preset's range multiplier.
+    const fadeScale =
+      quality.cdlodRangeMult * (leafRangeM === undefined ? 1 : leafRangeM / DETAIL_REFERENCE_LEAF_RANGE_M);
     this.selector = new CdlodSelector({
       radiusM: options.radiusM,
       leafLevel: quality.cdlodLeafLevel,
       rangeMult: quality.cdlodRangeMult,
       minMax: this.minMax,
       ...(options.maxInstances === undefined ? {} : { maxInstances: options.maxInstances }),
+      ...(leafRangeM === undefined ? {} : { leafRangeM }),
     });
+    this.leafRangeM = leafRangeM;
 
-    this.heightMips = options.farNormals === false ? [] : createHeightMipTextures(cube);
+    this.ownsMips = options.farNormals !== false && options.heightMips === undefined;
+    this.heightMips = options.farNormals === false ? [] : (options.heightMips ?? createHeightMipTextures(cube));
     const twin = createHeightTwin({
       cube,
       texture: this.heightTexture,
@@ -182,9 +226,10 @@ export class CdlodTerrain {
       twin,
       radiusM: options.radiusM,
       patchQuads: this.patch.quads,
-      fadeScale: quality.cdlodRangeMult,
+      fadeScale,
       farNormals: options.farNormals !== false,
       horizon: options.horizon !== false,
+      ...(options.baseNormalTaps === undefined ? {} : { baseNormalTaps: options.baseNormalTaps }),
     });
     this.surface.uniforms.rootRange.value = this.selector.ranges[0]!;
     this.material = (material ?? createPlainTerrainMaterial)(this.surface);
@@ -217,7 +262,15 @@ export class CdlodTerrain {
     mesh.receiveShadow = true;
     mesh.visible = false;
     this.mesh = mesh;
-    this.view.frustumExemptM = 60;
+  }
+
+  /**
+   * The cascade boxes of the last render no longer hold the camera (teleport, respawn, view change): for the next two
+   * frames the main mesh casts into every cascade instead of the per-cascade casters. Camera jumps over `CAMERA_CUT_M`
+   * per frame call this by themselves.
+   */
+  invalidate(): void {
+    this.invalidFrames = 2;
   }
 
   /** Selects the nodes for `camera` and uploads them. Call once per frame before the render. */
@@ -230,6 +283,26 @@ export class CdlodTerrain {
     view.camY = world[13]! - center.y;
     view.camZ = world[14]! - center.z;
     view.lodHeightM = this.heightAt(view.camX, view.camY, view.camZ);
+
+    // Camera cut: the cascade boxes are a frame old and hold the camera only within their margin.
+    if (Number.isFinite(this.lastCamX)) {
+      const dx = view.camX - this.lastCamX;
+      const dy = view.camY - this.lastCamY;
+      const dz = view.camZ - this.lastCamZ;
+      if (dx * dx + dy * dy + dz * dz > CAMERA_CUT_M * CAMERA_CUT_M) {
+        this.invalidate();
+        this.cuts++;
+      }
+    }
+    this.lastCamX = view.camX;
+    this.lastCamY = view.camY;
+    this.lastCamZ = view.camZ;
+    // Corner factor of the frustum: a receiver at view depth z lies up to z * reach from the camera (review F5).
+    const tanHalf = Math.tan((camera.fov * Math.PI) / 360) / (camera.zoom || 1);
+    this.receiverReach = Math.sqrt(1 + tanHalf * tanHalf * (1 + camera.aspect * camera.aspect)) * 1.05;
+    // Off-screen nodes are only worth drawing when the main mesh casts the shadows.
+    const mainCasts = !this.cascadeCasting || this.invalidFrames > 0;
+    view.frustumExemptM = mainCasts ? this.frustumExemptCastingM : this.frustumExemptM;
 
     // View-projection in doubles (column-major): planes do not go through float32.
     const P = camera.projectionMatrix.elements;
@@ -253,7 +326,7 @@ export class CdlodTerrain {
     if (this.pendingCasters.length > 0 && mesh.parent !== null) {
       for (const caster of this.pendingCasters.splice(0)) mesh.parent.add(caster);
     }
-    if (!this.cascadeCasting) mesh.castShadow = true;
+    if (mainCasts) mesh.castShadow = this.castingEnabled;
     mesh.visible = count > 0 && !this.hidden;
     mesh.position.set(world[12]!, world[13]!, world[14]!);
     const u = this.surface.uniforms;
@@ -272,9 +345,25 @@ export class CdlodTerrain {
    */
   updateShadowCascades(cameras: readonly Camera[], endsM: readonly number[], layerBase: number): void {
     this.cascadeCasting = true;
+    this.castingEnabled = cameras.length > 0;
+    const u = this.surface.uniforms;
+    u.casterDrop.value = this.casterDropM;
+    if (cameras.length > 0) {
+      // Direction toward the light: the +Z axis of the shadow cameras (all cascades share it).
+      const W0 = cameras[0]!.matrixWorld.elements;
+      u.casterLight.value.set(W0[8]!, W0[9]!, W0[10]!).normalize();
+    }
+    if (this.invalidFrames > 0 && cameras.length > 0) {
+      // Stale boxes: the main mesh (selected with the casting exemption in `update`) casts into every cascade.
+      this.invalidFrames--;
+      this.mesh.castShadow = true;
+      u.casterRangeScale.value = 1;
+      for (const set of this.casters) set.mesh.visible = false;
+      this.shadowInstances = 0;
+      return;
+    }
     this.mesh.castShadow = false;
-    this.surface.uniforms.casterDrop.value = this.casterDropM;
-    this.surface.uniforms.casterRangeScale.value = 0.5;
+    u.casterRangeScale.value = 0.5;
     const main = this.view;
     const center = this.center;
     const vp = this.vp;
@@ -315,7 +404,7 @@ export class CdlodTerrain {
       view.planes[16] = lx;
       view.planes[17] = ly;
       view.planes[18] = lz;
-      view.planes[19] = end * RECEIVER_REACH - (lx * main.camX + ly * main.camY + lz * main.camZ);
+      view.planes[19] = end * this.receiverReach - (lx * main.camX + ly * main.camY + lz * main.camZ);
       // Sixth plane: the near plane of the shadow camera. Nothing nearer the light can be drawn into the cascade, and
       // every cascade keeps casters up to there, so a far hill shades the near and the far ground alike.
       view.planes[20] = -lx;
@@ -341,13 +430,20 @@ export class CdlodTerrain {
     return set === undefined || !set.mesh.visible ? 0 : set.selector.count;
   }
 
+  /** Caster nodes cascade `k` dropped in the last frame because its instance buffer was full (must be 0, review F2). */
+  cascadeOverflow(k: number): number {
+    const set = this.casters[k];
+    return set === undefined || !set.mesh.visible ? 0 : set.selector.stats.overflow;
+  }
+
   private createCasters(k: number, layerBase: number): CascadeCasters {
     const selector = new CdlodSelector({
       radiusM: this.radiusM,
       leafLevel: this.quality.cdlodLeafLevel,
       rangeMult: this.quality.cdlodRangeMult,
       minMax: this.minMax,
-      maxInstances: 256,
+      maxInstances: CASTER_CAPACITY,
+      ...(this.leafRangeM === undefined ? {} : { leafRangeM: this.leafRangeM }),
     });
     const view = createCdlodView();
     view.horizonCull = false;
@@ -389,7 +485,7 @@ export class CdlodTerrain {
     this.geometry.dispose();
     this.material.dispose();
     this.surface.horizon?.dispose();
-    for (const mip of this.heightMips) mip.dispose();
-    if (this.ownsShared) this.heightTexture.dispose();
+    if (this.ownsMips) for (const mip of this.heightMips) mip.dispose();
+    if (this.ownsTexture) this.heightTexture.dispose();
   }
 }

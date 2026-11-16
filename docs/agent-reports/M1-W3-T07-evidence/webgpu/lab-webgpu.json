@@ -1,0 +1,376 @@
+{
+  "backend": "webgpu",
+  "preset": "medium",
+  "parts": [
+    "turntable"
+  ],
+  "results": {
+    "turntable-noon-info": {
+      "look": {
+        "scene": "typical",
+        "state": {
+          "sunElevationDeg": 38,
+          "sunAzimuthDeg": 165,
+          "earthElevationDeg": 16,
+          "earthAzimuthDeg": 62,
+          "sunRateDegPerS": 0,
+          "earthDiameterDeg": 4.2,
+          "dayTimeS": -1,
+          "dayRate": 1,
+          "earthFullness": 0.5
+        },
+        "keyMode": "sun",
+        "ev100": 13.786666666666667,
+        "cascades": [
+          {
+            "index": 0,
+            "texelM": 0.01650244188679149,
+            "endM": 10
+          },
+          {
+            "index": 1,
+            "texelM": 0.06970214668123988,
+            "endM": 42.23076211353316
+          },
+          {
+            "index": 2,
+            "texelM": 0.19813672469553464,
+            "endM": 120
+          }
+        ],
+        "shadowMapSize": 1024,
+        "adaptationMultiplier": 0,
+        "dayClock": {
+          "on": false,
+          "timeS": -1,
+          "rate": 1,
+          "scriptedEv100": 13.786666666666667,
+          "earthLitFraction": 0.5003488239030149,
+          "limitingMagnitude": 2.793333333333333,
+          "keyLux": 82375.50539857308,
+          "floorLux": 0
+        },
+        "preset": "medium",
+        "backend": "webgpu",
+        "postPasses": [
+          "scene",
+          "grade",
+          "bloom",
+          "smaa"
+        ],
+        "knobs": "default",
+        "skyDome": "baked",
+        "shadowFilter": "pcf3+pcf5",
+        "dustAtlas": null,
+        "dustFeed": null,
+        "notBuilt": [
+          "dustRing",
+          "particles"
+        ],
+        "camera": {
+          "position": [
+            -3.4944644586421396,
+            1.2375613775646357,
+            -6.007016386514907
+          ],
+          "quaternion": [
+            0.0067676675016208445,
+            0.9840595420964061,
+            0.03838134966315992,
+            -0.1735162478952138
+          ],
+          "forward": [
+            0.3409811344745338,
+            -0.07788766729290965,
+            0.9368379674288021
+          ],
+          "vfovDeg": 45,
+          "aspect": 1.7777777777777777,
+          "nearM": 0.05,
+          "farM": 30000
+        }
+      },
+      "placeholders": [
+        "custodian_blockout.bccd6394ce40.glb",
+        "desk_duster_v0.76cc1f1c6b11.glb"
+      ]
+    },
+    "turntable-night-info": {
+      "look": {
+        "scene": "typical",
+        "state": {
+          "sunElevationDeg": -6,
+          "sunAzimuthDeg": 165,
+          "earthElevationDeg": 16,
+          "earthAzimuthDeg": 62,
+          "sunRateDegPerS": 0,
+          "earthDiameterDeg": 4.2,
+          "dayTimeS": -1,
+          "dayRate": 1,
+          "earthFullness": 0.5
+        },
+        "keyMode": "earth",
+        "ev100": 7.3,
+        "cascades": [
+          {
+            "index": 0,
+            "texelM": 0.01650244188679149,
+            "endM": 10
+          },
+          {
+            "index": 1,
+            "texelM": 0.06970214668123988,
+            "endM": 42.23076211353316
+          },
+          {
+            "index": 2,
+            "texelM": 0.19813672469553464,
+            "endM": 120
+          }
+        ],
+        "shadowMapSize": 1024,
+        "adaptationMultiplier": 0,
+        "dayClock": {
+          "on": false,
+          "timeS": -1,
+          "rate": 1,
+          "scriptedEv100": 7.3,
+          "earthLitFraction": 0.6219321066167341,
+          "limitingMagnitude": 6,
+          "keyLux": 133.8955583820243,
+          "floorLux": 0
+        },
+        "preset": "medium",
+        "backend": "webgpu",
+        "postPasses": [
+          "scene",
+          "grade",
+          "bloom",
+          "smaa"
+        ],
+        "knobs": "default",
+        "skyDome": "baked",
+        "shadowFilter": "pcf3+pcf5",
+        "dustAtlas": null,
+        "dustFeed": null,
+        "notBuilt": [
+          "dustRing",
+          "particles"
+        ],
+        "camera": {
+          "position": [
+            -3.4944644586421396,
+            1.2375613775646357,
+            -6.007016386514907
+          ],
+          "quaternion": [
+            0.0067676675016208445,
+            0.9840595420964061,
+            0.03838134966315992,
+            -0.1735162478952138
+          ],
+          "forward": [
+            0.3409811344745338,
+            -0.07788766729290965,
+            0.9368379674288021
+          ],
+          "vfovDeg": 45,
+          "aspect": 1.7777777777777777,
+          "nearM": 0.05,
+          "farM": 30000
+        }
+      },
+      "placeholders": [
+        "custodian_blockout.bccd6394ce40.glb",
+        "desk_duster_v0.76cc1f1c6b11.glb"
+      ]
+    },
+    "turntable": [
+      {
+        "label": "noon",
+        "view": 0,
+        "boxPx": {
+          "minX": 539.8024978561019,
+          "minY": 97.93942189608208,
+          "maxX": 740.197502143898,
+          "maxY": 631.7053022123614
+        },
+        "centerLuma": 82.57879999999999
+      },
+      {
+        "label": "noon",
+        "view": 45,
+        "boxPx": {
+          "minX": 503.62599412100155,
+          "minY": 85.21251467334199,
+          "maxX": 742.1135184564332,
+          "maxY": 652.8573508438477
+        },
+        "centerLuma": 190.48539999999997
+      },
+      {
+        "label": "noon",
+        "view": 90,
+        "boxPx": {
+          "minX": 527.9925242937378,
+          "minY": 88.2602309512916,
+          "maxX": 701.733764532962,
+          "maxY": 647.8038725833146
+        },
+        "centerLuma": 25.5828
+      },
+      {
+        "label": "noon",
+        "view": 135,
+        "boxPx": {
+          "minX": 502.27397338048036,
+          "minY": 76.2802110547189,
+          "maxX": 748.746053465506,
+          "maxY": 667.6255641791997
+        },
+        "centerLuma": 56.9278
+      },
+      {
+        "label": "noon",
+        "view": 180,
+        "boxPx": {
+          "minX": 533.9786939986866,
+          "minY": 86.6541650986501,
+          "maxX": 746.0213060013133,
+          "maxY": 650.4678463111204
+        },
+        "centerLuma": 22.442400000000003
+      },
+      {
+        "label": "noon",
+        "view": 225,
+        "boxPx": {
+          "minX": 531.2539465344939,
+          "minY": 76.28021105471879,
+          "maxX": 777.7260266195196,
+          "maxY": 667.6255641791997
+        },
+        "centerLuma": 56.1404
+      },
+      {
+        "label": "noon",
+        "view": 270,
+        "boxPx": {
+          "minX": 578.2662354670377,
+          "minY": 88.26023095129165,
+          "maxX": 752.0074757062622,
+          "maxY": 647.8038725833146
+        },
+        "centerLuma": 14.5106
+      },
+      {
+        "label": "noon",
+        "view": 315,
+        "boxPx": {
+          "minX": 537.8864815435667,
+          "minY": 85.21251467334211,
+          "maxX": 776.3740058789983,
+          "maxY": 652.8573508438476
+        },
+        "centerLuma": 141.345
+      },
+      {
+        "label": "night",
+        "view": 0,
+        "boxPx": {
+          "minX": 539.8024978561019,
+          "minY": 97.93942189608208,
+          "maxX": 740.197502143898,
+          "maxY": 631.7053022123614
+        },
+        "centerLuma": 0
+      },
+      {
+        "label": "night",
+        "view": 45,
+        "boxPx": {
+          "minX": 503.62599412100155,
+          "minY": 85.21251467334199,
+          "maxX": 742.1135184564332,
+          "maxY": 652.8573508438477
+        },
+        "centerLuma": 55.489399999999996
+      },
+      {
+        "label": "night",
+        "view": 90,
+        "boxPx": {
+          "minX": 527.9925242937378,
+          "minY": 88.2602309512916,
+          "maxX": 701.733764532962,
+          "maxY": 647.8038725833146
+        },
+        "centerLuma": 1
+      },
+      {
+        "label": "night",
+        "view": 135,
+        "boxPx": {
+          "minX": 502.27397338048036,
+          "minY": 76.2802110547189,
+          "maxX": 748.746053465506,
+          "maxY": 667.6255641791997
+        },
+        "centerLuma": 6
+      },
+      {
+        "label": "night",
+        "view": 180,
+        "boxPx": {
+          "minX": 533.9786939986866,
+          "minY": 86.6541650986501,
+          "maxX": 746.0213060013133,
+          "maxY": 650.4678463111204
+        },
+        "centerLuma": 1
+      },
+      {
+        "label": "night",
+        "view": 225,
+        "boxPx": {
+          "minX": 531.2539465344939,
+          "minY": 76.28021105471879,
+          "maxX": 777.7260266195196,
+          "maxY": 667.6255641791997
+        },
+        "centerLuma": 6
+      },
+      {
+        "label": "night",
+        "view": 270,
+        "boxPx": {
+          "minX": 578.2662354670377,
+          "minY": 88.26023095129165,
+          "maxX": 752.0074757062622,
+          "maxY": 647.8038725833146
+        },
+        "centerLuma": 0.0722
+      },
+      {
+        "label": "night",
+        "view": 315,
+        "boxPx": {
+          "minX": 537.8864815435667,
+          "minY": 85.21251467334211,
+          "maxX": 776.3740058789983,
+          "maxY": 652.8573508438476
+        },
+        "centerLuma": 56.276799999999994
+      }
+    ]
+  },
+  "console": [
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+  ]
+}

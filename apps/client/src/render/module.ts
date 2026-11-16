@@ -162,6 +162,12 @@ export interface RenderRendererService extends RendererService {
   addWarmupSource(source: (active: boolean) => void): Unsubscribe;
   /** Starts a warm-up now (an owner added content with new pipelines behind a loading screen). */
   requestWarmup(): void;
+  /**
+   * An owner is still loading content (baked terrain, models): the warm-up cannot end until the returned release is
+   * called (once; later calls do nothing). Take it in `init` before the async load starts and release it right after
+   * the content is in the scene (and its warm-up instances are visible). Starts a warm-up if none is running.
+   */
+  holdWarmup(): () => void;
   /** Resolves when no warm-up is running (at once if none is): gate "Clock In" and the settings overlay on it. */
   whenPipelinesReady(): Promise<void>;
   /** The renderer was lost; GPU-only resources (render targets, storage textures) are gone. */
@@ -343,6 +349,8 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
   readonly memory = new GpuMemoryLedger();
   readonly rendererInfo: RendererInfoSample = { pipelines: 0, textureBytes: 0, geometryBytes: 0, totalBytes: 0 };
   private readonly warmup = new PipelineWarmup();
+  /** `true` after the renderer host gave up (loss limit, replacement failed). */
+  private fatal = false;
   private readonly warmupSources = new Set<(active: boolean) => void>();
   private warmupWaiters: (() => void)[] = [];
   private warmupReason: WarmupReason = "boot";
@@ -479,6 +487,9 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
       }),
       host.onFatal((error) => {
         console.error(`[render] fatal: ${error.message}`);
+        // Nothing will render again: let anything gated on `whenPipelinesReady` move on instead of hanging.
+        this.fatal = true;
+        this.releaseWarmupWaiters();
       }),
     );
 
@@ -634,8 +645,22 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     this.beginWarmup("request");
   }
 
+  holdWarmup(): () => void {
+    if (this.disposed) return () => undefined;
+    if (this.warmup.hold(this.now())) for (const source of this.warmupSources) source(true);
+    // A hold dropped by the `maxHeldMs` time-out belongs to an older generation: its late release does nothing.
+    const generation = this.warmup.holdGeneration;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.warmup.release(this.now(), generation);
+    };
+  }
+
   whenPipelinesReady(): Promise<void> {
-    if (!this.warmup.warming || this.disposed) return Promise.resolve();
+    // After a fatal renderer error no frame will ever complete a warm-up: resolve, the fatal error is reported elsewhere.
+    if (!this.warmup.warming || this.disposed || this.fatal) return Promise.resolve();
     return new Promise((resolve) => {
       this.warmupWaiters.push(resolve);
     });
@@ -903,6 +928,8 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     quality.rebind(capabilities, defaultPresetFor(capabilities.tier, capabilities.backend, capabilities.gpuClass));
     if (event.lossCount % LOSSES_PER_PRESET_DROP === 0) quality.stepDown("detect");
 
+    // A warm-up running at the loss starts over: the recovery time must not time it out on the first new frame.
+    this.warmup.restart(this.now());
     this.bindRenderer(event.renderer);
     this.log(`[render] renderer recreated after device loss #${String(event.lossCount)}`);
     // `render.backendSelected` describes the running renderer; repeat it only when the answer changed.

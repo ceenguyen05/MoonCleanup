@@ -1,0 +1,338 @@
+[
+ {
+  "name": "ground-9",
+  "query": "view=ground",
+  "dpr": 1.5,
+  "nodes": 75,
+  "triangles": 173400,
+  "perLevel": [
+   0,
+   0,
+   3,
+   3,
+   9,
+   6,
+   9,
+   21,
+   24
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "ground-20",
+  "query": "view=ground&normtaps=20",
+  "dpr": 1.5,
+  "nodes": 75,
+  "triangles": 173400,
+  "perLevel": [
+   0,
+   0,
+   3,
+   3,
+   9,
+   6,
+   9,
+   21,
+   24
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "rim-9",
+  "query": "view=rim",
+  "dpr": 1.5,
+  "nodes": 61,
+  "triangles": 141032,
+  "perLevel": [
+   0,
+   0,
+   1,
+   9,
+   10,
+   7,
+   15,
+   15,
+   4
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "rim-20",
+  "query": "view=rim&normtaps=20",
+  "dpr": 1.5,
+  "nodes": 61,
+  "triangles": 141032,
+  "perLevel": [
+   0,
+   0,
+   1,
+   9,
+   10,
+   7,
+   15,
+   15,
+   4
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "ground-sun5",
+  "query": "view=ground&sun=5",
+  "dpr": 1.5,
+  "nodes": 75,
+  "triangles": 173400,
+  "perLevel": [
+   0,
+   0,
+   3,
+   3,
+   9,
+   6,
+   9,
+   21,
+   24
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "ground-sun30",
+  "query": "view=ground&sun=30",
+  "dpr": 1.5,
+  "nodes": 46,
+  "triangles": 106352,
+  "perLevel": [
+   0,
+   0,
+   3,
+   3,
+   9,
+   6,
+   5,
+   8,
+   12
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "rim-sun5",
+  "query": "view=rim&sun=5",
+  "dpr": 1.5,
+  "nodes": 39,
+  "triangles": 90168,
+  "perLevel": [
+   0,
+   0,
+   1,
+   9,
+   10,
+   6,
+   10,
+   3,
+   0
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "rim-sun30",
+  "query": "view=rim&sun=30",
+  "dpr": 1.5,
+  "nodes": 39,
+  "triangles": 90168,
+  "perLevel": [
+   0,
+   0,
+   1,
+   9,
+   10,
+   6,
+   10,
+   3,
+   0
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "ground-leaf20",
+  "query": "view=ground&leafrange=20",
+  "dpr": 1.5,
+  "nodes": 87,
+  "triangles": 201144,
+  "perLevel": [
+   0,
+   0,
+   1,
+   6,
+   8,
+   9,
+   12,
+   23,
+   28
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "rim-leaf20",
+  "query": "view=rim&leafrange=20",
+  "dpr": 1.5,
+  "nodes": 46,
+  "triangles": 106352,
+  "perLevel": [
+   0,
+   0,
+   1,
+   9,
+   9,
+   10,
+   8,
+   9,
+   0
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "high",
+  "query": "view=high",
+  "dpr": 1.5,
+  "nodes": 33,
+  "triangles": 76296,
+  "perLevel": [
+   0,
+   0,
+   5,
+   3,
+   5,
+   8,
+   11,
+   1,
+   0
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "orbit",
+  "query": "view=orbit",
+  "dpr": 1.5,
+  "nodes": 6,
+  "triangles": 13872,
+  "perLevel": [
+   6,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "edge-high",
+  "query": "view=high&arc=1364552&brg=0",
+  "dpr": 1.5,
+  "nodes": 39,
+  "triangles": 90168,
+  "perLevel": [
+   0,
+   0,
+   3,
+   10,
+   6,
+   10,
+   6,
+   4,
+   0
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ {
+  "name": "edge-rim",
+  "query": "view=rim&arc=1364552&brg=0",
+  "dpr": 1.5,
+  "nodes": 38,
+  "triangles": 87856,
+  "perLevel": [
+   0,
+   0,
+   2,
+   10,
+   6,
+   10,
+   2,
+   8,
+   0
+  ],
+  "casterOverflow": [
+   0,
+   0,
+   0,
+   0
+  ]
+ }
+]

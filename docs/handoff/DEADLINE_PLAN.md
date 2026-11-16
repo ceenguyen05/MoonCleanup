@@ -1,6 +1,6 @@
-# November 17 delivery
+# Delivery plan (no deadline; owner removed Nov 17 on 2026-11-16, dates below are historical)
 
-Target: **November 17, 2026, America/Chicago**. Title Clean The Moon!; full reference-game systems remain the goal.
+Former target: November 17, 2026. Title Clean The Moon!; full reference-game systems remain the goal.
 [REFERENCE_TARGET](../design/REFERENCE_TARGET.md) classifies required fidelity versus optional custom extras.
 The prior 66–82-window estimate and interrupted M0-S1 are schedule-risk evidence, not a usable calendar promise.
 

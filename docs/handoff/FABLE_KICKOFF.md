@@ -13,7 +13,7 @@ claude --model claude-sonnet-5-5 --effort medium --permission-mode acceptEdits
 
 ```text
 Continue developing Clean The Moon! from this project's existing files and interrupted M0 work. You are the Sonnet 5.5
-lead at medium effort. Build through M0, M1, M2 and M3 toward November 17, 2026 (America/Chicago); M4 remains optional.
+lead at medium effort. Build through M0, M1, M2 and M3 with no deadline; M4 remains optional.
 
 Read CLAUDE.md, docs/STATUS.md, docs/handoff/WORKFLOW.md, docs/handoff/MODEL_POLICY.md and docs/design/REFERENCE_TARGET.md
 once to adopt the updated instructions. Then read only the current task/source/spec sections and unresolved findings

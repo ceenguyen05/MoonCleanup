@@ -7,9 +7,16 @@ import { useEffect, useRef, type ReactElement, type RefObject } from "react";
 import { NOTICE_VERBOSITIES, type NoticeVerbosity } from "@moon-cleanup/shared";
 import { formatString, STRINGS } from "../strings";
 import { USER_SCALE_MAX, USER_SCALE_MIN } from "../tokens/display-metrics";
+import { SaveSettings } from "../save/SaveSettings";
 import { useUi, useUiSelector } from "../ui-context";
 import { ControlsScreen } from "./ControlsScreen";
-import { QUALITY_PRESETS, useUiIntents, type QualityPreset } from "./intents";
+import {
+  PLOT_CARD_ACTIVATIONS,
+  QUALITY_PRESETS,
+  useUiIntents,
+  type PlotCardActivation,
+  type QualityPreset,
+} from "./intents";
 import { useUiPrefs, useUiPrefsStore } from "./ui-local";
 import styles from "./Menus.module.css";
 
@@ -115,6 +122,7 @@ function SettingsList({
   const intents = useUiIntents();
   const prefs = useUiPrefsStore();
   const quality = useUiPrefs((state) => state.quality);
+  const plotCardMode = useUiPrefs((state) => state.plotCardMode);
 
   return (
     <div className={styles["body"]}>
@@ -215,6 +223,17 @@ function SettingsList({
 
       <section className={styles["group"]} aria-label={S.controls}>
         <h3 className={styles["groupTitle"]}>{S.controls}</h3>
+        <Segmented<PlotCardActivation>
+          label={S.plotCard}
+          options={PLOT_CARD_ACTIVATIONS}
+          value={plotCardMode}
+          names={S.plotCardOptions}
+          testId="settings-plot-card-mode"
+          onPick={(next) => {
+            prefs.setPlotCardMode(next);
+            intents.setPlotCardMode(next);
+          }}
+        />
         <div className={styles["field"]}>
           <span className={styles["fieldLabel"]}>
             {S.remap}
@@ -232,6 +251,8 @@ function SettingsList({
           </button>
         </div>
       </section>
+
+      <SaveSettings />
     </div>
   );
 }

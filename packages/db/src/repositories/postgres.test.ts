@@ -90,6 +90,7 @@ describe("postgres repository specifics", () => {
     expect(storage.rows[0]?.attstorage).toBe("e");
     const cols = await pg.query<{ table_name: string; column_name: string }>(
       `select table_name, column_name from information_schema.columns where table_schema = $1
+       and table_name not like '%\_archives' escape '\'
        and column_name in ('lease_instance','lease_room_id','lease_expires_at','parent_seq','origin_kind')`,
       [SCHEMA],
     );

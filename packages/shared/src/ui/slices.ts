@@ -151,6 +151,11 @@ export interface UiCompassState {
   readonly fenceBearingDeg: number | null;
   /** Temporary marker for the active Induction step ("Assay Counter, 38 m"), as an outpost-relative id; `null` when none. */
   readonly objectiveMarkerId: string | null;
+  /**
+   * Distance in metres from the player to the objective marker ("Assay Counter, 38 m"); `null` when unknown or no marker.
+   * Optional and additive (store v1.2): writers that predate it simply leave it out, readers treat `undefined` as `null`.
+   */
+  readonly objectiveDistanceM?: number | null;
 }
 
 // ---- holster, suit, vehicle ---------------------------------------------------------------------------------------

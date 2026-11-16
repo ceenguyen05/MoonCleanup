@@ -12,14 +12,15 @@
 
 import {
   Fn,
-  cameraPosition,
+  asin,
+  atan,
   cos,
   exp,
   float,
   max,
   mix,
   mx_fractal_noise_float,
-  positionWorld,
+  positionLocal,
   pow,
   sin,
   smoothstep,
@@ -38,6 +39,7 @@ import {
   Mesh,
   MeshBasicNodeMaterial,
   QuadMesh,
+  Quaternion,
   RenderTarget,
   RepeatWrapping,
   SphereGeometry,
@@ -53,6 +55,8 @@ export const SKY_MID = [0.006, 0.0095, 0.026] as const;
 export const SKY_HORIZON = [0.036, 0.046, 0.088] as const;
 export const SKY_SUN_GLOW = [0.15, 0.078, 0.04] as const;
 export const SKY_NEBULA = [0.018, 0.012, 0.04] as const;
+
+const UP = new Vector3(0, 1, 0);
 
 /** Baked backdrop: 360 degrees of azimuth by 0..90 degrees of elevation (below the horizon the horizon row repeats). */
 export const SKY_BAKE_WIDTH = 1024;
@@ -130,10 +134,34 @@ export function skyBakeDirection(u: number, t: number, out: { x: number; y: numb
   out.z = Math.sin(phi) * ring;
 }
 
-/** CPU twin of the dome lookup: (u, t) of a `SphereGeometry` vertex uv (`uv.y` = 1 at the zenith, 0.5 at the horizon). */
+/** CPU twin of the old per-vertex dome lookup: (u, t) of a `SphereGeometry` vertex uv (`uv.y` = 1 zenith, 0.5 horizon). */
 export function skyBakeCoordOfSphereUv(uvX: number, uvY: number, out: { u: number; t: number }): void {
   out.u = uvX;
   out.t = Math.min(1, Math.max(0, (uvY - 0.5) * 2));
+}
+
+/**
+ * CPU twin of the per-pixel dome lookup (`bakeCoordNode`): (u, t) of a unit direction in the dome's frame, the inverse of
+ * `skyBakeDirection` above the horizon; below it `t` = 0 (the horizon row repeats).
+ */
+export function skyBakeCoordOfDirection(x: number, y: number, z: number, out: { u: number; t: number }): void {
+  const u = Math.atan2(z, -x) / (Math.PI * 2);
+  out.u = u < 0 ? u + 1 : u;
+  out.t = Math.asin(Math.min(1, Math.max(0, y))) / (Math.PI / 2);
+}
+
+/**
+ * Per-pixel bake coordinate of the dome direction `d` (same formula as `skyBakeCoordOfDirection`). The lookup used to read
+ * the sphere's vertex uv, which is interpolated linearly over each flat facet: the elevation it gave bent at every facet row
+ * (5.6 degrees apart), and the steep horizon band of the gradient showed those bends as faint horizontal lines (the "sky
+ * seam" of the M0 P4 flyover). The texture has a single level, so the wrap of `u` from 1 to 0 cannot pick a wrong mip.
+ */
+function bakeCoordNode(d: TslNode): TslNode {
+  const u: TslNode = atan(d.z, d.x.negate())
+    .mul(1 / (Math.PI * 2))
+    .fract();
+  const t: TslNode = asin(d.y.clamp(0, 1)).mul(2 / Math.PI);
+  return vec2(u, t);
 }
 
 export class SkyDome {
@@ -148,6 +176,8 @@ export class SkyDome {
   private readonly sunDir = uniform(new Vector3(0, 0, 1));
   private readonly level = uniform(1);
   private readonly sunUp = uniform(1);
+  /** Inverse of the dome's orientation (world -> dome frame), for the sun direction. */
+  private readonly inverse = new Quaternion();
 
   constructor(mode: SkyDomeMode = "baked") {
     this.requested = mode;
@@ -211,18 +241,30 @@ export class SkyDome {
     if (this.baked === null) {
       const lookup = texture(target.texture);
       this.bakedLookup = lookup as unknown as { value: unknown };
-      // The sphere's own uv is the bake parametrisation: uv.x = azimuth fraction, uv.y = 1 zenith .. 0.5 horizon.
-      const coord = vec2(uv().x, uv().y.sub(0.5).mul(2).clamp(0, 1));
-      this.baked = this.createMaterial("mc:sky-dome-baked", () => (lookup as TslNode).sample(coord).rgb);
+      // Per-pixel coordinate from the view direction in the dome's frame (`bakeCoordNode`: no facet bends).
+      this.baked = this.createMaterial("mc:sky-dome-baked", (d) => (lookup as TslNode).sample(bakeCoordNode(d)).rgb);
     } else if (this.bakedLookup !== null) {
       this.bakedLookup.value = target.texture;
     }
     this.mesh.material = this.baked;
   }
 
-  /** `level`: overall brightness (1 by day, lower at night); `sunDirection`: unit vector toward the sun (warm lift). */
+  /**
+   * Turns the dome so its horizon band lies on the local horizon of the site whose up is `up` (world, unit). Without it the
+   * dome's +Y is world +Y, which on the sphere terrain tilted the gradient and the sun glow away from the real horizon
+   * anywhere but Outpost Boreal. Cheap: one quaternion, no rebuild.
+   */
+  orient(up: Vector3): void {
+    this.mesh.quaternion.setFromUnitVectors(UP, up);
+    this.inverse.copy(this.mesh.quaternion).invert();
+  }
+
+  /**
+   * `level`: overall brightness (1 by day, lower at night); `sunDirection`: unit vector toward the sun in WORLD axes (warm
+   * lift; turned into the dome's frame here).
+   */
   update(sunDirection: Vector3, level: number, sunAbove: boolean): void {
-    this.sunDir.value.copy(sunDirection);
+    this.sunDir.value.copy(sunDirection).applyQuaternion(this.inverse);
     this.level.value = level;
     this.sunUp.value = sunAbove ? 1 : 0;
   }
@@ -256,7 +298,9 @@ export class SkyDome {
     material.depthTest = false;
     material.fog = false;
     material.colorNode = Fn(() => {
-      const d: TslNode = positionWorld.sub(cameraPosition).normalize();
+      // View direction in the dome's frame (+Y = the site's up, `orient`): the dome is centred on the camera, so the
+      // interpolated local position, normalised per pixel, is the exact ray direction.
+      const d: TslNode = positionLocal.normalize();
       const colour: TslNode = backdrop(d).add(sunGlow(d, this.sunDir, this.sunUp));
       return vec4(colour.mul(this.level), 1);
     })() as Node<"vec4">;

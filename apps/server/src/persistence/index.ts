@@ -12,6 +12,7 @@ export {
   ContractUnavailableError,
   RoomSaveCorruptError,
   type AcquireLeaseResult,
+  type ArchiveRoomSaveResult,
   type ContractUnavailableReason,
   type LeaseOwner,
   type RenewLeaseResult,

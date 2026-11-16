@@ -1,4 +1,4 @@
-// @contract sim/shift-state v1
+// @contract sim/shift-state v1.1
 // @consumers apps/server/src/net (Colyseus Schema class built from protocol/shift-state-schema), apps/client/src/net
 //   (RemoteRoomHost converts the Schema to this view), apps/client/src/sim-host (LocalRoomHost emits it), apps/client/
 //   src/{ui,gameplay} (read), packages/sim (RoomSim.snapshot), apps/server/src/api (shift types and roles in DTOs)
@@ -7,6 +7,7 @@
 // Schema (field table: protocol/shift-state-schema); in a Solo Shift the worker posts it as a plain `ShiftStateView`
 // on change (ADR-0031, netcode.md section 19). This file is the plain, read-only, decoded shape both hosts hand to
 // the client. Map-like Schema fields are plain records or arrays here (the Schema adapter converts).
+// v1.1 (M1, additive): appends optional `nearParcelsCollected`; no PROTOCOL_VERSION bump.
 
 import { z } from "zod";
 import { ContractIdSchema, PlayerIdSchema, PlotIdSchema } from "../ids";
@@ -138,6 +139,13 @@ export const ShiftStateSchema = z.object({
   permissions: PermissionsSchema,
   /** Contract Fulfilled. */
   fulfilled: z.boolean(),
+  /**
+   * v1.1 (additive): Near Parcel collected bitmask, bit k = parcel k of `placeNearParcels(seedOfString(contractId))`
+   * collected (k < MVP_SCOPE.nearParcelCount, at most 8). Optional in this revision: server rooms always set it;
+   * producers written before v1.1 (sim `snapshot()`, test fixtures) omit it, and consumers treat absent as "unknown"
+   * (fall back to their own derivation). Planned: required once every producer sets it (add, migrate, remove).
+   */
+  nearParcelsCollected: U8.optional(),
 });
 export interface ShiftState {
   readonly contractId: ContractId;
@@ -157,6 +165,8 @@ export interface ShiftState {
   readonly robotCounts: Readonly<Record<string, number>>;
   readonly permissions: Permissions;
   readonly fulfilled: boolean;
+  /** v1.1: Near Parcel collected bitmask (bit k = parcel k); absent from pre-v1.1 producers. */
+  readonly nearParcelsCollected?: number;
 }
 
 /** `ShiftState` stamped with the sim tick it was captured on: the `RoomHost.onShiftState` payload (ADR-0031). */

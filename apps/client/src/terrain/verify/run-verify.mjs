@@ -12,6 +12,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { OFFSCREEN_CHROME_ARGS } from "../../offscreen-chrome-args.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, "../../../../..");
@@ -41,6 +42,7 @@ const launch =
         headless: false,
         channel: "chrome",
         args: [
+          ...OFFSCREEN_CHROME_ARGS,
           "--enable-unsafe-webgpu",
           "--enable-features=Vulkan,WebGPU",
           "--ignore-gpu-blocklist",

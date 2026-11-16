@@ -9,6 +9,7 @@
 export {
   RoomSaveCorruptError,
   type AcquireLeaseResult,
+  type ArchiveRoomSaveResult,
   type LeaseOwner,
   type RenewLeaseResult,
   type RoomCheckpointInput,

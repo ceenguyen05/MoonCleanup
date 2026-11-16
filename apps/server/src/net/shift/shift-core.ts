@@ -14,6 +14,7 @@ import {
   AVATAR_ACTION_STATES,
   AVATAR_FLAG_BIT,
   DEFAULT_SNAPSHOT_HZ,
+  DUST_CHECK_INTERVAL_S,
   HIDDEN_FRAME_HZ,
   DUST_MESSAGE_SLICE_MAX_BYTES,
   INPUT_RATE_LIMIT_FACTORS,
@@ -48,12 +49,28 @@ import {
   yawToCode,
 } from "@moon-cleanup/protocol";
 import type { GameData } from "@moon-cleanup/game-data";
-import { MOVE_GROUNDED, MoonRoomSim, atan2Det, headingBasis, type AvatarState, type SimWorld } from "@moon-cleanup/sim";
+import {
+  MOVE_GROUNDED,
+  MoonRoomSim,
+  SIM_CHECKPOINT_META_VERSION,
+  SIM_CHECKPOINT_PLAYERS_VERSION,
+  atan2Det,
+  headingBasis,
+  type AvatarState,
+  type SimRestoreResult,
+  type SimWorld,
+} from "@moon-cleanup/sim";
 import type { WorldDustLedger } from "@moon-cleanup/world";
 import { WS_BULK_SEND_CEILING_BYTES, WS_SEND_OVERHEAD_BYTES } from "../limits";
 import { ConsumeKind, InputAccept, InputSequencer } from "./input-sequencer";
 import { createShiftLedger } from "./shift-ledger";
-import { DUST_STREAM_BYTES_PER_S, DUST_STREAM_HYSTERESIS_M, ShiftDust, type DustSnapshotBuild } from "./shift-dust";
+import {
+  DUST_STREAM_BYTES_PER_S,
+  DUST_STREAM_HYSTERESIS_M,
+  DustInterestScan,
+  ShiftDust,
+  type DustSnapshotBuild,
+} from "./shift-dust";
 import { TokenBucket } from "./token-bucket";
 
 const ENTITY_KIND_AVATAR = 0;
@@ -74,6 +91,20 @@ const DUST_MARGIN_M = 20;
 const STREAM_QUEUE_MAX = 1024;
 /** At most one DUST_SNAPSHOT per seat per this many seconds (a faster resync request waits; bounds egress). */
 export const SNAPSHOT_MIN_INTERVAL_S = 2;
+/**
+ * Per-seat DUST_SNAPSHOT egress budget (security review F1): a repeated `visibility {hidden:false}` must not force a
+ * full snapshot every SNAPSHOT_MIN_INTERVAL_S. Each snapshot built charges its wire bytes; a seat whose credit is not
+ * positive waits (the request stays pending, nothing is dropped or closed). Sustained rate <= refill; typical 15-25 KB
+ * snapshots (join, unhide, reconnect) stay well inside the burst.
+ */
+export const SNAPSHOT_EGRESS_BYTES_PER_S = 4096;
+export const SNAPSHOT_EGRESS_BURST_BYTES = 98304;
+/**
+ * Lowest snapshot-egress credit (debt) a seat can carry (review N1): a 261 KB first snapshot would otherwise leave about
+ * -163 KB and make the next unhide or in-hold reconnect resync wait ~40 s. At the floor the wait is at most
+ * `32768 / SNAPSHOT_EGRESS_BYTES_PER_S` = 8 s, while sustained egress stays bounded at ~4 KB/s plus one capped burst.
+ */
+export const SNAPSHOT_EGRESS_DEBT_FLOOR_BYTES = -32768;
 /** `dust.plots` deltas written per plots frame (4 B each; the rest carry to the next plots frame). */
 export const PLOT_DELTAS_PER_FRAME = 64;
 
@@ -119,7 +150,11 @@ export interface ShiftCoreOptions {
   readonly simTickHz: number;
   readonly snapshotHz?: number;
   readonly walletLm?: number;
+  /** Restored Near Parcel mask (bit k = collected). Restore it whenever `walletLm` is restored (review B1). */
+  readonly nearParcelsCollected?: number;
   readonly startTick?: number;
+  /** Test seam: unit direction where avatars spawn (default: the sim's Outpost Boreal spawn). */
+  readonly spawnDirection?: { readonly x: number; readonly y: number; readonly z: number };
   /** Test seam: the room's dust ledger (default: a fresh `createShiftLedger`, as the Solo host builds). */
   readonly ledger?: WorldDustLedger;
   /** Bulk-send ceiling in socket-buffered bytes for snapshot slices (default `WS_BULK_SEND_CEILING_BYTES`). */
@@ -145,6 +180,8 @@ class Seat {
   dustSnapshot = true;
   /** Per plot: 0 = client has no ledger from us, 1 = sent, 2 = queued. Allocated on first use. */
   dustSent: Uint8Array | null = null;
+  /** Skip state of the streamed-ledger interest pass (reset whenever `dustSent` changes outside the pass). */
+  readonly dustScan = new DustInterestScan();
   readonly streamQueue = new Int32Array(STREAM_QUEUE_MAX);
   streamHead = 0;
   streamTail = 0;
@@ -152,6 +189,10 @@ class Seat {
   streamCredit = 0;
   /** Tick of the last snapshot sent (a resync request inside SNAPSHOT_MIN_INTERVAL_S waits; abuse bound). */
   lastSnapshotTick = -1e9;
+  /** Snapshot egress credit in bytes (may go negative after a large snapshot; see SNAPSHOT_EGRESS_BYTES_PER_S). */
+  snapshotCredit = SNAPSHOT_EGRESS_BURST_BYTES;
+  /** Tick at which the next 5 s DUST_CHECK chunks summary is due (-1: arm on the first idle frame tick). */
+  nextCheckTick = -1;
   /**
    * Slices of the snapshot still being paced out to this seat (null: none). The slices are standalone copies, so
    * holding them across ticks needs no buffer reuse care.
@@ -241,6 +282,8 @@ export class ShiftCore {
   private readonly pendingChecks: number[] = [];
   private readonly requestMsg = new Uint8Array(32);
   private readonly bulkCeiling: number;
+  /** Ticks between two DUST_CHECK chunk summaries of a seat (DUST_CHECK_INTERVAL_S, WDS 5.1). */
+  private readonly checkEveryTicks: number;
 
   constructor(options: ShiftCoreOptions, now: number = performance.now()) {
     // Never below one full slice, or a paced snapshot could not make progress.
@@ -249,6 +292,7 @@ export class ShiftCore {
       DUST_MESSAGE_SLICE_MAX_BYTES + WS_SEND_OVERHEAD_BYTES,
     );
     this.simTickHz = options.simTickHz;
+    this.checkEveryTicks = Math.round(DUST_CHECK_INTERVAL_S * options.simTickHz);
     this.snapshotHz = options.snapshotHz ?? DEFAULT_SNAPSHOT_HZ;
     this.ledger = options.ledger ?? createShiftLedger(options.data, options.world, this.simTickHz);
     this.poolGrowthsAtStart = this.ledger.poolGrowths;
@@ -261,6 +305,8 @@ export class ShiftCore {
       tickHz: this.simTickHz,
       snapshotHz: this.snapshotHz,
       ...(options.walletLm === undefined ? {} : { walletLm: options.walletLm }),
+      ...(options.nearParcelsCollected === undefined ? {} : { nearParcelsCollected: options.nearParcelsCollected }),
+      ...(options.spawnDirection === undefined ? {} : { spawnDirection: options.spawnDirection }),
       ...(options.startTick === undefined ? {} : { startTick: options.startTick }),
     });
     this.dt = this.sim.config.dt;
@@ -284,6 +330,31 @@ export class ShiftCore {
   /** Ledger pool growths on the tick path since construction (ops counter). */
   get ledgerPoolGrowths(): number {
     return this.ledger.poolGrowths - this.poolGrowthsAtStart;
+  }
+
+  // ---- shared save state (room header, review N1) -------------------------------------------------------------------
+
+  /**
+   * The sim META save section (wallet, Near Parcels, Standard Issue tools, Repeat Requisition copies, suit gear, board
+   * levels, Roosts). Event time only (a checkpoint write): it allocates; never call it on the tick path.
+   */
+  captureSharedMeta(): { version: number; bytes: Uint8Array } {
+    return { version: SIM_CHECKPOINT_META_VERSION, bytes: this.sim.captureCheckpoint().meta };
+  }
+
+  /**
+   * Restores a META section stored by `captureSharedMeta` into the fresh room, before anyone is seated (an empty
+   * PLAYERS section: avatars spawn fresh). The bytes are untrusted: the sim validates everything and a refused section
+   * changes nothing. Throws when a seat is already taken (a mid-shift restore would swap gear under the players).
+   */
+  restoreSharedMeta(meta: { readonly version: number; readonly bytes: Uint8Array }): SimRestoreResult {
+    if (this.activeSeats > 0) throw new Error("restoreSharedMeta: only before the first seat");
+    return this.sim.restoreCheckpoint({
+      metaVersion: meta.version,
+      meta: meta.bytes,
+      playersVersion: SIM_CHECKPOINT_PLAYERS_VERSION,
+      players: Uint8Array.of(0, this.sim.config.tools.length),
+    });
   }
 
   // ---- seats ------------------------------------------------------------------------------------------------------
@@ -310,10 +381,12 @@ export class ShiftCore {
       seat.table.reset();
       seat.inputBucket.reset(now);
       seat.dustRadiusM = DEFAULT_DUST_RADIUS_M;
+      this.configureDustScan(seat);
       seat.interest.fill(0);
       seat.lastActiveTick = this.sim.tick;
       seat.keyframe = true;
       seat.lastSnapshotTick = -1e9;
+      seat.snapshotCredit = SNAPSHOT_EGRESS_BURST_BYTES; // a new occupant starts with a full budget
       this.requestDustSnapshot(seat);
       this.sim.addActor(s, info);
       this.refreshInterest(s);
@@ -346,6 +419,8 @@ export class ShiftCore {
     seat.seq.reset();
     seat.table.reset();
     seat.inputBucket.reset(now);
+    // A reconnect is a new socket that needs its snapshot soon: cap any leftover debt (review N1), at most ~8 s of wait.
+    if (seat.snapshotCredit < SNAPSHOT_EGRESS_DEBT_FLOOR_BYTES) seat.snapshotCredit = SNAPSHOT_EGRESS_DEBT_FLOOR_BYTES;
     seat.keyframe = true;
     this.requestDustSnapshot(seat);
   }
@@ -383,6 +458,12 @@ export class ShiftCore {
     const seat = this.seats[slot];
     if (seat?.active !== true) return;
     seat.dustRadiusM = radiusM < 60 ? 60 : radiusM > 220 ? 220 : radiusM;
+    this.configureDustScan(seat);
+  }
+
+  private configureDustScan(seat: Seat): void {
+    const inM = seat.dustRadiusM + DUST_MARGIN_M;
+    seat.dustScan.setRadius(this.dust, inM, inM + DUST_STREAM_HYSTERESIS_M);
   }
 
   /** Ticks since the seat's last non-neutral input (AFK rule, netcode.md section 10). */
@@ -540,10 +621,13 @@ export class ShiftCore {
 
   private requestDustSnapshot(seat: Seat): void {
     seat.dustSnapshot = true;
+    seat.nextCheckTick = -1; // re-armed once the new snapshot is out
     seat.snapSlices = null; // a resync supersedes a snapshot still being paced out
     seat.snapNext = 0;
+    seat.snapCount = 0; // and its recorded versions: the next unpaced snapshot must not reconcile against them
     seat.streamHead = seat.streamTail = 0;
     seat.dustSent?.fill(0);
+    seat.dustScan.invalidate();
   }
 
   private sentOf(seat: Seat): Uint8Array {
@@ -556,7 +640,10 @@ export class ShiftCore {
   }
 
   private enqueue(seat: Seat, plot: number): void {
-    if (seat.streamTail - seat.streamHead >= STREAM_QUEUE_MAX) return; // full: a later interest pass picks it up
+    if (seat.streamTail - seat.streamHead >= STREAM_QUEUE_MAX) {
+      seat.dustScan.invalidate(); // full: a later interest pass picks it up
+      return;
+    }
     seat.streamQueue[seat.streamTail % STREAM_QUEUE_MAX] = plot;
     seat.streamTail++;
     this.sentOf(seat)[plot] = 2;
@@ -565,39 +652,34 @@ export class ShiftCore {
   /** Streamed-ledger interest of `slot` (WDS 5.2): queue ledgers inside the dust radius, forget those beyond + 20 m. */
   private refreshDustInterest(slot: number): void {
     const seat = this.seats[slot]!;
-    if (seat.dustSnapshot || seat.hidden || seat.snapSlices !== null) return; // streaming starts after the snapshot
-    const l = this.ledger;
-    if (l.slotHigh === 0) return;
-    const sent = this.sentOf(seat);
-    const a = this.sim.avatar(slot);
-    const len = Math.sqrt(a.px * a.px + a.py * a.py + a.pz * a.pz) || 1;
-    const ux = a.px / len;
-    const uy = a.py / len;
-    const uz = a.pz / len;
-    const cosIn = this.dust.cosOf(seat.dustRadiusM + DUST_MARGIN_M);
-    const cosOut = this.dust.cosOf(seat.dustRadiusM + DUST_MARGIN_M + DUST_STREAM_HYSTERESIS_M);
-    for (let s = 0; s < l.slotHigh; s++) {
-      const plot = l.plotOfSlot[s]!;
-      if (plot < 0) continue;
-      const mark = sent[plot]!;
-      if (mark === 2) continue;
-      const dot = this.dust.plotDot(plot, ux, uy, uz);
-      if (mark === 0) {
-        if (dot >= cosIn) this.enqueue(seat, plot);
-      } else if (dot < cosOut) {
-        sent[plot] = 0;
-      }
+    if (seat.dustSnapshot || seat.hidden || seat.held || seat.snapSlices !== null) {
+      seat.dustScan.invalidate(); // streaming starts after the snapshot, which rewrites the marks
+      return;
     }
+    if (this.ledger.slotHigh === 0) return;
+    const scan = seat.dustScan;
+    // Typed-array scratch and cached centre directions inside the dust object; skipped while provably unchanged.
+    const n = this.dust.scanInterest(scan, this.sim.avatar(slot), this.sentOf(seat));
+    if (n === 0) return;
+    const hits = this.dust.hitPlots;
+    for (let i = 0; i < n; i++) this.enqueue(seat, hits[i]!);
   }
 
   private sendDust(sink: ShiftSink, tick: number): void {
     const send = sink.bytes!;
     const perFrame = DUST_STREAM_BYTES_PER_S / this.snapshotHz;
+    const egressPerFrame = SNAPSHOT_EGRESS_BYTES_PER_S / this.snapshotHz;
+    let snapshotBuilt = false;
+    let checkBuilt = false;
     for (let s = 0; s < MAX_PLAYERS_PER_ROOM; s++) {
       const seat = this.seats[s]!;
+      if (seat.active && seat.snapshotCredit < SNAPSHOT_EGRESS_BURST_BYTES) {
+        seat.snapshotCredit = Math.min(SNAPSHOT_EGRESS_BURST_BYTES, seat.snapshotCredit + egressPerFrame);
+      }
       if (!seat.active || seat.held || seat.hidden) {
         // hidden / held: the visible-again or reconnect resync asks for a fresh snapshot, so a half-sent one is dropped
         seat.snapSlices = null;
+        seat.snapCount = 0;
         continue;
       }
       if (seat.snapSlices !== null) {
@@ -606,16 +688,26 @@ export class ShiftCore {
       }
       if (seat.dustSnapshot) {
         if (tick - seat.lastSnapshotTick < SNAPSHOT_MIN_INTERVAL_S * this.simTickHz) continue;
+        // At most one snapshot build per frame tick (M1-W3-T04): six seats resyncing together cost one build per frame
+        // instead of a 6x spike in one tick; the others keep `dustSnapshot` and are served on the next frame ticks.
+        if (snapshotBuilt) continue;
+        if (seat.snapshotCredit <= 0) continue; // egress budget spent (F1): the request waits for the refill
+        snapshotBuilt = true;
         seat.lastSnapshotTick = tick;
         const a = this.sim.avatar(s);
         const sent = this.sentOf(seat);
         sent.fill(0);
+        seat.dustScan.invalidate();
         const snap = this.dust.buildSnapshot(a.px, a.py, a.pz, tick < 0 ? 0 : tick, sent);
         seat.dustSnapshot = false;
         if (snap === null) continue;
         this.lastSnapshot = snap;
         this.counters.dustSnapshotsSent++;
         this.counters.dustSnapshotBytes += snap.deflatedBytes + snap.slices.length;
+        seat.snapshotCredit = Math.max(
+          SNAPSHOT_EGRESS_DEBT_FLOOR_BYTES,
+          seat.snapshotCredit - (snap.deflatedBytes + snap.slices.length),
+        );
         seat.snapSlices = snap.slices;
         seat.snapNext = 0;
         this.pumpSnapshot(sink, s, seat);
@@ -633,18 +725,30 @@ export class ShiftCore {
         if (sent[plot] !== 2) continue;
         const body = this.dust.ledgerBody(plot);
         sent[plot] = body === null ? 0 : 1;
+        seat.dustScan.invalidate(); // a streamed ledger outside the radius (request) is forgotten by the next pass
         if (body === null) continue; // Polished (or never touched) since queued: `dust.plots` carries the state
         send(s, DUST_LEDGER_ID, body);
         seat.streamCredit -= body.byteLength + 1;
         this.counters.dustLedgersStreamed++;
         this.counters.dustLedgerBytes += body.byteLength + 1;
       }
+      // 5 s DUST_CHECK chunks summary (WDS 5.1): armed on the first idle frame tick after a snapshot, at most ONE build
+      // per frame tick across seats (a seat that is due while another built waits for the next frame tick).
+      if (sent === null) continue;
+      if (seat.nextCheckTick < 0) seat.nextCheckTick = tick + this.checkEveryTicks;
+      else if (!checkBuilt && tick >= seat.nextCheckTick) {
+        checkBuilt = true;
+        seat.nextCheckTick = tick + this.checkEveryTicks;
+        const body = this.dust.chunkCheckBody(sent);
+        if (body !== null) send(s, DUST_CHECK_ID, body);
+      }
     }
     const checks = this.pendingChecks;
     for (let i = 0; i + 1 < checks.length; i += 2) {
       const slot = checks[i]!;
-      if (this.seats[slot]?.active !== true) continue;
-      const body = this.dust.checkDetailBody(checks[i + 1]!);
+      const sent = this.seats[slot]?.active === true ? this.seats[slot]!.dustSent : null;
+      if (sent === null) continue; // no snapshot yet: the client has nothing to compare, and "all plots" must not be listed (F2)
+      const body = this.dust.checkDetailBody(checks[i + 1]!, sent);
       if (body !== null) send(slot, DUST_CHECK_ID, body);
     }
     checks.length = 0;
@@ -720,6 +824,7 @@ export class ShiftCore {
       if (slot < 0) this.counters.dustSnapshotStale++;
       else if (l.version[slot] !== versions[i]) {
         sent[plot] = 0;
+        seat.dustScan.invalidate();
         this.counters.dustSnapshotCatchUps++;
       }
     }
@@ -730,6 +835,7 @@ export class ShiftCore {
   private collectDirtyPlots(): void {
     const l = this.ledger;
     const n = l.dirtyPlotCount;
+    if (n > 0) this.dust.noteDirty(); // the moon-wide snapshot cache is stale (./shift-dust)
     for (let k = 0; k < n; k++) {
       const p = l.dirtyPlotAt(k);
       if (this.deltaFlag[p] === 1) continue;

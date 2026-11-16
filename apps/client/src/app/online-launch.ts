@@ -6,6 +6,7 @@
 import type { LocalRoomHost, RoomHost } from "@moon-cleanup/shared";
 import type { AccessTokenSource } from "../net";
 import type { AnimInputProvider, AnimGround } from "../animation";
+import type { DustFeedPort } from "../visuals";
 import type { OnlineRoom, OnlineRoomOptions, RemoteAvatarFeed, RemoteRoomHostImpl } from "./online-room";
 import type { RoomHostPublisher } from "./solo-host";
 
@@ -59,6 +60,13 @@ export interface OnlineHookWiring {
   readonly auth?: () => Promise<AccessTokenSource>;
   /** While a room is open its avatar entities feed this pool; unbound (null provider) on close. */
   readonly animation?: AnimationBinder;
+  /** While a room is open its mirror dust feed drives the dust view; `bind(null)` on close restores the Solo source. */
+  readonly dustFeed?: DustFeedBinder;
+}
+
+/** The dust view's stroke source as the online hooks see it (boot: VisualsModule.setDustFeed). */
+export interface DustFeedBinder {
+  bind(feed: DustFeedPort | null): void;
 }
 
 /** Dev / `?perf=1` console hooks to join a remote room by hand (no lobby or sign-in UI exists yet). */
@@ -81,8 +89,12 @@ export function createOnlineDevHooks(
   let previous: RoomHost | null = null;
   let pausedLocal: LocalRoomHost | null = null;
   let generation = 0;
+  /** Unsubscribes the open host's failure watcher (see `open`). */
+  let offWatch: (() => void) | null = null;
   const close = (): void => {
     generation++;
+    offWatch?.();
+    offWatch = null;
     const room = slot.current;
     slot.current = null;
     const h = host;
@@ -99,6 +111,7 @@ export function createOnlineDevHooks(
     if (h !== null || room !== null) {
       wiring.animation?.bind(null, null, 0);
       wiring.animation?.setLocalSlot(-1);
+      wiring.dustFeed?.bind(null);
     }
     pausedLocal?.resume();
     pausedLocal = null;
@@ -124,7 +137,14 @@ export function createOnlineDevHooks(
       try {
         const opts = { ...base, contractId, auth: tokenSource(accessToken) };
         if (publisher === undefined) {
-          slot.current = await openOnlineRoom(opts);
+          const room = await openOnlineRoom(opts);
+          if (mine !== generation) {
+            room.leave();
+            room.dispose();
+            return;
+          }
+          slot.current = room;
+          wiring.dustFeed?.bind(room.feed);
           return;
         }
         const opened = await openRemoteHost(opts);
@@ -140,8 +160,27 @@ export function createOnlineDevHooks(
           pausedLocal = previous;
         }
         publisher.publish(opened.host);
-        wiring.animation?.bind(opened.avatars.provider, FLAT_ANIM_GROUND, opened.room.config.moonRadiusM);
-        wiring.animation?.setLocalSlot(opened.avatars.ownSlot);
+        const bindRoom = (): void => {
+          wiring.animation?.bind(opened.avatars.provider, FLAT_ANIM_GROUND, opened.room.config.moonRadiusM);
+          wiring.animation?.setLocalSlot(opened.avatars.ownSlot);
+          wiring.dustFeed?.bind(opened.room.feed);
+        };
+        bindRoom();
+        // A host that fails on its own (retries exhausted, kicked) must not leave its dust and avatars bound to the
+        // dead room: unbind (the Solo dust source returns) and rebind if a manual retry brings it back.
+        let unbound = false;
+        offWatch = opened.host.onStateChange((state) => {
+          if (mine !== generation) return;
+          if (opened.host.gaveUp && !unbound) {
+            unbound = true;
+            wiring.animation?.bind(null, null, 0);
+            wiring.animation?.setLocalSlot(-1);
+            wiring.dustFeed?.bind(null);
+          } else if (unbound && state !== "failed" && state !== "closed") {
+            unbound = false;
+            bindRoom();
+          }
+        });
       } catch (error) {
         onProblem("online room open", error);
       }

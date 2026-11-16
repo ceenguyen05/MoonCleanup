@@ -6,15 +6,18 @@
 
 import { deflateSync, inflateSync } from "node:zlib";
 import { DUST_CHUNK_PAYLOAD_MAX_BYTES } from "@moon-cleanup/shared";
+import { encodeRoomHeaderV3 } from "./room-header.ts";
 import {
   LEASE_TTL_MS,
   RoomSaveCorruptError,
   type AcquireLeaseResult,
+  type ArchiveRoomSaveResult,
   type LeaseOwner,
   type RenewLeaseResult,
   type RoomCheckpointInput,
   type RoomCheckpointResult,
   type RoomChunk,
+  type RoomHeaderState,
   type RoomSaveRepository,
   type RoomSnapshot,
   type UsageRepository,
@@ -31,7 +34,19 @@ interface StoredContract {
   generation: number;
   simTick: number;
   bakeHash: string | null;
+  state: RoomHeaderState | null;
   chunks: Map<number, Uint8Array>;
+}
+
+export interface ArchivedMemorySave {
+  readonly archiveId: string;
+  readonly contractId: string;
+  readonly reason: string;
+  readonly generation: number;
+  readonly simTick: number;
+  readonly bakeHash: string | null;
+  readonly state: RoomHeaderState | null;
+  readonly chunks: ReadonlyMap<number, Uint8Array>;
 }
 
 export interface MemoryRoomRepositoryOptions {
@@ -51,6 +66,8 @@ export class MemoryRoomSaveRepository implements RoomSaveRepository, UsageReposi
   offline = false;
   /** Number of commits that wrote rows (tests). */
   commits = 0;
+  /** Archived saves, oldest first (tests; the SQL repository keeps them in the archive tables). */
+  readonly archives: ArchivedMemorySave[] = [];
 
   constructor(options: MemoryRoomRepositoryOptions = {}) {
     this.now = options.now ?? Date.now;
@@ -59,7 +76,7 @@ export class MemoryRoomSaveRepository implements RoomSaveRepository, UsageReposi
   private entry(contractId: string): StoredContract {
     let c = this.contracts.get(contractId);
     if (c === undefined) {
-      c = { lease: null, generation: 0, simTick: 0, bakeHash: null, chunks: new Map() };
+      c = { lease: null, generation: 0, simTick: 0, bakeHash: null, state: null, chunks: new Map() };
       this.contracts.set(contractId, c);
     }
     return c;
@@ -128,12 +145,23 @@ export class MemoryRoomSaveRepository implements RoomSaveRepository, UsageReposi
       return Promise.reject(new RoomSaveCorruptError(`chunk does not inflate: ${(e as Error).message}`));
     }
     chunks.sort((a, b) => a.chunkId - b.chunkId);
-    return Promise.resolve({ generation: c.generation, simTick: c.simTick, chunks, bakeHash: c.bakeHash });
+    return Promise.resolve({
+      generation: c.generation,
+      simTick: c.simTick,
+      chunks,
+      bakeHash: c.bakeHash,
+      state: c.state,
+    });
   }
 
   commitRoomCheckpoint(input: RoomCheckpointInput): Promise<RoomCheckpointResult> {
     try {
       this.check();
+    } catch (e) {
+      return Promise.reject(e as Error);
+    }
+    try {
+      encodeRoomHeaderV3(input.bakeHash, input.state); // same validation (RangeError) as the SQL header encoder
     } catch (e) {
       return Promise.reject(e as Error);
     }
@@ -145,12 +173,53 @@ export class MemoryRoomSaveRepository implements RoomSaveRepository, UsageReposi
     c.generation++;
     c.simTick = input.simTick;
     c.bakeHash = input.bakeHash ?? null;
+    const st = input.state;
+    // Copies: a later caller-side change must not reach the stored header (the SQL path stores bytes).
+    c.state =
+      st === undefined
+        ? null
+        : st.simMeta === undefined
+          ? { ...st }
+          : { ...st, simMeta: { version: st.simMeta.version, bytes: st.simMeta.bytes.slice() } };
     this.commits++;
     return Promise.resolve({
       kind: "saved",
       generation: c.generation,
       storedBytes: this.storedBytes(input.owner.contractId),
     });
+  }
+
+  archiveRoomSave(owner: LeaseOwner, reason: string): Promise<ArchiveRoomSaveResult> {
+    try {
+      this.check();
+    } catch (e) {
+      return Promise.reject(e as Error);
+    }
+    if (reason.length === 0 || reason.length > 64) {
+      return Promise.reject(new RangeError("archive reason must be 1..64 characters"));
+    }
+    const c = this.entry(owner.contractId);
+    if (!this.holds(c, owner)) return Promise.resolve({ kind: "lease_lost" });
+    if (c.generation === 0 && c.chunks.size === 0) return Promise.resolve({ kind: "nothing" });
+    const archiveId = `memory-archive-${this.archives.length + 1}`;
+    const generation = c.generation;
+    this.archives.push({
+      archiveId,
+      contractId: owner.contractId,
+      reason,
+      generation,
+      simTick: c.simTick,
+      bakeHash: c.bakeHash,
+      state: c.state,
+      chunks: c.chunks,
+    });
+    const chunkRows = c.chunks.size;
+    c.generation = 0;
+    c.simTick = 0;
+    c.bakeHash = null;
+    c.state = null;
+    c.chunks = new Map();
+    return Promise.resolve({ kind: "archived", archiveId, generation, chunkRows });
   }
 
   /** Deflated bytes stored for a Contract (tests, size reports). */

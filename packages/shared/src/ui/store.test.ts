@@ -107,6 +107,20 @@ describe("ui store v1", () => {
     expectTypeOf<"saveSync.restoreBackup">().toExtend<UiActionType>();
   });
 
+  it("has an optional nullable compass.objectiveDistanceM set through compass.set", () => {
+    expect(INITIAL_UI_STATE.compass.objectiveDistanceM).toBeNull();
+    const legacy: UiState["compass"] = { outposts: [], pings: [], fenceBearingDeg: null, objectiveMarkerId: null };
+    expect(legacy.objectiveDistanceM).toBeUndefined();
+    const ok: UiAction[] = [
+      { type: "compass.set", patch: { objectiveMarkerId: "assay_counter", objectiveDistanceM: 38 } },
+      { type: "compass.set", patch: { objectiveDistanceM: null } },
+    ];
+    // @ts-expect-error -- metres are a number, not text
+    const bad: UiAction = { type: "compass.set", patch: { objectiveDistanceM: "38 m" } };
+    expect(ok.length + [bad].length).toBe(3);
+    expect(JSON.parse(JSON.stringify(INITIAL_UI_STATE.compass))).toEqual(INITIAL_UI_STATE.compass);
+  });
+
   it("types actions", () => {
     const ok: UiAction[] = [
       { type: "session.set", patch: { conn: "connected" } },

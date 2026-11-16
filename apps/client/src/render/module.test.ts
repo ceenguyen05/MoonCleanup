@@ -7,7 +7,7 @@ import { FrameLoop } from "./frame-loop";
 import { installHarnessHooks, type HarnessHookTarget } from "./harness-hooks";
 import { RenderModule, RenderUnsupportedError, type RenderRuntime, type RenderServices } from "./module";
 import type { FramePipelineLike } from "./pipeline";
-import type { DeviceLossInfo, FrameCallback } from "./renderer-host";
+import { DEFAULT_MAX_DEVICE_LOSSES, type DeviceLossInfo, type FrameCallback } from "./renderer-host";
 
 interface FakeRenderer {
   id: number;
@@ -226,7 +226,7 @@ describe("RenderModule boot", () => {
     expect(services.get("quality").current.preset).toBe("medium");
     expect(renderers[0]?.size).toBe("1280x720@1");
     // An integrated GPU starts at the floor of the preset's range; the controller probes upward (M0-W3-T08).
-    expect(pipelines[0]?.scale).toBe(0.6);
+    expect(pipelines[0]?.scale).toBe(0.75);
   });
 
   it("compatibility-mode device: webgpu-compat, Tier B defaults to Low", async () => {
@@ -391,9 +391,9 @@ describe("RenderModule dynamic resolution", () => {
     expect(ctx.pipelines[0]?.scale).toBe(0.85);
     runFrames(ctx, clock, 6, 80);
     expect(ctx.pipelines[0]?.scale).toBe(0.85);
-    expect(ctx.module.setRenderScale(0.7)).toBe(0.7);
-    expect(ctx.pipelines[0]?.scale).toBe(0.7);
-    expect(ctx.module.setRenderScale(0.1)).toBe(0.6);
+    expect(ctx.module.setRenderScale(0.8)).toBe(0.8);
+    expect(ctx.pipelines[0]?.scale).toBe(0.8);
+    expect(ctx.module.setRenderScale(0.1)).toBe(0.75);
     expect(ctx.module.setRenderScale(4)).toBe(0.85);
   });
 
@@ -411,17 +411,17 @@ describe("RenderModule dynamic resolution", () => {
     ctx.services.get("quality").setPreset("medium", "user");
     runFrames(ctx, clock, 0.1, 20);
     expect(ctx.pipelines[0]?.scale).toBe(0.85);
-    expect(ctx.module.dynamicResolution).toMatchObject({ scaleMin: 0.6, scaleMax: 0.85 });
+    expect(ctx.module.dynamicResolution).toMatchObject({ scaleMin: 0.75, scaleMax: 0.85 });
   });
 
   it("an integrated GPU starts at the floor and probes upward once the budget is met", async () => {
     const clock = { t: 0 };
     const ctx = setup({ search: "?fps=contract", adapter: IRIS, now: () => clock.t });
     await ctx.init();
-    expect(ctx.pipelines[0]?.scale).toBe(0.6);
+    expect(ctx.pipelines[0]?.scale).toBe(0.75);
     // Vsync-locked 30 fps: budget met, no measurable headroom -> a probe after the hold, kept because frames stay on budget.
     runFrames(ctx, clock, 12, 1000 / 30);
-    expect(ctx.pipelines[0]?.scale).toBe(0.65);
+    expect(ctx.pipelines[0]?.scale).toBe(0.8);
   });
 
   it("reads the frame loop's dt, not the jittery wall clock; a wall-clock stall is dropped", async () => {
@@ -678,6 +678,89 @@ describe("RenderModule render infra (M1-W2-T03)", () => {
     expect(source).not.toHaveBeenCalled();
   });
 
+  it("holdWarmup: Clock In waits for content still loading; the late pipelines are not runtime creations", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: RTX, now: () => clock.t });
+    await ctx.init();
+    const { module, info } = ctx;
+    const release = module.holdWarmup();
+    let ready = false;
+    void module.whenPipelinesReady().then(() => {
+      ready = true;
+    });
+    info.pipelines = 29;
+    frames(ctx, clock, 30);
+    await ctx.flush();
+    expect(module.pipelineWarmup).toMatchObject({ phase: "warming", holds: 1 });
+    expect(ready).toBe(false);
+    release();
+    release();
+    info.pipelines = 37;
+    frames(ctx, clock, 4);
+    await ctx.flush();
+    expect(module.pipelineWarmup).toMatchObject({ phase: "ready", holds: 0, pipelinesAtReady: 37, completed: 1 });
+    expect(ready).toBe(true);
+    frames(ctx, clock, 3);
+    expect(module.pipelineWarmup.pipelinesAfterWarmup).toBe(0);
+  });
+
+  it("holdWarmup: a hold dropped by the held time-out does not block later warm-ups; its late release is a no-op", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: RTX, now: () => clock.t });
+    await ctx.init();
+    const { module } = ctx;
+    const leaked = module.holdWarmup();
+    frames(ctx, clock, 1, 61_000);
+    expect(module.pipelineWarmup).toMatchObject({ phase: "ready", timedOut: true, holds: 0 });
+    const second = module.holdWarmup();
+    leaked();
+    expect(module.pipelineWarmup.holds).toBe(1);
+    second();
+    frames(ctx, clock, 5);
+    expect(module.pipelineWarmup).toMatchObject({ phase: "ready", timedOut: false, holds: 0 });
+  });
+
+  it("device loss mid-warm-up restarts the warm-up clock: the first new frame does not time it out", async () => {
+    const clock = { t: 0 };
+    const ctx = setup({ adapter: RTX, now: () => clock.t });
+    await ctx.init();
+    const { module, info, renderers } = ctx;
+    info.pipelines = 9;
+    frames(ctx, clock, 1);
+    expect(module.pipelineWarmup.phase).toBe("warming");
+    // Recovery takes longer than the warm-up time cap (8 s) and than the loss happened while warming.
+    renderers[0]?.lose?.(LOSS);
+    clock.t += 9000;
+    await ctx.flush();
+    expect(module.renderer).toBe(renderers[1]);
+    info.pipelines = 4;
+    frames(ctx, clock, 1);
+    expect(module.pipelineWarmup).toMatchObject({ phase: "warming", timedOut: false });
+    frames(ctx, clock, 5);
+    expect(module.pipelineWarmup).toMatchObject({ phase: "ready", timedOut: false, pipelinesAtReady: 4 });
+    expect(module.pipelineWarmup.lastMs).toBeLessThan(1000);
+  });
+
+  it("whenPipelinesReady resolves after a fatal renderer error instead of hanging", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const ctx = setup({ adapter: RTX });
+    await ctx.init();
+    let ready = false;
+    void ctx.module.whenPipelinesReady().then(() => {
+      ready = true;
+    });
+    for (let i = 0; i <= DEFAULT_MAX_DEVICE_LOSSES; i++) {
+      ctx.renderers[i]?.lose?.(LOSS);
+      await ctx.flush();
+    }
+    expect(error).toHaveBeenCalledWith(expect.stringContaining("[render] fatal"));
+    expect(ready).toBe(true);
+    await expect(ctx.module.whenPipelinesReady()).resolves.toBeUndefined();
+    error.mockRestore();
+    warn.mockRestore();
+  });
+
   it("draw budget: last frame against the preset's ceiling, reset on a preset change", async () => {
     const clock = { t: 0 };
     const ctx = setup({ adapter: RTX, now: () => clock.t });
@@ -725,7 +808,7 @@ describe("RenderModule render infra (M1-W2-T03)", () => {
     const ctx = setup({ adapter: IRIS, now: () => clock.t });
     await ctx.init();
     expect(ctx.services.get("quality").current.preset).toBe("medium");
-    expect(ctx.pipelines[0]?.scale).toBe(0.6);
+    expect(ctx.pipelines[0]?.scale).toBe(0.75);
     // 20 ms of GPU time and 30 fps: inside the contract's 28 ms / 33 ms, over the 60 fps goal. At the floor already:
     // it stays there and raises the floor hint instead of climbing.
     const quality = ctx.services.get("quality");
@@ -735,7 +818,7 @@ describe("RenderModule render infra (M1-W2-T03)", () => {
       ctx.module.update({ ...ctx.frame(quality.current), dt: 1 / 30 });
     }
     const state = ctx.module.dynamicResolution;
-    expect(state).toMatchObject({ scale: 0.6, signal: "gpu", targetMs: 14, targetFps: 60, floorHint: true });
+    expect(state).toMatchObject({ scale: 0.75, signal: "gpu", targetMs: 14, targetFps: 60, floorHint: true });
     expect(state.paceTargetMs).toBeCloseTo(1000 / 30, 1);
 
     const contract = setup({ adapter: IRIS, search: "?fps=contract", now: () => clock.t });
@@ -746,6 +829,6 @@ describe("RenderModule render infra (M1-W2-T03)", () => {
       contract.module.update({ ...contract.frame(quality.current), dt: 1 / 30 });
     }
     expect(contract.module.dynamicResolution).toMatchObject({ targetMs: 28, targetFps: 30 });
-    expect(contract.module.dynamicResolution.scale).toBeGreaterThan(0.6);
+    expect(contract.module.dynamicResolution.scale).toBeGreaterThan(0.75);
   });
 });

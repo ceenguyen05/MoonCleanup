@@ -4,23 +4,44 @@
 // production, PGlite in tests). Time comes from the DATABASE clock (`now()`) unless a test injects `clock`. No
 // string-built SQL: identifiers and values go through drizzle operators and bound parameters.
 //
-// Interim room header: the A/B header slot of a room checkpoint carries codec `room-v0` and a 0 or 32 byte blob (the
-// bake hash). The full MCSV header envelope (wallet, gear, ...) is not persisted by rooms yet; it replaces this blob
-// without a migration. Chunk rows use the same zlib `deflate` codec as the solo checkpoint upload, so rows written by
+// Interim room header: the A/B header slot of a room checkpoint carries codec `room-v2` (flags, bake hash, wallet, Near
+// Parcel mask; see room-header.ts). `room-v1` (no mask) and `room-v0` (0 or 32 byte bake hash) are still read; any other
+// codec loads the chunks without header state and reports it as `ignoredHeaderCodec` (the server logs it). The full MCSV header envelope (gear, structures,
+// ...) replaces this blob without a migration. Chunk rows use the same zlib `deflate` codec as the solo checkpoint upload, so rows written by
 // either host are loadable by the other (a Contract can move between solo and private).
 
 import { crc32, deflateSync, inflateSync } from "node:zlib";
 import { and, eq, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { DUST_CHUNK_PAYLOAD_MAX_BYTES, SAVE_FORMAT_VERSION } from "@moon-cleanup/shared";
-import { contractDustChunks, contractSaves, contracts, opsUsageDaily } from "../schema/index.ts";
+import { uuidv7 } from "../ids.ts";
+import {
+  contractDustChunkArchives,
+  contractDustChunks,
+  contractSaveArchives,
+  contractSaves,
+  contracts,
+  opsUsageDaily,
+} from "../schema/index.ts";
 import type { PgDb } from "./postgres.ts";
+import {
+  decodeRoomHeaderV0,
+  decodeRoomHeaderV1,
+  decodeRoomHeaderV2,
+  decodeRoomHeaderV3,
+  encodeRoomHeaderV3,
+  type DecodedRoomHeader,
+} from "./room-header.ts";
 import { fromSignedCrc, pickOlderSlot, pickOlderVersion, toSignedCrc } from "./save-rules.ts";
 import {
   BAKE_HASH_HEX_RE,
   LEASE_TTL_MS,
   ROOM_HEADER_CODEC,
+  ROOM_HEADER_CODEC_V0,
+  ROOM_HEADER_CODEC_V1,
+  ROOM_HEADER_CODEC_V2,
   RoomSaveCorruptError,
   type AcquireLeaseResult,
+  type ArchiveRoomSaveResult,
   type LeaseOwner,
   type RenewLeaseResult,
   type RoomCheckpointInput,
@@ -51,10 +72,10 @@ class LeaseLost extends Error {
 }
 
 const asBytes = (value: Uint8Array): Buffer => Buffer.from(value.buffer, value.byteOffset, value.byteLength);
+/** Rows per INSERT when archiving chunks (11 bound parameters each: far below the 65535 limit). */
+const ARCHIVE_INSERT_BATCH = 200;
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MONTH_RE = /^\d{4}-\d{2}$/;
-const hexOf = (bytes: Uint8Array): string =>
-  Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString("hex");
 
 export function createPostgresRoomRepository(
   db: PgDb,
@@ -155,22 +176,29 @@ export function createPostgresRoomRepository(
       );
       if (head === undefined) return null;
 
-      let bakeHash: string | null = null;
-      if (head.codec === ROOM_HEADER_CODEC) {
+      let decoded: DecodedRoomHeader = { bakeHash: null, state: null };
+      const decoder =
+        head.codec === ROOM_HEADER_CODEC
+          ? decodeRoomHeaderV3
+          : head.codec === ROOM_HEADER_CODEC_V2
+            ? decodeRoomHeaderV2
+            : head.codec === ROOM_HEADER_CODEC_V1
+              ? decodeRoomHeaderV1
+              : head.codec === ROOM_HEADER_CODEC_V0
+                ? decodeRoomHeaderV0
+                : null;
+      if (decoder !== null) {
         const [header] = await db
           .select({ blob: contractSaves.blob })
           .from(contractSaves)
           .where(and(eq(contractSaves.contractId, contractId), eq(contractSaves.slot, head.slot)));
         const blob = header?.blob;
-        if (
-          blob === undefined ||
-          (blob.byteLength !== 0 && blob.byteLength !== 32) ||
-          blob.byteLength !== head.rawSize ||
-          crc32(blob) !== fromSignedCrc(head.checksum)
-        ) {
-          throw new RoomSaveCorruptError("room header failed its checksum");
-        }
-        bakeHash = blob.byteLength === 32 ? hexOf(blob) : null;
+        const parsed =
+          blob === undefined || blob.byteLength !== head.rawSize || crc32(blob) !== fromSignedCrc(head.checksum)
+            ? null
+            : decoder(blob);
+        if (parsed === null) throw new RoomSaveCorruptError("room header failed its checksum");
+        decoded = parsed;
       }
 
       const rows = await db.select().from(contractDustChunks).where(eq(contractDustChunks.contractId, contractId));
@@ -194,7 +222,14 @@ export function createPostgresRoomRepository(
         chunks.push({ chunkId, payload });
       }
       chunks.sort((a, b) => a.chunkId - b.chunkId);
-      return { generation: head.saveSeq, simTick: head.simTick, chunks, bakeHash };
+      return {
+        generation: head.saveSeq,
+        simTick: head.simTick,
+        chunks,
+        bakeHash: decoded.bakeHash,
+        state: decoded.state,
+        ignoredHeaderCodec: decoder === null ? head.codec : null,
+      };
     },
 
     async commitRoomCheckpoint(input: RoomCheckpointInput): Promise<RoomCheckpointResult> {
@@ -232,7 +267,7 @@ export function createPostgresRoomRepository(
 
           // Header first: the OLDER slot only, compare-and-set on that slot's save_seq (data-model 3.7 steps 2-3).
           const target = pickOlderSlot(slots.map((s) => ({ slot: s.slot as SaveSlotName, saveSeq: s.saveSeq })));
-          const headerBlob = input.bakeHash === undefined ? new Uint8Array(0) : Buffer.from(input.bakeHash, "hex");
+          const headerBlob = encodeRoomHeaderV3(input.bakeHash, input.state);
           const slotValues = {
             saveFormatVersion,
             gameDataVersion,
@@ -336,6 +371,60 @@ export function createPostgresRoomRepository(
             })
             .where(eq(contracts.id, input.owner.contractId));
           return { kind: "saved", generation, storedBytes };
+        });
+      } catch (error) {
+        if (error instanceof LeaseLost) return { kind: "lease_lost" };
+        throw error;
+      }
+    },
+
+    async archiveRoomSave(owner, reason): Promise<ArchiveRoomSaveResult> {
+      if (reason.length === 0 || reason.length > 64) throw new RangeError("archive reason must be 1..64 characters");
+      try {
+        return await db.transaction(async (tx): Promise<ArchiveRoomSaveResult> => {
+          const at = await nowDate(tx);
+          const [contract] = await tx
+            .select({
+              status: contracts.status,
+              leaseInstance: contracts.leaseInstance,
+              leaseRoomId: contracts.leaseRoomId,
+            })
+            .from(contracts)
+            .where(eq(contracts.id, owner.contractId))
+            .for("update");
+          if (
+            contract === undefined ||
+            contract.status === "deleted" ||
+            contract.leaseInstance !== owner.instance ||
+            contract.leaseRoomId !== owner.roomId
+          ) {
+            return { kind: "lease_lost" };
+          }
+          const headers = await tx.select().from(contractSaves).where(eq(contractSaves.contractId, owner.contractId));
+          const chunks = await tx
+            .select()
+            .from(contractDustChunks)
+            .where(eq(contractDustChunks.contractId, owner.contractId));
+          if (headers.length === 0 && chunks.length === 0) return { kind: "nothing" };
+
+          const archiveId = uuidv7();
+          // Copy first, delete after: both inside this transaction, so a failure leaves the live rows untouched.
+          if (headers.length > 0) {
+            await tx
+              .insert(contractSaveArchives)
+              .values(headers.map((h) => ({ ...h, archiveId, archivedAt: at, archiveReason: reason })));
+          }
+          for (let i = 0; i < chunks.length; i += ARCHIVE_INSERT_BATCH) {
+            await tx
+              .insert(contractDustChunkArchives)
+              .values(chunks.slice(i, i + ARCHIVE_INSERT_BATCH).map((c) => ({ ...c, archiveId })));
+          }
+          await tx.delete(contractDustChunks).where(eq(contractDustChunks.contractId, owner.contractId));
+          await tx.delete(contractSaves).where(eq(contractSaves.contractId, owner.contractId));
+          // The live save is gone: the mirror reports 0 until the fresh room's first checkpoint recomputes it.
+          await tx.update(contracts).set({ storedBytes: 0 }).where(eq(contracts.id, owner.contractId));
+          const generation = headers.reduce((max, h) => Math.max(max, h.saveSeq), 0);
+          return { kind: "archived", archiveId, generation, chunkRows: chunks.length };
         });
       } catch (error) {
         if (error instanceof LeaseLost) return { kind: "lease_lost" };

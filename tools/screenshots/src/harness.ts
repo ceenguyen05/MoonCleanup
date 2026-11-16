@@ -127,6 +127,15 @@ export function sceneUrl(baseUrl: string, r: SceneRequest): string {
   return u.toString();
 }
 
+/** Headed Chrome off-screen and never throttled (no popups on the owner desktop). */
+export const OFFSCREEN_CHROME_ARGS = [
+  "--window-position=-32000,-32000",
+  "--window-size=1280,720",
+  "--disable-backgrounding-occluded-windows",
+  "--disable-renderer-backgrounding",
+  "--disable-background-timer-throttling",
+];
+
 /** Chromium launch options per lane (ADR-0019). CI = software WebGL2; gpu = real Chrome with WebGPU. */
 export function laneLaunch(lane: Lane): {
   headless: boolean;
@@ -145,6 +154,7 @@ export function laneLaunch(lane: Lane): {
     headless: false,
     channel: "chrome",
     args: [
+      ...OFFSCREEN_CHROME_ARGS,
       "--enable-unsafe-webgpu",
       "--enable-features=Vulkan,WebGPU",
       "--ignore-gpu-blocklist",

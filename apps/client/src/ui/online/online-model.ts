@@ -55,6 +55,29 @@ export function parseEntryTarget(raw: string): EntryTarget {
   return CODE_ALPHABET.test(squeezed) ? { kind: "code", code: squeezed } : { kind: "invalid", reason: "malformed" };
 }
 
+/**
+ * Invite link of the spec (ui-screens-and-flows FL-3): `/join/<code>` on the game origin, or `?join=<code>` where the
+ * host has no SPA rewrite. Returns the canonical code, or `null` when absent or malformed. A link only pre-fills the
+ * join form; the code is redeemed after the player's own click (wake-up and sign-in happen in that gesture).
+ */
+export function parseInviteLink(search: string, pathname: string): string | null {
+  const fromPath = /^\/join\/([^/?#]+)\/?$/i.exec(pathname)?.[1];
+  // A bad `/join/<x>` path falls back to `?join=`.
+  return (fromPath === undefined ? null : codeOf(fromPath)) ?? codeOf(new URLSearchParams(search).get("join"));
+}
+
+function codeOf(raw: string | null | undefined): string | null {
+  if (raw === null || raw === undefined) return null;
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+  const target = parseEntryTarget(decoded);
+  return target.kind === "code" ? target.code : null;
+}
+
 /** `7QXK2M9T` read out as "7 Q X K 2 M 9 T" (screen readers spell codes character by character). */
 export function spellCode(code: string): string {
   return code.split("").join(" ");

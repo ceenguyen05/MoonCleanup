@@ -202,4 +202,46 @@ describe("HUD writer: events and throttle", () => {
     writer.pump(10_000);
     expect(dispatched.length).toBe(afterFirst + 1);
   });
+
+  test("shine.total is always a real plot count: the snapshot's, else the last known one (never 0)", () => {
+    const base = createUiStore(1000);
+    const writer = new HudWriter({ store: base });
+    writer.setCatalog(catalog());
+    const f = fakeHost();
+    writer.bind(f.host);
+    const snapshot = (plotCount: number, shinePolished: number): ShiftStateView =>
+      ({
+        contractId: TEST_CONTRACT,
+        shiftType: "solo",
+        protocolVersion: 1,
+        simTickHz: 20,
+        snapshotHz: 10,
+        walletLumens: 0,
+        shinePolished,
+        plotCount,
+        sharedUpgrades: {},
+        suitGear: {},
+        visitedOutposts: 0,
+        beacons: [],
+        players: [{ slot: 0, toolsOwned: 1, equippedTool: 0 }],
+        vehicles: [],
+        robotCounts: {},
+        permissions: {},
+        fulfilled: false,
+        tick: 20,
+      }) as unknown as ShiftStateView;
+    f.shift(snapshot(200, 50));
+    writer.pump(0);
+    base.flush(0);
+    expect(base.getState().shine).toMatchObject({ polished: 50, total: 200, pct: 25 });
+    // A snapshot that carries no plot count keeps 200 and still computes the percentage against it.
+    f.shift(snapshot(0, 100));
+    writer.pump(10_000);
+    base.flush(10_000);
+    expect(base.getState().shine).toMatchObject({ polished: 100, total: 200, pct: 50 });
+    f.shift(snapshot(Number.NaN, 20));
+    writer.pump(20_000);
+    base.flush(20_000);
+    expect(base.getState().shine).toMatchObject({ polished: 20, total: 200, pct: 10 });
+  });
 });

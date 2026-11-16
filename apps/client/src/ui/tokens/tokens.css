@@ -123,6 +123,8 @@
   --mc-dur-hover-in: 100ms;
   --mc-dur-hover-out: 140ms;
   --mc-dur-press: 80ms;
+  /* art-direction 8.7: press = 80 ms to scale 0.97 (reduced motion: same state, 0 ms) */
+  --mc-press-transform: scale(0.97);
   --mc-dur-fade-in: 200ms;
   --mc-dur-fade-out: 160ms;
   --mc-dur-reduced: 120ms;
@@ -170,8 +172,11 @@
   box-sizing: border-box;
 }
 
-/* Visible focus ring for keyboard and gamepad navigation (focus-visible only; mouse clicks stay clean). */
-#mc-ui :focus-visible {
+/* Visible focus ring for keyboard and gamepad navigation (focus-visible only; mouse clicks stay clean).
+   Headings are focused by script (tabindex -1, so a dialog / menu opens with focus on its title and the screen reader
+   announces it); they are not controls, so they get no ring. The :not() list is in the ID rule on purpose: a module
+   `.title:focus-visible { outline: none }` can never out-rank it. */
+#mc-ui :focus-visible:not(h1, h2, h3, h4, h5, h6) {
   outline: var(--mc-focus-width) solid var(--mc-focus);
   outline-offset: var(--mc-focus-offset);
 }

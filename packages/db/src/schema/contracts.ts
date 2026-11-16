@@ -167,5 +167,68 @@ export const contractDustChunks = pgTable(
   ],
 );
 
+/**
+ * Archived header slots (migration 0004). When a room save was written for another terrain bake the server moves its rows
+ * here verbatim (one `archive_id` per archive, both slots) and starts a fresh room: the old world is never deleted, a
+ * restore is the reverse copy. Same columns as `contract_saves` plus the archive identity. Never selected by list queries.
+ */
+export const contractSaveArchives = pgTable(
+  "contract_save_archives",
+  {
+    archiveId: uuid("archive_id").notNull(),
+    contractId: uuid("contract_id")
+      .notNull()
+      .references(() => contracts.id, { onDelete: "cascade" }),
+    slot: char("slot", { length: 1 }).notNull(),
+    saveFormatVersion: smallint("save_format_version").notNull(),
+    gameDataVersion: text("game_data_version").notNull(),
+    codec: text("codec").notNull(),
+    rawSize: integer("raw_size").notNull(),
+    blobSize: integer("blob_size").notNull(),
+    checksum: integer("checksum").notNull(),
+    blob: blobBytea("blob").notNull(),
+    saveSeq: bigint("save_seq", { mode: "number" }).notNull(),
+    simTick: bigint("sim_tick", { mode: "number" }).notNull(),
+    savedAt: timestamp("saved_at", { withTimezone: true }).notNull(),
+    savedBy: text("saved_by").notNull(),
+    parentSeq: bigint("parent_seq", { mode: "number" }),
+    originKind: text("origin_kind").notNull(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Why the save was archived, e.g. `bake_mismatch`. */
+    archiveReason: text("archive_reason").notNull(),
+  },
+  (t) => [
+    primaryKey({ name: "contract_save_archives_pk", columns: [t.archiveId, t.slot] }),
+    check("contract_save_archives_slot_check", sql`${t.slot} in ('A', 'B')`),
+    // "Archives of this Contract, newest first" (support recovery); the primary key leads with archive_id.
+    index("contract_save_archives_contract_idx").on(t.contractId, t.archivedAt.desc()),
+  ],
+);
+
+/** Archived dust chunk rows (migration 0004), copied verbatim from `contract_dust_chunks` together with their header slots. */
+export const contractDustChunkArchives = pgTable(
+  "contract_dust_chunk_archives",
+  {
+    archiveId: uuid("archive_id").notNull(),
+    contractId: uuid("contract_id")
+      .notNull()
+      .references(() => contracts.id, { onDelete: "cascade" }),
+    chunkId: smallint("chunk_id").notNull(),
+    ver: smallint("ver").notNull(),
+    saveSeq: bigint("save_seq", { mode: "number" }).notNull(),
+    codec: text("codec").notNull(),
+    rawSize: integer("raw_size").notNull(),
+    blobSize: integer("blob_size").notNull(),
+    checksum: integer("checksum").notNull(),
+    blob: blobBytea("blob").notNull(),
+    savedAt: timestamp("saved_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ name: "contract_dust_chunk_archives_pk", columns: [t.archiveId, t.chunkId, t.ver] }),
+    check("contract_dust_chunk_archives_chunk_id_check", sql`${t.chunkId} between 0 and 640`),
+    check("contract_dust_chunk_archives_ver_check", sql`${t.ver} in (0, 1)`),
+  ],
+);
+
 export type ContractRow = typeof contracts.$inferSelect;
 export type ContractMemberRow = typeof contractMembers.$inferSelect;

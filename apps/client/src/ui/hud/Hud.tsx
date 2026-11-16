@@ -14,6 +14,7 @@ import toastStyles from "../components/ToastStack.module.css";
 import { DustCellIcon, LumenIcon, ShineIcon } from "../icons/custom";
 import { Icon, type IconComponent } from "../icons/Icon";
 import { EASE, fadeTransition } from "../motion/presets";
+import { SyncIndicator } from "../save/SyncIndicator";
 import { formatString, STRINGS } from "../strings";
 import { useReducedMotion, useSpring, useUi, useUiSelector } from "../ui-context";
 import {
@@ -29,6 +30,9 @@ import {
   toolName,
   type WalletFloater,
 } from "./hud-model";
+import { AchievementToasts } from "../onboarding/AchievementToasts";
+import { DotSubtitle } from "../onboarding/DotSubtitle";
+import { InductionChecklist } from "../onboarding/InductionChecklist";
 import { CompassStrip } from "./CompassStrip";
 import { PlotCard } from "./PlotCard";
 import styles from "./Hud.module.css";
@@ -328,20 +332,24 @@ export function Hud(): ReactElement {
       <div className={styles["topLeft"]}>
         <Wallet />
         <NextRequisition />
+        <InductionChecklist />
       </div>
       <div className={styles["topCenter"]}>
         <CompassStrip />
         <Notices />
+        <AchievementToasts />
       </div>
       <div className={styles["topRight"]}>
         <ShinePanel />
         <PlotCard />
       </div>
       <div className={styles["bottomLeft"]}>
+        <SyncIndicator />
         <SuitRow />
       </div>
       <div className={styles["bottomCenter"]}>
         <Prompt />
+        <DotSubtitle />
       </div>
       <div className={styles["bottomRight"]}>
         <Holster />

@@ -1,6 +1,6 @@
 # Continuous build — Clean The Moon!
 
-Owner direction: build the requested game continuously toward **November 17, 2026**, test it, and let Cee decide
+Owner direction: build the requested game continuously with no deadline, test it, and let Cee decide
 when satisfied and ready to commit/publish. No intermediate commit plans, stage-ending permission requests or per-wave commit gates.
 M0→M1→M2→M3 are dependency/coverage checkpoints, not separate jobs awaiting owner sign-off. M4 remains optional.
 

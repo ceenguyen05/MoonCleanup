@@ -51,6 +51,8 @@ export class FrameAvatarSource implements AvatarPoseSource {
   lastStrokeTick = -1;
   /** Dust Cell grams of the own actor (Self `cellGrams`, the worker's dust ack). */
   cellGrams = 0;
+  /** Body yaw code of the newest Self (10 bit; while driving, the vehicle heading). */
+  yawCode = 0;
   /** Called with every decoded Self and its ack (the Solo predictor reconciles here). Inside the frame listener. */
   selfListener: ((self: SelfState, ackInputSeq: number) => void) | null = null;
   private readonly reader = new FrameReader();
@@ -140,6 +142,7 @@ export class FrameAvatarSource implements AvatarPoseSource {
     this.tick = fv.serverTick;
     this.ackInputSeq = fv.ackInputSeq;
     this.cellGrams = s.cellGrams;
+    this.yawCode = s.yawCode;
     const chains = fv.strokes.chainCount;
     if (chains > 0) {
       this.strokeChains += chains;

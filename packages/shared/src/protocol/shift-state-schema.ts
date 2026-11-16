@@ -1,4 +1,4 @@
-// @contract protocol/shift-state-schema v1
+// @contract protocol/shift-state-schema v1.1
 // @consumers apps/server/src/net (builds the Colyseus Schema class from this table; test compares field names and
 //   types), apps/client/src/net (RemoteRoomHost: Schema to ShiftStateView conversion), tools/bots
 //
@@ -6,6 +6,8 @@
 // declaration order (Schema field indexes follow declaration order, so the order is part of the wire contract and
 // new fields are only ever appended). The decoded plain shape is sim/shift-state (`ShiftState`). No StateView.
 // Patches are sent on frame ticks only (automatic patching disabled), server-only writes.
+// v1.1 (M1, additive): appends `nearParcelsCollected` (uint8 bitmask). Appending a Schema field is wire-compatible
+// (clients decode by Schema reflection; field indexes of existing fields are unchanged), so PROTOCOL_VERSION stays 1.
 
 import type { ShiftState } from "../sim/shift-state";
 
@@ -50,6 +52,8 @@ export const SHIFT_STATE_SCHEMA_FIELDS = [
   { name: "robotCounts", type: "map<uint16>", mutability: "dynamic" },
   { name: "permissions", type: "Permissions", mutability: "dynamic" },
   { name: "fulfilled", type: "boolean", mutability: "dynamic" },
+  // v1.1 append: Near Parcel collected bitmask (bit k = parcel k), set on frame ticks.
+  { name: "nearParcelsCollected", type: "uint8", mutability: "dynamic" },
 ] as const satisfies readonly SchemaFieldSpec[];
 
 /**

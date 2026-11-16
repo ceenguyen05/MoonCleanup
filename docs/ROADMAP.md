@@ -1,6 +1,6 @@
 # Roadmap — Clean The Moon!
 
-Deadline **November 17, 2026, America/Chicago**; [daily checkpoints](handoff/DEADLINE_PLAN.md), [current progress](STATUS.md).
+No deadline (owner, 2026-11-16); [daily checkpoints](handoff/DEADLINE_PLAN.md), [current progress](STATUS.md).
 Product scope/fidelity: [REFERENCE_TARGET](design/REFERENCE_TARGET.md) and [scope tiers](design/scope-tiers.md).
 The old 66–82-window estimate and repeated M0 interruptions show risk; they are not a forecast the optimized workflow guarantees.
 
@@ -10,7 +10,7 @@ The old 66–82-window estimate and repeated M0 interruptions show risk; they ar
 | M1 / v0.2.0 | Playable pilot area: clean/sell/upgrade, movement, vehicle/robot arc, shared world/persistence, appealing assets/motion | [M1](milestones/M1-mvp.md) |
 | M2 / v1.0.0 | Whole-moon reference systems, tools/vehicles/robots/logistics/production/building/progression; measurable parity | [M2](milestones/M2-v1-parity.md) |
 | M3 | Integrated polish, accessibility/onboarding, playtests, budgets and owner launch handoff | [M3](milestones/M3-polish-launch.md) |
-| M4 | Optional later ideas; not extra November 17 requirements | [backlog](milestones/M4-post-launch.md) |
+| M4 | Optional later ideas; not extra core requirements | [backlog](milestones/M4-post-launch.md) |
 
 Keep existing task IDs/dependencies; each wave uses frozen contracts, disjoint owners and one integration state. Stages are
 checkpoints, not quota windows. [MODEL_POLICY](handoff/MODEL_POLICY.md) controls dispatch and batched review; continue through M0–M3; Cee commits only when satisfied.

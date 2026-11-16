@@ -169,7 +169,7 @@
 }
 
 .choice:active {
-  transform: translateY(var(--mc-px));
+  transform: var(--mc-press-transform);
 }
 
 .choiceTitle {
@@ -307,7 +307,7 @@
 
 .primary:active,
 .ghost:active {
-  transform: translateY(var(--mc-px));
+  transform: var(--mc-press-transform);
 }
 
 .primary[aria-disabled="true"],

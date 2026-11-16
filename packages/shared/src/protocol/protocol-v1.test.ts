@@ -179,5 +179,24 @@ describe("ShiftState Schema table", () => {
     expect(type("walletLumens")).toBe("float64");
     expect(type("shinePolished")).toBe("uint32");
     expect(type("visitedOutposts")).toBe("uint8");
+    expect(type("nearParcelsCollected")).toBe("uint8");
+  });
+
+  it("v1.1 appends nearParcelsCollected last, leaving earlier field indexes unchanged", () => {
+    const names = SHIFT_STATE_SCHEMA_FIELDS.map((f) => f.name);
+    expect(names.indexOf("fulfilled")).toBe(16);
+    expect(names.at(-1)).toBe("nearParcelsCollected");
+    expect(names).toHaveLength(18);
+  });
+
+  it("nearParcelsCollected parses as an optional u8 bitmask", () => {
+    const f = ShiftStateSchema.shape.nearParcelsCollected;
+    expect(f.parse(undefined)).toBeUndefined();
+    expect(f.parse(0b10_1011)).toBe(0b10_1011);
+    expect(f.parse(0xff)).toBe(0xff);
+    expect(f.safeParse(256).success).toBe(false);
+    expect(f.safeParse(-1).success).toBe(false);
+    expect(f.safeParse(1.5).success).toBe(false);
+    expectTypeOf<ShiftState["nearParcelsCollected"]>().toEqualTypeOf<number | undefined>();
   });
 });

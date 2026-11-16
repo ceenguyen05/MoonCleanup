@@ -1,3 +1,4 @@
+import { OFFSCREEN_CHROME_ARGS } from "../../offscreen-chrome-args.mjs";
 // Capture + measure driver of the S02 / S03 look-dev scenes (M0-W3-T04). Dev tooling, not part of the app bundle.
 //
 //   node s02-run.mjs --scene s02|s03 --backend webgpu|webgl2 [--lane gpu|ci] [--preset medium] [--port 5186]
@@ -46,6 +47,7 @@ const launch =
         headless: false,
         channel: "chrome",
         args: [
+          ...OFFSCREEN_CHROME_ARGS,
           "--enable-unsafe-webgpu",
           "--enable-features=Vulkan,WebGPU",
           "--ignore-gpu-blocklist",

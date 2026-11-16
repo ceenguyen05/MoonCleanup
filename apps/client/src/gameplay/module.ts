@@ -18,8 +18,17 @@ import {
   Vector3,
   type PerspectiveCamera,
 } from "three/webgpu";
-import type { ClientModule, FrameInfo, ModuleContext, RoomHost, Unsubscribe } from "@moon-cleanup/shared";
+import {
+  INPUT_BUTTON_MASK,
+  type ClientModule,
+  type FrameInfo,
+  type ModuleContext,
+  type RoomHost,
+  type Unsubscribe,
+} from "@moon-cleanup/shared";
+import { yawFromCode } from "@moon-cleanup/protocol";
 import type { SimConfig, SimGround } from "@moon-cleanup/sim";
+import { VehicleDriveView } from "./vehicles/vehicle-drive";
 import type { RenderServices } from "../render";
 import { DEFAULT_BINDINGS, type BindingTable } from "./input/bindings";
 import { DomInput, type DomInputHost, type PointerLockTarget } from "./input/dom-input";
@@ -99,6 +108,14 @@ export class GameplayModule implements ClientModule<RenderServices> {
   readonly input: InputState;
   readonly pump: InputPump;
   readonly rig = new CameraRig();
+  /** Driving: the chase camera (rebuilt from the frame pose) and its blend with the on-foot camera. */
+  readonly drive = new VehicleDriveView();
+  private offEvents: Unsubscribe | null = null;
+  private useMix = false;
+  private readonly mixEye = new Float64Array(3);
+  private readonly mixFwd = new Float64Array(3);
+  private baseFov = 0;
+  private fovTouched = false;
   readonly framePose: FrameAvatarSource;
   /** Solo predictor (null until the sim config is ready, or with `prediction: false`). */
   predictor: SoloPredictor | null = null;
@@ -226,11 +243,12 @@ export class GameplayModule implements ClientModule<RenderServices> {
     for (let n = input.takeCameraToggles(); n > 0; n--) this.rig.mode = this.rig.mode === "first" ? "third" : "first";
     const slot = input.takeSlot();
     if (slot >= 0) {
-      if (this.onlineRoom === null) this.host?.sendIntent({ kind: "select_tool", slot });
+      this.host?.sendIntent({ kind: "select_tool", slot });
       this.stats.intents++;
     }
 
-    const pose = this.pose;
+    // Seated: the interpolated worker FRAME carries the avatar on the handle (no walking prediction while driving).
+    const pose = this.drive.isActive ? this.framePose : this.pose;
     const predictor = this.predictor;
     if (predictor !== null && pose === predictor) input.peek(predictor.live);
     input.airborne = pose.airborne;
@@ -243,6 +261,9 @@ export class GameplayModule implements ClientModule<RenderServices> {
       }
       this.stats.posedFrames++;
       this.rig.update(this.feet, input, clock);
+      this.useMix = false;
+      if (this.drive.engaged) this.updateDriveCamera(input, clock);
+      else if (this.fovTouched) this.restoreFov();
       input.toolParam = this.rig.toolParam;
       this.recenterIfFar(!this.hasPose);
       this.hasPose = true;
@@ -251,8 +272,58 @@ export class GameplayModule implements ClientModule<RenderServices> {
     if (posed) this.present();
   }
 
+  /** Sits the own avatar down at a vehicle (or lets go): camera, input remap and prediction follow. */
+  setDriving(on: boolean, kindId: string): void {
+    if (on === this.drive.isActive) return;
+    if (on && this.camera !== null) this.baseFov = this.camera.fov;
+    this.drive.setActive(on, kindId);
+    this.input.driving = on;
+    this.predictor?.setSeated(on);
+  }
+
+  /** Runs the chase camera from the frame pose and mixes it over the on-foot camera by the enter / exit blend. */
+  private updateDriveCamera(input: InputState, clock: { readonly dt: number }): void {
+    const d = this.drive;
+    const boostHeld = (input.heldButtons() & INPUT_BUTTON_MASK.lope) !== 0;
+    d.update(this.feet, yawFromCode(this.framePose.yawCode), input.yawRad, input.pitchRad, boostHeld, clock);
+    const v = d.camera;
+    const b = v.blend01;
+    const rig = this.rig;
+    const eye = this.mixEye;
+    const fwd = this.mixFwd;
+    for (let i = 0; i < 3; i++) {
+      eye[i] = rig.eye[i]! + (v.eye[i]! - rig.eye[i]!) * b;
+      fwd[i] = rig.forward[i]! + (v.forward[i]! - rig.forward[i]!) * b;
+    }
+    const l = Math.hypot(fwd[0]!, fwd[1]!, fwd[2]!) || 1;
+    fwd[0] = fwd[0]! / l;
+    fwd[1] = fwd[1]! / l;
+    fwd[2] = fwd[2]! / l;
+    this.useMix = true;
+    const cam = this.camera;
+    if (cam !== null && this.baseFov > 0) {
+      const fov = this.baseFov + (v.fovDeg - this.baseFov) * b;
+      if (Math.abs(fov - cam.fov) > 0.01) {
+        cam.fov = fov;
+        cam.updateProjectionMatrix();
+      }
+      this.fovTouched = true;
+    }
+  }
+
+  private restoreFov(): void {
+    this.fovTouched = false;
+    const cam = this.camera;
+    if (cam !== null && this.baseFov > 0 && cam.fov !== this.baseFov) {
+      cam.fov = this.baseFov;
+      cam.updateProjectionMatrix();
+    }
+  }
+
   dispose(): void {
     this.disposed = true;
+    this.offEvents?.();
+    this.offEvents = null;
     this.offShift?.();
     this.offShift = null;
     this.framePose.dispose();
@@ -350,6 +421,9 @@ export class GameplayModule implements ClientModule<RenderServices> {
     this.host = host;
     this.offShift?.();
     this.offShift = null;
+    this.offEvents?.();
+    this.offEvents = null;
+    this.setDriving(false, "");
     this.framePose.attach(host);
     this.predictor?.reset();
     if (this.onlineRoom === null) this.pump.setSink(host);
@@ -358,6 +432,13 @@ export class GameplayModule implements ClientModule<RenderServices> {
     this.rig.reset();
     if (host === null) return;
     this.loadPredictor(host.simTickHz);
+    // Own vehicle (Solo: actor slot 0): sit down / let go switches the camera, the Afterburner key and the prediction.
+    if (host.kind === "local") {
+      this.offEvents = host.onEvent((e) => {
+        if (e.name === "vehicle.entered" && e.payload.actorSlot === 0) this.setDriving(true, e.payload.kindId);
+        else if (e.name === "vehicle.exited" && e.payload.actorSlot === 0) this.setDriving(false, "");
+      });
+    }
     // Own equipped tool (Solo: actor slot 0): the predictor's speed multipliers follow it. Rare, may allocate.
     this.offShift = host.onShiftState((state) => {
       const me = host.kind === "local" ? state.players.find((p) => p.slot === 0) : undefined;
@@ -381,8 +462,8 @@ export class GameplayModule implements ClientModule<RenderServices> {
     const rig = this.rig;
     const m = this.mapper;
     const r = this.r;
-    m.point(rig.eye, 0, r, 0);
-    m.direction(rig.forward, 0, r, 3);
+    m.point(this.useMix ? this.mixEye : rig.eye, 0, r, 0);
+    m.direction(this.useMix ? this.mixFwd : rig.forward, 0, r, 3);
     m.direction(rig.up, 0, r, 6);
     const cam = this.camera;
     if (cam !== null) {

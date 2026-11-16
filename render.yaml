@@ -1,7 +1,7 @@
 # Game server + REST API. ADR-0029: one free service, deployed from main after CI passes.
 # Cee confirms region and browser origins before applying; secrets are supplied in Render.
 # Build from repository root for pnpm workspaces. Migrations/seed run in the build command.
-# Keep plan: free explicit. maxShutdownDelaySeconds allows the server to checkpoint on SIGTERM.
+# Keep plan: free explicit. Do NOT set maxShutdownDelaySeconds: Render rejects it on free tier (default 30 s SIGTERM grace applies).
 # NET_SPIKE is temporary pre-launch test mode, disabled by default; never enable with live players.
 # Blueprint field reference: https://render.com/docs/blueprint-spec
 services:
@@ -31,7 +31,6 @@ services:
         - turbo.json
         - tsconfig.base.json
         - .nvmrc
-    maxShutdownDelaySeconds: 30
     envVars:
       - key: NODE_ENV
         value: production

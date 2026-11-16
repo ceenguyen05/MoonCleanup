@@ -1,0 +1,38 @@
+[
+ {
+  "round": 0,
+  "name": "a60",
+  "frameP50": 1936.699999999255,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "w60",
+  "frameP50": 1885.7000000011176,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "a30",
+  "frameP50": 16.300000000745058,
+  "gpuP50": 9.757765000000003,
+  "gpuN": 9,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "a5",
+  "frameP50": 16.799999998882413,
+  "gpuP50": 9.617097000000001,
+  "gpuN": 9,
+  "backend": "webgpu",
+  "errs": []
+ }
+]

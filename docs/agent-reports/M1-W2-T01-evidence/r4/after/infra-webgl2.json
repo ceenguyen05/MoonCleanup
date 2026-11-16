@@ -1,0 +1,79 @@
+[
+  {
+    "name": "moon-ground",
+    "url": "http://localhost:5193/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2",
+    "infra": {
+      "warmup": {
+        "phase": "warming",
+        "reason": "boot",
+        "completed": 0,
+        "pipelinesReadyMs": 0,
+        "lastMs": 0,
+        "lastFrames": 0,
+        "timedOut": false,
+        "pipelines": 37,
+        "pipelinesAtReady": 0,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0,
+        "holds": 1
+      },
+      "drawBudget": {
+        "drawCalls": 30,
+        "triangles": 852235,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 7,
+        "overFrames": 0,
+        "peakDrawCalls": 30,
+        "peakTriangles": 852235
+      },
+      "memory": {
+        "totalBytes": 3981312,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 3981312,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 3981312
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 37,
+        "textureBytes": 92178616,
+        "geometryBytes": 1968260,
+        "totalBytes": 94474978
+      },
+      "dynres": {
+        "enabled": true,
+        "pinned": false,
+        "scale": 0.6,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 0,
+        "targetMs": 0,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": []
+  }
+]

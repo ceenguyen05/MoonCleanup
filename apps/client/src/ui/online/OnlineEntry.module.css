@@ -44,7 +44,7 @@
 
 .launcher:active,
 .chip:active {
-  transform: translateY(var(--mc-px));
+  transform: var(--mc-press-transform);
 }
 
 .glyph {

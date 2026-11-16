@@ -9,3 +9,4 @@ export { loadGameData, parseGameData, type GameData } from "./load";
 export { RAW_GAME_DATA } from "./raw";
 export { DISPLAY_NAMES, LABEL_ONLY_IDS, displayName } from "./content/labels";
 export { BOREAL_SUN_PATH, dayPhase, isDaylight, sunElevationDeg, type DayCycle, type SunPathParams } from "./sun-path";
+export { VEHICLE_FEEL, parseVehicleFeel, type VehicleFeelDef } from "./vehicle-feel";

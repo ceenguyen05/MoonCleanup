@@ -31,6 +31,7 @@ export {
   createSpecularTerrainMaterial,
   type CdlodQuality,
   type CdlodTerrainOptions,
+  type TerrainMaterialFactory,
 } from "./cdlod/cdlod-terrain";
 export {
   createHeightTexture,
@@ -62,4 +63,10 @@ export {
   type PilotFenceZone,
 } from "./pilot-fence";
 export { PilotFenceMarkers, type PilotFenceMarkerOptions } from "./pilot-fence-markers";
-export { MOON_SCENE_ID, TerrainScene, type TerrainSceneInfo } from "./terrain-scene";
+export {
+  MOON_SCENE_ID,
+  selectTerrainMaterial,
+  TerrainScene,
+  type TerrainSceneInfo,
+  type TerrainSceneOptions,
+} from "./terrain-scene";

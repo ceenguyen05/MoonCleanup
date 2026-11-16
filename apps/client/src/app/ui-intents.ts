@@ -3,7 +3,7 @@
 // the quality preset goes to the render module's quality service as a user choice and is persisted.
 
 import type { QualityPresetId, UiStore } from "@moon-cleanup/shared";
-import type { UiIntentPort } from "../ui";
+import type { PlotCardActivation, UiIntentPort } from "../ui";
 
 export interface UiIntentsOptions {
   readonly store: Pick<UiStore, "getState">;
@@ -13,6 +13,8 @@ export interface UiIntentsOptions {
   readonly saveQuality: (preset: QualityPresetId) => void;
   /** The rebinding screen opened / closed (default: nothing; menus already suspend gameplay input). */
   readonly openControls?: (open: boolean) => void;
+  /** Plot Card activation chosen in Settings (default: nothing). */
+  readonly setPlotCardMode?: (mode: PlotCardActivation) => void;
 }
 
 export function createUiIntents(o: UiIntentsOptions): UiIntentPort {
@@ -30,5 +32,6 @@ export function createUiIntents(o: UiIntentsOptions): UiIntentPort {
       o.saveQuality(preset);
     },
     openControls: (open) => o.openControls?.(open !== false),
+    setPlotCardMode: (mode) => o.setPlotCardMode?.(mode),
   };
 }

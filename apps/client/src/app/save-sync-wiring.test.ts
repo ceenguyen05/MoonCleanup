@@ -7,6 +7,7 @@ import {
   type SaveEventMap,
   type UiSaveSyncRequest,
 } from "@moon-cleanup/shared";
+import { UPLOAD_INTERVAL_MS } from "../sync/limits";
 import { FakeServer, makeDevice } from "../sync/test-support";
 import { describe, expect, it, vi } from "vitest";
 import { MemoryCheckpointStore } from "../sim-host";
@@ -16,6 +17,7 @@ import {
   createLocalInstallPort,
   createSummaryProvider,
   deviceLabelOf,
+  requestFailurePatch,
   saveEventForwarder,
   signInUntilReady,
   soloRegistration,
@@ -108,7 +110,16 @@ describe("summary, requests and events", () => {
     const handled: UiSaveSyncRequest[] = [];
     const off = bindSaveSyncRequests(
       store,
-      { handleRequest: (r) => Promise.resolve(void handled.push(r)) },
+      {
+        resolveConflict: (choice) => {
+          handled.push({ kind: "resolve_conflict", choice });
+          return Promise.resolve({ kind: "resolved", generation: 2 });
+        },
+        restoreBackup: () => {
+          handled.push({ kind: "restore_backup" });
+          return Promise.resolve({ kind: "no_backup" });
+        },
+      },
       () => undefined,
     );
     store.dispatch({ type: "saveSync.resolveConflict", choice: "use_server" });
@@ -136,6 +147,153 @@ describe("summary, requests and events", () => {
     };
     saveEventForwarder(bus)("save.checkpointed", payload);
     expect(seen).toEqual([payload]);
+  });
+});
+
+describe("saveSync slice through the real controller (conflict, failed resolve, backup)", { timeout: 60_000 }, () => {
+  const CHUNKS_A = [
+    { id: 1, fill: 1 },
+    { id: 2, fill: 2 },
+  ];
+
+  /** Device B diverged from device A's newer upload: B holds a conflict; its sink writes the app UI store. */
+  async function conflictedDevice() {
+    const server = new FakeServer();
+    server.addContract();
+    const a = makeDevice(server);
+    a.gate.markInteracted();
+    await a.sync.attach(CONTRACT);
+    await a.checkpoint({ generation: 1, parent: 0, chunks: CHUNKS_A });
+    await a.advance(1000);
+    const store = createUiStore(1000, () => 0);
+    let flushAt = 0;
+    const flush = (): void => {
+      flushAt += 1000;
+      store.flush(flushAt);
+    };
+    const b = makeDevice(server, {
+      sink: (patch) => store.dispatch({ type: "saveSync.set", patch }),
+    });
+    b.gate.markInteracted();
+    await b.sync.clockIn(CONTRACT, { maxWaitMs: Infinity });
+    await a.checkpoint({ generation: 2, parent: 1, chunks: [{ id: 1, fill: 11 }] });
+    await a.advance(UPLOAD_INTERVAL_MS + 1000);
+    await b.checkpoint({ generation: 2, parent: 1, chunks: [{ id: 2, fill: 22 }] });
+    await b.advance(UPLOAD_INTERVAL_MS + 1000);
+    flush();
+    return { server, store, flush, b };
+  }
+
+  it("a conflict fills the slice: state, both copies and pendingSinceMs (the oldest unsynced checkpoint)", async () => {
+    const { store, b } = await conflictedDevice();
+    const s = store.getState().saveSync;
+    expect(s.state).toBe("conflict");
+    expect(s.conflict).not.toBeNull();
+    expect(s.pendingSinceMs).toEqual(expect.any(Number));
+    expect(s.pendingSinceMs).toBeLessThanOrEqual(b.clock.now);
+    expect(s.backupAvailable).toBe(false);
+    expect(s.error).toBeNull();
+  });
+
+  it("a failed resolve keeps state conflict and sets error; the retry then fills backupAvailable/backupExpiresAtMs", async () => {
+    const { server, store, flush, b } = await conflictedDevice();
+    const problems: unknown[] = [];
+    const off = bindSaveSyncRequests(store, b.sync, (_s, e) => problems.push(e));
+
+    server.mode = "offline"; // the download of the server copy fails
+    store.dispatch({ type: "saveSync.resolveConflict", choice: "keep_local" });
+    flush();
+    await b.settle();
+    flush();
+    let s = store.getState().saveSync;
+    expect(s.state).toBe("conflict");
+    expect(s.conflict).not.toBeNull();
+    expect(s.error).toEqual({ kind: "offline", reason: null });
+    expect(s.request).toBeNull();
+    expect(s.backupAvailable).toBe(false);
+
+    server.mode = "ok";
+    store.dispatch({ type: "saveSync.resolveConflict", choice: "keep_local" });
+    flush();
+    await b.settle();
+    flush();
+    s = store.getState().saveSync;
+    expect(s.state).toBe("synced");
+    expect(s.conflict).toBeNull();
+    expect(s.error).toBeNull();
+    expect(s.pendingSinceMs).toBeNull();
+    expect(s.backupAvailable).toBe(true);
+    expect(s.backupExpiresAtMs).toBeGreaterThan(b.clock.now);
+    expect(problems).toEqual([]);
+    off();
+  });
+
+  it("requestFailurePatch: a failure with no controller error still surfaces one and never drops the conflict", () => {
+    const store = createUiStore(1000, () => 0);
+    const base = store.getState().saveSync;
+    const held = { ...base, state: "conflict" as const, conflict: { local: {} as never, server: {} as never } };
+    const resolve: UiSaveSyncRequest = { kind: "resolve_conflict", choice: "use_server" };
+    expect(requestFailurePatch(resolve, { kind: "failed", why: "install" }, held)).toEqual({
+      state: "conflict",
+      error: { kind: "local_store_failed", reason: null },
+    });
+    expect(requestFailurePatch(resolve, { kind: "failed", why: "local" }, held)).toEqual({
+      state: "conflict",
+      error: { kind: "local_store_failed", reason: null },
+    });
+    // An unreadable server copy is still "did not accept this copy".
+    expect(requestFailurePatch(resolve, { kind: "failed", why: "corrupt" }, held)).toEqual({
+      state: "conflict",
+      error: { kind: "rejected", reason: null },
+    });
+    expect(requestFailurePatch(resolve, { kind: "failed", why: "download" }, held)).toEqual({
+      state: "conflict",
+      error: { kind: "server_error", reason: null },
+    });
+    expect(requestFailurePatch(resolve, null, held)).toEqual({
+      state: "conflict",
+      error: { kind: "server_error", reason: null },
+    });
+    // A failed backup restore (no conflict held) only sets the error.
+    expect(requestFailurePatch({ kind: "restore_backup" }, { kind: "failed", why: "install" }, base)).toEqual({
+      error: { kind: "local_store_failed", reason: null },
+    });
+  });
+
+  it("a thrown request is reported and surfaced as an error; a missing backup clears backupAvailable", async () => {
+    const store = createUiStore(1000, () => 0);
+    store.dispatch({
+      type: "saveSync.set",
+      patch: { state: "conflict", conflict: { local: {} as never, server: {} as never }, backupAvailable: true },
+    });
+    store.flush(1000);
+    const problems: string[] = [];
+    let mode: "throw" | "no_backup" = "throw";
+    const off = bindSaveSyncRequests(
+      store,
+      {
+        resolveConflict: () => Promise.reject(new Error("boom")),
+        restoreBackup: () =>
+          mode === "throw" ? Promise.reject(new Error("boom")) : Promise.resolve({ kind: "no_backup" }),
+      },
+      (source) => problems.push(source),
+    );
+    store.dispatch({ type: "saveSync.resolveConflict", choice: "keep_local" });
+    store.flush(2000);
+    await Promise.resolve();
+    await Promise.resolve();
+    store.flush(3000);
+    expect(problems).toEqual(["save sync request"]);
+    expect(store.getState().saveSync).toMatchObject({ state: "conflict", error: { kind: "server_error" } });
+
+    mode = "no_backup";
+    store.dispatch({ type: "saveSync.restoreBackup" });
+    store.flush(4000);
+    await Promise.resolve();
+    await Promise.resolve();
+    store.flush(5000);
+    expect(store.getState().saveSync.backupAvailable).toBe(false);
+    off();
   });
 });
 

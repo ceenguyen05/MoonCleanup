@@ -1,0 +1,29 @@
+[
+ {
+  "round": 0,
+  "name": "a60",
+  "frameP50": 2407.300000000745,
+  "gpuP50": 0,
+  "gpuN": 0,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "a30",
+  "frameP50": 20.800000000745058,
+  "gpuP50": 15.987666999999998,
+  "gpuN": 1,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "a5",
+  "frameP50": 17.100000001490116,
+  "gpuP50": 9.561519,
+  "gpuN": 6,
+  "backend": "webgpu",
+  "errs": []
+ }
+]

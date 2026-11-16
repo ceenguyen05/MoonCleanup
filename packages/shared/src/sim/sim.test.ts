@@ -74,6 +74,15 @@ describe("ShiftState", () => {
     expectTypeOf<ShiftStateView["tick"]>().toEqualTypeOf<Tick>();
   });
 
+  it("round-trips nearParcelsCollected (v1.1) and accepts pre-v1.1 views without it", () => {
+    expect(ShiftStateSchema.parse(state).nearParcelsCollected).toBeUndefined();
+    const withMask = { ...state, nearParcelsCollected: 0b00_0101 };
+    const parsed = ShiftStateViewSchema.parse({ ...withMask, tick: 9 });
+    expect(parsed.nearParcelsCollected).toBe(5);
+    expect(ShiftStateViewSchema.parse(JSON.parse(JSON.stringify(parsed)))).toEqual(parsed);
+    expect(ShiftStateSchema.safeParse({ ...state, nearParcelsCollected: 0x100 }).success).toBe(false);
+  });
+
   it("rejects wrong shapes", () => {
     expect(ShiftStateSchema.safeParse({ ...state, beacons: beacons.slice(1) }).success).toBe(false);
     expect(ShiftStateSchema.safeParse({ ...state, shiftType: "lobby" }).success).toBe(false);

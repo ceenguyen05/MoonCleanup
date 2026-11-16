@@ -254,3 +254,23 @@ describe("source rules", () => {
     expect(css).not.toMatch(/transform:\s*scale|filter:\s*blur/);
   });
 });
+
+describe("Plot Card activation setting", () => {
+  it("lists tap/hold in Settings > Controls with toggle selected by default", () => {
+    const html = renderScreen("settings");
+    expect(html).toContain('data-testid="settings-plot-card-mode"');
+    expect(html).toContain(STRINGS.menus.settings.plotCardOptions.toggle);
+    expect(html).toContain(STRINGS.menus.settings.plotCardOptions.hold);
+    expect(html).toMatch(/aria-checked="true"[^>]*>Tap to toggle/);
+  });
+
+  it("the prefs store holds the choice and notifies only on change", () => {
+    const prefs = createUiPrefsStore();
+    const listener = vi.fn();
+    prefs.subscribe(listener);
+    prefs.setPlotCardMode("hold");
+    prefs.setPlotCardMode("hold");
+    expect(prefs.getState().plotCardMode).toBe("hold");
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+});

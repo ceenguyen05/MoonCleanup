@@ -51,8 +51,35 @@ export function startProxy(options: ProxyOptions): Promise<NetProxy> {
     timers.add(timer);
   };
 
+  /**
+   * One FIFO per direction drained by a single pending timer. Do NOT give each chunk its own setTimeout: Node computes
+   * expiry from the loop's cached integer-ms clock, so two chunks clamped to the same delivery time with different
+   * delays can fire out of order and reorder the TCP byte stream (regression: M1 netsim desync).
+   */
   const pipe = (from: net.Socket, to: net.Socket, cond: DirectionConditioner, up: boolean, holdFirstMs: number) => {
     let first = holdFirstMs > 0;
+    const queue: { at: number; chunk: Buffer | null }[] = [];
+    let armed = false;
+    const drain = () => {
+      armed = false;
+      const now = performance.now();
+      while (queue.length > 0 && (queue[0] as { at: number }).at <= now + 0.5) {
+        const { chunk } = queue.shift() as { at: number; chunk: Buffer | null };
+        if (to.destroyed) continue;
+        if (chunk === null) to.end();
+        else to.write(chunk);
+      }
+      arm();
+    };
+    const arm = () => {
+      if (armed || queue.length === 0) return;
+      armed = true;
+      later((queue[0] as { at: number }).at, drain);
+    };
+    const push = (at: number, chunk: Buffer | null) => {
+      queue.push({ at, chunk });
+      arm();
+    };
     from.on("data", (chunk: Buffer) => {
       const now = performance.now();
       let at = cond.deliveryTime(now);
@@ -62,15 +89,9 @@ export function startProxy(options: ProxyOptions): Promise<NetProxy> {
       }
       if (up) stats.chunksUp++;
       else stats.chunksDown++;
-      later(at, () => {
-        if (!to.destroyed) to.write(chunk);
-      });
+      push(at, chunk);
     });
-    from.on("end", () => {
-      later(cond.deliveryTime(performance.now()), () => {
-        if (!to.destroyed) to.end();
-      });
-    });
+    from.on("end", () => push(cond.deliveryTime(performance.now()), null));
   };
 
   const server = net.createServer((client) => {

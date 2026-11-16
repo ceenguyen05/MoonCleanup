@@ -23,5 +23,5 @@ Detailed precedence, fidelity checks and baseline reconciliation are in REFERENC
 ## Consequences / migration
 
 Current M0 work continues. Lead updates visual briefs now and gameplay/economy contracts before those waves; no implementation
-is approved merely because docs changed. Preserve original assets, honest source confidence, owner gates and the November 17 forecast.
+is approved merely because docs changed. Preserve original assets, honest source confidence, owner gates. (The November 17 forecast was removed 2026-11-16.)
 Revisit if Cee changes the direction, reference comparison fails, or a measured browser constraint needs a documented adaptation.

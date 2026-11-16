@@ -41,4 +41,25 @@ export const CLASS_BUDGETS: Readonly<Record<string, ClassBudget>> = {
     maxMaterials: 3,
     maxAssetBytes: 4 * 1024 * 1024,
   },
+  // Blockout custodian (M1-W3-T07, art-direction 13.4): <= 6k triangles at LOD0 (task card), then down to the
+  // section 9 far LOD (600). No textures: material slots ride in COLOR_0 (one material, one draw per LOD).
+  custodianBlockout: {
+    label: "Custodian blockout (placeholder)",
+    lodMaxTriangles: [6000, 3500, 2000, 600],
+    lod0MinTriangles: 3000,
+    maxTextureSize: 512,
+    maxTextures: 0,
+    maxMaterials: 1,
+    maxAssetBytes: 512 * 1024,
+  },
+  // Hand tool (section 9): 1.5-4k -> 800 -> 200 triangles, shared 2048 px tool atlas, one material.
+  handTool: {
+    label: "Hand tool",
+    lodMaxTriangles: [4000, 800, 200],
+    lod0MinTriangles: 1500,
+    maxTextureSize: 2048,
+    maxTextures: 3,
+    maxMaterials: 1,
+    maxAssetBytes: 1024 * 1024,
+  },
 };

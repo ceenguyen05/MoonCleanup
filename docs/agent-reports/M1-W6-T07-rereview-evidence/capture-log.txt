@@ -1,0 +1,40 @@
+DPR 1 metrics {"dpr":1,"panel":{"x":260,"y":60,"w":760,"h":591,"bottom":651},"panelScroll":{"sh":591,"ch":591},"bodyScroll":{"sh":474,"ch":474},"decide":{"top":567,"bottom":607},"hintBottoms":[635],"viewportH":720,"active":"H2:Which copy?","h2outline":"none"}
+DPR 1.25 metrics {"dpr":1.25,"panel":{"x":260,"y":59.1875,"w":760,"h":590.59375,"bottom":649.78125},"panelScroll":{"sh":591,"ch":591},"bodyScroll":{"sh":474,"ch":474},"decide":{"top":565.78125,"bottom":605.78125},"hintBottoms":[634],"viewportH":720,"active":"H2:Which copy?","h2outline":"none"}
+DPR 1.5 metrics {"dpr":1.5,"panel":{"x":260,"y":60,"w":760,"h":591,"bottom":651},"panelScroll":{"sh":591,"ch":591},"bodyScroll":{"sh":474,"ch":474},"decide":{"top":567,"bottom":607},"hintBottoms":[635],"viewportH":720,"active":"H2:Which copy?","h2outline":"none"}
+[normal] OPEN frames first 30:
+0ms op=0 ty=20.0 scrim=0 | 68ms op=0 ty=19.7 scrim=0 | 176ms op=0.589 ty=8.2 scrim=0.941 | 957ms op=1 - scrim=1 | 1498ms op=1 - scrim=1
+[normal] open settle at 957ms
+[normal] open max opacity 1
+[normal] open frame dt mean/max 68.0 68.0
+[normal] open ty min/max 0.00 20.00
+[normal] FOCUS distinct frames: 4
+   0ms focus=H2 {"ol":"none 3px rgb(245, 247, 250)","bs":"none","tr":"none","bd":"rgb(245, 247, 250)"}
+   50ms focus=save-choose-keep_local {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   399ms focus=save-choose-use_server {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   753ms focus=save-decide-later {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgba(255, 255, 255, 0.14)"}
+[normal] button transform while pressed: matrix(1, 0, 0, 1, 0, 1)
+[normal] CLOSE frames:
+0ms op=1 ty=0.0 scrim=1 | 41ms op=0.892 ty=0.9 scrim=0.892 | 63ms op=0.749 ty=2.0 scrim=0.749 | 137ms op=0.005 ty=8.0 scrim=0.005 | 213ms op=0 ty=8.0 scrim=0 | 260ms GONE
+[normal] close duration 260ms
+[normal] screencast frames 19
+[reduced] OPEN frames first 30:
+0ms op=0 - scrim=0 | 23ms op=0 - scrim=0 | 125ms op=0.741 - scrim=0.741 | 160ms op=1 - scrim=1 | 167ms op=1 - scrim=1 | 271ms op=1 - scrim=1 | 323ms op=1 - scrim=1 | 331ms op=1 - scrim=1 | 348ms op=1 - scrim=1 | 365ms op=1 - scrim=1 | 380ms op=1 - scrim=1 | 396ms op=1 - scrim=1 | 412ms op=1 - scrim=1 | 429ms op=1 - scrim=1 | 445ms op=1 - scrim=1 | 463ms op=1 - scrim=1 | 480ms op=1 - scrim=1 | 496ms op=1 - scrim=1 | 512ms op=1 - scrim=1 | 529ms op=1 - scrim=1 | 545ms op=1 - scrim=1 | 567ms op=1 - scrim=1 | 584ms op=1 - scrim=1 | 599ms op=1 - scrim=1 | 616ms op=1 - scrim=1 | 632ms op=1 - scrim=1 | 649ms op=1 - scrim=1 | 665ms op=1 - scrim=1 | 681ms op=1 - scrim=1 | 698ms op=1 - scrim=1
+[reduced] open settle at 160ms
+[reduced] open max opacity 1
+[reduced] open frame dt mean/max 17.3 52.1
+[reduced] open ty min/max 0.00 0.00
+[reduced] FOCUS distinct frames: 3
+   0ms focus=save-choose-keep_local {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   317ms focus=save-choose-use_server {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   634ms focus=save-decide-later {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgba(255, 255, 255, 0.14)"}
+[reduced] button transform while pressed: matrix(1, 0, 0, 1, 0, 1)
+[reduced] CLOSE frames:
+0ms op=1 - scrim=1 | 14ms op=0.74 - scrim=0.74 | 30ms op=0.45 - scrim=0.45 | 82ms op=0.044 - scrim=0.044 | 123ms op=0 - scrim=0 | 167ms op=0 - scrim=0 | 202ms GONE
+[reduced] close duration 202ms
+[reduced] screencast frames 25
+pad: __ui.navigate type: function
+pad nav sequence: down:true->save-choose-keep_local | right:true->save-choose-use_server | up:false->save-choose-use_server | left:true->save-choose-keep_local | right:true->save-choose-use_server | down:true->save-decide-later | up:true->save-choose-keep_local
+pad focus before confirm: save-choose-keep_local
+pad confirm returned: true status: Working on it
+prompt gone after pad confirm: true
+pad back returned: true prompt gone: true indicator text present: true

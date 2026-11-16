@@ -1,0 +1,115 @@
+{
+  "backend": "webgpu",
+  "preset": "medium",
+  "parts": [
+    "px32",
+    "stroke",
+    "lineup",
+    "walk"
+  ],
+  "results": {
+    "px32": [
+      {
+        "yaw": 200,
+        "distM": 44.63,
+        "heightPx": 32.3
+      },
+      {
+        "yaw": 290,
+        "distM": 44.63,
+        "heightPx": 32.4
+      },
+      {
+        "yaw": 20,
+        "distM": 44.63,
+        "heightPx": 32.4
+      }
+    ],
+    "stroke": {
+      "grainsTracked": 28,
+      "grainsVisible": 27,
+      "grainsContrast15": 27,
+      "contrastShare": 1,
+      "diffs": [
+        88,
+        129.9,
+        116.7,
+        123.9,
+        41.9,
+        80.4,
+        37.6,
+        75.7,
+        120.9,
+        78,
+        70.2,
+        36.6,
+        0,
+        27.1,
+        130.1,
+        118.9,
+        116.7,
+        32.1,
+        116.1,
+        110.1,
+        127.1,
+        119.2,
+        45.4,
+        101.8,
+        123.9,
+        83.1,
+        55.8,
+        110
+      ],
+      "grains": {
+        "live": 28,
+        "emitted": 28,
+        "used": 28,
+        "time": 3.1663000000000032,
+        "uploads": 2
+      },
+      "toolTipPx": {
+        "sx": 731.8631189891403,
+        "sy": 227.90809057594333
+      }
+    },
+    "walkInfo": {
+      "backend": "webgpu",
+      "tier": "B",
+      "preset": "medium",
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "dpr": 1,
+      "renderScale": 0.85,
+      "frameTimeAvgMs": 49.85624980926514,
+      "frameTimeP95Ms": 66.9000015258789,
+      "drawCalls": 171,
+      "triangles": 421379,
+      "texPoolMB": 0,
+      "placeholderAssets": [],
+      "lossCount": 0
+    }
+  },
+  "console": [
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+  ]
+}

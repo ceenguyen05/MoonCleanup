@@ -19,7 +19,7 @@ REFERENCE_TARGET governs RF/VT acceptance and optional custom progression. Prote
 **Product priority (owner, 2026-11-13): SOLO PLAY FIRST.** Graphics, animation, fps and game feel in solo play come first and must never lag; multiplayer
 is a real, secondary objective that must exist and work, but it may feel laggy on the free Render service and must never cost solo feel
 (no solo input delay, no solo frame-time or allocation cost from netcode). Cee plays/demos on the deployed Vercel + Render build; local is development only.
-Deadline: **November 17, 2026, America/Chicago**; report risk honestly, never silently reduce core scope.
+No deadline (owner, 2026-11-16): quality first; never silently reduce core scope.
 
 ## Continuous build
 

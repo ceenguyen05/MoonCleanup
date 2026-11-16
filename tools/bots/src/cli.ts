@@ -1,7 +1,9 @@
+// pnpm bots -- shift-room [--port 2571] [--bots 1|6] [--duration 30] [--netsim none|clean|typical|bad]  (spawns a local ShiftRoom harness)
 // pnpm bots -- spike-16 --url http://localhost:2571 [--duration 600] [--bots 6] [--netsim typical|none|...]
 //   [--tick 20] [--snap 10] [--seed 1] [--milestone M0] [--out tools/bots/results] [--server-log file]
 //   [--reconnect-at 0.5] [--join-retry-max 60] [--allow-hosted]
 import { parseArgs } from "node:util";
+import { runShiftRoom } from "./scenarios/shift-room";
 import { runSpike16 } from "./scenarios/spike16";
 
 const { positionals, values } = parseArgs({
@@ -21,14 +23,32 @@ const { positionals, values } = parseArgs({
     "reconnect-at": { type: "string", default: "0.5" },
     "allow-hosted": { type: "boolean", default: false },
     "join-retry-max": { type: "string", default: "60" },
+    port: { type: "string", default: "2571" },
     origin: { type: "string" },
     label: { type: "string" },
   },
 });
 
 const scenario = positionals[0];
+if (scenario === "shift-room") {
+  const { jsonPath, mdPath, report } = await runShiftRoom({
+    port: Number(values.port),
+    bots: Number(values.bots),
+    durationS: Number(values.duration),
+    tickHz: Number(values.tick),
+    snapshotHz: Number(values.snap),
+    seed: Number(values.seed),
+    netsim: values.netsim ?? "typical",
+    milestone: values.milestone ?? "M1",
+    outDir: values.out ?? "results",
+    joinRetryMaxS: Number(values["join-retry-max"]),
+    ...(values.label !== undefined ? { label: values.label } : {}),
+  });
+  console.log(JSON.stringify({ kind: "shift-room-done", jsonPath, mdPath, desync: report.shift.desync.total }));
+  process.exit(0);
+}
 if (scenario !== "spike-16") {
-  console.error("usage: bots spike-16 --url <server url> [options]   (see tools/bots/README.md)");
+  console.error("usage: bots spike-16|shift-room --url <server url> [options]   (see tools/bots/README.md)");
   process.exit(2);
 }
 const { jsonPath, mdPath, report } = await runSpike16({

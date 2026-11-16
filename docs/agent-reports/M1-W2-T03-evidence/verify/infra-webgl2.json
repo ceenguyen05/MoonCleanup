@@ -1,0 +1,159 @@
+[
+  {
+    "name": "s06-pool",
+    "url": "http://localhost:5293/?scene=s06&view=pool&solo=0&preset=medium&backend=webgl2",
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 2000,
+        "lastMs": 2000,
+        "lastFrames": 4,
+        "timedOut": false,
+        "pipelines": 56,
+        "pipelinesAtReady": 56,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0
+      },
+      "drawBudget": {
+        "drawCalls": 294,
+        "triangles": 518919,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 597,
+        "overFrames": 0,
+        "peakDrawCalls": 294,
+        "peakTriangles": 518919
+      },
+      "memory": {
+        "totalBytes": 3981312,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 3981312,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 3981312
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 56,
+        "textureBytes": 93893699,
+        "geometryBytes": 5249156,
+        "totalBytes": 99678629
+      },
+      "dynres": {
+        "enabled": true,
+        "pinned": false,
+        "scale": 0.6,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 16.700000762939453,
+        "targetMs": 16.666666666666668,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+    ]
+  },
+  {
+    "name": "moon-ground",
+    "url": "http://localhost:5293/?scene=moon&view=ground&solo=0&preset=medium&backend=webgl2",
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 667.4000000003725,
+        "lastMs": 667.4000000003725,
+        "lastFrames": 4,
+        "timedOut": false,
+        "pipelines": 37,
+        "pipelinesAtReady": 29,
+        "pipelinesAfterWarmup": 8,
+        "runtimeCreationFrames": 2
+      },
+      "drawBudget": {
+        "drawCalls": 30,
+        "triangles": 355075,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 613,
+        "overFrames": 0,
+        "peakDrawCalls": 30,
+        "peakTriangles": 355075
+      },
+      "memory": {
+        "totalBytes": 4672512,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 4672512,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 4672512
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 37,
+        "textureBytes": 92826664,
+        "geometryBytes": 2001056,
+        "totalBytes": 95100657
+      },
+      "dynres": {
+        "enabled": true,
+        "pinned": false,
+        "scale": 0.65,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "interval",
+        "p90Ms": 16.700000762939453,
+        "targetMs": 16.666666666666668,
+        "steps": 1,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 0,
+        "paceTargetMs": 0,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: [render] 6 pipeline(s) created after warm-up (frame 20)",
+      "warning: [render] 8 pipeline(s) created after warm-up (frame 21)"
+    ]
+  }
+]

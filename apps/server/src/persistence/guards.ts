@@ -9,7 +9,14 @@ const hasFns = (value: unknown, names: readonly string[]): boolean =>
   names.every((n) => typeof (value as Record<string, unknown>)[n] === "function");
 
 export function isRoomSaveRepository(value: unknown): value is RoomSaveRepository {
-  return hasFns(value, ["acquireLease", "renewLease", "releaseLease", "loadRoomSave", "commitRoomCheckpoint"]);
+  return hasFns(value, [
+    "acquireLease",
+    "renewLease",
+    "releaseLease",
+    "loadRoomSave",
+    "commitRoomCheckpoint",
+    "archiveRoomSave",
+  ]);
 }
 
 export function isUsageRepository(value: unknown): value is UsageRepository {

@@ -125,6 +125,7 @@ export class SoloPredictor implements AvatarPoseSource {
   private prevButtons = 0;
   private lastSeq = -1;
   private toolCode = 0;
+  private seated = false;
   private started = false;
   private stepMs = 0;
   private lastDecayMs = 0;
@@ -145,6 +146,11 @@ export class SoloPredictor implements AvatarPoseSource {
 
   get airborne(): boolean {
     return this.started && this.state.moveState !== 0;
+  }
+
+  /** Seated in a vehicle: the avatar rides the handle (the sim moves it), so the prediction stops walking it. */
+  setSeated(on: boolean): void {
+    this.seated = on;
   }
 
   /** Equipped tool code (own `PlayerInfo.equippedTool` from shift state): speed multipliers and face-aim follow it. */
@@ -277,6 +283,10 @@ export class SoloPredictor implements AvatarPoseSource {
 
   /** stepActor's movement half (moon-room-sim.ts); identical to the online predictor's. Integer arguments only. */
   private stepWith(a: AvatarState, moveX: number, moveY: number, yaw: number, b: number): void {
+    if (this.seated) {
+      this.prevButtons = b;
+      return;
+    }
     const cfg = this.cfg;
     const M = INPUT_BUTTON_MASK;
     const pressed = b & ~this.prevButtons;

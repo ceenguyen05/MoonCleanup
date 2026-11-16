@@ -67,6 +67,7 @@ function Marker({
 const Track = memo(function Track({ fenceDeg }: { fenceDeg: number | null }): ReactElement {
   const parcels = useParcels((state) => state.bearings);
   const outposts = useParcels((state) => state.outposts);
+  const markers = useParcels((state) => state.markers);
   const outpostIds = Object.keys(outposts);
   return (
     <div className={styles["track"]} {...{ [COMPASS_TRACK_ATTR]: "" }}>
@@ -106,6 +107,20 @@ const Track = memo(function Track({ fenceDeg }: { fenceDeg: number | null }): Re
             className={styles["outpostMark"]}
             label={name}
             icon={Landmark}
+          />
+        );
+      })}
+      {Object.entries(markers).map(([id, deg]) => {
+        const name = (C.objectives as Readonly<Record<string, string>>)[id];
+        if (name === undefined) return null;
+        return (
+          <Marker
+            key={`objective-${id}`}
+            id={`objective-${id}`}
+            deg={deg}
+            className={styles["objectiveMark"]}
+            label={formatString(C.markerLabel, { name })}
+            icon={MapPin}
           />
         );
       })}

@@ -1,0 +1,31 @@
+[normal] OPEN frames first 30:
+0ms op=0 ty=20.0 scrim=0 | 41ms op=0 ty=19.7 scrim=0 | 67ms op=0.109 ty=17.8 scrim=0.457 | 110ms op=0.395 ty=12.1 scrim=0.816 | 217ms op=0.718 ty=5.7 scrim=0.987 | 250ms op=0.863 ty=2.7 scrim=1 | 287ms op=0.943 ty=1.1 scrim=1 | 289ms op=0.959 ty=0.8 scrim=1 | 347ms op=0.989 ty=0.2 scrim=1 | 397ms op=1 ty=-0.0 scrim=1 | 446ms op=1 - scrim=1 | 499ms op=1 - scrim=1 | 544ms op=1 - scrim=1 | 594ms op=1 - scrim=1 | 638ms op=1 - scrim=1 | 677ms op=1 - scrim=1 | 689ms op=1 - scrim=1 | 705ms op=1 - scrim=1 | 729ms op=1 - scrim=1 | 744ms op=1 - scrim=1 | 761ms op=1 - scrim=1 | 777ms op=1 - scrim=1 | 793ms op=1 - scrim=1 | 809ms op=1 - scrim=1 | 825ms op=1 - scrim=1 | 841ms op=1 - scrim=1 | 857ms op=1 - scrim=1 | 873ms op=1 - scrim=1 | 889ms op=1 - scrim=1 | 905ms op=1 - scrim=1
+[normal] open settle at 446ms
+[normal] open max opacity 1
+[normal] open frame dt mean/max 21.8 58.8
+[normal] open ty min/max -0.00 20.00
+[normal] FOCUS distinct frames: 4
+   0ms focus=H2 {"ol":"none 3px rgb(245, 247, 250)","bs":"none","tr":"none","bd":"rgb(245, 247, 250)"}
+   16ms focus=save-choose-keep_local {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   449ms focus=save-choose-use_server {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   864ms focus=save-decide-later {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgba(255, 255, 255, 0.14)"}
+[normal] button transform while pressed: matrix(1, 0, 0, 1, 0, 1)
+[normal] CLOSE frames:
+0ms op=1 ty=0.0 scrim=1 | 10ms op=1 ty=0.0 scrim=1 | 151ms op=0.036 ty=7.7 scrim=0.036 | 209ms op=0 ty=8.0 scrim=0 | 242ms GONE
+[normal] close duration 242ms
+[normal] screencast frames 0
+[reduced] OPEN frames first 30:
+0ms op=0 - scrim=0 | 28ms op=0 - scrim=0 | 288ms op=1 - scrim=1 | 676ms op=1 - scrim=1 | 842ms op=1 - scrim=1 | 886ms op=1 - scrim=1 | 945ms op=1 - scrim=1 | 968ms op=1 - scrim=1 | 983ms op=1 - scrim=1 | 1000ms op=1 - scrim=1 | 1001ms op=1 - scrim=1 | 1044ms op=1 - scrim=1 | 1061ms op=1 - scrim=1 | 1069ms op=1 - scrim=1 | 1119ms op=1 - scrim=1 | 1125ms op=1 - scrim=1 | 1142ms op=1 - scrim=1 | 1161ms op=1 - scrim=1 | 1172ms op=1 - scrim=1 | 1188ms op=1 - scrim=1 | 1205ms op=1 - scrim=1 | 1220ms op=1 - scrim=1 | 1257ms op=1 - scrim=1 | 1258ms op=1 - scrim=1 | 1283ms op=1 - scrim=1 | 1284ms op=1 - scrim=1 | 1309ms op=1 - scrim=1 | 1318ms op=1 - scrim=1 | 1345ms op=1 - scrim=1 | 1370ms op=1 - scrim=1
+[reduced] open settle at 288ms
+[reduced] open max opacity 1
+[reduced] open frame dt mean/max 18.3 58.7
+[reduced] open ty min/max 0.00 0.00
+[reduced] FOCUS distinct frames: 3
+   0ms focus=save-choose-keep_local {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   447ms focus=save-choose-use_server {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgb(53, 224, 210)"}
+   834ms focus=save-decide-later {"ol":"solid 2px rgb(53, 224, 210)","bs":"none","tr":"none","bd":"rgba(255, 255, 255, 0.14)"}
+[reduced] button transform while pressed: matrix(1, 0, 0, 1, 0, 1)
+[reduced] CLOSE frames:
+0ms op=1 - scrim=1 | 14ms op=0.728 - scrim=0.728 | 40ms op=0.441 - scrim=0.441 | 98ms op=0.009 - scrim=0.009 | 154ms op=0 - scrim=0 | 189ms GONE
+[reduced] close duration 189ms
+[reduced] screencast frames 0

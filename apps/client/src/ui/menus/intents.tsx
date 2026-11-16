@@ -23,7 +23,13 @@ export interface UiIntentPort {
    * while the player is remapping. The screen itself is drawn by the UI over `UiModuleOptions.controls`.
    */
   readonly openControls: (open?: boolean) => void;
+  /** Settings > Controls: Plot Card activation, tap-to-toggle or hold-to-show. Wire to input + persistence. */
+  readonly setPlotCardMode: (mode: PlotCardActivation) => void;
 }
+
+/** Same values as the input layer's `PlotCardMode` (the UI does not import gameplay). */
+export const PLOT_CARD_ACTIVATIONS = ["toggle", "hold"] as const;
+export type PlotCardActivation = (typeof PLOT_CARD_ACTIVATIONS)[number];
 
 const noop = (): void => undefined;
 
@@ -32,6 +38,7 @@ export const NO_INTENTS: UiIntentPort = {
   purchaseBoardNode: noop,
   setQualityPreset: noop,
   openControls: noop,
+  setPlotCardMode: noop,
 };
 
 export const UiIntentsContext = createContext<UiIntentPort>(NO_INTENTS);

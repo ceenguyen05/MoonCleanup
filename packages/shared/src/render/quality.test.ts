@@ -18,8 +18,8 @@ const TABLE: Record<string, readonly [low: unknown, medium: unknown, high: unkno
   // Target FPS / GPU ms: 30 / 28, 30 / 28, 60 / 14, 60 / 14
   "dynres.targetFps": [30, 30, 60, 60],
   "dynres.gpuBudgetMs": [28, 28, 14, 14],
-  // Render scale range: 0.50-0.75, 0.60-0.85, 0.75-1.00, 0.85-1.00
-  "dynres.scaleMin": [0.5, 0.6, 0.75, 0.85],
+  // Render scale range: 0.50-0.75, 0.75-0.85 (owner 2026-11-16), 0.75-1.00, 0.85-1.00
+  "dynres.scaleMin": [0.5, 0.75, 0.75, 0.85],
   "dynres.scaleMax": [0.75, 0.85, 1.0, 1.0],
   // DPR cap
   dprCap: [1.0, 1.0, 1.5, 2.0],
@@ -63,9 +63,9 @@ const TABLE: Record<string, readonly [low: unknown, medium: unknown, high: unkno
   "lights.maxLocalLights": [8, 16, 32, 64],
   "lights.unshadowedLampRangeM": [8, 8, 8, 8],
   "lights.envProbeFacePx": [64, 128, 128, 128],
-  // CDLOD leaf level / patch: L8 / 17, L8 / 33, L8 / 33, L9 / 33; range multiplier
+  // CDLOD leaf level / patch: L8 / 17, L8 / 17, L8 / 33, L9 / 33; range multiplier
   "terrain.cdlodLeafLevel": [8, 8, 8, 9],
-  "terrain.cdlodPatchVerts": [17, 33, 33, 33],
+  "terrain.cdlodPatchVerts": [17, 17, 33, 33],
   "terrain.cdlodRangeMult": [0.75, 1.0, 1.25, 1.5],
   // Procedural detail (crater bands + noise octaves): 2 + 1, 3 + 1, 3 + 2, 3 + 2
   "terrain.detailCraterBands": [2, 3, 3, 3],

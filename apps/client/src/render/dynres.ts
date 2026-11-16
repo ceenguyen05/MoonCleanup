@@ -21,8 +21,11 @@
 // therefore also passes the frame interval's budget (`paceTargetMs`); the controller keeps the intervals in a second window
 // and counts "over" when either the GPU time or the frame pace is over (the pace verdict needs a full 30-frame window, per
 // section 9's "last 30 frames"). The pace budget is never tighter than the display
-// allows: the fastest tenth of any window seen so far stands in for the refresh interval (a 50 Hz display is not "over" a 60 fps
-// target for ever). A step up taken on GPU headroom is then judged like a vsync probe: if the budget breaks it is taken back
+// allows: the fastest tenth of the windows stands in for the refresh interval (a 50 Hz display is not "over" a 60 fps target
+// for ever). It is believed between 240 Hz and 29 Hz (slower is load), falls at once, is dropped by `reset()` and, on the gpu
+// signal only, rises after a whole `refreshHorizonS` without a faster window (display 60 -> 30 Hz). The interval signal uses
+// the same floor on its target. Known limits: a frame rate locked at exactly 2 x refresh from a reset on is read as the display
+// rate; on the interval signal a mid-session drop of the display rate is learnt only at the next reset (preset change, warm-up). A step up taken on GPU headroom is then judged like a vsync probe: if the budget breaks it is taken back
 // and the next attempt waits twice as long, so a scale the display cannot hold is not retried every 4 s.
 //
 // Stalls (tab switch, shader compile hitch: one interval above `stallMs`) are not GPU load: the sample is dropped and the
@@ -67,6 +70,12 @@ export interface DynresTuning {
   readonly stallMs: number;
   /** Samples ignored after a reset (pipelines compile, targets reallocate). */
   readonly settleS: number;
+  /**
+   * The refresh estimate falls at once but rises only to the slowest-showing horizon: when no window in this many seconds
+   * showed the current estimate, it becomes the fastest any of them showed (display went 60 -> 30 Hz). Longer than the time
+   * to reach the floor plus `DYNRES_FLOOR_HINT_S`, so a real overload at the floor is reported before it is reinterpreted.
+   */
+  readonly refreshHorizonS: number;
 }
 
 /** Section 9 values. */
@@ -87,6 +96,7 @@ export const DYNRES_TUNING: DynresTuning = {
   probeJudgeAfterS: 1,
   stallMs: 250,
   settleS: 1,
+  refreshHorizonS: 30,
 };
 
 /** Seconds at the floor while still over budget after which the UI may offer a lower preset (section 9). */
@@ -96,6 +106,9 @@ export const DYNRES_FLOOR_HINT_S = 10;
 export function dynresTargetMs(signal: DynresSignal, dynres: { targetFps: number; gpuBudgetMs: number }): number {
   return signal === "gpu" ? dynres.gpuBudgetMs : 1000 / dynres.targetFps;
 }
+
+/** Slowest frame interval believed to be a display rate or browser cap (30 fps plus jitter), not load. */
+const REFRESH_MAX_MS = 1000 / 29;
 
 function snap(scale: number): number {
   // Steps are multiples of 0.05; keep the value free of float drift (0.6000000000000001).
@@ -128,6 +141,9 @@ export class DynamicResolution {
   private readonly intervals: Float32Array;
   /** Fastest tenth of any window of frame intervals so far: the display's refresh interval, as far as it showed. */
   private refreshMs = Number.POSITIVE_INFINITY;
+  /** Fastest tenth seen since `refreshHorizonAtS`: what the estimate rises to when the horizon ends. */
+  private refreshCandidateMs = Number.POSITIVE_INFINITY;
+  private refreshHorizonAtS = 0;
   private count = 0;
   private cursor = 0;
   private min: number;
@@ -174,6 +190,10 @@ export class DynamicResolution {
     this.backoff = 1;
     this.probing = false;
     this.floorSeconds = 0;
+    // A preset change, warm-up or device change may come with another display rate: learn it again.
+    this.refreshMs = Number.POSITIVE_INFINITY;
+    this.refreshCandidateMs = Number.POSITIVE_INFINITY;
+    this.refreshHorizonAtS = this.clockS;
   }
 
   /**
@@ -218,26 +238,23 @@ export class DynamicResolution {
     if (this.sinceEvaluateS < t.evaluateEveryS || this.count < t.minFrames) return this.scale;
     this.sinceEvaluateS = 0;
 
-    this.sorted.set(this.window);
-    // Unused slots are 0 and sort to the front: read the percentile from the filled tail.
-    this.sorted.sort();
     const offset = this.window.length - this.count;
-    const rank = Math.min(this.count - 1, Math.max(0, Math.ceil(t.percentile * this.count) - 1));
-    const p90 = this.sorted[offset + rank] ?? 0;
-    this.lastP90Ms = p90;
-    this.lastTargetMs = targetMs;
+    // Unused slots are 0 and sort to the front: read percentiles from the filled tail. A partial window (slow frames right
+    // after a clear) never reads its single largest value: one hitch among 5-9 frames is not a p90 miss.
+    const rank = Math.max(0, Math.min(this.count - 2, Math.ceil(t.percentile * this.count) - 1));
+
+    // Refresh estimate (both signals): display timestamps are multiples of the refresh interval, so the fastest tenth of a
+    // window shows it as soon as a few frames in a row were presented without a miss (believed between 240 Hz and 29 Hz).
+    this.sorted.set(this.intervals);
+    this.sorted.sort();
+    this.updateRefresh(this.sorted[offset + Math.floor(0.1 * this.count)] ?? 0);
+    const refreshFloor = Number.isFinite(this.refreshMs) ? this.refreshMs : 0;
 
     // Pace guard: the same percentile of the frame intervals against the frame budget (never below the refresh interval).
     let paceOver = false;
     const paced = signal === "gpu" && paceTargetMs > 0;
     if (paced) {
-      this.sorted.set(this.intervals);
-      this.sorted.sort();
-      // Display timestamps are multiples of the refresh interval: the fastest tenth of a window shows it as soon as a few
-      // frames in a row were presented without a miss (4 ms = 240 Hz is the shortest interval believed).
-      const fastest = this.sorted[offset + Math.floor(0.1 * this.count)] ?? 0;
-      if (fastest >= 4 && fastest < this.refreshMs) this.refreshMs = fastest;
-      const paceTarget = Math.max(paceTargetMs, Number.isFinite(this.refreshMs) ? this.refreshMs : 0);
+      const paceTarget = Math.max(paceTargetMs, refreshFloor);
       const paceP90 = this.sorted[offset + rank] ?? 0;
       this.lastPaceP90Ms = paceP90;
       this.lastPaceTargetMs = paceTarget;
@@ -248,7 +265,15 @@ export class DynamicResolution {
       this.lastPaceP90Ms = 0;
       this.lastPaceTargetMs = 0;
     }
-    this.evaluate(p90, targetMs, paceOver, paced);
+
+    // The interval signal gets the same refresh floor: a 50 Hz panel or a 30 fps cap (Energy Saver) is not GPU load.
+    const target = signal === "interval" ? Math.max(targetMs, refreshFloor) : targetMs;
+    this.sorted.set(this.window);
+    this.sorted.sort();
+    const p90 = this.sorted[offset + rank] ?? 0;
+    this.lastP90Ms = p90;
+    this.lastTargetMs = target;
+    this.evaluate(p90, target, paceOver, paced);
     return this.scale;
   }
 
@@ -313,6 +338,26 @@ export class DynamicResolution {
     }
   }
 
+  /** Falls at once to a faster window; rises to the fastest of the last horizon when no window showed the estimate. */
+  private updateRefresh(fastest: number): void {
+    // 4 ms (240 Hz) to 1000 / 29 ms (a 30 fps cap such as Energy Saver, with jitter): anything slower is load, not a display.
+    if (!(fastest >= 4 && fastest <= REFRESH_MAX_MS)) return;
+    if (fastest < this.refreshMs) this.refreshMs = fastest;
+    if (fastest < this.refreshCandidateMs) this.refreshCandidateMs = fastest;
+    if (this.clockS - this.refreshHorizonAtS < this.tuning.refreshHorizonS) return;
+    // Only the GPU signal may raise it: GPU time still sees real load there. On the interval signal a frame rate locked at
+    // 2 x refresh by load looks exactly like a 30 Hz display, so the estimate falls only (until `reset()`).
+    if (this.signal !== "gpu") {
+      this.refreshCandidateMs = Number.POSITIVE_INFINITY;
+      this.refreshHorizonAtS = this.clockS;
+      return;
+    }
+    // The candidate is never below the estimate unless a window showed it, so this only raises a stale estimate.
+    this.refreshMs = this.refreshCandidateMs;
+    this.refreshCandidateMs = Number.POSITIVE_INFINITY;
+    this.refreshHorizonAtS = this.clockS;
+  }
+
   private step(delta: number, now: number): void {
     const next = snap(Math.min(this.max, Math.max(this.min, this.scale + delta)));
     if (next === this.scale) return;
@@ -326,6 +371,9 @@ export class DynamicResolution {
 
   private clearWindow(): void {
     this.window.fill(0);
+    // The pace window must be cleared too: its unused slots are read as the sorted front (offset), and stale intervals of
+    // the previous window would shift the refresh estimate and the reported pace p90 of a partial window.
+    this.intervals.fill(0);
     this.count = 0;
     this.cursor = 0;
     this.sinceEvaluateS = 0;

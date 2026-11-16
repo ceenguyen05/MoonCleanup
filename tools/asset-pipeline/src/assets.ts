@@ -34,4 +34,22 @@ export const ASSETS: readonly AssetSource[] = [
     turntableLampCandela: 22000,
     measurePalette: true,
   },
+  {
+    id: "custodian_blockout",
+    class: "custodianBlockout",
+    script: "assets/models/characters/blockout/custodian_blockout.py",
+    placeholder: true,
+    replaceBy: "M1-W4-T07 (production custodian suit, art-direction 13.5)",
+    turntableLampCandela: 6000,
+    measurePalette: false,
+  },
+  {
+    id: "desk_duster_v0",
+    class: "handTool",
+    script: "assets/models/tools/blockout/desk_duster_v0.py",
+    placeholder: true,
+    replaceBy: "M1-W4-T07 (production T1-T4 hand tools, art-direction 13.5)",
+    turntableLampCandela: 6000,
+    measurePalette: false,
+  },
 ];

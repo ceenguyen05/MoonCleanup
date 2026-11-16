@@ -19,10 +19,11 @@
 //   rAF frame intervals are recorded into a preallocated buffer: p50 / p95 / p99 per page.
 /* global window, requestAnimationFrame -- browser globals, used only inside page.evaluate callbacks */
 import fs from "node:fs";
+import { OFFSCREEN_CHROME_ARGS } from "./offscreen-chrome-args.mjs";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-const REPO = "C:/Users/caseyn/Downloads/BroswerMoonSweeper";
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const { chromium } = await import(
   pathToFileURL(path.join(REPO, "tools/screenshots/node_modules/@playwright/test/index.mjs")).href
 );
@@ -49,6 +50,7 @@ const browser = await chromium.launch({
   headless: false,
   channel: "chrome",
   args: [
+    ...OFFSCREEN_CHROME_ARGS,
     "--enable-unsafe-webgpu",
     "--enable-features=Vulkan,WebGPU",
     "--ignore-gpu-blocklist",

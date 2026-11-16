@@ -14,6 +14,7 @@ import {
   type ControlsPort,
   type InputKind,
 } from "./controls-model";
+import type { PlotCardActivation } from "./intents";
 
 export interface QualityView {
   /** The preset in effect (or just requested, until `quality.changed` confirms or clamps it). */
@@ -43,26 +44,34 @@ export type RemapNote =
 
 export interface UiPrefsState {
   readonly quality: QualityView;
+  /** Plot Card activation shown in Settings (the input layer owns the live value). */
+  readonly plotCardMode: PlotCardActivation;
   readonly controlsOpen: boolean;
   readonly capture: CaptureState | null;
   readonly note: RemapNote | null;
+  /** The player chose "Decide later" on the "Which copy?" prompt; cleared when the conflict ends. UI-only, never saved. */
+  readonly savePromptDismissed: boolean;
 }
 
 export interface UiPrefsStore {
   readonly getState: () => UiPrefsState;
   readonly subscribe: (listener: () => void) => () => void;
   readonly setQuality: (patch: Partial<QualityView>) => void;
+  readonly setPlotCardMode: (mode: PlotCardActivation) => void;
   readonly setControlsOpen: (open: boolean) => void;
   readonly setCapture: (capture: CaptureState | null) => void;
   readonly setNote: (note: RemapNote | null) => void;
+  readonly setSavePromptDismissed: (dismissed: boolean) => void;
 }
 
 export function createUiPrefsStore(initial?: Partial<UiPrefsState>): UiPrefsStore {
   let state: UiPrefsState = {
     quality: { preset: "medium", maxPreset: "ultra" },
+    plotCardMode: "toggle",
     controlsOpen: false,
     capture: null,
     note: null,
+    savePromptDismissed: false,
     ...initial,
   };
   const listeners = new Set<() => void>();
@@ -81,12 +90,18 @@ export function createUiPrefsStore(initial?: Partial<UiPrefsState>): UiPrefsStor
       if (next.preset === state.quality.preset && next.maxPreset === state.quality.maxPreset) return;
       set({ quality: next });
     },
+    setPlotCardMode: (mode) => {
+      if (mode !== state.plotCardMode) set({ plotCardMode: mode });
+    },
     setControlsOpen: (open) => {
       if (open === state.controlsOpen) return;
       set({ controlsOpen: open, capture: null, note: null });
     },
     setCapture: (capture) => set({ capture, note: capture === null ? state.note : null }),
     setNote: (note) => set({ note }),
+    setSavePromptDismissed: (dismissed) => {
+      if (dismissed !== state.savePromptDismissed) set({ savePromptDismissed: dismissed });
+    },
   };
 }
 

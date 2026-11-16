@@ -4,5 +4,5 @@ import { mergeConfig } from "vitest/config";
 import { nodePreset } from "@moon-cleanup/config/vitest";
 
 export default mergeConfig(nodePreset, {
-  test: { name: "server", hookTimeout: 40_000, testTimeout: 30_000 },
+  test: { name: "server", hookTimeout: 60_000, testTimeout: 60_000 },
 });

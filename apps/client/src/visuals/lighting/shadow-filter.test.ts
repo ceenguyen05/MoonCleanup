@@ -1,6 +1,20 @@
 // M0 look-polish r2 item 2: the exact PCF tents (pure mirror `tentTaps1d` of the shader maths) against a 1-D shadow edge.
 import { describe, expect, it } from "vitest";
-import { TENT4_OFFSETS, shadowFilterFor, tentTaps1d } from "./shadow-filter";
+import {
+  FAR_KERNEL_FLOOR_X,
+  FAR_KERNEL_FLOOR_Y,
+  NEAR_KERNEL_FLOOR_X,
+  NEAR_KERNEL_FLOOR_Y,
+  TENT4_OFFSETS,
+  farKernelFloorX,
+  farKernelFloorY,
+  nearKernelFloorX,
+  nearKernelFloorY,
+  farKernelScale,
+  receiverKernelScale,
+  shadowFilterFor,
+  tentTaps1d,
+} from "./shadow-filter";
 
 /** Per-texel weights (texel index relative to the base texel -> weight) a set of bilinear taps adds up to. */
 function texelWeights(size: 3 | 5, s: number): Map<number, number> {
@@ -168,5 +182,29 @@ describe("staircase rejection (why far cascades run pcf5)", () => {
     expect(worst(5, 2)).toBeLessThan(1e-9);
     // A long staircase passes both: an edge nearly aligned with the grid still wobbles by a texel, slowly.
     expect(worst(5, 8)).toBeGreaterThan(0.6);
+  });
+});
+
+describe("far kernel floor (M1-W2-T02 comb on grazed terrain)", () => {
+  it("holds each axis at its floor at a grazing sun, unchanged where the light is steep", () => {
+    expect(farKernelFloorX.value).toBe(FAR_KERNEL_FLOOR_X);
+    expect(farKernelFloorY.value).toBe(FAR_KERNEL_FLOOR_Y);
+    const grazing = Math.sin((5 * Math.PI) / 180);
+    for (const floor of [FAR_KERNEL_FLOOR_X, FAR_KERNEL_FLOOR_Y]) {
+      expect(farKernelScale(grazing, floor)).toBe(Math.max(floor, receiverKernelScale(grazing)));
+      expect(farKernelScale(0, floor)).toBe(floor);
+      expect(farKernelScale(0.5, floor)).toBe(1);
+    }
+    expect(shadowFilterFor("pcf5", true)).not.toBeNull();
+  });
+});
+
+describe("near kernel floor (cascade 0 comb at a 5 degree sun)", () => {
+  it("keeps the full tent along the light and the 0.4 floor across it", () => {
+    expect(nearKernelFloorX.value).toBe(NEAR_KERNEL_FLOOR_X);
+    expect(nearKernelFloorY.value).toBe(NEAR_KERNEL_FLOOR_Y);
+    expect(NEAR_KERNEL_FLOOR_Y).toBe(1);
+    expect(NEAR_KERNEL_FLOOR_X).toBeLessThan(1);
+    expect(shadowFilterFor("pcf3", true)).not.toBeNull();
   });
 });

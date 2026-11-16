@@ -1,0 +1,59 @@
+/* Sync chip: whole-px sizes from tokens, text never transformed (only the glyph swaps in with transform / opacity), state is
+   text plus a distinct glyph shape, never colour alone. */
+.chip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-sp-2);
+  min-height: var(--mc-sp-6);
+  padding: 0 var(--mc-sp-3) 0 var(--mc-sp-2);
+  font-size: var(--mc-fs-caption);
+  line-height: var(--mc-lh-caption);
+  font-weight: 500;
+  color: var(--mc-text-2);
+  background: var(--mc-glass-bg-strong);
+  border-radius: var(--mc-r-pill);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-glass-border);
+}
+
+.attention {
+  color: var(--mc-text-1);
+  box-shadow: inset 0 0 0 var(--mc-hairline) var(--mc-warn);
+}
+
+.attention .glyph {
+  color: var(--mc-warn);
+}
+
+.glyph {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--mc-sp-4);
+  height: var(--mc-sp-4);
+  flex: none;
+}
+
+.glyphInner {
+  display: inline-grid;
+  place-items: center;
+}
+
+/* The upload arrow breathes (opacity only). Reduced motion never adds the class. */
+.busy {
+  animation: mc-sync-breathe 1.4s var(--mc-ease-in-out) infinite;
+}
+
+@keyframes mc-sync-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.text {
+  white-space: nowrap;
+}

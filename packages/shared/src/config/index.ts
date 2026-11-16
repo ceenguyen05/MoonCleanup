@@ -29,5 +29,6 @@ export * from "./moderation.schema";
 export * from "./features.schema";
 export * from "./pacing-targets.schema";
 export * from "./tool-feel.schema";
+export * from "./vehicle-feel.schema";
 export * from "./bundle.schema";
 export * from "./mvp-scope.schema";

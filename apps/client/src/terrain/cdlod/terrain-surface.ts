@@ -3,8 +3,8 @@
 // Per vertex: grid index -> chained morph (`MORPH_STAGES` levels, same LOD distance as `cdlod/select.ts`) -> (face, a, b)
 // -> equal-angle direction -> H (height twin) -> position = dir (R + H), written camera-relative: the mesh sits at the
 // camera (CPU doubles) and the shader adds `origin` = moon centre - mesh position, so no large coordinate reaches the
-// projection. The world normal comes from the slope of H (base: central differences at +-1/2 height texel; detail:
-// analytic) and is handed to the fragment stage in the varying `terrainNormalWorld`.
+// projection. The world normal comes from the slope of H (base: central differences at +-1/2 height texel, read from one
+// 3x3 texel window; detail: analytic) and is handed to the fragment stage in the varying `terrainNormalWorld`.
 //
 // Procedural detail fades out with the LOD distance where the grid can no longer carry it (`DETAIL_FADES_M`), so far
 // vertices skip the crater and noise loops. The JS ground function keeps full detail everywhere; within the fade-in
@@ -84,7 +84,8 @@ const QUARTER_PI = Math.PI / 4;
 /**
  * LOD distances (m) over which each detail term fades out: [start, end], times the preset's range multiplier. Crater
  * bands 4 / 12 / 40 m, noise 1.5 / 0.4 m. Each term ends where the grid spacing reaches about half its smallest feature
- * (Medium: level 7 ends at 40 m with 0.77 m spacing, level 5 at 160 m with 3 m, level 3 at 640 m with 12 m); the crater
+ * (33-vertex patch: level 7 ends at 40 m with 0.77 m spacing, level 5 at 160 m with 3 m, level 3 at 640 m with 12 m;
+ * the 17-vertex patch of Low / Medium doubles each spacing, so the 4 m crater band is under-sampled there); the crater
  * and noise loops are most of the vertex cost, in the main pass and in every shadow cascade.
  */
 export const DETAIL_FADES_M = {
@@ -110,8 +111,14 @@ export interface TerrainSurfaceUniforms {
   readonly rootRange: { value: number };
   /** Multiplier on the skirt depth (1; 0 shows any crack between nodes, a diagnostic). */
   readonly skirtScale: { value: number };
-  /** Shadow passes draw the surface this many metres lower (see `CASTER_DROP_M` in cdlod-terrain.ts). */
+  /**
+   * Shadow passes push the surface away from the light by `casterDrop * max(dot(casterLight, up), 0)` metres along the
+   * light direction: the light depth of a vertical drop of `casterDrop`, without moving the shadow sideways (see
+   * `CASTER_DROP_M` in cdlod-terrain.ts).
+   */
   readonly casterDrop: { value: number };
+  /** Unit direction toward the key light, world axes (written by the cascade host each frame). */
+  readonly casterLight: { value: Vector3 };
   /**
    * Multiplier on the morph ranges in shadow passes: 0.5 when the casters use the half-resolution patch (their grid is
    * one level coarser, so each morph must finish one level earlier or the cast surface jumps when a node splits),
@@ -138,7 +145,7 @@ export interface TerrainSurface {
 export interface TerrainSurfaceOptions {
   readonly twin: HeightTwin;
   readonly radiusM: number;
-  /** Quads along one patch edge (32; Low 16). */
+  /** Quads along one patch edge (16 on Low / Medium, 32 on High / Ultra; `cdlodPatchVerts - 1`). */
   readonly patchQuads: number;
   /** Multiplier on the detail fade distances (the preset's range multiplier). */
   readonly fadeScale?: number;
@@ -146,6 +153,8 @@ export interface TerrainSurfaceOptions {
   readonly farNormals?: boolean;
   /** Build the horizon-map term (default on; it reads no texture until it is given the map). */
   readonly horizon?: boolean;
+  /** Texel reads for H_base and its slope in the main pass: 9 (default, one 3x3 window) or 20 (5 bilinear, A/B). */
+  readonly baseNormalTaps?: 9 | 20;
 }
 
 export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSurface {
@@ -153,6 +162,7 @@ export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSur
   const R = options.radiusM;
   const quads = options.patchQuads;
   const fadeScale = options.fadeScale ?? 1;
+  const wideBaseNormal = options.baseNormalTaps === 20;
 
   const lodCamera = uniform(new Vector3(0, R, 0));
   const lodRadius = uniform(R);
@@ -160,6 +170,7 @@ export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSur
   const rootRange = uniform(1e9);
   const skirtScale = uniform(1);
   const casterDrop = uniform(0);
+  const casterLight = uniform(new Vector3(0, 1, 0));
   const casterRangeScale = uniform(1);
   const center = uniform(new Vector3());
   const normalVarying = varyingProperty("vec3", "vTerrainNormal");
@@ -210,20 +221,28 @@ export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSur
         ),
         noise: vec2(fade(DETAIL_FADES_M.noise[0]), fade(DETAIL_FADES_M.noise[1])).toVar(),
       };
-      const hBase = twin.base(fr.face, ab.x, ab.y).toVar();
+      // Main pass: H_base and its slope from one 3x3 texel window (9 taps); shadow passes need H_base only (4 taps).
+      const e = twin.halfTexelAB;
+      const slope9 = withNormal && !wideBaseNormal ? twin.baseSlope(fr.face, ab.x, ab.y).toVar() : null;
+      const hBase = (slope9 === null ? twin.base(fr.face, ab.x, ab.y) : slope9.x).toVar();
       const det = twin.detail(dir, fr.face, ab.x, ab.y, weights);
       const h = hBase.add(det.h).toVar();
 
       if (withNormal) {
-        const e = twin.halfTexelAB;
-        const dBaseA = twin
-          .base(fr.face, ab.x.add(e), ab.y)
-          .sub(twin.base(fr.face, ab.x.sub(e), ab.y))
-          .div(2 * e);
-        const dBaseB = twin
-          .base(fr.face, ab.x, ab.y.add(e))
-          .sub(twin.base(fr.face, ab.x, ab.y.sub(e)))
-          .div(2 * e);
+        const dBaseA =
+          slope9 !== null
+            ? slope9.y
+            : twin
+                .base(fr.face, ab.x.add(e), ab.y)
+                .sub(twin.base(fr.face, ab.x.sub(e), ab.y))
+                .div(2 * e);
+        const dBaseB =
+          slope9 !== null
+            ? slope9.z
+            : twin
+                .base(fr.face, ab.x, ab.y.add(e))
+                .sub(twin.base(fr.face, ab.x, ab.y.sub(e)))
+                .div(2 * e);
         // d dir / d a = (dq - dir (dir . dq)) / |q|, dq = pi/4 (1 + tan^2) u.
         const dqa = fu.mul(ta.mul(ta).add(1).mul(QUARTER_PI)).toVar();
         const dqb = fv.mul(tb.mul(tb).add(1).mul(QUARTER_PI)).toVar();
@@ -246,9 +265,10 @@ export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSur
 
       // Skirt vertices drop by the node's skirt depth.
       // Shadow passes get no skirt: skirt walls in the shadow map drew dark lines along node borders (seen at a 14 degree
-      // sun), and the surface itself is watertight.
-      const skirt = withNormal ? grid.z.mul(lod.z).mul(skirtScale) : casterDrop;
-      return dir.mul(h.add(R).sub(skirt)).add(origin);
+      // sun), and the surface itself is watertight. They move away from the light instead (`casterDrop`).
+      if (withNormal) return dir.mul(h.add(R).sub(grid.z.mul(lod.z).mul(skirtScale))).add(origin);
+      const push = casterDrop.mul(tslMax(dot(casterLight, dir), 0));
+      return dir.mul(h.add(R)).sub(casterLight.mul(push)).add(origin);
     })();
 
   // Face coordinates of a fragment: (a, b, face) from the vertex stage. They are linear over a grid quad, so the
@@ -270,7 +290,10 @@ export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSur
       const b = faceABVarying.y;
       // Height texels per pixel from the screen-space change of the face coordinates (derivatives stay outside the branch).
       const texelsPerPixel = tslMax(fwidth(a), fwidth(b)).mul(twin.faceSize / 2);
-      const level = int(clamp(floor(log2(tslMax(texelsPerPixel, 1e-6)).add(0.5)), 0, twin.farLevels)).toVar();
+      // Fractional level; the middle half of each step blends into the next level (no rings crawling over slopes, F3).
+      const lf = clamp(log2(tslMax(texelsPerPixel, 1e-6)), 0, twin.farLevels).toVar();
+      const level = int(floor(lf)).toVar();
+      const blend = smoothstep(0.25, 0.75, lf.sub(floor(lf))).toVar();
       const w = smoothstep(
         FAR_NORMAL_M[0] * fadeScale,
         FAR_NORMAL_M[1] * fadeScale,
@@ -280,6 +303,9 @@ export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSur
       If(w.greaterThan(0), () => {
         const c = fragmentFace();
         const g = twin.farSlope(c.face, a, b, level).toVar();
+        If(blend.greaterThan(0), () => {
+          g.assign(mix(g, twin.farSlope(c.face, a, b, level.add(1)), blend));
+        });
         const ta = tan(a.mul(QUARTER_PI)).toVar();
         const tb = tan(b.mul(QUARTER_PI)).toVar();
         const q = c.n.add(c.u.mul(ta)).add(c.v.mul(tb)).toVar();
@@ -370,7 +396,17 @@ export function createTerrainSurface(options: TerrainSurfaceOptions): TerrainSur
     normalWorld: options.farNormals === false ? normalize(normalVarying) : farNormal(),
     faceAB: faceABVarying,
     horizon: options.horizon === false ? null : buildHorizon(),
-    uniforms: { lodCamera, lodRadius, origin, rootRange, skirtScale, casterDrop, casterRangeScale, center },
+    uniforms: {
+      lodCamera,
+      lodRadius,
+      origin,
+      rootRange,
+      skirtScale,
+      casterDrop,
+      casterLight,
+      casterRangeScale,
+      center,
+    },
   };
 }
 

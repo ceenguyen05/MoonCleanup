@@ -107,8 +107,8 @@ describe("postgres room repository specifics", () => {
       [contractId],
     );
     expect(slots.rows).toEqual([
-      { slot: "A", save_seq: 3, origin_kind: "room", saved_by: "a", codec: "room-v0" },
-      { slot: "B", save_seq: 2, origin_kind: "room", saved_by: "a", codec: "room-v0" },
+      { slot: "A", save_seq: 3, origin_kind: "room", saved_by: "a", codec: "room-v3" },
+      { slot: "B", save_seq: 2, origin_kind: "room", saved_by: "a", codec: "room-v3" },
     ]);
     const chunks = await pg.query<{ ver: number; save_seq: number }>(
       "select ver, save_seq::int as save_seq from contract_dust_chunks where contract_id = $1 order by ver",
@@ -125,6 +125,38 @@ describe("postgres room repository specifics", () => {
     expect(c.rows[0]!.stored_bytes).toBeGreaterThan(0);
     expect(c.rows[0]!.last_played_at.getTime()).toBe(T0 + 90_000);
     expect(c.rows[0]!.game_data_version).toBe("1.3");
+  });
+
+  it("reads a legacy room-v1 header without a parcel mask and reports an unreadable header codec", async () => {
+    const h = await harness();
+    h.setNow(T0);
+    const contractId = await newContract();
+    await h.repo.acquireLease(lease(contractId));
+    // A v2 header without the mask is byte-identical to the v1 layout: relabel it as a pre-fix row.
+    await h.repo.commitRoomCheckpoint({
+      owner: lease(contractId),
+      simTick: 1,
+      chunks: [{ chunkId: 2, payload: fill(2) }],
+      state: { walletLm: 50 },
+    });
+    await pg.query("update contract_saves set codec = 'room-v1' where contract_id = $1", [contractId]);
+    const legacy = await h.repo.loadRoomSave(contractId);
+    expect(legacy!.state).toEqual({ walletLm: 50 }); // no nearParcelsMask: the server skips this wallet
+    expect(legacy!.ignoredHeaderCodec).toBeNull();
+    // A v3 header without the META section is byte-identical to the v2 layout: a room-v2 row reads the same.
+    await h.repo.commitRoomCheckpoint({
+      owner: lease(contractId),
+      simTick: 2,
+      chunks: [],
+      state: { walletLm: 60, nearParcelsMask: 5 },
+    });
+    await pg.query("update contract_saves set codec = 'room-v2' where contract_id = $1", [contractId]);
+    expect((await h.repo.loadRoomSave(contractId))!.state).toEqual({ walletLm: 60, nearParcelsMask: 5 });
+    // Rollback: a newer server wrote a codec this build cannot read. Chunks load; the header is reported, not hidden.
+    await pg.query("update contract_saves set codec = 'room-v9' where contract_id = $1", [contractId]);
+    const rolledBack = await h.repo.loadRoomSave(contractId);
+    expect(rolledBack).toMatchObject({ state: null, bakeHash: null, ignoredHeaderCodec: "room-v9" });
+    expect(rolledBack!.chunks.map((c) => c.chunkId)).toEqual([2]);
   });
 
   it("ignores chunk versions newer than the header and falls back to the older valid version on bit rot", async () => {
@@ -174,6 +206,82 @@ describe("postgres room repository specifics", () => {
     await pg.exec("truncate table contract_dust_chunks");
     await pg.query("update contract_saves set checksum = checksum + 1 where contract_id = $1", [contractId]);
     await expect(h.repo.loadRoomSave(contractId)).rejects.toBeInstanceOf(RoomSaveCorruptError);
+  });
+
+  it("archives header slots and chunk rows verbatim under one archive id, then the live rows are gone", async () => {
+    const h = await harness();
+    h.setNow(T0);
+    const contractId = await newContract();
+    await h.repo.acquireLease(lease(contractId));
+    for (let i = 1; i <= 3; i++) {
+      h.setNow(T0 + i * 30_000);
+      await h.repo.commitRoomCheckpoint({
+        owner: lease(contractId),
+        simTick: i,
+        chunks: [
+          { chunkId: 1, payload: fill(i, 512) },
+          { chunkId: 9, payload: fill(i + 10, 256) },
+        ],
+        bakeHash: "ef".repeat(32),
+        state: { walletLm: i },
+      });
+    }
+    const liveHeaders = await pg.query("select * from contract_saves where contract_id = $1 order by slot", [
+      contractId,
+    ]);
+    const liveChunks = await pg.query(
+      "select * from contract_dust_chunks where contract_id = $1 order by chunk_id, ver",
+      [contractId],
+    );
+    h.setNow(T0 + 500_000);
+    const result = await h.repo.archiveRoomSave(lease(contractId), "bake_mismatch");
+    expect(result).toMatchObject({ kind: "archived", generation: 3, chunkRows: 4 });
+    const archiveId = (result as { archiveId: string }).archiveId;
+
+    const live = await pg.query<{ n: number }>(
+      "select (select count(*) from contract_saves where contract_id = $1)::int + (select count(*) from contract_dust_chunks where contract_id = $1)::int as n",
+      [contractId],
+    );
+    expect(live.rows[0]!.n).toBe(0);
+    const c = await pg.query<{ stored_bytes: number }>("select stored_bytes from contracts where id = $1", [
+      contractId,
+    ]);
+    expect(c.rows[0]!.stored_bytes).toBe(0);
+
+    const headers = await pg.query<Record<string, unknown>>(
+      "select * from contract_save_archives where archive_id = $1 order by slot",
+      [archiveId],
+    );
+    expect(headers.rows).toHaveLength(2);
+    for (const [i, row] of headers.rows.entries()) {
+      const { archive_id, archived_at, archive_reason, ...rest } = row;
+      expect(archive_id).toBe(archiveId);
+      expect((archived_at as Date).getTime()).toBe(T0 + 500_000);
+      expect(archive_reason).toBe("bake_mismatch");
+      expect(rest).toEqual(liveHeaders.rows[i]); // every live column, byte for byte (blob included)
+    }
+    const chunks = await pg.query<Record<string, unknown>>(
+      "select * from contract_dust_chunk_archives where archive_id = $1 order by chunk_id, ver",
+      [archiveId],
+    );
+    expect(chunks.rows.map(({ archive_id, ...rest }) => (archive_id === archiveId ? rest : null))).toEqual(
+      liveChunks.rows,
+    );
+    expect(await h.repo.loadRoomSave(contractId)).toBeNull();
+
+    // A second archive of a later fresh save gets its own id; the first stays.
+    await h.repo.commitRoomCheckpoint({
+      owner: lease(contractId),
+      simTick: 1,
+      chunks: [{ chunkId: 2, payload: fill(2) }],
+    });
+    const second = await h.repo.archiveRoomSave(lease(contractId), "bake_mismatch");
+    expect((second as { archiveId: string }).archiveId).not.toBe(archiveId);
+    const count = await pg.query<{ n: number }>(
+      "select count(distinct archive_id)::int as n from contract_save_archives where contract_id = $1",
+      [contractId],
+    );
+    expect(count.rows[0]!.n).toBe(2);
   });
 
   it("refuses leases on a deleted Contract and on one that does not exist", async () => {

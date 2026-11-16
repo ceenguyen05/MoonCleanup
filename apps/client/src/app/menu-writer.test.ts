@@ -113,6 +113,60 @@ describe("menus: open the Desk and buy in Solo", { timeout: 60_000 }, () => {
   });
 });
 
+describe("save-conflict modal suspends gameplay input", () => {
+  const conflictModal = { id: "confirm", props: { kind: "save_conflict" } } as const;
+  function rig() {
+    const store = createUiStore(1000, () => 1);
+    const input = new InputState();
+    const navs: UiNavAction[] = [];
+    const bridge = new UiFrameBridge({
+      store,
+      ui: {
+        navigate: (a) => (navs.push(a), true),
+        setCompassHeading: () => undefined,
+        capturing: () => null,
+        offerInput: () => false,
+      },
+      input,
+      station: () => null,
+    });
+    return { store, input, navs, bridge };
+  }
+
+  test("a modal with no menu open suspends input and routes the pad to the prompt; closing it resumes", () => {
+    const { store, input, navs, bridge } = rig();
+    bridge.pump();
+    expect(store.getState().menus.open).toBeNull();
+    expect(input.isSuspended).toBe(false);
+
+    store.dispatch({ type: "menus.modal", modal: conflictModal });
+    store.flush(1000);
+    expect(store.getState().menus.open).toBeNull();
+    expect(store.getState().menus.modal).not.toBeNull();
+    bridge.pump();
+    expect(input.isSuspended).toBe(true);
+
+    // D-pad down then B (Decide later) reach the UI navigation while only the modal is up.
+    input.setGamepad(0, 0, 0, 0, 1 << 13);
+    input.setGamepad(0, 0, 0, 0, 0);
+    input.setGamepad(0, 0, 0, 0, 1 << 1);
+    bridge.pump();
+    expect(navs).toEqual(["down", "back"]);
+
+    store.dispatch({ type: "menus.modal", modal: null });
+    store.flush(2000);
+    bridge.pump();
+    expect(input.isSuspended).toBe(false);
+  });
+
+  test("with neither a menu nor a modal the pad edges are not routed to the UI", () => {
+    const { input, navs, bridge } = rig();
+    input.setGamepad(0, 0, 0, 0, 1 << 13);
+    bridge.pump();
+    expect(navs).toEqual([]);
+  });
+});
+
 describe("board rows", () => {
   test("Cell nodes respect the MVP cap and the hub counts as held", () => {
     const cat = menuCatalogFromGameData(loadGameData());

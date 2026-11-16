@@ -130,7 +130,7 @@ describe("JoinTickets", () => {
 });
 
 describe("ShiftState Schema class", () => {
-  it("matches the protocol/shift-state-schema v1 field table in order and type", () => {
+  it("matches the protocol/shift-state-schema v1.1 field table in order and type", () => {
     expect(SHIFT_STATE_CLASS_FIELDS.map(([n, t]) => [n, t])).toEqual(
       SHIFT_STATE_SCHEMA_FIELDS.map((f) => [f.name, f.type]),
     );

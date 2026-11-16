@@ -251,12 +251,14 @@ describe("performance (16 avatars, all at U0)", () => {
     }
     gc();
     const b2 = process.memoryUsage().heapUsed;
-    let keep = 0;
-    for (let i = 0; i < 600 * 16; i++) keep += new Float64Array(3).length;
+    // Retained, so V8 cannot elide the allocations (escape analysis), whatever the Node version.
+    const keepAlive: Float64Array[] = [];
+    for (let i = 0; i < 600 * 16; i++) keepAlive.push(new Float64Array(3));
+    const keep = keepAlive.reduce((n, a) => n + a.length, 0);
     const controlGrew = process.memoryUsage().heapUsed - b2;
     console.info(`[anim] heap growth 600 frames x 16 avatars: ${grew} B (control ${controlGrew} B)`);
     expect(keep).toBe(600 * 16 * 3);
-    expect(controlGrew).toBeGreaterThan(256 * 1024);
+    expect(controlGrew).toBeGreaterThan(128 * 1024); // 4x the limit asserted below
     // AN-M1-09: < 32 KB over 9,600 avatar-updates (measured ~23 KB; one boxed double per update would be ~150 KB).
     expect(grew).toBeLessThan(32 * 1024);
   });

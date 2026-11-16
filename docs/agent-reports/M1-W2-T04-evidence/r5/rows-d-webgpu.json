@@ -1,0 +1,290 @@
+[
+ {
+  "round": 0,
+  "name": "b30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.455835,
+  "gpuN": 56,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "a30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 12.193226000000001,
+  "gpuN": 60,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "ncnf30",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.132907,
+  "gpuN": 36,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "nf30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.223755999999998,
+  "gpuN": 57,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "an1",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.953228,
+  "gpuN": 58,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "brim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.148841999999998,
+  "gpuN": 68,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "arim",
+  "frameP50": 16.90000000037253,
+  "gpuP50": 11.60782,
+  "gpuN": 44,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 0,
+  "name": "nfrim",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.163239999999996,
+  "gpuN": 49,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "b30",
+  "frameP50": 29.09999999962747,
+  "gpuP50": 9.428774,
+  "gpuN": 13,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "a30",
+  "frameP50": 35.5,
+  "gpuP50": 11.608402999999997,
+  "gpuN": 17,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "ncnf30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.879497,
+  "gpuN": 62,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "nf30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 12.298057,
+  "gpuN": 43,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "an1",
+  "frameP50": 37.09999999962747,
+  "gpuP50": 11.248493000000002,
+  "gpuN": 16,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "brim",
+  "frameP50": 36.59999999962747,
+  "gpuP50": 10.135173,
+  "gpuN": 17,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "arim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.738079999999993,
+  "gpuN": 62,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 1,
+  "name": "nfrim",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.009245999999996,
+  "gpuN": 57,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "b30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.018926,
+  "gpuN": 61,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "a30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 11.694400999999996,
+  "gpuN": 49,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "ncnf30",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.074662000000002,
+  "gpuN": 54,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "nf30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.483416999999998,
+  "gpuN": 29,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "an1",
+  "frameP50": 17.09999999962747,
+  "gpuP50": 11.904731999999994,
+  "gpuN": 33,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "brim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.204505999999997,
+  "gpuN": 42,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "arim",
+  "frameP50": 36.69999999925494,
+  "gpuP50": 9.976846000000002,
+  "gpuN": 10,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 2,
+  "name": "nfrim",
+  "frameP50": 18.700000001117587,
+  "gpuP50": 11.254490999999998,
+  "gpuN": 31,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "b30",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 10.444255000000002,
+  "gpuN": 44,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "a30",
+  "frameP50": 25.299999998882413,
+  "gpuP50": 11.649403999999997,
+  "gpuN": 21,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "ncnf30",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 10.852999,
+  "gpuN": 51,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "nf30",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 12.189976,
+  "gpuN": 47,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "an1",
+  "frameP50": 16.700000001117587,
+  "gpuP50": 12.61905,
+  "gpuN": 53,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "brim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 9.183523000000001,
+  "gpuN": 68,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "arim",
+  "frameP50": 16.699999999254942,
+  "gpuP50": 11.498905,
+  "gpuN": 59,
+  "backend": "webgpu",
+  "errs": []
+ },
+ {
+  "round": 3,
+  "name": "nfrim",
+  "frameP50": 16.59999999962747,
+  "gpuP50": 11.039579999999996,
+  "gpuN": 59,
+  "backend": "webgpu",
+  "errs": []
+ }
+]

@@ -1,3 +1,4 @@
+import { OFFSCREEN_CHROME_ARGS } from "../../offscreen-chrome-args.mjs";
 // Driver of the render-infra browser checks (M1-W2-T03). Not part of the app bundle: run it by hand against a running
 // client dev server (pnpm --filter @moon-cleanup/client exec vite --port 5293 --strictPort).
 //
@@ -51,7 +52,12 @@ const cells = (args.cells ?? "s06-pool|scene=s06&view=pool;moon-ground|scene=moo
 const browser = await chromium.launch({
   headless: false,
   channel: "chrome",
-  args: ["--enable-unsafe-webgpu", "--enable-features=Vulkan,WebGPU", "--ignore-gpu-blocklist"],
+  args: [
+    ...OFFSCREEN_CHROME_ARGS,
+    "--enable-unsafe-webgpu",
+    "--enable-features=Vulkan,WebGPU",
+    "--ignore-gpu-blocklist",
+  ],
 });
 
 async function open(query) {

@@ -5,18 +5,22 @@ import {
   MAX_PLAYERS_PER_ROOM,
   STANDARD_GRID_PARAMS,
   type ContractId,
+  type IntentResult,
   type PlayerId,
+  type RequestId,
   type WireSimEvent,
 } from "@moon-cleanup/shared";
 import { encodeInput, type MutableInput } from "@moon-cleanup/protocol";
 import { loadGameData } from "@moon-cleanup/game-data";
 import { createPlotGrid, WorldDustLedger } from "@moon-cleanup/world";
-import { MoonRoomSim, createRoomDustLedger, type SimWorld } from "@moon-cleanup/sim";
+import { MoonRoomSim, SIM_CHECKPOINT_META_MAX_BYTES, createRoomDustLedger, type SimWorld } from "@moon-cleanup/sim";
+import { ROOM_SIM_META_MAX_BYTES } from "@moon-cleanup/db";
 import { describe, expect, it } from "vitest";
 import { ShiftCore, type ShiftSink } from "./shift-core";
 import { SHIFT_LEDGER_HEADROOM_SLOTS, createShiftLedger } from "./shift-ledger";
 import { percentiles } from "./shift-room";
-import { MemoryShiftDustStore, ShiftDustPersistence } from "./shift-persistence";
+import { MemoryShiftDustStore, SHIFT_RESTORED_WALLET_MAX_LM, ShiftDustPersistence } from "./shift-persistence";
+import { nearParcelsMask } from "./shift-state";
 
 const CONTRACT = "00000000-0000-4000-8000-0000000000c7" as ContractId;
 const data = loadGameData();
@@ -195,5 +199,208 @@ describe("ShiftDustPersistence sliced encode", () => {
     core.ledger.setChunkDirty(0); // chunk 0 was encoded in slice one; a later stroke marks it again
     await done;
     expect(core.ledger.isChunkDirty(0)).toBe(true);
+  });
+});
+
+describe("ShiftDustPersistence room header state", () => {
+  it("writes a header-only checkpoint when only the wallet changed, restores it, and stays quiet when nothing changed", async () => {
+    const store = new MemoryShiftDustStore();
+    const ledger = createShiftLedger(data, world, 20);
+    let wallet = 100;
+    const p = new ShiftDustPersistence(store, ledger, CONTRACT, 0, 0);
+    expect(await p.restore()).toBeNull();
+    p.setStateProvider(() => ({ walletLm: wallet, nearParcelsMask: 0 }));
+    // Baseline = the starting wallet: no dirty chunk, no state change -> nothing written, even past the 30 s interval.
+    p.maybeSave(31_000, 10);
+    await p.save(31_000, 10);
+    expect(store.saves).toBe(0);
+    wallet = 140;
+    p.maybeSave(62_000, 20);
+    await p.save(62_000, 20); // chained behind the maybeSave write
+    expect(store.saves).toBe(1);
+    expect(p.counters.chunksWritten).toBe(0);
+    await p.save(63_000, 21); // unchanged now
+    expect(store.saves).toBe(1);
+
+    const again = new ShiftDustPersistence(store, createShiftLedger(data, world, 20), CONTRACT, 0, 0);
+    await again.restore();
+    expect(again.restoredState).toEqual({ walletLm: 140, nearParcelsMask: 0 });
+  });
+
+  it("review B1: a collected Near Parcel stays collected across a room restart (no leave/rejoin Lumens farm)", async () => {
+    const store = new MemoryShiftDustStore();
+    const dir = { x: 0, y: 0, z: 0 };
+    const opts = { data, world, contractId: CONTRACT, shiftType: "private" as const, simTickHz: 20 };
+    new ShiftCore(opts, 0).sim.nearParcel(0, dir);
+    const parcelLm = data.collectibles.strayCargo.find((c) => c.size === "near_parcel")!.lm;
+    expect(parcelLm).toBeGreaterThan(0);
+
+    /** One room lifetime as ShiftRoom wires it: restore, build the core from the header, 4 seats (slot 3 spawns on
+     * the parcel), a few ticks, final checkpoint on dispose. */
+    async function roomLifetime(): Promise<{ core: ShiftCore; found: number; p: ShiftDustPersistence }> {
+      const ledger = createShiftLedger(data, world, 20);
+      const p = new ShiftDustPersistence(store, ledger, CONTRACT, 0, 0);
+      await p.restore();
+      const r = p.restoredState;
+      const core = new ShiftCore(
+        {
+          ...opts,
+          ledger,
+          spawnDirection: dir,
+          ...(r == null ? {} : { walletLm: r.walletLm, nearParcelsCollected: r.nearParcelsMask ?? 0 }),
+        },
+        0,
+      );
+      p.setStateProvider(() => ({ walletLm: core.sim.wallet, nearParcelsMask: nearParcelsMask(core.sim) }));
+      for (let i = 0; i < 4; i++) core.addSeat(player(i), 0);
+      const events: WireSimEvent[] = [];
+      for (let t = 0; t < 5; t++) core.step(eventSink(events));
+      await p.close(1_000, 5);
+      return { core, p, found: events.filter((e) => e.name === "collectible.found").length };
+    }
+
+    const first = await roomLifetime();
+    expect(first.found).toBe(1);
+    expect(first.core.sim.wallet).toBe(parcelLm);
+    expect(first.core.sim.nearParcel(0, dir)).toBe(true);
+
+    const second = await roomLifetime(); // everyone left, the room was disposed, a player rejoins
+    expect(second.p.restoredState).toEqual({ walletLm: parcelLm, nearParcelsMask: 1 });
+    expect(second.found).toBe(0); // no second payout
+    expect(second.core.sim.wallet).toBe(parcelLm);
+    expect(second.core.sim.nearParcel(0, dir)).toBe(true);
+  });
+
+  it("skips (and logs) a legacy wallet stored without a parcel mask, and clamps an absurd wallet", async () => {
+    const store = new MemoryShiftDustStore();
+    await store.save(CONTRACT, [], 1, { walletLm: 900 }); // legacy room-v1 shape: no nearParcelsMask
+    const warnings: string[] = [];
+    const logger = { warn: (_o: object, msg: string) => void warnings.push(msg) };
+    const legacy = new ShiftDustPersistence(store, createShiftLedger(data, world, 20), CONTRACT, 0, 0, logger);
+    await legacy.restore();
+    expect(legacy.restoredState).toBeNull();
+    expect(warnings.some((m) => m.includes("wallet restore skipped"))).toBe(true);
+    // The next checkpoint rewrites the header in the current shape (wallet differs from the stored legacy one).
+    legacy.setStateProvider(() => ({ walletLm: 0, nearParcelsMask: 0 }));
+    await legacy.save(31_000, 2);
+    expect(await store.loadState(CONTRACT)).toEqual({ walletLm: 0, nearParcelsMask: 0 });
+
+    await store.save(CONTRACT, [], 3, { walletLm: Number.MAX_SAFE_INTEGER * 4, nearParcelsMask: 0x1ff });
+    const huge = new ShiftDustPersistence(store, createShiftLedger(data, world, 20), CONTRACT, 0, 0, logger);
+    await huge.restore();
+    expect(huge.restoredState).toEqual({ walletLm: SHIFT_RESTORED_WALLET_MAX_LM, nearParcelsMask: 0xff });
+  });
+
+  it("review N1: tools and suit gear bought survive a room restart through the sim META section", async () => {
+    expect(ROOM_SIM_META_MAX_BYTES).toBe(SIM_CHECKPOINT_META_MAX_BYTES); // the db bound mirrors the sim bound
+    const store = new MemoryShiftDustStore();
+    const opts = { data, world, contractId: CONTRACT, shiftType: "private" as const, simTickHz: 20 };
+    const items = ["tool.crescent_squeegee", "gear.holster_rig"];
+    const warnings: string[] = [];
+    const logger = { warn: (_o: object, msg: string) => void warnings.push(msg) };
+
+    /** One room lifetime wired exactly like ShiftRoom.onCreate / onDispose. */
+    async function roomLifetime(): Promise<{ core: ShiftCore; p: ShiftDustPersistence; results: IntentResult[] }> {
+      const ledger = createShiftLedger(data, world, 20);
+      const p = new ShiftDustPersistence(store, ledger, CONTRACT, 0, 0, logger);
+      await p.restore();
+      const r = p.restoredState;
+      const core = new ShiftCore(
+        {
+          ...opts,
+          ledger,
+          ...(r == null
+            ? { walletLm: 100_000 }
+            : { walletLm: r.walletLm, nearParcelsCollected: r.nearParcelsMask ?? 0 }),
+        },
+        0,
+      );
+      if (r?.simMeta !== undefined) expect(core.restoreSharedMeta(r.simMeta).ok).toBe(true);
+      p.setStateProvider(
+        () => ({ walletLm: core.sim.wallet, nearParcelsMask: nearParcelsMask(core.sim) }),
+        () => core.captureSharedMeta(),
+      );
+      core.addSeat(player(0), 0);
+      core.step(eventSink([]));
+      const results: IntentResult[] = [];
+      items.forEach((itemId, k) =>
+        results.push(core.sim.applyIntent(0, { kind: "purchase", requestId: `n1-${k}` as RequestId, itemId })),
+      );
+      for (let t = 0; t < 3; t++) core.step(eventSink([]));
+      await p.close(1_000, core.sim.tick);
+      return { core, p, results };
+    }
+
+    const first = await roomLifetime();
+    expect(first.results.map((x) => x?.ok)).toEqual([true, true]);
+    const spent = 100_000 - first.core.sim.wallet;
+    expect(spent).toBeGreaterThan(0);
+    expect((await store.loadState(CONTRACT))?.simMeta?.bytes.byteLength ?? 0).toBeGreaterThan(0);
+
+    const second = await roomLifetime(); // everyone left, the room was disposed, the Holder rejoins
+    expect(warnings).toEqual([]);
+    // Everything bought is still owned: re-buying is refused and costs nothing; the wallet is the one left after spending.
+    expect(second.results.map((x) => x?.ok)).toEqual([false, false]);
+    const codes = second.results.map((x) => (x && !x.ok ? x.code : null));
+    expect(codes).toEqual(["already_owned", "max_level"]);
+    expect(second.core.sim.wallet).toBe(100_000 - spent);
+    expect(second.core.sim.tick).toBeGreaterThan(first.core.sim.tick); // the sun clock continues from the save
+  });
+
+  it("a refused sim META section leaves the room on the header wallet and parcels (logged, nothing re-paid)", async () => {
+    const store = new MemoryShiftDustStore();
+    await store.save(CONTRACT, [], 1, {
+      walletLm: 70,
+      nearParcelsMask: 1,
+      simMeta: { version: 1, bytes: Uint8Array.of(1, 2, 3) },
+    });
+    const p = new ShiftDustPersistence(store, createShiftLedger(data, world, 20), CONTRACT, 0, 0);
+    await p.restore();
+    const r = p.restoredState!;
+    const core = new ShiftCore(
+      {
+        data,
+        world,
+        contractId: CONTRACT,
+        shiftType: "private",
+        simTickHz: 20,
+        walletLm: r.walletLm,
+        nearParcelsCollected: 1,
+      },
+      0,
+    );
+    const res = core.restoreSharedMeta(r.simMeta!);
+    expect(res.ok).toBe(false);
+    expect(core.sim.wallet).toBe(70);
+    expect(core.sim.nearParcel(0, { x: 0, y: 0, z: 0 })).toBe(true);
+    core.addSeat(player(0), 0);
+    expect(() => core.restoreSharedMeta(r.simMeta!)).toThrow(); // never mid-shift
+  });
+
+  it("captures the header state before the first chunk is encoded (a crash can lose a payout, never double it)", async () => {
+    const core = new ShiftCore({ data, world, contractId: CONTRACT, shiftType: "private", simTickHz: 20 }, 0);
+    for (let c = 0; c < 3; c++) core.ledger.setChunkDirty(c);
+    const dirtyAtStart = core.ledger.dirtyChunkCount;
+    const p = new ShiftDustPersistence(new MemoryShiftDustStore(), core.ledger, CONTRACT, 0, 0, undefined, 0);
+    await p.restore();
+    let wallet = 5;
+    const seenDirty: number[] = [];
+    p.setStateProvider(() => {
+      seenDirty.push(core.ledger.dirtyChunkCount);
+      return { walletLm: wallet, nearParcelsMask: 0 };
+    });
+    wallet = 6;
+    seenDirty.length = 0;
+    await p.save(31_000, 1);
+    // Read once, before any chunk was encoded (none of the dirty marks cleared yet).
+    expect(seenDirty[0]).toBe(dirtyAtStart);
+  });
+
+  it("restores a stored wallet into the sim", async () => {
+    const core = new ShiftCore(
+      { data, world, contractId: CONTRACT, shiftType: "private", simTickHz: 20, walletLm: 321 },
+      0,
+    );
+    expect(core.sim.wallet).toBe(321);
   });
 });

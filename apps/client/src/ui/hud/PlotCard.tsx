@@ -11,6 +11,7 @@ import { fadeTransition } from "../motion/presets";
 import { formatString, STRINGS } from "../strings";
 import { useReducedMotion, useSpring, useUiSelector } from "../ui-context";
 import { percent } from "./hud-model";
+import { resolvePlotLabel } from "./plot-label";
 import styles from "./Compass.module.css";
 
 const P = STRINGS.menus.plotCard;
@@ -47,7 +48,7 @@ export const PlotCard = memo(function PlotCard(): ReactElement {
               <span className={styles["swatch"]} data-state={card.state}>
                 <Icon icon={STATE_ICON[card.state] ?? CircleDashed} size={16} />
               </span>
-              <span>{formatString(P.plot, { label: card.label })}</span>
+              <span>{formatString(P.plot, { label: resolvePlotLabel(card.label, card.plotId) })}</span>
             </span>
             <p className={styles["plotLine"]}>{terrain === null ? stateName : `${stateName} · ${terrain}`}</p>
             <span

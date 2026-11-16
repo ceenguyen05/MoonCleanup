@@ -4,11 +4,14 @@
 import { readFileSync } from "node:fs";
 import { deflateRawSync } from "node:zlib";
 import {
+  BEACON_COUNT,
   INPUT_BUTTON_MASK,
   MESSAGE_CATALOG,
   PROTOCOL_VERSION,
   STANDARD_GRID_PARAMS,
+  ShiftStateViewSchema,
   type HelloPayload,
+  type ShiftStateView,
   type SimInputCommand,
 } from "@moon-cleanup/shared";
 import {
@@ -23,9 +26,18 @@ import {
 import { createPlotGrid } from "@moon-cleanup/world";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConsumeReservationFn, RoomConnection } from "../net";
-import { DUST_REQUEST_SPACING_MS, MirrorDustFeed, OnlineRoom } from "./online-room";
+import {
+  DUST_REQUEST_SPACING_MS,
+  HELD_CONTROLS_MAX,
+  MirrorDustFeed,
+  OnlineRoom,
+  createRemoteRoomHost,
+  tapFrames,
+} from "./online-room";
 
 const CONTRACT = "0190a5b4-1111-4222-8333-444455556666";
+const P1 = "0190a5b4-1111-4222-8333-000000000001";
+const P2 = "0190a5b4-1111-4222-8333-000000000002";
 const HELLO: HelloPayload = { serverProtocol: PROTOCOL_VERSION, serverBuild: "dev", simTickHz: 20, snapshotHz: 10 };
 const PLOTS = createPlotGrid(STANDARD_GRID_PARAMS).count;
 const flush = async (): Promise<void> => {
@@ -233,6 +245,186 @@ describe("online room wiring", { timeout: ROOM_TEST_TIMEOUT_MS }, () => {
     room.dispose();
   });
 
+  it("late join: the first Schema state's nearParcelsCollected marks parcels; finds then wait for the mask", async () => {
+    const { room, conn } = await joined();
+    const ro = room.readouts;
+    expect(ro.collectedMask).toBe(0);
+    // Older server: no field -> nothing changes, the event fallback stays in charge.
+    conn.patch({ players: new Map([["s", { equippedTool: 0 }]]) });
+    expect(ro.authoritativeMask).toBe(false);
+    // First full state of a late joiner on a v1.1 server: parcels 0, 2 and 5 were collected before the join.
+    conn.patch({ players: new Map([["s", { equippedTool: 0 }]]), nearParcelsCollected: 0b100101 });
+    expect(ro.authoritativeMask).toBe(true);
+    expect(ro.collectedMask).toBe(0b100101);
+    const out = { x: 0, y: 0, z: 0 };
+    expect([0, 1, 2, 3, 4, 5].map((k) => ro.nearParcel(k, out))).toEqual([true, false, true, false, false, true]);
+    // A find event no longer guesses (the next patch carries the authoritative bit).
+    room.onSimEvents({
+      events: [{ name: "collectible.found", payload: { tick: 9, kind: "stray_cargo", id: "near_parcel" } }],
+    });
+    expect(ro.collectedMask).toBe(0b100101);
+    expect(ro.stats.skipped).toBe(1);
+    conn.patch({ players: new Map([["s", { equippedTool: 0 }]]), nearParcelsCollected: 0b100111 });
+    expect(ro.nearParcel(1, out)).toBe(true);
+    // The session's own Schema handling still runs through the tapped onStateChange.
+    expect(room.session.equippedTool).toBe(0);
+    room.dispose();
+  });
+
+  it("stale room: a late state or FRAME from a left connection never reaches the read-outs or the host", async () => {
+    const { room, conn } = await joined();
+    const host = createRemoteRoomHost(room, CONTRACT);
+    const views: ShiftStateView[] = [];
+    host.onShiftState((s) => views.push(s));
+    let frames = 0;
+    host.onFrame((f) => {
+      frames++;
+      f.release();
+    });
+    conn.patch({ nearParcelsCollected: 0b1 });
+    conn.deliver(MESSAGE_CATALOG.FRAME.id, frameBody(104, false, 0, 1));
+    expect(room.readouts.collectedMask).toBe(1);
+    expect([views.length, frames]).toEqual([1, 1]);
+    room.leave(); // the session leaves the (tapped) connection
+    conn.patch({ nearParcelsCollected: 0b11 }); // queued patch the SDK dispatches after leave
+    conn.deliver(MESSAGE_CATALOG.FRAME.id, frameBody(106, false, 0, 1));
+    expect(room.readouts.collectedMask).toBe(1);
+    expect([views.length, frames]).toEqual([1, 1]);
+    room.dispose();
+  });
+
+  it("stale room: a late state after dispose is ignored", async () => {
+    const { room, conn } = await joined();
+    room.dispose();
+    conn.patch({ nearParcelsCollected: 0b111 });
+    expect(room.readouts.collectedMask).toBe(0);
+    expect(room.readouts.authoritativeMask).toBe(false);
+  });
+
+  it("RemoteRoomHost: Schema state -> valid ShiftStateView, mask copied (absent on an older server)", async () => {
+    const { room, conn } = await joined();
+    const host = createRemoteRoomHost(room, CONTRACT);
+    const views: ShiftStateView[] = [];
+    // No listener yet: nothing is built.
+    conn.patch({ nearParcelsCollected: 0 });
+    expect(host.stats.shiftStatesEmitted).toBe(0);
+    host.onShiftState((s) => views.push(s));
+    const schemaLike = {
+      contractId: CONTRACT,
+      shiftType: "private",
+      protocolVersion: PROTOCOL_VERSION,
+      simTickHz: 20,
+      snapshotHz: 10,
+      walletLumens: 12.5,
+      shinePolished: 3,
+      plotCount: PLOTS,
+      sharedUpgrades: new Map([["node.broad_strokes", 2]]),
+      suitGear: new Map<string, number>(),
+      visitedOutposts: 1,
+      beacons: [{ plotId: 4, active: true }],
+      players: new Map([
+        ["x", { playerId: P2, displayName: "Bob", slot: 1, role: "staff", equippedCosmetics: [], equippedTool: 1 }],
+        ["s", { playerId: P1, displayName: "Ann", slot: 0, role: "holder", toolsOwned: 3, equippedTool: 0 }],
+      ]),
+      vehicles: new Map(),
+      robotCounts: new Map([["robot.sandpiper", 2]]),
+      permissions: { tempCanBuild: true, tempCanSpendShared: false, tempCanDriveShared: false },
+      fulfilled: false,
+      nearParcelsCollected: 0b100101,
+    };
+    conn.patch(schemaLike);
+    expect(views).toHaveLength(1);
+    const v = views[0]!;
+    expect(ShiftStateViewSchema.safeParse(v).success).toBe(true);
+    expect(v.nearParcelsCollected).toBe(0b100101);
+    expect(v.players.map((p) => p.displayName)).toEqual(["Ann", "Bob"]);
+    expect(v.beacons).toHaveLength(BEACON_COUNT);
+    expect(v.beacons[0]).toEqual({ plotId: 4, active: true });
+    expect(v.sharedUpgrades).toEqual({ "node.broad_strokes": 2 });
+    expect(v.robotCounts).toEqual({ "robot.sandpiper": 2 });
+    expect(v.tick).toBe(room.session.core.view.serverTick);
+    // Pre-v1.1 server: the field stays absent ("unknown").
+    const { nearParcelsCollected: _omit, ...older } = schemaLike;
+    void _omit;
+    conn.patch(older);
+    expect("nearParcelsCollected" in views[1]!).toBe(false);
+    expect(ShiftStateViewSchema.safeParse(views[1]).success).toBe(true);
+    // After close nothing is emitted.
+    await host.close("clock_out");
+    conn.patch(schemaLike);
+    expect(views).toHaveLength(2);
+  });
+
+  it("RemoteRoomHost: sendIntent sends purchase / select_tool controls; sim_events feed onEvent; dropped when left", async () => {
+    const { room, conn } = await joined();
+    const host = createRemoteRoomHost(room, CONTRACT);
+    const events: string[] = [];
+    host.onEvent((e) => events.push(e.name));
+    const requestId = "0190a5b4-1111-4222-8333-0000000000aa" as never;
+    host.sendIntent({ kind: "purchase", requestId, itemId: "tool.lane_broom" as never });
+    host.sendIntent({ kind: "select_tool", slot: 2 });
+    const controls = (): unknown[] =>
+      conn.sent.filter((m) => m.type === MESSAGE_CATALOG.PURCHASE.id || m.type === MESSAGE_CATALOG.SELECT_TOOL.id);
+    expect(controls()).toEqual([
+      { type: MESSAGE_CATALOG.PURCHASE.id, payload: { requestId, itemId: "tool.lane_broom" } },
+      { type: MESSAGE_CATALOG.SELECT_TOOL.id, payload: { slot: 2 } },
+    ]);
+    expect(host.stats.intentsSent).toBe(2);
+    // A validated sim_events batch through the session's control path reaches every onEvent listener in order.
+    conn.deliver(MESSAGE_CATALOG.SIM_EVENTS.id, {
+      events: [
+        {
+          name: "purchase.completed",
+          payload: { tick: 9, actorSlot: 0, itemId: "tool.lane_broom", priceLm: 5, walletAfter: 1 },
+        },
+        { name: "collectible.found", payload: { tick: 9, kind: "stray_cargo", id: "near_parcel" } },
+      ],
+    });
+    expect(events).toEqual(["purchase.completed", "collectible.found"]);
+    expect(host.stats.eventsEmitted).toBe(2);
+    room.leave();
+    host.sendIntent({ kind: "select_tool", slot: 1 });
+    expect(controls()).toHaveLength(2);
+    expect([host.stats.intentsDropped, room.stats.controlsDropped]).toEqual([1, 1]);
+    await host.close("clock_out");
+    room.onSimEvents({ events: [{ name: "collectible.found", payload: { tick: 10 } }] });
+    expect(events).toHaveLength(2);
+  });
+
+  it("controls issued while resyncing are held, flushed in order once joined, and dropped if the session closes", async () => {
+    const { room, conn } = await joined();
+    const controls = (): unknown[] =>
+      conn.sent.filter((m) => m.type === MESSAGE_CATALOG.PURCHASE.id || m.type === MESSAGE_CATALOG.SELECT_TOOL.id);
+    expect(room.session.core.requestSnapshotResync(t)).toBe(true);
+    expect(room.session.phase).toBe("resyncing");
+    expect(room.sendControl(MESSAGE_CATALOG.SELECT_TOOL.id, { slot: 3 })).toBe(true);
+    expect(room.sendControl(MESSAGE_CATALOG.PURCHASE.id, { requestId: "r1", itemId: "tool.lane_broom" })).toBe(true);
+    expect(controls()).toHaveLength(0); // nothing on a possibly dead socket yet
+    expect(room.stats.controlsHeld).toBe(2);
+    // Bounded: beyond the cap the call is refused visibly (false, counted).
+    for (let i = 0; i < HELD_CONTROLS_MAX - 2; i++) room.sendControl(MESSAGE_CATALOG.SELECT_TOOL.id, { slot: 1 });
+    expect(room.sendControl(MESSAGE_CATALOG.SELECT_TOOL.id, { slot: 1 })).toBe(false);
+    expect(room.stats.controlsDropped).toBe(1);
+    // The keyframe + snapshot end the resync: held controls go out in order.
+    conn.deliver(MESSAGE_CATALOG.FRAME.id, frameBody(110, true, 0, 1));
+    for (const s of snapshotBodies()) conn.deliver(MESSAGE_CATALOG.DUST_SNAPSHOT.id, s);
+    expect(room.session.phase).toBe("joined");
+    expect(controls()).toHaveLength(HELD_CONTROLS_MAX);
+    expect(controls()[0]).toEqual({ type: MESSAGE_CATALOG.SELECT_TOOL.id, payload: { slot: 3 } });
+    expect(controls()[1]).toEqual({
+      type: MESSAGE_CATALOG.PURCHASE.id,
+      payload: { requestId: "r1", itemId: "tool.lane_broom" },
+    });
+    expect(room.stats.controlsSent).toBe(HELD_CONTROLS_MAX);
+    // Held controls are not sent twice, and a closing session drops what is still held.
+    expect(room.session.core.requestSnapshotResync(t + 5000)).toBe(true);
+    expect(room.sendControl(MESSAGE_CATALOG.SELECT_TOOL.id, { slot: 2 })).toBe(true);
+    room.leave();
+    expect(controls()).toHaveLength(HELD_CONTROLS_MAX);
+    expect(room.stats.controlsDropped).toBe(2);
+    room.dispose();
+  });
+
   it("DUST_REQUEST is not sent (nor counted) when the session is not joined", async () => {
     const { room, conn } = await joined();
     const out = new Uint8Array(64);
@@ -269,6 +461,46 @@ describe("online room wiring", { timeout: ROOM_TEST_TIMEOUT_MS }, () => {
     expect(room.dust.ledger.dirtyPlotCount).toBe(0);
     expect(room.feed).toBeInstanceOf(MirrorDustFeed);
     room.dispose();
+  });
+});
+
+describe("tapFrames stale-room guard", () => {
+  it("a replaced connection (live() false) and a connection whose onLeave fired never feed the taps", () => {
+    const states: unknown[] = [];
+    const bodies: Uint8Array[] = [];
+    let current = 1;
+    const make = (gen: number): { fake: FakeRoom; tapped: RoomConnection; leaveCb: (code: number) => void } => {
+      const fake = new FakeRoom();
+      let leaveCb: (code: number) => void = () => undefined;
+      (fake as { onLeave: (cb: (code: number) => void) => void }).onLeave = (cb) => {
+        leaveCb = cb;
+      };
+      const tapped = tapFrames(
+        fake,
+        (b) => bodies.push(b),
+        (s) => states.push(s),
+        () => gen === current,
+      );
+      const sessionStates: unknown[] = [];
+      tapped.onStateChange?.((s: never) => sessionStates.push(s));
+      tapped.onMessage(MESSAGE_CATALOG.FRAME.id, () => undefined);
+      tapped.onLeave(() => undefined);
+      return { fake, tapped, leaveCb: (c) => leaveCb(c) };
+    };
+    const first = make(1);
+    first.fake.patch({ a: 1 });
+    first.fake.deliver(MESSAGE_CATALOG.FRAME.id, new Uint8Array(2));
+    expect([states.length, bodies.length]).toEqual([1, 1]);
+    current = 2; // reconnect with a new seat: the second connection replaces the first
+    const second = make(2);
+    first.fake.patch({ a: 2 }); // late patch of the replaced room
+    first.fake.deliver(MESSAGE_CATALOG.FRAME.id, new Uint8Array(2));
+    expect([states.length, bodies.length]).toEqual([1, 1]);
+    second.fake.patch({ b: 1 });
+    expect(states).toEqual([{ a: 1 }, { b: 1 }]);
+    second.leaveCb(4000); // server closed it
+    second.fake.patch({ b: 2 });
+    expect(states).toHaveLength(2);
   });
 });
 

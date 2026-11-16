@@ -26,18 +26,38 @@ import {
   createPlainTerrainMaterial,
   createSpecularTerrainMaterial,
   type CdlodQuality,
+  type TerrainMaterialFactory,
 } from "./cdlod/cdlod-terrain";
 import { createHorizonArrayTexture } from "./cdlod/terrain-surface";
 import type { HorizonVisibility } from "../visuals/lookdev/terrain-patch";
 import type { SiteFrame } from "../visuals/lookdev/scene-base";
 import { HeightMinMax } from "./cdlod/min-max";
-import { createHeightTexture } from "./height/height-twin";
+import { createHeightMipTextures, createHeightTexture } from "./height/height-twin";
+
+/** The render service calls the terrain scene uses (structural: `renderer.holdWarmup()`). */
+export interface TerrainRenderHooks {
+  holdWarmup(): () => void;
+}
 import { loadHorizonAsset, loadTerrainAsset, type HorizonAsset, type TerrainAsset } from "./height-asset";
 import { borealPilotFence, PilotFenceWatch, type PilotFenceZone } from "./pilot-fence";
 import { PilotFenceMarkers } from "./pilot-fence-markers";
 import type { DataArrayTexture } from "three/webgpu";
 
 export const MOON_SCENE_ID = "moon";
+
+/** Hook H1 (W2-T04): the visuals module may supply the terrain surface material; absent, the plain material is used. */
+export interface TerrainSceneOptions {
+  readonly terrainMaterial?: TerrainMaterialFactory;
+}
+
+/** The supplied factory wins; else `&spec=1` picks the specular A/B material; else the plain diffuse default. */
+export function selectTerrainMaterial(
+  supplied: TerrainMaterialFactory | undefined,
+  params: URLSearchParams,
+): TerrainMaterialFactory {
+  if (supplied !== undefined) return supplied;
+  return params.get("spec") === "1" ? createSpecularTerrainMaterial : createPlainTerrainMaterial;
+}
 
 interface View {
   /** Distance from Boreal along the surface, bearing round the pole, height over the ground, heading, pitch. */
@@ -81,6 +101,14 @@ export interface TerrainSceneInfo {
   /** Terrain instances drawn into the shadow cascades (sum, and per cascade). */
   readonly shadowInstances: number;
   readonly shadowPerCascade: number[];
+  /** Caster nodes dropped per cascade because the instance buffer was full (must be 0). */
+  readonly casterOverflow: number[];
+  /** Camera cuts that made the main mesh cast for two frames (stale cascade boxes). */
+  readonly cuts: number;
+  /** Warm-up hold still out. */
+  readonly warmupHeld: boolean;
+  /** CPU time of the per-cascade caster selection (all cascades), ms. */
+  readonly casterSelectMs: { readonly p50: number; readonly p95: number; readonly max: number; readonly n: number };
   readonly selectMs: { readonly p50: number; readonly p95: number; readonly max: number; readonly n: number };
   readonly heightTextureBytes: number;
   readonly minMaxBytes: number;
@@ -113,6 +141,14 @@ export class TerrainScene implements LookScene {
   private flyStartS = -1;
   private disposed = false;
   private castOff = false;
+  private readonly percascadeOff: boolean;
+  private releaseWarmup: (() => void) | null;
+  /** Frames drawn with the terrain and its casters in the scene (releases the warm-up hold after a few). */
+  private shownFrames = 0;
+  private shownAtMs = 0;
+  private heightMips: DataArrayTexture[] | null = null;
+  private readonly casterMs = new Float32Array(SELECT_SAMPLES);
+  private casterN = 0;
   /** Frame the look rig reads the sun / Earth angles in (`LookScene.siteFrame`). */
   readonly siteFrame: SiteFrame = { x: new Vector3(1, 0, 0), up: new Vector3(0, 1, 0), z: new Vector3(0, 0, 1) };
   private readonly siteAtView: boolean;
@@ -124,20 +160,26 @@ export class TerrainScene implements LookScene {
   private readonly _q = new Quaternion();
   private readonly selectMs = new Float32Array(SELECT_SAMPLES);
   private selectN = 0;
-  private readonly sorted = new Float32Array(SELECT_SAMPLES);
   private readonly _dir = new Vector3();
   private readonly _t1 = new Vector3();
   private readonly _t2 = new Vector3();
   private readonly _f = new Vector3();
   private readonly _target = new Vector3();
 
-  constructor(ctx: SceneContext) {
+  private readonly terrainMaterial: TerrainMaterialFactory | undefined;
+
+  constructor(ctx: SceneContext & TerrainSceneOptions & { readonly render?: TerrainRenderHooks }) {
     const { roots, params, state } = ctx;
     this.roots = roots;
+    this.terrainMaterial = ctx.terrainMaterial;
     this.params = params;
+    // The warm-up must not end before the baked terrain and its casters are on screen (W2-T03 hand-off: WebGL2 built
+    // 8 pipelines after warm-up without this).
+    this.releaseWarmup = ctx.render?.holdWarmup() ?? null;
+    this.percascadeOff = params.get("percascade") === "0";
     this.group.name = "mc:moon";
     roots.world.add(this.group);
-    this.quality = ctx.quality?.terrain ?? { cdlodLeafLevel: 8, cdlodPatchVerts: 33, cdlodRangeMult: 1 };
+    this.quality = ctx.quality?.terrain ?? { cdlodLeafLevel: 8, cdlodPatchVerts: 17, cdlodRangeMult: 1 };
     this.siteAtView = (params.get("site") ?? "view").toLowerCase() !== "boreal";
     this.horizonWanted = (ctx.quality?.shadows.horizonMap ?? true) && params.get("horizon") !== "0";
 
@@ -167,13 +209,27 @@ export class TerrainScene implements LookScene {
     this.baseUrl = baseUrl;
     loadTerrainAsset({ baseUrl }).then(
       (asset) => {
-        if (!this.disposed) this.build(asset);
+        if (this.disposed) return;
+        try {
+          this.build(asset);
+        } catch (e) {
+          // Never leave the warm-up hold out on a failed build.
+          this.error = String(e);
+          console.error("[terrain] build failed", e);
+          this.release();
+        }
       },
       (e: unknown) => {
         this.error = String(e);
         console.error("[terrain] load failed", e);
+        this.release();
       },
     );
+  }
+
+  private release(): void {
+    this.releaseWarmup?.();
+    this.releaseWarmup = null;
   }
 
   private build(asset: TerrainAsset): void {
@@ -181,6 +237,7 @@ export class TerrainScene implements LookScene {
     this.ground = new GroundHeight(asset.cube, { radiusM: asset.radiusM, pads: asset.pads });
     this.minMax = new HeightMinMax(asset.cube);
     this.heightTexture = createHeightTexture(asset.cube);
+    if (this.params.get("farn") !== "0") this.heightMips = createHeightMipTextures(asset.cube);
     this.rebuildTerrain();
     const ground = this.ground;
     const spec = borealPilotFence(asset.radiusM);
@@ -250,21 +307,33 @@ export class TerrainScene implements LookScene {
     const { asset, ground, minMax, heightTexture } = this;
     if (asset === null || ground === null || minMax === null || heightTexture === null) return;
     this.terrain?.dispose();
+    // Cost A/B knobs (diagnostics): `&pverts=17|33|65` patch vertices, `&leafrange=<m>` leaf LOD range, `&detail=0` no
+    // procedural detail in the vertex stage, `&normtaps=20` the old 20-tap base normal.
+    const p = this.params;
+    const pverts = Number(p.get("pverts"));
+    const quality: CdlodQuality =
+      pverts === 17 || pverts === 33 || pverts === 65 ? { ...this.quality, cdlodPatchVerts: pverts } : this.quality;
+    const leafRange = Number(p.get("leafrange"));
     const terrain = new CdlodTerrain(
       {
         cube: asset.cube,
         radiusM: asset.radiusM,
         pads: asset.pads,
-        quality: this.quality,
+        quality,
+        ...(leafRange > 0 ? { leafRangeM: leafRange } : {}),
+        ...(p.get("detail") === "0" ? { detail: null } : {}),
         heightAt: (x, y, z) => ground.heightAtXYZ(x, y, z),
         minMax,
         heightTexture,
+        ...(this.heightMips === null ? {} : { heightMips: this.heightMips }),
         farNormals: this.params.get("farn") !== "0",
+        ...(p.get("normtaps") === "20" ? { baseNormalTaps: 20 as const } : {}),
       },
-      this.params.get("spec") === "1" ? createSpecularTerrainMaterial : createPlainTerrainMaterial,
+      selectTerrainMaterial(this.terrainMaterial, this.params),
     );
     terrain.view.frustumCull = this.params.get("cull") !== "0";
-    terrain.view.frustumExemptM = numberParam(this.params, "exempt", 60);
+    // `&exempt=<m>`: main-view frustum exemption while per-cascade casters cast (default 2 m, review F1).
+    terrain.frustumExemptM = numberParam(this.params, "exempt", terrain.frustumExemptM);
     // Diagnostics: `&skirt=0` removes the skirts (cracks show the sky), `&cast=0` stops the terrain casting shadows.
     terrain.surface.uniforms.skirtScale.value = numberParam(this.params, "skirt", 1);
     terrain.hidden = this.params.get("terrain") === "0"; // A/B: the frame without the terrain draw
@@ -302,6 +371,7 @@ export class TerrainScene implements LookScene {
 
   setView(name: string): void {
     this.view = name;
+    this.terrain?.invalidate();
     const camera = this.roots.camera;
     const ground = this.ground;
     if (ground === null) return;
@@ -397,23 +467,39 @@ export class TerrainScene implements LookScene {
     terrain.update(camera);
     this.selectMs[this.selectN % SELECT_SAMPLES] = performance.now() - t0;
     this.selectN++;
+    // Warm-up hold: released once the terrain, the fence and (when cascades cast) the casters, created on the first
+    // cascade update after the build, have been drawn: after 3 frames or 1.5 s, whichever comes first (early frames
+    // take seconds each on software GL; the warm-up itself then waits for the pipeline count to stand still).
+    if (this.releaseWarmup !== null) {
+      if (this.shownFrames === 0) this.shownAtMs = performance.now();
+      this.shownFrames++;
+      if (this.shownFrames >= 3 || performance.now() - this.shownAtMs >= 1500) this.release();
+    }
 
     const p = camera.position;
     this.watch?.update(p.x, p.y, p.z);
   }
 
   updateShadowCascades(cameras: readonly Camera[], endsM: readonly number[], layerBase: number): void {
-    if (this.params.get("percascade") === "0") return; // A/B: the main mesh casts into every cascade
-    this.terrain?.updateShadowCascades(this.castOff ? [] : cameras, endsM, layerBase);
+    const terrain = this.terrain;
+    if (terrain === null) return;
+    if (!this.percascadeOff) {
+      // `&percascade=0` A/B: the main mesh casts into every cascade.
+      const t0 = performance.now();
+      terrain.updateShadowCascades(this.castOff ? [] : cameras, endsM, layerBase);
+      this.casterMs[this.casterN % SELECT_SAMPLES] = performance.now() - t0;
+      this.casterN++;
+    }
   }
 
   info(): TerrainSceneInfo {
     const terrain = this.terrain;
-    const n = Math.min(this.selectN, SELECT_SAMPLES);
-    const sorted = this.sorted;
-    sorted.set(this.selectMs);
-    const s = sorted.subarray(0, n).sort();
-    const q = (f: number): number => (n === 0 ? 0 : s[Math.min(n - 1, Math.floor(n * f))]!);
+    const quantiles = (samples: Float32Array, count: number) => {
+      const n = Math.min(count, SELECT_SAMPLES);
+      const s = Float32Array.from(samples.subarray(0, n)).sort();
+      const q = (f: number): number => (n === 0 ? 0 : s[Math.min(n - 1, Math.floor(n * f))]!);
+      return { p50: q(0.5), p95: q(0.95), max: q(1), n };
+    };
     const stats = terrain?.selector.stats;
     const camera = this.roots.camera.position;
     const ground = this.ground;
@@ -438,7 +524,11 @@ export class TerrainScene implements LookScene {
       siteUp: [this.siteFrame.up.x, this.siteFrame.up.y, this.siteFrame.up.z],
       shadowInstances: terrain?.shadowInstances ?? 0,
       shadowPerCascade: terrain === null ? [] : [0, 1, 2, 3].map((k) => terrain.cascadeInstances(k)),
-      selectMs: { p50: q(0.5), p95: q(0.95), max: q(1), n },
+      casterOverflow: terrain === null ? [] : [0, 1, 2, 3].map((k) => terrain.cascadeOverflow(k)),
+      cuts: terrain?.cuts ?? 0,
+      warmupHeld: this.releaseWarmup !== null,
+      casterSelectMs: quantiles(this.casterMs, this.casterN),
+      selectMs: quantiles(this.selectMs, this.selectN),
       heightTextureBytes: this.asset === null ? 0 : this.asset.cube.data.byteLength,
       minMaxBytes: this.minMax?.byteLength ?? 0,
       asset:
@@ -459,7 +549,10 @@ export class TerrainScene implements LookScene {
 
   dispose(): void {
     this.disposed = true;
+    this.release();
     this.group.removeFromParent();
+    for (const mip of this.heightMips ?? []) mip.dispose();
+    this.heightMips = null;
     this.terrain?.dispose();
     this.terrain = null;
     this.fence?.dispose();

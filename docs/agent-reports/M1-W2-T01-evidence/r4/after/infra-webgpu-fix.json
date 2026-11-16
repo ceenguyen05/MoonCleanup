@@ -1,0 +1,84 @@
+[
+  {
+    "name": "moon-ground",
+    "url": "http://localhost:5193/?scene=moon&view=ground&solo=0&preset=medium&backend=webgpu",
+    "infra": {
+      "warmup": {
+        "phase": "ready",
+        "reason": "boot",
+        "completed": 1,
+        "pipelinesReadyMs": 7083.800000000745,
+        "lastMs": 7083.800000000745,
+        "lastFrames": 10,
+        "timedOut": false,
+        "pipelines": 37,
+        "pipelinesAtReady": 37,
+        "pipelinesAfterWarmup": 0,
+        "runtimeCreationFrames": 0,
+        "holds": 0
+      },
+      "drawBudget": {
+        "drawCalls": 30,
+        "triangles": 278779,
+        "budgetDrawCalls": 350,
+        "budgetTriangles": 1500000,
+        "over": false,
+        "frames": 384,
+        "overFrames": 0,
+        "peakDrawCalls": 30,
+        "peakTriangles": 852235
+      },
+      "memory": {
+        "totalBytes": 3981312,
+        "budgetBytes": 908066816,
+        "overCategories": 0,
+        "bytes": {
+          "textures": 0,
+          "geometry": 0,
+          "renderTargets": 3981312,
+          "shadowMaps": 0,
+          "terrainDust": 0,
+          "envProbes": 0,
+          "particles": 0
+        },
+        "entries": [
+          {
+            "id": 1,
+            "owner": "render",
+            "category": "renderTargets",
+            "label": "scene pass (RGBA16F + depth)",
+            "bytes": 3981312
+          }
+        ]
+      },
+      "rendererInfo": {
+        "pipelines": 37,
+        "textureBytes": 92178568,
+        "geometryBytes": 2013344,
+        "totalBytes": 94464211
+      },
+      "dynres": {
+        "enabled": true,
+        "pinned": false,
+        "scale": 0.6,
+        "scaleMin": 0.6,
+        "scaleMax": 0.85,
+        "signal": "gpu",
+        "p90Ms": 16.236661911010742,
+        "targetMs": 14,
+        "steps": 0,
+        "floorHint": false,
+        "targetFps": 60,
+        "paceP90Ms": 17,
+        "paceTargetMs": 16.666666666666668,
+        "paceLimited": false
+      }
+    },
+    "console": [
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+      "warning: The resource http://localhost:5193/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in"
+    ]
+  }
+]

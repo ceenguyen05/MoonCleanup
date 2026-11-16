@@ -6,6 +6,7 @@ import { NO_INTENTS, UiIntentsContext, type UiIntentPort } from "./menus/intents
 import { MenuHost } from "./menus/MenuHost";
 import type { ControlsPort } from "./menus/controls-model";
 import { UiControlsContext, UiPrefsContext, type UiPrefsStore } from "./menus/ui-local";
+import { SaveConflictPrompt } from "./save/SaveConflictPrompt";
 import { OnlineEntry } from "./online/OnlineEntry";
 import type { OnlineEntryPort } from "./online/online-model";
 import { WakingOverlay } from "./screens/WakingOverlay";
@@ -16,6 +17,7 @@ import type { UiUrlOptions } from "./ui-options";
 export function UiRoot({
   options,
   online = null,
+  invite = null,
   intents = NO_INTENTS,
   prefs,
   controls = null,
@@ -26,6 +28,8 @@ export function UiRoot({
   readonly options: UiUrlOptions;
   /** The online entry port; absent when the app does not offer online play (solo only, harness lanes). */
   readonly online?: OnlineEntryPort | null;
+  /** Canonical invite code from the page URL (`parseInviteLink`), or `null`. */
+  readonly invite?: string | null;
   /** Purchase / settings intents the menus raise; the app routes them to gameplay and net. Default: no-ops. */
   readonly intents?: UiIntentPort;
   /** UI-local settings state (quality preset mirror, rebinding screen). Default: a private store. */
@@ -40,8 +44,9 @@ export function UiRoot({
         {!options.hudTest && (shiftReady || options.hudForce) && <Hud />}
         {options.hudTest && <HudTestPage />}
         {!options.hudTest && <MenuHost />}
+        {!options.hudTest && <SaveConflictPrompt />}
         <WakingOverlay previewConn={options.wakePreview} />
-        {online !== null && <OnlineEntry port={online} />}
+        {online !== null && <OnlineEntry port={online} invite={invite} />}
       </UiControlsContext.Provider>
     </UiIntentsContext.Provider>
   );

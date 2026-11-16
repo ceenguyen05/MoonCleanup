@@ -3,10 +3,11 @@
 // `SaveSummaryProvider` (playtime from the sim tick, wallet and Shine from the UI store) and the UI glue
 // (`saveSync.set` sink, `saveSync.request` consumer). Event and timer driven only: nothing here runs per frame.
 
-import type { ContractId, EventBus, SaveEventMap, UiSaveSyncRequest } from "@moon-cleanup/shared";
+import type { ContractId, EventBus, SaveEventMap, UiSaveSyncRequest, UiSaveSyncState } from "@moon-cleanup/shared";
 import type {
   LocalInstallPort,
   LocalStoreReader,
+  ResolveResult,
   SaveSummaryProvider,
   SaveSync,
   StoredCheckpointLike,
@@ -168,10 +169,42 @@ export function signInUntilReady(deps: SignInRetryDeps): () => void {
   };
 }
 
-/** Hands each new `saveSync.request` of the UI store to the controller once, then clears it. */
+type RequestError = NonNullable<UiSaveSyncState["error"]>;
+
+/**
+ * What the "Which copy?" prompt and the Settings row need after a request did not go through. A failure the controller
+ * already classified (offline, server error, rejected) keeps its kind; a download/upload that failed without one reads
+ * as a server problem; a local store or install failure is `local_store_failed`; an unreadable or oversize copy reads
+ * as "did not accept this copy". The
+ * conflict stays (`state: "conflict"` while a conflict is held), so the prompt shows its failure line, never a blank.
+ */
+export function requestFailurePatch(
+  request: UiSaveSyncRequest,
+  result: Extract<ResolveResult, { kind: "failed" }> | null,
+  current: UiSaveSyncState,
+): Partial<UiSaveSyncState> {
+  const error: RequestError =
+    result?.failure !== undefined
+      ? { kind: result.failure.kind, reason: result.failure.reason }
+      : result !== null && (result.why === "download" || result.why === "upload")
+        ? { kind: "server_error", reason: null }
+        : result === null
+          ? { kind: "server_error", reason: null }
+          : result.why === "local" || result.why === "install"
+            ? { kind: "local_store_failed", reason: null }
+            : { kind: "rejected", reason: null };
+  return request.kind === "resolve_conflict" && current.conflict !== null ? { state: "conflict", error } : { error };
+}
+
+/**
+ * Hands each new `saveSync.request` of the UI store to the controller once, clears it, and writes the outcome back:
+ * a failed resolve keeps the conflict and sets `error`; a missing backup clears `backupAvailable`. The controller's own
+ * `sink` already writes `backupAvailable`, `backupExpiresAtMs`, `pendingSinceMs`, `lastSyncedAtMs` and `error` on every
+ * state change; this only covers the failures that return without publishing.
+ */
 export function bindSaveSyncRequests(
   store: AppUiStore,
-  sync: Pick<SaveSync, "handleRequest">,
+  sync: Pick<SaveSync, "resolveConflict" | "restoreBackup">,
   onProblem: (source: string, error: unknown) => void,
 ): () => void {
   // The clear is queued (applied by the next store flush), so the request object stays visible until then; it is
@@ -182,7 +215,25 @@ export function bindSaveSyncRequests(
     if (request === null || request === last) return;
     last = request;
     store.dispatch({ type: "saveSync.set", patch: { request: null } });
-    void sync.handleRequest(request).catch((error: unknown) => onProblem("save sync request", error));
+    const run = request.kind === "resolve_conflict" ? sync.resolveConflict(request.choice) : sync.restoreBackup();
+    run
+      .then((result) => {
+        if (result.kind === "failed") {
+          store.dispatch({
+            type: "saveSync.set",
+            patch: requestFailurePatch(request, result, store.getState().saveSync),
+          });
+        } else if (result.kind === "no_backup") {
+          store.dispatch({ type: "saveSync.set", patch: { backupAvailable: false, backupExpiresAtMs: null } });
+        }
+      })
+      .catch((error: unknown) => {
+        onProblem("save sync request", error);
+        store.dispatch({
+          type: "saveSync.set",
+          patch: requestFailurePatch(request, null, store.getState().saveSync),
+        });
+      });
   };
   check();
   return store.subscribe(check);

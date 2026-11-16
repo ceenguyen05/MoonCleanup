@@ -6,7 +6,8 @@
 //   FRAME dustStrokes                                -> the same integer `applyStroke` the server ran (WDS 5.5)
 //   FRAME dustPlots (2 Hz, moon-wide)                -> L0 overlay; Polished latched into the ledger
 //   DUST_LEDGER (streamed, or a DUST_REQUEST answer) -> installLedger (replaces the plot's ledger)
-//   DUST_CHECK detail                                -> hash compare; mismatching plots queue a DUST_REQUEST
+//   DUST_CHECK chunks (every 5 s)                    -> chunk hash compare; a mismatch queues a chunk DUST_REQUEST
+//   DUST_CHECK detail (answer to that request)       -> hash compare; mismatching plots queue a DUST_REQUEST
 // Strokes in frames that arrive before the snapshot are inside it, so they are skipped (`ready` false).
 //
 // SOLO FIRST: constructed only for an online room; solo never imports this file. `applyFrame` allocates nothing.
@@ -37,6 +38,13 @@ const ST_EMPTY = PlotState.Empty;
 const ST_GRIMY = PlotState.Grimy;
 const ST_OPENED = PlotState.Opened;
 const ST_POLISHED = PlotState.Polished;
+/** Bound of the chunk-check wants (a few chunks intersect a dust radius; the cap only stops a hostile stream). */
+const WANTED_CHUNKS_MAX = 16;
+/**
+ * A wanted plot is requested at most this many times: the server may never answer (queue full, ledger freed without
+ * Polishing), and an unanswered plot must not starve the chunk repair behind it. A later chunk check re-wants it.
+ */
+export const WANTED_PLOT_MAX_REQUESTS = 3;
 
 export interface RemoteDustOptions {
   /** Ticks per frame (SIM_TICK_HZ / SNAPSHOT_HZ): stroke chain continuations advance by this. */
@@ -55,7 +63,10 @@ export interface RemoteDustStats {
   ledgersRefused: number;
   deltas: number;
   checks: number;
+  /** Plots a DUST_CHECK detail answer found missing or different. */
   checkMismatches: number;
+  /** Chunks whose 5 s DUST_CHECK summary differed from the client's own chunk hash. */
+  chunkMismatches: number;
 }
 
 export class RemoteDust {
@@ -77,6 +88,7 @@ export class RemoteDust {
     deltas: 0,
     checks: 0,
     checkMismatches: 0,
+    chunkMismatches: 0,
   };
   private readonly framesEvery: number;
   private readonly inflate: Inflate;
@@ -89,6 +101,14 @@ export class RemoteDust {
   };
   /** Plots whose ledger hash disagreed with a DUST_CHECK (deduplicated, bounded). */
   private readonly wanted: number[] = [];
+  /** Parallel to `wanted`: how many DUST_REQUESTs already named that plot without its ledger arriving (F4 expiry). */
+  private readonly wantedTries: number[] = [];
+  /** Chunks whose DUST_CHECK summary disagreed, waiting for a chunk DUST_REQUEST / its detail answer (bounded). */
+  private readonly wantedChunks: number[] = [];
+  /** Per chunk in `wantedChunks` or awaiting its detail answer: [server xor hash, client chunk hash] at mismatch. */
+  private readonly pendingChunk = new Map<number, [number, number]>();
+  /** Chunks whose detail check found nothing to fetch: the (server, client) hash pair that was judged harmless. */
+  private readonly benign = new Map<number, [number, number]>();
 
   constructor(ledger: WorldDustLedger, options: RemoteDustOptions) {
     this.ledger = ledger;
@@ -129,6 +149,10 @@ export class RemoteDust {
     }
     for (const e of s.ledgers) this.install(e.plotId, e.texels, e.header.version, e.header.contributions);
     this.wanted.length = 0;
+    this.wantedTries.length = 0;
+    this.wantedChunks.length = 0;
+    this.pendingChunk.clear();
+    this.benign.clear();
     this.snapshotTick = tick;
     this.ready = true;
     this.stats.snapshots++;
@@ -159,6 +183,8 @@ export class RemoteDust {
       const st = list.state[i]!;
       if (st === ST_POLISHED) {
         if (l.state[p] !== ST_POLISHED) l.installPolished(p);
+        // The server answers nothing for a requested plot that became Polished: stop re-requesting it.
+        if (this.wanted.length > 0) this.removeWanted(p);
         continue;
       }
       if ((l.slotOf[p] ?? -1) >= 0) continue; // the client's ledger is authoritative for its own plot
@@ -194,35 +220,84 @@ export class RemoteDust {
     return false;
   }
 
-  /** Plots queued for a DUST_REQUEST after a failed DUST_CHECK. */
+  /** Requests queued after a failed DUST_CHECK: plots (ledger wanted) plus chunks (detail check wanted). */
   get wantedCount(): number {
-    return this.wanted.length;
+    return this.wanted.length + this.wantedChunks.length;
   }
 
   /**
-   * Encodes the next DUST_REQUEST (<= 8 wanted plots) into `out` and returns its length, or 0 when nothing is wanted.
-   * The caller sends at most one per 2 s (RATE_LIMITS.dustRequest); the plots stay wanted until their ledger arrives.
+   * Encodes the next DUST_REQUEST into `out` and returns its length, or 0 when nothing is wanted: <= 8 wanted plots
+   * first (repair), else one wanted chunk (its detail check names the mismatching plots). The caller sends at most one
+   * per 2 s (RATE_LIMITS.dustRequest); plots stay wanted until their ledger arrives, a chunk until its detail answer.
    */
   nextRequest(out: Uint8Array): number {
-    if (this.wanted.length === 0) return 0;
-    const ids = this.wanted.slice(0, DUST_REQUEST_MAX_PLOTS) as PlotId[];
-    return encodeDustRequest({ kind: "plots", plotIds: ids }, out);
+    // Expire plots that were already requested WANTED_PLOT_MAX_REQUESTS times (in place, no allocation).
+    for (let i = this.wanted.length - 1; i >= 0; i--) {
+      if (this.wantedTries[i]! >= WANTED_PLOT_MAX_REQUESTS) {
+        this.wanted.splice(i, 1);
+        this.wantedTries.splice(i, 1);
+      }
+    }
+    if (this.wanted.length > 0) {
+      const n = Math.min(this.wanted.length, DUST_REQUEST_MAX_PLOTS);
+      for (let i = 0; i < n; i++) this.wantedTries[i]!++;
+      const ids = this.wanted.slice(0, n) as PlotId[];
+      return encodeDustRequest({ kind: "plots", plotIds: ids }, out);
+    }
+    if (this.wantedChunks.length > 0) return encodeDustRequest({ kind: "chunk", chunkId: this.wantedChunks[0]! }, out);
+    return 0;
   }
 
   private check(c: DustCheckPayload): void {
     this.stats.checks++;
-    if (c.mode !== "detail") return;
     const l = this.ledger;
+    if (c.mode === "chunks") {
+      // 5 s summary (WDS 5.1): the server hashes the Opened ledgers it sent this client per chunk; compare with the
+      // client's own Opened ledgers of that chunk. Not ready (no snapshot yet): nothing to compare.
+      if (!this.ready) return;
+      for (const e of c.chunks) {
+        const mine = l.chunkHash(e.chunkId);
+        const theirs = e.xorHash >>> 0;
+        if (mine === theirs) {
+          this.benign.delete(e.chunkId);
+          continue;
+        }
+        const known = this.benign.get(e.chunkId);
+        if (known !== undefined && known[0] === theirs && known[1] === mine) continue; // detail found nothing to fetch
+        this.stats.chunkMismatches++;
+        this.pendingChunk.set(e.chunkId, [theirs, mine]);
+        if (!this.wantedChunks.includes(e.chunkId) && this.wantedChunks.length < WANTED_CHUNKS_MAX) {
+          this.wantedChunks.push(e.chunkId);
+        }
+      }
+      return;
+    }
+    let fetch = 0;
     for (const e of c.plots) {
       if ((l.slotOf[e.plotId] ?? -1) >= 0 && l.ledgerHash(e.plotId) === e.hash >>> 0) continue;
       this.stats.checkMismatches++;
-      if (!this.wanted.includes(e.plotId) && this.wanted.length < 64) this.wanted.push(e.plotId);
+      fetch++;
+      if (!this.wanted.includes(e.plotId) && this.wanted.length < 64) {
+        this.wanted.push(e.plotId);
+        this.wantedTries.push(0);
+      }
     }
+    // The detail answer closes the chunk's want. When it names nothing to fetch, the chunk summary differed only because
+    // the client holds ledgers the server no longer counts (left behind beyond the stream hysteresis): remember that
+    // pair so the same summary does not trigger a detail request every 5 s.
+    const ci = this.wantedChunks.indexOf(c.chunkId);
+    if (ci >= 0) this.wantedChunks.splice(ci, 1);
+    const pair = this.pendingChunk.get(c.chunkId);
+    this.pendingChunk.delete(c.chunkId);
+    if (fetch === 0 && pair !== undefined && this.benign.size < WANTED_CHUNKS_MAX * 4) this.benign.set(c.chunkId, pair);
   }
 
   private removeWanted(plot: number): void {
     const i = this.wanted.indexOf(plot);
-    if (i >= 0) this.wanted.splice(i, 1);
+    if (i >= 0) {
+      this.wanted.splice(i, 1);
+      this.wantedTries.splice(i, 1);
+    }
   }
 
   private install(

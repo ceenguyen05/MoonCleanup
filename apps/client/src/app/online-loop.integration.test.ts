@@ -9,7 +9,9 @@ import {
   GuestCreateResponseSchema,
   INPUT_BUTTON_BIT,
   QUALITY_PRESETS,
+  ShiftStateViewSchema,
   type FrameInfo,
+  type ShiftStateView,
   type SimInputCommand,
 } from "@moon-cleanup/shared";
 import { ENTITY_KIND_AVATAR } from "@moon-cleanup/protocol";
@@ -152,6 +154,8 @@ describe("online loop: two clients on the real ShiftRoom", () => {
       framesA++;
       f.release();
     });
+    let shiftA: ShiftStateView | null = null;
+    hostA.onShiftState((s) => (shiftA = s));
     a.start();
     b.start();
     const pump = (): void => {
@@ -241,6 +245,14 @@ describe("online loop: two clients on the real ShiftRoom", () => {
     console.info("[t06-loop]", JSON.stringify(evidence));
     expect(a.stats.inputsSent).toBeGreaterThanOrEqual(60);
     expect(framesA).toBeGreaterThan(0);
+    // The real server's Schema reaches the RemoteRoomHost as a valid ShiftStateView (v1.1 mask included).
+    const view = shiftA as ShiftStateView | null;
+    expect(view).not.toBeNull();
+    expect(ShiftStateViewSchema.safeParse(view).success).toBe(true);
+    expect(view!.contractId).toBe(contractId.toLowerCase());
+    expect(view!.players.length).toBe(2);
+    expect(view!.nearParcelsCollected).toBe(a.readouts.collectedMask);
+    expect(a.readouts.authoritativeMask).toBe(true);
     expect(b.stats.framesApplied).toBeGreaterThan(0);
     expect(movedM).toBeGreaterThan(0.5);
   }, 120_000);

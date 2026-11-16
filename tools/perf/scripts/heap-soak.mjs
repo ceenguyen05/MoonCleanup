@@ -4,6 +4,7 @@
 /* global window, requestAnimationFrame */
 import { writeFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
+import { OFFSCREEN_CHROME_ARGS } from "./offscreen-chrome-args.mjs";
 
 const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`);
@@ -19,6 +20,7 @@ const browser = await chromium.launch({
   channel: "chrome",
   headless: false,
   args: [
+    ...OFFSCREEN_CHROME_ARGS,
     "--enable-unsafe-webgpu",
     "--enable-features=Vulkan,WebGPU",
     "--ignore-gpu-blocklist",

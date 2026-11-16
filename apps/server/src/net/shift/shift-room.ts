@@ -44,12 +44,13 @@ import {
   type IntentResult,
   type PlayerId,
   type ProtocolMismatchInfo,
+  type PurchaseResultPayload,
   type WireSimEvent,
 } from "@moon-cleanup/shared";
 import { FRAME_TYPE_ID } from "@moon-cleanup/shared";
 import { PONG_BODY_BYTES, readPingBody, writePongBody } from "@moon-cleanup/protocol";
 import type { GameData } from "@moon-cleanup/game-data";
-import type { SimWorld } from "@moon-cleanup/sim";
+import { SIM_CHECKPOINT_META_VERSION, type SimWorld } from "@moon-cleanup/sim";
 import type { WorldDustLedger } from "@moon-cleanup/world";
 import { z } from "zod";
 import { IdleWatch, type IdleLimits } from "../idle-watch";
@@ -59,7 +60,14 @@ import type { JoinTickets } from "./join-ticket";
 import { InputVerdict, ShiftCore, type ShiftSink } from "./shift-core";
 import { createShiftLedger } from "./shift-ledger";
 import { ShiftDustPersistence, type ShiftDustPersistenceLogger, type ShiftDustStore } from "./shift-persistence";
-import { ArraySchema, BeaconState, PermissionsState, PlayerInfoState, ShiftStateSchemaClass } from "./shift-state";
+import {
+  ArraySchema,
+  BeaconState,
+  PermissionsState,
+  PlayerInfoState,
+  ShiftStateSchemaClass,
+  nearParcelsMask,
+} from "./shift-state";
 import { TokenBucket } from "./token-bucket";
 
 export const SHIFT_ROOM_NAME = "shift";
@@ -181,6 +189,7 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
     this.autoBatchMessages = true;
     this.patchRate = null;
     this.idleWatch = new IdleWatch(deps.idle);
+    const restored = this.persistence?.restoredState;
     this.core = new ShiftCore(
       {
         data: deps.data,
@@ -190,9 +199,35 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
         simTickHz: deps.simTickHz,
         snapshotHz: deps.snapshotHz,
         ledger,
+        // The wallet and collected Near Parcels stored in the room header (interim room-v3), always together: a wallet
+        // without the mask would re-pay the parcels on every restart (review B1). Absent = the sim's default start.
+        ...(restored == null
+          ? {}
+          : { walletLm: restored.walletLm, nearParcelsCollected: restored.nearParcelsMask ?? 0 }),
       },
       Date.now(),
     ); // one wall clock (Date.now) for every seat bucket: receiveInput below also passes Date.now()
+    // Review N1: what was bought (Standard Issue tools, suit gear, board levels, Roosts) comes back from the sim META
+    // section. A section this build refuses (balance edit, other tool table) leaves the sim as built above (wallet and
+    // parcels from the header), logged: nothing bought is re-paid, at worst it is lost.
+    if (restored?.simMeta !== undefined) {
+      const r = this.core.restoreSharedMeta(restored.simMeta);
+      if (!r.ok) {
+        deps.logger?.warn({ code: r.code, detail: r.detail }, "shift room sim META refused; gear not restored");
+        // Review N6: a META version bump refuses EVERY stored section, so all purchased gear of this Contract is gone
+        // (the header wallet stays). No migration exists; a bump needs a reader for the old layout first.
+        if (r.code === "unsupported_version") {
+          deps.logger?.warn(
+            { storedMetaVersion: restored.simMeta.version, buildMetaVersion: SIM_CHECKPOINT_META_VERSION },
+            "shift room sim META version changed: purchased gear of this Contract was lost (no META migration, review N6)",
+          );
+        }
+      }
+    }
+    this.persistence?.setStateProvider(
+      () => ({ walletLm: this.core.sim.wallet, nearParcelsMask: nearParcelsMask(this.core.sim) }),
+      () => this.core.captureSharedMeta(),
+    );
     this.stats = deps.stats?.addRoom(this.roomId);
     this.hello = {
       serverProtocol: PROTOCOL_VERSION,
@@ -426,6 +461,8 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
       if (this.state.walletLumens !== wallet) this.state.walletLumens = wallet;
       const shine = core.sim.shinePolished;
       if (this.state.shinePolished !== shine) this.state.shinePolished = shine;
+      const parcels = nearParcelsMask(core.sim);
+      if (this.state.nearParcelsCollected !== parcels) this.state.nearParcelsCollected = parcels;
       for (let s = 0; s < MAX_PLAYERS_PER_ROOM; s++) {
         const sid = this.sessionBySeat[s];
         if (sid === undefined) continue;
@@ -531,11 +568,9 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
     const parsed = PurchasePayloadSchema.safeParse(message);
     if (!entry.purchase.take(Date.now())) {
       if (parsed.success) {
-        client.send(MESSAGE_CATALOG.PURCHASE_RESULT.id, {
-          requestId: parsed.data.requestId,
-          ok: false,
-          code: "RATE_LIMITED",
-        });
+        // PurchaseResultPayload: `code` is a PURCHASE_REJECT_REASONS value (lower case), not the wire `error` code.
+        const refused: PurchaseResultPayload = { requestId: parsed.data.requestId, ok: false, code: "rate_limited" };
+        client.send(MESSAGE_CATALOG.PURCHASE_RESULT.id, refused);
       }
       this.dropped++;
       return;
@@ -638,6 +673,7 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
     perms.tempCanDriveShared = false;
     state.permissions = perms;
     state.fulfilled = false;
+    state.nearParcelsCollected = nearParcelsMask(this.core.sim);
     return state;
   }
 

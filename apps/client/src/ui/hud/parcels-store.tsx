@@ -41,6 +41,8 @@ export interface ParcelsState {
   readonly bearings: readonly (number | null)[];
   /** Whole-degree bearing per outpost id. */
   readonly outposts: Readonly<Record<string, number>>;
+  /** Whole-degree bearing per objective marker id (`compass.objectives`, such as the Landing Apron plot). */
+  readonly markers: Readonly<Record<string, number>>;
 }
 
 export interface ParcelsStore {
@@ -53,8 +55,12 @@ export interface ParcelsStore {
   readonly setNearParcels: (source: NearParcelSource, bearing?: ParcelBearingFn, rewardLm?: number) => void;
   /** Bearing of an outpost on the compass track; `null` removes it. Rounded to whole degrees. */
   readonly setOutpostBearing: (id: string, bearingDeg: number | null) => void;
+  /** Bearing of an objective marker (a plot or place, such as `landing_apron`); `null` removes it. Whole degrees. */
+  readonly setMarkerBearing: (id: string, bearingDeg: number | null) => void;
   /** Contract reset / leaving the shift. */
   readonly clear: () => void;
+  /** Leaving / changing parcels: drops the Near Parcels (count, mask, bearings) but keeps outpost bearings. */
+  readonly clearNearParcels: () => void;
 }
 
 const NONE = -1;
@@ -65,6 +71,7 @@ const EMPTY: ParcelsState = {
   rewardLm: NEAR_PARCEL_REWARD_LM,
   bearings: [],
   outposts: {},
+  markers: {},
 };
 
 export function normalizeDeg(deg: number): number {
@@ -153,6 +160,24 @@ export function createParcelsStore(): ParcelsStore {
       const q = normalizeDeg(bearingDeg);
       if (current === q) return;
       publish({ ...state, outposts: { ...state.outposts, [id]: q } });
+    },
+    setMarkerBearing: (id, bearingDeg) => {
+      const current = state.markers[id];
+      if (bearingDeg === null || !Number.isFinite(bearingDeg)) {
+        if (current === undefined) return;
+        const rest = { ...state.markers };
+        delete rest[id];
+        publish({ ...state, markers: rest });
+        return;
+      }
+      const q = normalizeDeg(bearingDeg);
+      if (current === q) return;
+      publish({ ...state, markers: { ...state.markers, [id]: q } });
+    },
+    clearNearParcels: () => {
+      bearingBuf.fill(NONE);
+      if (state.count === 0 && state.collectedMask === 0 && state.bearings.length === 0) return;
+      publish({ ...state, count: 0, collectedMask: 0, collected: 0, bearings: [] });
     },
     clear: () => {
       bearingBuf.fill(NONE);

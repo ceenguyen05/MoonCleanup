@@ -28,7 +28,11 @@ export interface SkyFrame {
    * Earth). 0 = the physical phase from the sun direction; default 0.5.
    */
   readonly earthFullness?: number;
+  /** Local up of the scene's site (world, unit): the backdrop's horizon band follows it. Default world +Y. */
+  readonly siteUp?: Vector3 | null;
 }
+
+const WORLD_UP = new Vector3(0, 1, 0);
 
 export class SkyRig {
   readonly root = new Group();
@@ -84,6 +88,7 @@ export class SkyRig {
     const distance = camera.far * 0.7;
     this.root.position.copy(camera.position);
     this.dome.mesh.scale.setScalar(distance * 1.06);
+    this.dome.orient(frame.siteUp ?? WORLD_UP);
     this.dome.update(frame.sunDirection, frame.skyLevel ?? 1, frame.sunVisible);
     this.starScale = distance;
     const earthDiameterDeg = frame.earthDiameterDeg ?? EARTH_DIAMETER_DEG;

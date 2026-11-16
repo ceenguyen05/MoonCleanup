@@ -219,8 +219,12 @@ describe("DUST_SNAPSHOT slice pacing against the socket buffer", () => {
     expect(partial).toBeLessThan(DUST_SNAPSHOT_MAX_SLICES);
     core.setHidden(0, false); // resync
     slow.bufferedAmount = 0; // the socket recovered
+    // The fabricated snapshot was a worst-case 64 slices (261 KB): it charged the seat's snapshot egress budget far past
+    // its burst (F1), so the resync waits for the refill (about 40 s) rather than only the 2 s minimum interval.
     runTicks(core, sink, sockets, 60);
-    // The new (real, small) snapshot went out after the 2 s minimum interval; the old tail never did.
+    expect(core.counters.dustSnapshotsSent).toBe(1);
+    runTicks(core, sink, sockets, 45 * HZ);
+    // The new (real, small) snapshot goes out once the budget recovers; the old tail never did.
     expect(core.counters.dustSnapshotsSent).toBe(2);
     expect(slow.sliceMarks.length).toBeLessThan(DUST_SNAPSHOT_MAX_SLICES + partial);
     expect(slow.sliceMarks.slice(partial).every((m, i) => m === i)).toBe(true);
@@ -282,6 +286,58 @@ describe("ledgers that change while a snapshot is paced out", () => {
     expect(core.counters.dustSnapshotCatchUps).toBeGreaterThan(0);
     expect(slow.ledgers).toBeGreaterThanOrEqual(core.counters.dustSnapshotCatchUps);
     expect(slow.terminated).toBe(false);
+  });
+
+  it("a resync that supersedes a paced snapshot also drops its recorded versions (no bogus catch-ups from the old one)", () => {
+    const sweeper = new FakeSocket(1e9);
+    const slow = new FakeSocket(0);
+    const sockets = [sweeper, slow];
+    const core = new ShiftCore({ data, world, contractId: CONTRACT, shiftType: "private", simTickHz: HZ }, 0);
+    core.addSeat(player(0), 0);
+    let tick = 0;
+    const drive = (ticks: number) => {
+      for (let i = 0; i < ticks; i++, tick++) {
+        const a: MutableInput = {
+          seq: tick + 1,
+          moveX: 0,
+          moveY: 127,
+          yaw: (tick * 60) & 0xffff,
+          pitch: 0,
+          buttons: 1 << 3,
+          toolParam: 128,
+        };
+        const buf = new Uint8Array(32);
+        const n = encodeInput(buf, a);
+        core.receiveInput(0, buf.slice(1, n), tick * 50);
+        runTicks(core, sink, sockets, 1);
+      }
+    };
+    const sink: ShiftSink = {
+      frame: (seat, body) => sockets[seat]?.push(body.byteLength + 1),
+      events() {},
+      bytes: (seat, _typeId, body) => sockets[seat]!.push(body.byteLength + 1),
+      buffered: (seat) => sockets[seat]?.bufferedAmount ?? 0,
+    };
+    drive(200); // the sweeper opens plots around the spawn
+    expect(core.ledger.ledgerCount).toBeGreaterThan(0);
+    const real = core.dust.buildSnapshot.bind(core.dust);
+    core.dust.buildSnapshot = (px, py, pz, version, sent, radius) => {
+      const snap = real(px, py, pz, version, sent, radius);
+      return snap === null ? null : { ...snap, slices: fakeSnapshot(40).slices };
+    };
+    core.addSeat(player(1), tick * 50);
+    drive(30); // the slow seat's oversized snapshot is paced (versions recorded) and stalls while ledgers keep changing
+    expect(core.counters.dustSnapshotsPaced).toBe(1);
+    // Resync: the new snapshot is the real, small one and leaves in one tick (never paced, so it records nothing).
+    core.dust.buildSnapshot = real;
+    slow.bufferedAmount = 0;
+    Object.assign(slow, { drainPerTick: 1e9 });
+    const before = core.counters.dustSnapshotCatchUps;
+    core.requestKeyframe(1);
+    drive(80);
+    expect(core.counters.dustSnapshotsSent).toBe(3); // seat 0 join, seat 1 join (paced), seat 1 resync
+    expect(core.counters.dustSnapshotsPaced).toBe(1);
+    expect(core.counters.dustSnapshotCatchUps).toBe(before);
   });
 });
 

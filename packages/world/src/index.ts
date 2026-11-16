@@ -76,6 +76,7 @@ export {
   cubeFaceOf,
   type CubeFaceAB,
 } from "./height/cube-mapping";
+export { TERRAIN_BAKE_HASH } from "./height/bake-hash";
 export { HeightCube, type HeightCubeLayout } from "./height/height-cube";
 export {
   DEFAULT_HEIGHT_DETAIL,

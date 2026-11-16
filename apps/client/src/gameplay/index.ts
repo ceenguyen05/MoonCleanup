@@ -17,10 +17,13 @@ export {
   type SoloPredictorStats,
 } from "./avatar/solo-predictor";
 export {
+  BINDINGS_REV,
   DEFAULT_BINDINGS,
   EXTRA_ACTIONS,
   compileBindings,
+  migrateBindings,
   rebind,
+  type BindingsMigration,
   type BindingTable,
   type CompiledBindings,
   type ExtraAction,
@@ -36,6 +39,7 @@ export {
   PAD_NAV_PREV,
   PAD_NAV_RIGHT,
   PAD_NAV_UP,
+  DEFAULT_HOLD_THRESHOLD_S,
   DEFAULT_LOOK,
   PITCH_LIMIT_RAD,
   codeToYaw,
@@ -46,6 +50,18 @@ export {
   type LookSettings,
   type MutableInputCommand,
 } from "./input/input-state";
+export {
+  DEFAULT_PLOT_CARD_MODE,
+  INPUT_SETTINGS_KEYS,
+  PLOT_CARD_MODES,
+  isPlotCardMode,
+  loadBindingsRev,
+  loadPlotCardMode,
+  saveBindingsRev,
+  savePlotCardMode,
+  type InputSettingsStore,
+  type PlotCardMode,
+} from "./input/plot-card-mode";
 export { INPUT_PREFILL, InputPump, MAX_INPUTS_PER_FRAME, type InputSink } from "./input/input-pump";
 export { DomInput, type DomInputHost, type GamepadLike, type PointerLockTarget } from "./input/dom-input";
 export {

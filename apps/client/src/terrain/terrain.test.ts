@@ -15,6 +15,8 @@ import {
 } from "./cdlod/select";
 import { inflateRawSync } from "node:zlib";
 import { decodeHorizonFile, loadHorizonAsset, loadTerrainAsset, type TerrainAsset } from "./height-asset";
+import { buildHeightMips, padHeightLevel } from "./height/height-mips";
+import { TERRAIN_LEAF_RANGE_M } from "./cdlod/lod-tuning";
 import { borealPilotFence, fenceArcDistanceM, fenceRingDirections, PilotFenceWatch } from "./pilot-fence";
 
 const ASSETS = resolve(import.meta.dirname, "../../../../assets/terrain");
@@ -59,8 +61,14 @@ function dirOf(face: number, a: number, b: number): [number, number, number] {
   return [x / l, y / l, z / l];
 }
 
-function selector(cube: HeightCube, leafLevel = 8, rangeMult = 1): CdlodSelector {
-  return new CdlodSelector({ radiusM: R, leafLevel, rangeMult, minMax: new HeightMinMax(cube) });
+function selector(cube: HeightCube, leafLevel = 8, rangeMult = 1, leafRangeM?: number): CdlodSelector {
+  return new CdlodSelector({
+    radiusM: R,
+    leafLevel,
+    rangeMult,
+    minMax: new HeightMinMax(cube),
+    ...(leafRangeM === undefined ? {} : { leafRangeM }),
+  });
 }
 
 /** A view from `eyeM` above the ground at `arcM` from Boreal, no frustum planes. */
@@ -144,43 +152,54 @@ describe("CDLOD selection", () => {
     }
   });
 
-  it("splits by the shared LOD distance: every drawn node is in its level's band", async () => {
-    const { cube, pads } = await asset();
-    const ground = new GroundHeight(cube, { radiusM: R, pads });
-    const sel = selector(cube);
-    const view = viewAt(ground, 150, 1.7);
-    const n = sel.select(view);
-    expect(n).toBeGreaterThan(20);
-    expect(n).toBeLessThan(400);
-    const rl = R + view.lodHeightM;
-    const rnd = mulberry(3);
-    for (let i = 0; i < n; i++) {
-      const a0 = sel.nodeData[i * 4]!;
-      const b0 = sel.nodeData[i * 4 + 1]!;
-      const size = sel.nodeData[i * 4 + 2]!;
-      const face = sel.nodeData[i * 4 + 3]!;
-      const level = sel.lodData[i * 4 + 1]!;
-      expect(sel.lodData[i * 4]).toBeCloseTo(sel.ranges[level]!, 3);
-      if (level === sel.leafLevel) continue;
-      // Not split => no point of the footprint is nearer than the child level's range (morph factor 1 there for the
-      // finer neighbour's odd vertices). Sampled on the edges, where finer neighbours meet it.
-      for (let s = 0; s < 40; s++) {
-        const u = rnd();
-        const edge = s % 4;
-        const a = edge === 0 ? a0 : edge === 1 ? a0 + size : a0 + u * size;
-        const b = edge === 2 ? b0 : edge === 3 ? b0 + size : b0 + u * size;
-        const d = dirOf(face, a, b);
-        const dist = Math.hypot(d[0] * rl - view.camX, d[1] * rl - view.camY, d[2] * rl - view.camZ);
-        expect(dist).toBeGreaterThanOrEqual(sel.ranges[level + 1]! - 1e-6);
+  it.each([20, TERRAIN_LEAF_RANGE_M])(
+    "splits by the shared LOD distance (leaf range %d m): every drawn node is in its level's band",
+    async (leafRange) => {
+      const { cube, pads } = await asset();
+      const ground = new GroundHeight(cube, { radiusM: R, pads });
+      const sel = selector(cube, 8, 1, leafRange);
+      const view = viewAt(ground, 150, 1.7);
+      const n = sel.select(view);
+      expect(n).toBeGreaterThan(20);
+      expect(n).toBeLessThan(400);
+      const rl = R + view.lodHeightM;
+      const rnd = mulberry(3);
+      for (let i = 0; i < n; i++) {
+        const a0 = sel.nodeData[i * 4]!;
+        const b0 = sel.nodeData[i * 4 + 1]!;
+        const size = sel.nodeData[i * 4 + 2]!;
+        const face = sel.nodeData[i * 4 + 3]!;
+        const level = sel.lodData[i * 4 + 1]!;
+        expect(sel.lodData[i * 4]).toBeCloseTo(sel.ranges[level]!, 3);
+        if (level === sel.leafLevel) continue;
+        // Not split => no point of the footprint is nearer than the child level's range (morph factor 1 there for the
+        // finer neighbour's odd vertices). Sampled on the edges, where finer neighbours meet it.
+        for (let s = 0; s < 40; s++) {
+          const u = rnd();
+          const edge = s % 4;
+          const a = edge === 0 ? a0 : edge === 1 ? a0 + size : a0 + u * size;
+          const b = edge === 2 ? b0 : edge === 3 ? b0 + size : b0 + u * size;
+          const d = dirOf(face, a, b);
+          const dist = Math.hypot(d[0] * rl - view.camX, d[1] * rl - view.camY, d[2] * rl - view.camZ);
+          expect(dist).toBeGreaterThanOrEqual(sel.ranges[level + 1]! - 1e-6);
+        }
       }
-    }
-  });
+    },
+  );
 
   it("neighbouring drawn nodes differ by at most MORPH_STAGES levels", async () => {
     const { cube, pads } = await asset();
     const ground = new GroundHeight(cube, { radiusM: R, pads });
-    for (const mult of [0.75, 1, 1.5]) {
-      const sel = selector(cube, 8, mult);
+    // Selector default leaf range (20 m) and the terrain's shipped one (`TERRAIN_LEAF_RANGE_M`).
+    for (const [mult, leafRange] of [
+      [0.75, 20],
+      [1, 20],
+      [1.5, 20],
+      [0.75, TERRAIN_LEAF_RANGE_M],
+      [1, TERRAIN_LEAF_RANGE_M],
+      [1.25, TERRAIN_LEAF_RANGE_M],
+    ] as const) {
+      const sel = selector(cube, 8, mult, leafRange);
       const view = viewAt(ground, 420, 1.7);
       const n = sel.select(view);
       // Level of the drawn node containing a point of face 2 (+Y), found by search.
@@ -373,6 +392,76 @@ describe("shadow caster selection", () => {
     const near = sel.select(view);
     expect(near).toBeLessThan(half);
     expect(near).toBeGreaterThan(0);
+  });
+});
+
+describe("height mips (far-field normal)", () => {
+  it("gutter texels hold the neighbouring face: a smooth field stays continuous across every cube edge", () => {
+    const size = 32;
+    // A smooth function of the direction, sampled at the texel centres of every face.
+    const field = (d: readonly [number, number, number]): number => 30000 + 12000 * d[0] + 8000 * d[1] * d[2];
+    const dirAt = (face: number, gx: number, gy: number): [number, number, number] =>
+      dirOf(face, ((gx + 0.5) / size) * 2 - 1, ((gy + 0.5) / size) * 2 - 1);
+    const src = new Uint16Array(6 * size * size);
+    for (let face = 0; face < 6; face++) {
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) src[(face * size + y) * size + x] = Math.round(field(dirAt(face, x, y)));
+      }
+    }
+    const padded = padHeightLevel(src, size);
+    const p = size + 2;
+    let worst = 0;
+    let clamped = 0;
+    for (let face = 0; face < 6; face++) {
+      for (let gy = -1; gy <= size; gy++) {
+        for (let gx = -1; gx <= size; gx++) {
+          const value = padded[face * p * p + (gy + 1) * p + gx + 1]!;
+          const inside = gx >= 0 && gy >= 0 && gx < size && gy < size;
+          if (inside) {
+            expect(value).toBe(src[(face * size + gy) * size + gx]);
+            continue;
+          }
+          // The gutter is the field at the gutter texel's own direction (bilinear error of a smooth field only). The
+          // four corner texels point past the cube corner, where no face has a texel: they are left out.
+          const corner = (gx < 0 || gx >= size) && (gy < 0 || gy >= size);
+          if (!corner) worst = Math.max(worst, Math.abs(value - field(dirAt(face, gx, gy))));
+          clamped = Math.max(
+            clamped,
+            Math.abs(
+              src[(face * size + Math.min(Math.max(gy, 0), size - 1)) * size + Math.min(Math.max(gx, 0), size - 1)]! -
+                field(dirAt(face, gx, gy)),
+            ),
+          );
+        }
+      }
+    }
+    // A clamped border (no gutter) misses by the field's change over one texel.
+    expect(clamped).toBeGreaterThan(300);
+    expect(worst).toBeLessThan(clamped / 8);
+  });
+
+  it("builds 3 padded levels of the shipped cube, interior = 2 x 2 box filter", async () => {
+    const { cube } = await asset();
+    const mips = buildHeightMips(cube);
+    expect(mips.map((m) => m.size)).toEqual([cube.faceSize / 2, cube.faceSize / 4, cube.faceSize / 8]);
+    const m1 = mips[0]!;
+    const p0 = cube.padded;
+    const p1 = m1.size + 2;
+    const at0 = (f: number, x: number, y: number): number => cube.data[f * p0 * p0 + (y + 1) * p0 + x + 1]!;
+    for (const [f, x, y] of [
+      [0, 0, 0],
+      [2, 100, 77],
+      [5, m1.size - 1, m1.size - 1],
+    ] as const) {
+      const mean =
+        (at0(f, 2 * x, 2 * y) +
+          at0(f, 2 * x + 1, 2 * y) +
+          at0(f, 2 * x, 2 * y + 1) +
+          at0(f, 2 * x + 1, 2 * y + 1) +
+          2) >>
+        2;
+      expect(m1.data[f * p1 * p1 + (y + 1) * p1 + x + 1]).toBe(mean);
+    }
   });
 });
 

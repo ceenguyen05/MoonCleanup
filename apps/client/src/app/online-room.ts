@@ -10,6 +10,8 @@
 //   RoomSession.onEquippedTool -> setEquippedTool(code) -> OwnAvatarPredictor.setTool (own Schema PlayerInfo.equippedTool)
 //   a 500 ms poll              -> RemoteDust.nextRequest() via RoomSession.sendDustRequest, at most one per
 //                                 DUST_REQUEST_SPACING_MS
+//   sendControl(type, payload) -> the live connection's control send (`purchase`, `select_tool`), joined (held during a resync)
+//   RoomSession.onControl      -> `sim_events` batches -> read-outs + `simEventsTap` (RemoteRoomHost.onEvent)
 // The dust view is fed from the mirror's ledger (`MirrorDustFeed`, clearDirty false: the feed drains the dirty list).
 
 import {
@@ -19,8 +21,15 @@ import {
   STANDARD_GRID_PARAMS,
   type EventBus,
   type SimInputCommand,
+  type WireSimEvent,
 } from "@moon-cleanup/shared";
 import {
+  ENTITY_KIND_AVATAR,
+  RESULT_STRIDE,
+  R_PX,
+  R_PY,
+  R_PZ,
+  SAMPLE_NONE,
   createStrokeRecordOut,
   encodeInput,
   expandStrokeChain,
@@ -45,18 +54,37 @@ import {
   type RoomSessionOptions,
 } from "../net";
 import type { DustFeedPort } from "../visuals";
+import { OnlineReadouts, type WireEventLike } from "./online-readouts";
 
 export { RemoteRoomHostImpl, createRemoteRoomHost, type RemoteRoomHostStats } from "./remote-room-host";
 export { RemoteAvatarFeed, createRemoteAvatarFeed } from "./remote-avatars";
+export { OnlineReadouts, nearParcelCountOf } from "./online-readouts";
 
 const FRAME_MESSAGE_ID = MESSAGE_CATALOG.FRAME.id;
+const SIM_EVENTS_ID = MESSAGE_CATALOG.SIM_EVENTS.id;
+/** Avatar positions gathered for a Near Parcel event: own + up to 16 slot-table entities. */
+const PARCEL_POS_MAX = 17;
 
 /**
  * Wraps a room connection so every FRAME body is also handed to `tap` (after the session's own handler ran). Used by
- * the RemoteRoomHost to hand the raw protocol FRAME to RoomHost frame listeners; everything else is delegated as is.
+ * the RemoteRoomHost to hand the raw protocol FRAME to RoomHost frame listeners. When `stateTap` is given, every Schema
+ * state the session's own `onStateChange` callback receives is also handed to it (after the session ran; no extra
+ * Colyseus listener). Everything else is delegated as is.
+ *
+ * Stale-room guard: the taps never fire for a connection that was left (`leave()` called, or its `onLeave` fired), nor
+ * while `live()` (optional) returns false. A late callback from a closed or replaced room (the SDK can still dispatch
+ * a queued state patch or FRAME after leave/replace) therefore never reaches the host or the read-outs. The session's
+ * own callbacks are still delegated untouched (the session guards them itself).
  */
-export function tapFrames(conn: RoomConnection, tap: (body: Uint8Array) => void): RoomConnection {
+export function tapFrames(
+  conn: RoomConnection,
+  tap: (body: Uint8Array) => void,
+  stateTap?: (state: unknown) => void,
+  live?: () => boolean,
+): RoomConnection {
   const onStateChange = conn.onStateChange;
+  let left = false;
+  const open = (): boolean => !left && (live === undefined || live());
   return {
     ...(conn.sessionId !== undefined ? { sessionId: conn.sessionId } : {}),
     onMessage: (type, callback) =>
@@ -65,15 +93,35 @@ export function tapFrames(conn: RoomConnection, tap: (body: Uint8Array) => void)
         : conn.onMessage(type, (payload: never) => {
             callback(payload);
             const body: unknown = payload;
-            if (body instanceof Uint8Array) tap(body);
+            if (body instanceof Uint8Array && open()) tap(body);
           }),
     onDrop: (callback) => conn.onDrop(callback),
     onReconnect: (callback) => conn.onReconnect(callback),
-    onLeave: (callback) => conn.onLeave(callback),
+    onLeave: (callback) =>
+      conn.onLeave((code) => {
+        left = true;
+        callback(code);
+      }),
     send: (type, payload) => conn.send(type, payload),
     sendBytes: (type, bytes) => conn.sendBytes(type, bytes),
-    leave: (consented) => conn.leave(consented),
-    ...(onStateChange !== undefined ? { onStateChange: (callback) => onStateChange.call(conn, callback) } : {}),
+    leave: (consented) => {
+      left = true;
+      return conn.leave(consented);
+    },
+    ...(onStateChange !== undefined
+      ? {
+          onStateChange: (callback) =>
+            onStateChange.call(
+              conn,
+              stateTap === undefined
+                ? callback
+                : (state: never) => {
+                    callback(state);
+                    if (open()) stateTap(state);
+                  },
+            ),
+        }
+      : {}),
   };
 }
 
@@ -84,6 +132,8 @@ export function tapFrames(conn: RoomConnection, tap: (body: Uint8Array) => void)
 export const DUST_REQUEST_SPACING_MS = 2500;
 /** How often the controller checks whether a DUST_REQUEST is due. */
 export const DUST_REQUEST_POLL_MS = 500;
+/** Controls (purchase / select_tool) held while the session resyncs; beyond this they are dropped (counted). */
+export const HELD_CONTROLS_MAX = 8;
 /** Ledger slots allocated up front (same headroom as the server room, `SHIFT_LEDGER_HEADROOM_SLOTS`). */
 const MIRROR_LEDGER_SLOTS = 1024;
 /** Default rates until `hello` says otherwise (the mirror ledger's dust levels depend on the tick rate). */
@@ -207,6 +257,11 @@ export interface OnlineRoomStats {
   inputsSent: number;
   inputsDropped: number;
   dustRequestsSent: number;
+  /** Control messages (`purchase`, `select_tool`) handed to the live connection / dropped (not in the room). */
+  controlsSent: number;
+  controlsDropped: number;
+  /** Controls queued while the session was resyncing (each later counts as sent or dropped). */
+  controlsHeld: number;
   lastCorrectionM: number;
 }
 
@@ -217,6 +272,9 @@ export class OnlineRoom {
   readonly predictor: OwnAvatarPredictor;
   readonly feed: MirrorDustFeed;
   readonly config: SimConfig;
+  /** HUD read-outs (Near Parcels, outposts, Plot Card, Hop) for the RemoteRoomHost (`readouts`). */
+  readonly readouts: OnlineReadouts;
+  private readonly parcelPos = new Float64Array(3 * PARCEL_POS_MAX);
   readonly stats: OnlineRoomStats = {
     framesApplied: 0,
     keyframes: 0,
@@ -227,6 +285,9 @@ export class OnlineRoom {
     inputsSent: 0,
     inputsDropped: 0,
     dustRequestsSent: 0,
+    controlsSent: 0,
+    controlsDropped: 0,
+    controlsHeld: 0,
     lastCorrectionM: 0,
   };
   private readonly framesEvery: number;
@@ -253,8 +314,17 @@ export class OnlineRoom {
   frameTap: ((body: Uint8Array) => void) | null = null;
   /** Phase or mirror readiness changed (RemoteRoomHost state). */
   statusListener: (() => void) | null = null;
+  /** Decoded Schema states of the current live connection (RemoteRoomHost ShiftStateView adapter); null = none. */
+  shiftStateTap: ((state: unknown) => void) | null = null;
+  /** Validated `sim_events` batches of the live connection (RemoteRoomHost.onEvent); null = none. */
+  simEventsTap: ((events: readonly WireSimEvent[]) => void) | null = null;
+  /** Connections consumed so far; the stale-room guard lets only the newest one feed the taps. */
+  private connGen = 0;
+  /** The newest consumed (tapped) connection: control messages go through it. */
+  private conn: RoomConnection | null = null;
   private readonly predictIn: PredictInput = { seq: 0, moveX: 0, moveY: 0, yaw: 0, buttons: 0 };
   private disposed = false;
+  private readonly heldControls: { type: string; payload: unknown }[] = [];
 
   constructor(options: OnlineRoomOptions) {
     const data = loadGameData();
@@ -271,12 +341,36 @@ export class OnlineRoom {
     this.dust = new RemoteDust(ledger, { framesEvery: this.framesEvery, clearDirty: false });
     this.feed = new MirrorDustFeed(grid, ledger, options.sitePlot ?? 0);
     this.predictor = new OwnAvatarPredictor(this.config, options.ground ?? { heightAtXYZ: () => 0 });
+    this.readouts = new OnlineReadouts({
+      contractId: options.contractId,
+      data,
+      config: this.config,
+      grid,
+      ledger,
+      pose: () => (this.predictor.ready ? this.predictor.state : null),
+      toolCode: () => this.session.equippedTool,
+      toolParam: () => this.prev.toolParam,
+    });
     this.inputBody1 = this.inputBuf.subarray(1, 12);
     this.inputBody2 = this.inputBuf.subarray(1, 22);
 
     const baseConsume = options.consume ?? colyseusConsume;
-    const consume: ConsumeReservationFn = async (wsUrl, reservation, policy) =>
-      tapFrames(await baseConsume(wsUrl, reservation, policy), (body) => this.frameTap?.(body));
+    const consume: ConsumeReservationFn = async (wsUrl, reservation, policy) => {
+      const conn = await baseConsume(wsUrl, reservation, policy);
+      // Each consumed connection replaces the previous one: only the newest, in a live room, may feed the taps.
+      const gen = ++this.connGen;
+      return (this.conn = tapFrames(
+        conn,
+        (body) => this.frameTap?.(body),
+        // Schema patches (frame ticks, 10 Hz; first full state on join): the Near Parcel collected mask, then the
+        // RemoteRoomHost's ShiftStateView adapter.
+        (state) => {
+          this.readouts.noteState(state);
+          this.shiftStateTap?.(state);
+        },
+        () => gen === this.connGen && !this.disposed,
+      ));
+    };
     const onProblem = options.onProblem ?? (() => undefined);
     this.session = createRoomSession({
       httpUrl: options.httpUrl,
@@ -297,7 +391,12 @@ export class OnlineRoom {
         onFrame: (view, keyframe) => this.onFrame(view, keyframe),
         onBytes: (message) => this.onBytes(message),
         onEquippedTool: (tool) => this.setEquippedTool(tool),
+        onControl: (type, payload) => {
+          if (type === SIM_EVENTS_ID) this.onSimEvents(payload);
+        },
         onPhase: (phase) => {
+          if (phase === "joined") this.flushHeldControls();
+          else if (phase === "failed" || phase === "closed") this.dropHeldControls();
           if (phase === "joined" && this.session.core.hello.received) this.checkRates(onProblem);
           this.statusListener?.();
         },
@@ -349,6 +448,55 @@ export class OnlineRoom {
     this.predictor.predict(q);
   }
 
+  /**
+   * Sends one control message (`purchase`, `select_tool`; the server validates it with its zod schema) on the live
+   * connection. While the session is `resyncing` (stall, tab shown, seat-hold reconnect: the socket may be dead) the
+   * message is held in a small bounded queue and flushed in order once the session is `joined` again, so a purchase is
+   * never silently lost; the queue is dropped when the session fails or closes. False (counted) when the room is
+   * disposed or not in the room, or the queue is full; never throws for that. Rare, cold path.
+   */
+  sendControl(type: string, payload: unknown): boolean {
+    const phase = this.session.phase;
+    if (this.disposed || this.conn === null) {
+      this.stats.controlsDropped++;
+      return false;
+    }
+    if (phase === "joined") {
+      this.conn.send(type, payload);
+      this.stats.controlsSent++;
+      return true;
+    }
+    if (phase === "resyncing" && this.heldControls.length < HELD_CONTROLS_MAX) {
+      this.heldControls.push({ type, payload });
+      this.stats.controlsHeld++;
+      return true;
+    }
+    this.stats.controlsDropped++;
+    return false;
+  }
+
+  /** Sends the controls held during a resync, in order (phase back to `joined`). */
+  private flushHeldControls(): void {
+    const held = this.heldControls;
+    if (held.length === 0) return;
+    const conn = this.conn;
+    if (conn === null || this.disposed) {
+      this.stats.controlsDropped += held.length;
+      held.length = 0;
+      return;
+    }
+    for (const m of held) {
+      conn.send(m.type, m.payload);
+      this.stats.controlsSent++;
+    }
+    held.length = 0;
+  }
+
+  private dropHeldControls(): void {
+    this.stats.controlsDropped += this.heldControls.length;
+    this.heldControls.length = 0;
+  }
+
   /** Once per rendered frame while in the room: remote-entity interpolation and the correction offset decay. */
   frame(dtMs: number): void {
     this.session.updateInterpolation();
@@ -394,6 +542,46 @@ export class OnlineRoom {
     }
     const err = this.predictor.reconcile(view.self, view.ackInputSeq);
     if (err >= 0) this.stats.lastCorrectionM = err;
+  }
+
+  /**
+   * `sim_events` (rare; validated envelope): Near Parcel finds mark the parcel nearest to a known avatar (own predicted
+   * pose, then every interpolated avatar entity). Runs only on the message, never per frame.
+   */
+  onSimEvents(payload: unknown): void {
+    const events = (payload as { events?: readonly WireEventLike[] } | null)?.events;
+    if (!Array.isArray(events)) return;
+    // The session validated the envelope (SimEventsPayloadSchema: wire name, integer tick); the payload fields are the
+    // server's SimEventMap types (protocol payloads.ts), so the batch is the contract's WireSimEvent list.
+    if (!this.disposed) this.simEventsTap?.(events as readonly WireSimEvent[]);
+    // The Schema mask decides once seen: no avatar gathering (noteEvents would skip every find anyway).
+    if (this.readouts.authoritativeMask) {
+      this.readouts.noteEvents(events as readonly WireEventLike[], this.parcelPos, 0);
+      return;
+    }
+    let found = false;
+    for (const e of events as readonly WireEventLike[]) if (e.name === "collectible.found") found = true;
+    if (!found) return;
+    const pos = this.parcelPos;
+    let n = 0;
+    const p = this.predictor;
+    if (p.ready) {
+      pos[0] = p.state.px;
+      pos[1] = p.state.py;
+      pos[2] = p.state.pz;
+      n = 1;
+    }
+    const kinds = this.session.core.table.kind;
+    const interp = this.session.interpolation;
+    for (let s = 0; s < kinds.length && n < PARCEL_POS_MAX; s++) {
+      if (kinds[s] !== ENTITY_KIND_AVATAR || interp.sample(s) === SAMPLE_NONE) continue;
+      const o = s * RESULT_STRIDE;
+      pos[3 * n] = interp.result[o + R_PX]!;
+      pos[3 * n + 1] = interp.result[o + R_PY]!;
+      pos[3 * n + 2] = interp.result[o + R_PZ]!;
+      n++;
+    }
+    this.readouts.noteEvents(events as readonly WireEventLike[], pos, n);
   }
 
   private onBytes(message: Uint8Array): void {
