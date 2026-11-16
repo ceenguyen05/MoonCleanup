@@ -9,7 +9,7 @@
     "dev": "tsx watch --env-file-if-exists=.env src/app/index.ts",
     "build": "node build.config.mjs",
     "start": "node dist/index.js",
-    "seed": "echo NOT IMPLEMENTED: server seed (arrives with M1 persistence task)",
+    "seed": "echo \"NOT IMPLEMENTED: server seed (arrives with M1 persistence task)\"",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
