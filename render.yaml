@@ -54,7 +54,7 @@ services:
       # PLACEHOLDER origin: replace with the real Vercel production origin (no path, no trailing slash) after the
       # first Vercel deploy, here and in the Render dashboard (docs/HOSTING_GUIDE.md section 4).
       - key: ALLOWED_ORIGINS
-        value: https://cleanthemoonx.vercel.app
+        value: https://cleanthemoon.vercel.app
       - key: SENTRY_DSN
         sync: false
       - key: LOG_LEVEL
