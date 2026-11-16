@@ -27,10 +27,7 @@ const T = 60000;
 await page.route(/\/src\/app\/ui-store\.ts(\?.*)?$/, async (route) => {
   const res = await route.fetch();
   let body = await res.text();
-  body = body.replace(
-    /export function createUiStore\(/,
-    "function __qaOrig(",
-  );
+  body = body.replace(/export function createUiStore\(/, "function __qaOrig(");
   body += "\nexport function createUiStore(...a) { const s = __qaOrig(...a); globalThis.__qaStore = s; return s; }\n";
   await route.fulfill({ response: res, body });
 });
@@ -133,7 +130,11 @@ await frames(3);
 const padAfter = (await padCell.innerText()).trim();
 const note = (await page.locator('[data-testid="controls-note"]').innerText()).trim();
 const stored1 = (await ls())["mc.controls.bindings"] ?? "";
-check("pad-capture-binds", padAfter !== capText && padAfter !== padBefore, { before: padBefore, after: padAfter, note });
+check("pad-capture-binds", padAfter !== capText && padAfter !== padBefore, {
+  before: padBefore,
+  after: padAfter,
+  note,
+});
 check("pad-capture-persisted-Pad9-jump", /"Pad9":"jump"/.test(stored1), stored1.slice(0, 200));
 check(
   "pad-capture-no-menu-side-effect",
@@ -240,7 +241,9 @@ const idle = await ph("idle", soak / 2, []);
 const walk = await ph("walking W", soak / 2, ["w"]);
 const a0 = await snap();
 for (let i = 0; i < 6; i++) {
-  await page.keyboard.down("KeyJ"); await page.waitForTimeout(150); await page.keyboard.up("KeyJ");
+  await page.keyboard.down("KeyJ");
+  await page.waitForTimeout(150);
+  await page.keyboard.up("KeyJ");
   await page.keyboard.press("KeyL");
   await page.keyboard.press("KeyC");
   await page.waitForTimeout(((soak / 2) * 1000) / 6); // fixed soak window, not a readiness wait
@@ -270,8 +273,16 @@ const gaps = await page.evaluate(() => {
 });
 out.profile = { idle, walk, active, gaps, totalSinceLoad: await snap() };
 console.log(JSON.stringify(out.profile));
-check("readout-messages-seen", idle.messages + walk.messages + active.messages > 0, { idle: idle.messages, walk: walk.messages, active: active.messages });
-check("readout-rate-le-10hz", Math.max(idle.hz, walk.hz, active.hz) <= 10.5, { idle: idle.hz, walk: walk.hz, active: active.hz });
+check("readout-messages-seen", idle.messages + walk.messages + active.messages > 0, {
+  idle: idle.messages,
+  walk: walk.messages,
+  active: active.messages,
+});
+check("readout-rate-le-10hz", Math.max(idle.hz, walk.hz, active.hz) <= 10.5, {
+  idle: idle.hz,
+  walk: walk.hz,
+  active: active.hz,
+});
 
 mkdirSync(new URL("../../output/browser-checks/", import.meta.url), { recursive: true });
 writeFileSync(new URL("../../output/browser-checks/result.json", import.meta.url), JSON.stringify(out, null, 2));

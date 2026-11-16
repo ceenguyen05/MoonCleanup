@@ -63,7 +63,7 @@ describe("readout sampler profile", () => {
       fullSampleMeanUs: dueCalls ? +(dueNs / dueCalls / 1000).toFixed(2) : 0,
       earlyOutCalls: earlyCalls,
       earlyOutMeanNs: earlyCalls ? Math.round(earlyNs / earlyCalls) : 0,
-      cpuPctOfOneCoreAt10Hz: dueCalls ? +(((dueNs / dueCalls) * 10) / 1e9 * 100).toFixed(4) : 0,
+      cpuPctOfOneCoreAt10Hz: dueCalls ? +((((dueNs / dueCalls) * 10) / 1e9) * 100).toFixed(4) : 0,
       heapDeltaKB: Math.round((heap1 - heap0) / 1024),
       gcExposed: typeof (globalThis as { gc?: unknown }).gc === "function",
     };

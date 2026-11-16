@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import { InputBatch, decodeInput } from "@moon-cleanup/protocol";
 import { PROFILES } from "../../../../netsim/src";
 import { parseServerLog } from "../../reports/report";
-import { BUTTON_TOOL_PRIMARY, ShiftBotCore, botPlayerId, botToken, createShiftBotMetrics, desyncCount } from "./shift-bot";
+import {
+  BUTTON_TOOL_PRIMARY,
+  ShiftBotCore,
+  botPlayerId,
+  botToken,
+  createShiftBotMetrics,
+  desyncCount,
+} from "./shift-bot";
 import { summarizeShift } from "./shift-room";
 
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -40,7 +47,8 @@ describe("ShiftBotCore input wiring", () => {
   });
 
   it("is reproducible per seed and differs per bot index", () => {
-    const run = (index: number, seed: number) => collect(new ShiftBotCore(index, seed, 20), 200).map((b) => b.join(","));
+    const run = (index: number, seed: number) =>
+      collect(new ShiftBotCore(index, seed, 20), 200).map((b) => b.join(","));
     expect(run(2, 7)).toEqual(run(2, 7));
     expect(run(2, 7)).not.toEqual(run(3, 7));
   });
@@ -69,8 +77,20 @@ describe("shift-room report wiring", () => {
     m2.distanceM = 100;
     const log = [
       JSON.stringify({ kind: "shift-ready", port: 1 }),
-      JSON.stringify({ kind: "spike-loop", tick: { n: 10, p50: 0.1, p95: 0.2, max: 0.5 }, overruns: 0, counters: { inputsLate: 3 } }),
-      JSON.stringify({ kind: "spike-loop", tick: { n: 20, p50: 0.11, p95: 0.25, max: 0.9 }, overruns: 1, counters: { inputsLate: 4 }, heapUsedMB: 50, rssMB: 100 }),
+      JSON.stringify({
+        kind: "spike-loop",
+        tick: { n: 10, p50: 0.1, p95: 0.2, max: 0.5 },
+        overruns: 0,
+        counters: { inputsLate: 3 },
+      }),
+      JSON.stringify({
+        kind: "spike-loop",
+        tick: { n: 20, p50: 0.11, p95: 0.25, max: 0.9 },
+        overruns: 1,
+        counters: { inputsLate: 4 },
+        heapUsedMB: 50,
+        rssMB: 100,
+      }),
       "not json",
     ].join("\n");
     const extras = summarizeShift([m1, m2], log);

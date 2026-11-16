@@ -47,38 +47,38 @@ export interface SelfLike {
   readonly hopCharges: number;
 }
 
-const FIELDS = [
-  "px",
-  "py",
-  "pz",
-  "vx",
-  "vy",
-  "vz",
-  "fx",
-  "fy",
-  "fz",
-  "yawFrame",
-  "moveState",
-  "heightAboveGround",
-  "coyoteTicks",
-  "jumpBufferTicks",
-  "snapOffTicks",
-  "hopCharges",
-  "hopMaxCharges",
-  "hopRechargeTicks",
-  "hopIntervalTicks",
-  "recoverTicks",
-  "recoverAccelMult",
-  "moveLockTicks",
-  "jumpLockTicks",
-  "airSpeedCap",
-  "plotHint",
-] as const;
-const FLAGS = ["active", "jumpCutUsed", "jumped", "touchdown"] as const;
-
+// Explicit field assignments, not a keyed `dst[k] = src[k]` loop: a keyed store with a variable key takes V8's generic path
+// and boxes every double into a fresh heap number (~144 B per call, measured), in the per-frame predict()/sample() path.
 function copyAvatar(src: AvatarState, dst: AvatarState): void {
-  for (const k of FIELDS) dst[k] = src[k];
-  for (const k of FLAGS) dst[k] = src[k];
+  dst.px = src.px;
+  dst.py = src.py;
+  dst.pz = src.pz;
+  dst.vx = src.vx;
+  dst.vy = src.vy;
+  dst.vz = src.vz;
+  dst.fx = src.fx;
+  dst.fy = src.fy;
+  dst.fz = src.fz;
+  dst.yawFrame = src.yawFrame;
+  dst.moveState = src.moveState;
+  dst.heightAboveGround = src.heightAboveGround;
+  dst.coyoteTicks = src.coyoteTicks;
+  dst.jumpBufferTicks = src.jumpBufferTicks;
+  dst.snapOffTicks = src.snapOffTicks;
+  dst.hopCharges = src.hopCharges;
+  dst.hopMaxCharges = src.hopMaxCharges;
+  dst.hopRechargeTicks = src.hopRechargeTicks;
+  dst.hopIntervalTicks = src.hopIntervalTicks;
+  dst.recoverTicks = src.recoverTicks;
+  dst.recoverAccelMult = src.recoverAccelMult;
+  dst.moveLockTicks = src.moveLockTicks;
+  dst.jumpLockTicks = src.jumpLockTicks;
+  dst.airSpeedCap = src.airSpeedCap;
+  dst.plotHint = src.plotHint;
+  dst.active = src.active;
+  dst.jumpCutUsed = src.jumpCutUsed;
+  dst.jumped = src.jumped;
+  dst.touchdown = src.touchdown;
   dst.lastLanding = src.lastLanding;
   dst.lastImpactMps = src.lastImpactMps;
 }

@@ -176,7 +176,10 @@ export async function runShiftRoom(
           index: i,
           baseUrl,
           origin: DEFAULT_ORIGIN,
-          contractId: i < 0 ? SHIFT_CONTRACT_ID : `${SHIFT_CONTRACT_ID.slice(0, -2)}${(Math.floor(i / 6) + 0xc7).toString(16).padStart(2, "0")}`, // 6 seats per room: bots 0-5 room c7, 6-11 c8, ...
+          contractId:
+            i < 0
+              ? SHIFT_CONTRACT_ID
+              : `${SHIFT_CONTRACT_ID.slice(0, -2)}${(Math.floor(i / 6) + 0xc7).toString(16).padStart(2, "0")}`, // 6 seats per room: bots 0-5 room c7, 6-11 c8, ...
           tickHz: o.tickHz,
           seed: o.seed,
         }),

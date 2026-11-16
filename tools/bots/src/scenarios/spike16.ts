@@ -41,7 +41,12 @@ export function isLocalUrl(url: string): boolean {
   return host === "localhost" || host === "127.0.0.1" || host === "[::1]" || host === "::1";
 }
 
-export async function startNetsim(profile: string, listen: number, target: number, seed: number): Promise<ChildProcess> {
+export async function startNetsim(
+  profile: string,
+  listen: number,
+  target: number,
+  seed: number,
+): Promise<ChildProcess> {
   // netsim is its own tool package; the bots run it as a child process rather than importing it.
   const child = spawn(
     process.execPath,

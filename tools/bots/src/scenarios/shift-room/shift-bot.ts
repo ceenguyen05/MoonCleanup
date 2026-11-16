@@ -256,7 +256,12 @@ export class ShiftBot {
     const { baseUrl, origin, contractId, index } = this.options;
     const res = await fetch(`${baseUrl}${SHIFT_JOIN_PATH.replace(":id", contractId)}`, {
       method: "POST",
-      headers: { "content-type": "application/json", origin, "true-client-ip": `203.0.113.${10 + index}`, authorization: `Bearer ${botToken(index)}` },
+      headers: {
+        "content-type": "application/json",
+        origin,
+        "true-client-ip": `203.0.113.${10 + index}`,
+        authorization: `Bearer ${botToken(index)}`,
+      },
       body: JSON.stringify({ protocolVersion: PROTOCOL_VERSION, clientBuild: "bot-shift-v0" }),
     });
     if (res.status !== 200) throw new Error(`join failed: ${res.status} ${await res.text()}`);

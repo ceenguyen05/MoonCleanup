@@ -152,11 +152,7 @@ describe("SoloPredictor", () => {
       for (let i = 0; i < 100_000; i++) frame(i);
       grew = Math.min(grew, process.memoryUsage().heapUsed - before);
     }
-    // FOLLOW-UP (M1 hot-path allocation audit): predict() and sample() each still allocate ~144 B per call (about 16 MB
-    // per 100k frames, steady across GC-anchored windows; the cost sits in stepWith -> stepAvatar, not in the predictor's
-    // own buffers). The original 1.5 MB bound was only passing intermittently; this guard now catches gross
-    // regressions (an order of magnitude more) until that allocation is removed, then should go back to 1.5 MB.
-    expect(grew).toBeLessThan(32 * 1024 * 1024);
+    expect(grew).toBeLessThan(1.5 * 1024 * 1024);
   });
 });
 

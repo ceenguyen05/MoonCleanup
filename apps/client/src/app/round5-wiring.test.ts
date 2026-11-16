@@ -14,6 +14,11 @@ import { createSettingsStorage } from "./settings-storage";
 import { createUiStore } from "./ui-store";
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+/** Polls until the worker's answer has arrived (a fixed sleep loses the race on a loaded machine). */
+async function until(ready: () => boolean, timeoutMs = 10_000): Promise<void> {
+  const end = Date.now() + timeoutMs;
+  while (!ready() && Date.now() < end) await wait(5);
+}
 
 describe("Solo worker read-outs (Job A)", () => {
   test("worker samples hop / lamp / quotes / plot card and the host cache answers them", async () => {
@@ -35,7 +40,8 @@ describe("Solo worker read-outs (Job A)", () => {
     link.setHost(host);
     expect(attached).toBe(host.readouts);
     host.stepManual(3);
-    await wait(60);
+    const hopProbe = { bursts: -1, max: -1, recharge01: -1 };
+    await until(() => attached !== null && (attached as SimReadoutSource).hopReadout(0, hopProbe));
     const src = attached as SimReadoutSource | null;
     expect(src).not.toBeNull();
     const hop = { bursts: -1, max: -1, recharge01: -1 };
@@ -55,7 +61,7 @@ describe("Solo worker read-outs (Job A)", () => {
     expect(src!.pickPlot(0, card)).toBe(false); // not inspecting
     link.setInspecting(true);
     host.stepManual(3);
-    await wait(60);
+    await until(() => ((src as unknown as ParcelReadoutSource).outpostCount ?? 0) >= 1);
     // Outposts and Near Parcels come through the same message.
     const ps = src as unknown as ParcelReadoutSource;
     expect(ps.outpostCount).toBeGreaterThanOrEqual(1);

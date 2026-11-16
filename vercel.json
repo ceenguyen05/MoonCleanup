@@ -4,7 +4,7 @@
   "installCommand": "npm install --global pnpm@11.28.9 && pnpm install --frozen-lockfile --filter \"@moon-cleanup/client...\" --filter moon-cleanup",
   "buildCommand": "VITE_BUILD_VERSION=$VERCEL_GIT_COMMIT_SHA pnpm exec turbo run build --filter=@moon-cleanup/client",
   "outputDirectory": "apps/client/dist",
-  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- apps/client packages assets pnpm-lock.yaml package.json pnpm-workspace.yaml turbo.json vercel.json tsconfig.base.json .nvmrc || exit 1",
+  "ignoreCommand": "sh scripts/vercel-ignore.sh",
   "headers": [
     {
       "source": "/(.*)",

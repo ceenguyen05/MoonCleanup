@@ -64,10 +64,14 @@ function avatarCount(room: OnlineRoom): number {
 
 describe(`online dust sync + reconnect (${profile ?? "clean"})`, () => {
   it("remote deltas, in-place drop, network kill and fresh rejoin all converge on A's worldHash", async () => {
-    const ops = (await import(/* @vite-ignore */ new URL("../../../apps/server/src/ops/index.ts", import.meta.url).href)) as {
+    const ops = (await import(
+      /* @vite-ignore */ new URL("../../../apps/server/src/ops/index.ts", import.meta.url).href
+    )) as {
       parseServerEnv(raw: Record<string, string>): Record<string, unknown>;
     };
-    const server = (await import(/* @vite-ignore */ new URL("../../../apps/server/src/app/server.ts", import.meta.url).href)) as {
+    const server = (await import(
+      /* @vite-ignore */ new URL("../../../apps/server/src/app/server.ts", import.meta.url).href
+    )) as {
       startServer(env: unknown, options?: Record<string, unknown>): Promise<ServerHarness>;
     };
     const env = {
@@ -103,10 +107,14 @@ describe(`online dust sync + reconnect (${profile ?? "clean"})`, () => {
       signIn: () => Promise.resolve(true),
       getAccessToken: () => Promise.resolve(token),
     });
-    const created = await createContractsApi({ httpUrl: direct.http, auth: port(tokenA) }).createPrivateShift("Sync Shift");
+    const created = await createContractsApi({ httpUrl: direct.http, auth: port(tokenA) }).createPrivateShift(
+      "Sync Shift",
+    );
     if (!created.ok) throw new Error(`create failed: ${created.failure.key}`);
     const contractId = created.value.contractId;
-    const joined = await createContractsApi({ httpUrl: direct.http, auth: port(tokenB) }).joinByCode(created.value.inviteCode ?? "");
+    const joined = await createContractsApi({ httpUrl: direct.http, auth: port(tokenB) }).joinByCode(
+      created.value.inviteCode ?? "",
+    );
     if (!joined.ok) throw new Error(`join failed: ${joined.failure.key}`);
 
     // Each client gets its own conditioned path (so killing B's sockets never touches A).
@@ -235,7 +243,11 @@ describe(`online dust sync + reconnect (${profile ?? "clean"})`, () => {
     await sleep(100);
     const awayPhase = b.session.phase;
     await sweep(60, 9000); // A keeps polishing in a new heading while B is away / resyncing
-    const recoverMs = await waitFor("B joined again after drop", () => b.session.phase === "joined" && phases.b.size > 1, 60_000);
+    const recoverMs = await waitFor(
+      "B joined again after drop",
+      () => b.session.phase === "joined" && phases.b.size > 1,
+      60_000,
+    );
     await converge("scenario 2 convergence");
     const hash2 = b.feed.ledger.worldHash();
     report["s2"] = {
@@ -266,7 +278,12 @@ describe(`online dust sync + reconnect (${profile ?? "clean"})`, () => {
       const hashAway = b.feed.ledger.worldHash();
       await sweep(60, 18000); // B is fully offline for ~3 s of A polishing (SDK retries hit a dead port)
       const hashAwayAfter = a.feed.ledger.worldHash();
-      const p2 = await startProxy({ profile: PROFILES[profile!], listenPort: proxyPort, targetPort: serverPort, seed: 33 });
+      const p2 = await startProxy({
+        profile: PROFILES[profile!],
+        listenPort: proxyPort,
+        targetPort: serverPort,
+        seed: 33,
+      });
       proxies.push(p2);
       const rec = await waitFor("B joined again after network kill", () => b.session.phase === "joined", 60_000);
       await converge("scenario 3 convergence");

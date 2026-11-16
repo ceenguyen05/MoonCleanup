@@ -16,12 +16,15 @@ import { parseArgs } from "node:util";
 const here = new URL(".", import.meta.url);
 const serverPkg = new URL("../../../apps/server/package.json", here);
 const req = createRequire(serverPkg);
-const src = (p: string): string => new URL(`../../../apps/server/src/${p}`, here).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const src = (p: string): string =>
+  new URL(`../../../apps/server/src/${p}`, here).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 
 // ESM imports for everything that touches @colyseus/core: a require() copy next to the ws transport's ESM copy gives two
 // matchMakers (rooms unknown to the transport -> "seat reservation expired" 524).
 const esm = (p: string): Promise<any> => import(pathToFileURL(p).href);
-const corePath = createRequire(serverPkg).resolve("@colyseus/core/package.json").replace(/package.json$/, "build/index.mjs");
+const corePath = createRequire(serverPkg)
+  .resolve("@colyseus/core/package.json")
+  .replace(/package.json$/, "build/index.mjs");
 const { matchMaker } = await esm(corePath);
 const pkg = (n: string): Promise<any> => esm(req.resolve(n));
 const shared = await pkg("@moon-cleanup/shared");
@@ -52,7 +55,9 @@ const roomIds = new Set<string>();
 const sink = {
   addRoom(roomId: string) {
     roomIds.add(roomId);
-    return process.env.NOSTATS === "1" ? { setClients() {}, recordTick() {}, recordBytesOut() {} } : stats.addRoom(roomId);
+    return process.env.NOSTATS === "1"
+      ? { setClients() {}, recordTick() {}, recordBytesOut() {} }
+      : stats.addRoom(roomId);
   },
   removeRoom(roomId: string) {
     roomIds.delete(roomId);
@@ -78,7 +83,11 @@ const server = await createGameServer({
     world: { grid, ground: { heightAtXYZ: () => 0 } },
     verifyToken: (t: string) => Promise.resolve(t.startsWith("tok-") ? { playerId: t.slice(4) } : null),
     membership: (playerId: string) =>
-      Promise.resolve({ role: playerId.endsWith("00") ? "holder" : "staff", displayName: `B${playerId.slice(-2)}`, shiftType: "private" }),
+      Promise.resolve({
+        role: playerId.endsWith("00") ? "holder" : "staff",
+        displayName: `B${playerId.slice(-2)}`,
+        shiftType: "private",
+      }),
     stats: sink,
     tickets: new JoinTickets(),
     seatHoldS: 30,
