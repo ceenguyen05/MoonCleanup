@@ -28,7 +28,7 @@ P2 is the dust method. Pacing A (continuous passes: 1 if L ≤ Depth, else max(2
 
 ## Open for Cee
 
-1. Create Neon, Render, Vercel projects ([HOSTING_GUIDE](HOSTING_GUIDE.md)); delete stray `C:\c\` (holds copied credentials).
+1. **Neon, Render and Vercel are connected (Cee, 2026-11-16; A1 local gates green first: verify 52/52, build, size 15.97/20 MB).** Remaining from [HOSTING_GUIDE](HOSTING_GUIDE.md): confirm Render `/healthz` 200 and `[db:migrate]` in the log, set `ALLOWED_ORIGINS` to the real Vercel origin (E4), confirm `VITE_SERVER_*` match the Render URL, then play-test solo and a 2-player room on the deployed build. Delete stray `C:\c\` (holds copied credentials).
 3. Tier A/B device runs (`tools/perf` device script), real Windows SIGTERM, `webgpu-compat`. All stay BLOCKED until then.
 
 ## Watch items and open defects
