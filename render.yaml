@@ -6,7 +6,7 @@
 # Blueprint field reference: https://render.com/docs/blueprint-spec
 services:
   - type: web
-    name: moon-cleanup-server
+    name: CleanTheMoon
     runtime: node
     plan: free
     region: ohio # Owner decision 2026-11-13: Ohio, nearest Render region to Texas. Cannot change after creation.
