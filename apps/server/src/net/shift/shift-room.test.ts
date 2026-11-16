@@ -222,6 +222,9 @@ describe("ShiftRoom with 6 players", () => {
       await sleep(50);
     }
     await sleep(300);
+    // Snapshots go out at 10 Hz, so ~1.8 s of wall time is only ~18 frames nominally; the old fixed sleep passed only
+    // when timers overran. Wait (bounded) until every client has 20 frames instead of depending on scheduler slack.
+    for (let t = 0; t < 100 && clients.some((c) => c.frames.length < 20); t++) await sleep(50);
     const reader = new FrameReader();
     const view = new FrameView();
     for (const c of clients) {
