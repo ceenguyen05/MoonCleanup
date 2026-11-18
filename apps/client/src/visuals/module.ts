@@ -40,10 +40,17 @@ import { S03_SCENE_ID, S03Scene } from "./lookdev/s03-distance-ladder";
 import { TYPICAL_SCENE_ID, TypicalWorksite } from "./lookdev/typical-worksite";
 import { createLookState, type LookScene, type LookState, type SiteFrame } from "./lookdev/scene-base";
 import { createGroundBumpHandle } from "./lookdev/bump-handle";
+import { TerrainDustGround } from "./dust/terrain-dust";
+import type { TerrainAsset } from "../terrain";
 import { readDustAtlasInfo } from "./dust/atlas-info";
 import { DUST_SCENE_ID, DustWorksite, type DustFeedPort } from "./dust/dust-worksite";
 import { applyTerrainSurface, createPlainTerrainMaterial, MOON_SCENE_ID, TerrainScene } from "../terrain";
 import { TerrainRegolithProvider } from "./materials/terrain-regolith-provider";
+import { GrainLayer } from "./vfx/grains";
+import { MomentFx, MomentsLayer, MomentsRig, type MomentsPort } from "./vfx/moments";
+
+/** Grain capacity of the moments (Railshot 500 + Stamp 64 + pour ticks, with room for overlaps). */
+const MOMENT_GRAIN_CAPACITY = 2048;
 
 /** Local direction (x = azimuth 0, y = up, z = azimuth 90) to world axes, in place. */
 function toSiteFrame(v: Vector3, site: SiteFrame): void {
@@ -84,6 +91,19 @@ export interface VisualsModuleOptions {
   readonly dayCycle?: DayCycle;
   /** `?scene=dust`: the game's stroke feed (Solo host ledger view); without it the scene runs its seeded scenario. */
   readonly dustFeed?: DustFeedPort | null;
+  readonly terrainAsset?: Promise<TerrainAsset>;
+  /**
+   * Juicy moments (M1-W6-T03): Inspector's Stamp, Assay ka-ching, Railshot. Built only on the flat dust worksite (the grain
+   * pool assumes +Y up), driven by the game's own events on `ctx.events`; nothing runs per frame while no event fires.
+   */
+  readonly moments?: MomentsPort | null;
+}
+
+/** The moments' pieces, built together when the port is given. */
+interface MomentsKit {
+  readonly rig: MomentsRig;
+  readonly grains: GrainLayer;
+  readonly layer: MomentsLayer;
 }
 
 export class VisualsModule implements ClientModule<RenderServices> {
@@ -98,12 +118,14 @@ export class VisualsModule implements ClientModule<RenderServices> {
   private scene: LookScene | null = null;
   /** `?scene=dust`: the dust layer (tile atlas + GPU stroke replay) on the regolith ground; also `scene`. */
   private dust: DustWorksite | null = null;
+  private terrainDust: TerrainDustGround | null = null;
   /** S02 / S03: scenes with their own hooks (`__mcLookdev`) that set the sun in `state` and are lit by this rig. */
   private lookdev: LookdevScene | null = null;
   /** Production regolith on the moon terrain (M1-W2-T04): the terrain's material factory (hook H1) and its resources. */
   private regolith: TerrainRegolithProvider | null = null;
   private removeRegolithHook: (() => void) | null = null;
   private stages: LookStageHandles | null = null;
+  private moments: MomentsKit | null = null;
   private readonly velocity = new CameraOnlyVelocity();
   private readonly key = createKeyState();
   private ctx: ModuleContext<RenderServices> | null = null;
@@ -170,11 +192,22 @@ export class VisualsModule implements ClientModule<RenderServices> {
     // `?scene=moon` (M1-W2-T01): the CDLOD sphere terrain on the baked height cube, owned by the terrain module.
     // Its surface wears the production regolith (`&regolith=0`: no factory, the terrain's plain material).
     else if (sceneParam === MOON_SCENE_ID) {
-      const regolith = (this.regolith = new TerrainRegolithProvider(params, () => quality.current.preset));
+      if (this.options.dustFeed)
+        this.terrainDust = new TerrainDustGround(
+          this.options.dustFeed,
+          quality.current.preset === "low" ? "low" : "medium",
+        );
+      const regolith = (this.regolith = new TerrainRegolithProvider(
+        params,
+        () => quality.current.preset,
+        this.terrainDust === null ? [] : [this.terrainDust.regolithLayer],
+      ));
       const terrainMaterial = regolith.factory(applyTerrainSurface);
       this.scene = new TerrainScene({
         ...sceneCtx,
         render: renderer,
+        ...(this.terrainDust === null ? {} : { poseCamera: false }),
+        ...(this.options.terrainAsset === undefined ? {} : { asset: this.options.terrainAsset }),
         ...(terrainMaterial === undefined ? {} : { terrainMaterial }),
       });
       // `__mcRegolith.swap(name)` (diagnostics): in-page cost A/B of the terrain material, same thermal state.
@@ -227,6 +260,17 @@ export class VisualsModule implements ClientModule<RenderServices> {
       this.state.earthFullness = Math.min(1, Math.max(0, Number(earthFull)));
     }
 
+    // Juicy moments: flat game worksite only (`this.dust` exists for the dust scene; the terrain game has none).
+    const momentsPort = this.options.moments;
+    if (momentsPort !== undefined && momentsPort !== null && this.dust !== null) {
+      const grains = new GrainLayer({ capacity: MOMENT_GRAIN_CAPACITY, seed: 7 });
+      const layer = new MomentsLayer();
+      grains.attachTo(roots.vfx);
+      layer.attachTo(roots.vfx);
+      grains.mesh.visible = false;
+      this.moments = { rig: new MomentsRig(new MomentFx(grains.pool), momentsPort, ctx.events), grains, layer };
+    }
+
     this.bindRenderer();
     this.off.push(renderer.onRecreated(() => this.bindRenderer()));
 
@@ -259,8 +303,21 @@ export class VisualsModule implements ClientModule<RenderServices> {
         knobs: describeLookKnobs(this.knobs),
         skyDome: this.sky?.domeMode ?? "procedural",
         shadowFilter: this.rig?.shadowFilter ?? "vogel5",
-        dustAtlas: this.dust === null ? null : readDustAtlasInfo(this.dust.layer.atlas, this.dust.tilePreset),
-        dustFeed: this.dust?.feed?.info() ?? null,
+        dustAtlas:
+          (this.dust ?? this.terrainDust) === null
+            ? null
+            : readDustAtlasInfo(
+                (this.dust ?? this.terrainDust)!.layer.atlas,
+                (this.dust ?? this.terrainDust)!.tilePreset,
+              ),
+        dustFeed:
+          this.terrainDust === null
+            ? (this.dust?.feed?.info() ?? null)
+            : {
+                ...this.terrainDust.feed.info(),
+                siteMoves: this.terrainDust.recentres,
+                site: this.terrainDust.lookup.sitePlot,
+              },
         notBuilt: LOOK_NOT_BUILT.slice(),
       }),
       setGrade: (patch) => {
@@ -309,7 +366,13 @@ export class VisualsModule implements ClientModule<RenderServices> {
       const three = this.ctx.services.get("renderer").renderer;
       if (three !== null) this.dust.preRender(three);
     }
+    if (this.terrainDust !== null) {
+      const service = this.ctx.services.get("renderer");
+      if (service.renderer !== null)
+        this.terrainDust.preRender(service.renderer, this.ctx.services.get("sceneRoots").camera);
+    }
     this.lookdev?.update(frame);
+    if (this.moments !== null) this.updateMoments(frame.dt);
 
     const sun = directionFromAzEl(state.sunAzimuthDeg, state.sunElevationDeg, this._d);
     this.sunDir.set(sun.x, sun.y, sun.z);
@@ -413,13 +476,36 @@ export class VisualsModule implements ClientModule<RenderServices> {
     this.regolith?.dispose();
     this.regolith = null;
     this.dust = null;
+    this.terrainDust?.dispose();
+    this.terrainDust = null;
     this.lookdev?.dispose();
     this.lookdev = null;
+    if (this.moments !== null) {
+      this.moments.rig.dispose();
+      this.moments.layer.dispose();
+      this.moments.grains.dispose();
+      this.moments = null;
+    }
     this.sky?.dispose();
     this.sky = null;
     this.rig?.dispose();
     this.rig = null;
     this.active = false;
+  }
+
+  /** Moments per frame: a clock add while idle; grains and quads update and draw only while an effect is live. */
+  private updateMoments(dt: number): void {
+    const kit = this.moments;
+    if (kit === null) return;
+    const wasVisible = kit.grains.mesh.visible;
+    if (kit.rig.update(dt)) {
+      kit.grains.mesh.visible = true;
+      kit.grains.update(dt, this.ctx?.services.get("renderer").renderer ?? null);
+      kit.layer.update(kit.rig.fx);
+    } else if (wasVisible) {
+      kit.grains.mesh.visible = false;
+      kit.layer.update(kit.rig.fx); // no live slot: hides the quads
+    }
   }
 
   /** (Re)binds what lives on the renderer: shadow maps on, shadows and post rebuilt for the current preset. */
@@ -430,7 +516,10 @@ export class VisualsModule implements ClientModule<RenderServices> {
     if (renderer !== null) renderer.shadowMap.enabled = true;
     this.sky?.bindRenderer(renderer);
     // Creates the dust replay pipelines outside a frame; after a device loss it also queues every tile for a rebuild.
-    if (renderer !== null) this.dust?.bindRenderer(renderer);
+    if (renderer !== null) {
+      this.dust?.bindRenderer(renderer);
+      this.terrainDust?.bindRenderer(renderer);
+    }
     this.applyQuality(ctx.services.get("quality").current);
   }
 

@@ -1,0 +1,2359 @@
+{
+ "console": [
+  "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+  "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+  "warning: [render] 6 pipeline(s) created after warm-up (frame 309)",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+ ],
+ "snaps": {
+  "start": {
+   "pose": {
+    "x": 43.51953146894665,
+    "y": 1999.194146293198,
+    "z": 36.448242370871014,
+    "yawRad": 0,
+    "pitchRad": -0.35,
+    "mode": "first"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 119,
+    "sent": 119,
+    "toolInputs": 0,
+    "buttons": 0,
+    "toolParam": 255
+   },
+   "worker": {
+    "tick": 148,
+    "ackInputSeq": 118,
+    "framesDecoded": 143,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 0,
+    "framesWithStrokes": 0,
+    "lastStrokeTick": -1
+   },
+   "dust": {
+    "cellGrams": 0
+   },
+   "prediction": {
+    "predicted": 119,
+    "reconciles": 142,
+    "replayed": 93,
+    "replayCapped": 0,
+    "unknownAcks": 15,
+    "lastCorrectionM": 0.0001068115234375,
+    "maxCorrectionM": 0.0001068115234375
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  },
+  "afterClick": {
+   "pose": {
+    "x": 43.51953124999892,
+    "y": 1999.194229125927,
+    "z": 36.44824218749909,
+    "yawRad": 0,
+    "pitchRad": -0.35,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 160,
+    "sent": 160,
+    "toolInputs": 0,
+    "buttons": 0,
+    "toolParam": 255
+   },
+   "worker": {
+    "tick": 197,
+    "ackInputSeq": 158,
+    "framesDecoded": 192,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 0,
+    "framesWithStrokes": 0,
+    "lastStrokeTick": -1
+   },
+   "dust": {
+    "cellGrams": 0
+   },
+   "prediction": {
+    "predicted": 160,
+    "reconciles": 191,
+    "replayed": 130,
+    "replayCapped": 0,
+    "unknownAcks": 15,
+    "lastCorrectionM": 0.0001068115234375,
+    "maxCorrectionM": 0.0001068115234375
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  },
+  "midScrub": {
+   "pose": {
+    "x": 43.51953124973997,
+    "y": 1999.1942291140294,
+    "z": 36.44824218728221,
+    "yawRad": 0,
+    "pitchRad": -0.35,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 415,
+    "sent": 415,
+    "toolInputs": 213,
+    "buttons": 8,
+    "toolParam": 255
+   },
+   "worker": {
+    "tick": 453,
+    "ackInputSeq": 414,
+    "framesDecoded": 448,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 82,
+    "framesWithStrokes": 82,
+    "lastStrokeTick": 452
+   },
+   "dust": {
+    "cellGrams": 197
+   },
+   "prediction": {
+    "predicted": 415,
+    "reconciles": 447,
+    "replayed": 387,
+    "replayCapped": 0,
+    "unknownAcks": 15,
+    "lastCorrectionM": 0.0001068115234375,
+    "maxCorrectionM": 0.0001068115234375
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  },
+  "end": {
+   "pose": {
+    "x": 66.95507812500001,
+    "y": 1998.546813964844,
+    "z": 36.43652343750001,
+    "yawRad": 0,
+    "pitchRad": -0.35,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 823,
+    "sent": 823,
+    "toolInputs": 426,
+    "buttons": 0,
+    "toolParam": 255
+   },
+   "worker": {
+    "tick": 861,
+    "ackInputSeq": 822,
+    "framesDecoded": 856,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 166,
+    "framesWithStrokes": 166,
+    "lastStrokeTick": 782
+   },
+   "dust": {
+    "cellGrams": 1429
+   },
+   "prediction": {
+    "predicted": 823,
+    "reconciles": 855,
+    "replayed": 794,
+    "replayCapped": 0,
+    "unknownAcks": 15,
+    "lastCorrectionM": 0.00006103515625,
+    "maxCorrectionM": 0.0005913642082237579
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  }
+ },
+ "info": {
+  "backend": "webgpu",
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "ft": 21.10958355665207,
+  "p95": 33.400001525878906,
+  "dpr": 1
+ },
+ "pointerLocked": true,
+ "series": [
+  {
+   "name": "idle-00.png",
+   "t": 1794947840577,
+   "snap": {
+    "pose": {
+     "x": 43.51953124999999,
+     "y": 1999.1942291259763,
+     "z": 36.44824218749999,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 176,
+     "sent": 176,
+     "toolInputs": 0,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 213,
+     "ackInputSeq": 174,
+     "framesDecoded": 208,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 0,
+     "framesWithStrokes": 0,
+     "lastStrokeTick": -1
+    },
+    "dust": {
+     "cellGrams": 0
+    },
+    "prediction": {
+     "predicted": 176,
+     "reconciles": 207,
+     "replayed": 146,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 23.400833543141683,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "idle-01.png",
+   "t": 1794947841652,
+   "snap": {
+    "pose": {
+     "x": 43.51953124999999,
+     "y": 1999.1942291259763,
+     "z": 36.44824218749999,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 198,
+     "sent": 198,
+     "toolInputs": 0,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 235,
+     "ackInputSeq": 196,
+     "framesDecoded": 230,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 0,
+     "framesWithStrokes": 0,
+     "lastStrokeTick": -1
+    },
+    "dust": {
+     "cellGrams": 0
+    },
+    "prediction": {
+     "predicted": 198,
+     "reconciles": 229,
+     "replayed": 168,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 23.40000015894572,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-02.png",
+   "t": 1794947843456,
+   "snap": {
+    "pose": {
+     "x": 43.519531237166895,
+     "y": 1999.1942285285284,
+     "z": 36.44824217675209,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 233,
+     "sent": 233,
+     "toolInputs": 31,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 271,
+     "ackInputSeq": 232,
+     "framesDecoded": 266,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 11,
+     "framesWithStrokes": 11,
+     "lastStrokeTick": 270
+    },
+    "dust": {
+     "cellGrams": 59
+    },
+    "prediction": {
+     "predicted": 233,
+     "reconciles": 265,
+     "replayed": 205,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 23.885833565394083,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-03.png",
+   "t": 1794947844387,
+   "snap": {
+    "pose": {
+     "x": 43.51953124999997,
+     "y": 1999.1942291259752,
+     "z": 36.44824218749998,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 252,
+     "sent": 252,
+     "toolInputs": 50,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 290,
+     "ackInputSeq": 251,
+     "framesDecoded": 285,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 19,
+     "framesWithStrokes": 19,
+     "lastStrokeTick": 290
+    },
+    "dust": {
+     "cellGrams": 103
+    },
+    "prediction": {
+     "predicted": 252,
+     "reconciles": 284,
+     "replayed": 224,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.66625026067098,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-04.png",
+   "t": 1794947845359,
+   "snap": {
+    "pose": {
+     "x": 43.51953125,
+     "y": 1999.1942291259766,
+     "z": 36.4482421875,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 272,
+     "sent": 272,
+     "toolInputs": 70,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 309,
+     "ackInputSeq": 270,
+     "framesDecoded": 304,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 26,
+     "framesWithStrokes": 26,
+     "lastStrokeTick": 308
+    },
+    "dust": {
+     "cellGrams": 140
+    },
+    "prediction": {
+     "predicted": 272,
+     "reconciles": 303,
+     "replayed": 243,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.942500193913776,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-05.png",
+   "t": 1794947846389,
+   "snap": {
+    "pose": {
+     "x": 43.51953125,
+     "y": 1999.1942291259766,
+     "z": 36.4482421875,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 292,
+     "sent": 292,
+     "toolInputs": 90,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 330,
+     "ackInputSeq": 291,
+     "framesDecoded": 325,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 35,
+     "framesWithStrokes": 35,
+     "lastStrokeTick": 330
+    },
+    "dust": {
+     "cellGrams": 184
+    },
+    "prediction": {
+     "predicted": 292,
+     "reconciles": 324,
+     "replayed": 264,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.28958350022634,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-06.png",
+   "t": 1794947847338,
+   "snap": {
+    "pose": {
+     "x": 43.519531191703095,
+     "y": 1999.1942262748412,
+     "z": 36.44824213867549,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 311,
+     "sent": 311,
+     "toolInputs": 109,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 349,
+     "ackInputSeq": 310,
+     "framesDecoded": 344,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 42,
+     "framesWithStrokes": 42,
+     "lastStrokeTick": 348
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 311,
+     "reconciles": 343,
+     "replayed": 281,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.358750208218893,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-07.png",
+   "t": 1794947848302,
+   "snap": {
+    "pose": {
+     "x": 43.51953124999992,
+     "y": 1999.1942291259727,
+     "z": 36.448242187499936,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 330,
+     "sent": 330,
+     "toolInputs": 128,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 368,
+     "ackInputSeq": 329,
+     "framesDecoded": 363,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 49,
+     "framesWithStrokes": 49,
+     "lastStrokeTick": 366
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 330,
+     "reconciles": 362,
+     "replayed": 301,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.01125017007192,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-08.png",
+   "t": 1794947849306,
+   "snap": {
+    "pose": {
+     "x": 43.51953125,
+     "y": 1999.1942291259763,
+     "z": 36.44824218749999,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 350,
+     "sent": 350,
+     "toolInputs": 148,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 388,
+     "ackInputSeq": 349,
+     "framesDecoded": 383,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 57,
+     "framesWithStrokes": 57,
+     "lastStrokeTick": 388
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 350,
+     "reconciles": 382,
+     "replayed": 321,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.873333446184795,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-09.png",
+   "t": 1794947850323,
+   "snap": {
+    "pose": {
+     "x": 43.519531247923865,
+     "y": 1999.194229030449,
+     "z": 36.4482421857612,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 371,
+     "sent": 371,
+     "toolInputs": 169,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 408,
+     "ackInputSeq": 369,
+     "framesDecoded": 403,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 65,
+     "framesWithStrokes": 65,
+     "lastStrokeTick": 408
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 371,
+     "reconciles": 402,
+     "replayed": 340,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.220000123977663,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-10.png",
+   "t": 1794947851368,
+   "snap": {
+    "pose": {
+     "x": 43.51953124999999,
+     "y": 1999.1942291259766,
+     "z": 36.44824218749999,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 392,
+     "sent": 392,
+     "toolInputs": 190,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 429,
+     "ackInputSeq": 390,
+     "framesDecoded": 424,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 73,
+     "framesWithStrokes": 73,
+     "lastStrokeTick": 428
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 392,
+     "reconciles": 423,
+     "replayed": 365,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.50000013510386,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-11.png",
+   "t": 1794947852364,
+   "snap": {
+    "pose": {
+     "x": 43.51953124787964,
+     "y": 1999.1942290284146,
+     "z": 36.44824218572417,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 412,
+     "sent": 412,
+     "toolInputs": 210,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 449,
+     "ackInputSeq": 410,
+     "framesDecoded": 444,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 80,
+     "framesWithStrokes": 80,
+     "lastStrokeTick": 446
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 412,
+     "reconciles": 443,
+     "replayed": 383,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.84500014781952,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-end-12.png",
+   "t": 1794947853347,
+   "snap": {
+    "pose": {
+     "x": 43.51953124592061,
+     "y": 1999.1942289379235,
+     "z": 36.44824218408345,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 431,
+     "sent": 431,
+     "toolInputs": 213,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 469,
+     "ackInputSeq": 430,
+     "framesDecoded": 464,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 83,
+     "framesWithStrokes": 83,
+     "lastStrokeTick": 454
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 431,
+     "reconciles": 463,
+     "replayed": 402,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.983750176429748,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-end-13.png",
+   "t": 1794947854314,
+   "snap": {
+    "pose": {
+     "x": 43.51953124999999,
+     "y": 1999.194229125976,
+     "z": 36.44824218749999,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 450,
+     "sent": 450,
+     "toolInputs": 213,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 488,
+     "ackInputSeq": 449,
+     "framesDecoded": 483,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 83,
+     "framesWithStrokes": 83,
+     "lastStrokeTick": 454
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 450,
+     "reconciles": 482,
+     "replayed": 421,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.845416847864787,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-end-14.png",
+   "t": 1794947855307,
+   "snap": {
+    "pose": {
+     "x": 43.51953124841111,
+     "y": 1999.1942290528993,
+     "z": 36.44824218616929,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 471,
+     "sent": 471,
+     "toolInputs": 213,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 508,
+     "ackInputSeq": 469,
+     "framesDecoded": 503,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 83,
+     "framesWithStrokes": 83,
+     "lastStrokeTick": 454
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 471,
+     "reconciles": 502,
+     "replayed": 440,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.847500173250832,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-end-15.png",
+   "t": 1794947856237,
+   "snap": {
+    "pose": {
+     "x": 43.51953123065435,
+     "y": 1999.1942282174537,
+     "z": 36.448242171297736,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 489,
+     "sent": 489,
+     "toolInputs": 213,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 527,
+     "ackInputSeq": 488,
+     "framesDecoded": 522,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 83,
+     "framesWithStrokes": 83,
+     "lastStrokeTick": 454
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 489,
+     "reconciles": 521,
+     "replayed": 458,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.706250174840292,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-end-16.png",
+   "t": 1794947857178,
+   "snap": {
+    "pose": {
+     "x": 43.5195312396008,
+     "y": 1999.194228643458,
+     "z": 36.44824217879052,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 508,
+     "sent": 508,
+     "toolInputs": 213,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 546,
+     "ackInputSeq": 507,
+     "framesDecoded": 541,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 83,
+     "framesWithStrokes": 83,
+     "lastStrokeTick": 454
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 508,
+     "reconciles": 540,
+     "replayed": 476,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.220416792233785,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "scrub-end-17.png",
+   "t": 1794947858165,
+   "snap": {
+    "pose": {
+     "x": 43.51953123736064,
+     "y": 1999.1942285376963,
+     "z": 36.448242176914356,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 528,
+     "sent": 528,
+     "toolInputs": 213,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 565,
+     "ackInputSeq": 526,
+     "framesDecoded": 560,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 83,
+     "framesWithStrokes": 83,
+     "lastStrokeTick": 454
+    },
+    "dust": {
+     "cellGrams": 197
+    },
+    "prediction": {
+     "predicted": 528,
+     "reconciles": 559,
+     "replayed": 494,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0001068115234375,
+     "maxCorrectionM": 0.0001068115234375
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.011666786670684,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-18.png",
+   "t": 1794947859757,
+   "snap": {
+    "pose": {
+     "x": 46.49210410813298,
+     "y": 1999.127329605553,
+     "z": 36.44709509419433,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 559,
+     "sent": 559,
+     "toolInputs": 241,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 597,
+     "ackInputSeq": 558,
+     "framesDecoded": 592,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 94,
+     "framesWithStrokes": 94,
+     "lastStrokeTick": 596
+    },
+    "dust": {
+     "cellGrams": 339
+    },
+    "prediction": {
+     "predicted": 559,
+     "reconciles": 591,
+     "replayed": 526,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0003842064914555106,
+     "maxCorrectionM": 0.00047129654576051334
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.28958343267441,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-19.png",
+   "t": 1794947860732,
+   "snap": {
+    "pose": {
+     "x": 48.680726930311046,
+     "y": 1999.0752476653686,
+     "z": 36.446177189114266,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 579,
+     "sent": 579,
+     "toolInputs": 261,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 616,
+     "ackInputSeq": 577,
+     "framesDecoded": 611,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 101,
+     "framesWithStrokes": 101,
+     "lastStrokeTick": 614
+    },
+    "dust": {
+     "cellGrams": 443
+    },
+    "prediction": {
+     "predicted": 579,
+     "reconciles": 610,
+     "replayed": 546,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00024318508072676434,
+     "maxCorrectionM": 0.000584433532782152
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.220833452542625,
+    "p95": 33.5,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-20.png",
+   "t": 1794947861809,
+   "snap": {
+    "pose": {
+     "x": 51.045737861683,
+     "y": 1999.0162755334793,
+     "z": 36.445189142831204,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 601,
+     "sent": 601,
+     "toolInputs": 283,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 638,
+     "ackInputSeq": 599,
+     "framesDecoded": 633,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 110,
+     "framesWithStrokes": 110,
+     "lastStrokeTick": 638
+    },
+    "dust": {
+     "cellGrams": 583
+    },
+    "prediction": {
+     "predicted": 601,
+     "reconciles": 632,
+     "replayed": 567,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00041339774121533404,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 22.011250134309133,
+    "p95": 34.20000076293945,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-21.png",
+   "t": 1794947862792,
+   "snap": {
+    "pose": {
+     "x": 53.23106847808524,
+     "y": 1998.959298385608,
+     "z": 36.4442426558182,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 620,
+     "sent": 620,
+     "toolInputs": 302,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 658,
+     "ackInputSeq": 619,
+     "framesDecoded": 653,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 118,
+     "framesWithStrokes": 118,
+     "lastStrokeTick": 658
+    },
+    "dust": {
+     "cellGrams": 719
+    },
+    "prediction": {
+     "predicted": 620,
+     "reconciles": 652,
+     "replayed": 588,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00013126106669681742,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.73375016450882,
+    "p95": 35.099998474121094,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-22.png",
+   "t": 1794947863765,
+   "snap": {
+    "pose": {
+     "x": 55.357648019182726,
+     "y": 1998.9015592868454,
+     "z": 36.44315929814368,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 640,
+     "sent": 640,
+     "toolInputs": 322,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 677,
+     "ackInputSeq": 638,
+     "framesDecoded": 672,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 125,
+     "framesWithStrokes": 125,
+     "lastStrokeTick": 676
+    },
+    "dust": {
+     "cellGrams": 828
+    },
+    "prediction": {
+     "predicted": 640,
+     "reconciles": 671,
+     "replayed": 609,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00016853883388042086,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.664583528041838,
+    "p95": 49.79999923706055,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-23.png",
+   "t": 1794947864791,
+   "snap": {
+    "pose": {
+     "x": 57.59449810579972,
+     "y": 1998.8383715506238,
+     "z": 36.441915670300475,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 660,
+     "sent": 660,
+     "toolInputs": 342,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 698,
+     "ackInputSeq": 659,
+     "framesDecoded": 693,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 133,
+     "framesWithStrokes": 133,
+     "lastStrokeTick": 698
+    },
+    "dust": {
+     "cellGrams": 942
+    },
+    "prediction": {
+     "predicted": 660,
+     "reconciles": 692,
+     "replayed": 629,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00011003269273266568,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.386666842301686,
+    "p95": 49.79999923706055,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-24.png",
+   "t": 1794947865737,
+   "snap": {
+    "pose": {
+     "x": 59.724318593625824,
+     "y": 1998.7759035372724,
+     "z": 36.44072574237479,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 679,
+     "sent": 679,
+     "toolInputs": 361,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 716,
+     "ackInputSeq": 677,
+     "framesDecoded": 711,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 140,
+     "framesWithStrokes": 140,
+     "lastStrokeTick": 716
+    },
+    "dust": {
+     "cellGrams": 1043
+    },
+    "prediction": {
+     "predicted": 679,
+     "reconciles": 710,
+     "replayed": 646,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0004477356186255252,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.247916849454246,
+    "p95": 49.79999923706055,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-25.png",
+   "t": 1794947866716,
+   "snap": {
+    "pose": {
+     "x": 61.881144099959535,
+     "y": 1998.7103032033676,
+     "z": 36.43962465011741,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 699,
+     "sent": 699,
+     "toolInputs": 381,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 736,
+     "ackInputSeq": 697,
+     "framesDecoded": 731,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 148,
+     "framesWithStrokes": 148,
+     "lastStrokeTick": 736
+    },
+    "dust": {
+     "cellGrams": 1164
+    },
+    "prediction": {
+     "predicted": 699,
+     "reconciles": 730,
+     "replayed": 667,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.0004364120375389127,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.17875015338262,
+    "p95": 49.70000076293945,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-26.png",
+   "t": 1794947867846,
+   "snap": {
+    "pose": {
+     "x": 64.32358572890124,
+     "y": 1998.633205134367,
+     "z": 36.438270482238785,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 722,
+     "sent": 722,
+     "toolInputs": 404,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 759,
+     "ackInputSeq": 720,
+     "framesDecoded": 754,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 157,
+     "framesWithStrokes": 157,
+     "lastStrokeTick": 758
+    },
+    "dust": {
+     "cellGrams": 1291
+    },
+    "prediction": {
+     "predicted": 722,
+     "reconciles": 753,
+     "replayed": 691,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00012396298835198915,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 21.1791668176651,
+    "p95": 49.79999923706055,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-27.png",
+   "t": 1794947868818,
+   "snap": {
+    "pose": {
+     "x": 66.45769187518735,
+     "y": 1998.5634142094461,
+     "z": 36.43695730511564,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 741,
+     "sent": 741,
+     "toolInputs": 423,
+     "buttons": 8,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 778,
+     "ackInputSeq": 739,
+     "framesDecoded": 773,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 164,
+     "framesWithStrokes": 164,
+     "lastStrokeTick": 776
+    },
+    "dust": {
+     "cellGrams": 1394
+    },
+    "prediction": {
+     "predicted": 741,
+     "reconciles": 772,
+     "replayed": 710,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.000151823034226474,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 20.970000155766805,
+    "p95": 34.099998474121094,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-end-28.png",
+   "t": 1794947869807,
+   "snap": {
+    "pose": {
+     "x": 66.9550781257162,
+     "y": 1998.5468139740058,
+     "z": 36.436523438087065,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 761,
+     "sent": 761,
+     "toolInputs": 426,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 798,
+     "ackInputSeq": 759,
+     "framesDecoded": 793,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 166,
+     "framesWithStrokes": 166,
+     "lastStrokeTick": 782
+    },
+    "dust": {
+     "cellGrams": 1429
+    },
+    "prediction": {
+     "predicted": 761,
+     "reconciles": 792,
+     "replayed": 730,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00006103515625,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 20.76166688601176,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-end-29.png",
+   "t": 1794947870799,
+   "snap": {
+    "pose": {
+     "x": 66.95507812500001,
+     "y": 1998.546813964844,
+     "z": 36.43652343750001,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 780,
+     "sent": 780,
+     "toolInputs": 426,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 818,
+     "ackInputSeq": 779,
+     "framesDecoded": 813,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 166,
+     "framesWithStrokes": 166,
+     "lastStrokeTick": 782
+    },
+    "dust": {
+     "cellGrams": 1429
+    },
+    "prediction": {
+     "predicted": 780,
+     "reconciles": 812,
+     "replayed": 750,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00006103515625,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 20.76166688601176,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-end-30.png",
+   "t": 1794947871782,
+   "snap": {
+    "pose": {
+     "x": 66.95507812500001,
+     "y": 1998.546813964844,
+     "z": 36.43652343750001,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 800,
+     "sent": 800,
+     "toolInputs": 426,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 838,
+     "ackInputSeq": 799,
+     "framesDecoded": 833,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 166,
+     "framesWithStrokes": 166,
+     "lastStrokeTick": 782
+    },
+    "dust": {
+     "cellGrams": 1429
+    },
+    "prediction": {
+     "predicted": 800,
+     "reconciles": 832,
+     "replayed": 770,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00006103515625,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 20.622916905085244,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  },
+  {
+   "name": "walkscrub-end-31.png",
+   "t": 1794947872782,
+   "snap": {
+    "pose": {
+     "x": 66.95507812500001,
+     "y": 1998.546813964844,
+     "z": 36.43652343750001,
+     "yawRad": 0,
+     "pitchRad": -0.35,
+     "mode": "third"
+    },
+    "predicted": true,
+    "input": {
+     "lastSeq": 820,
+     "sent": 820,
+     "toolInputs": 426,
+     "buttons": 0,
+     "toolParam": 255
+    },
+    "worker": {
+     "tick": 858,
+     "ackInputSeq": 819,
+     "framesDecoded": 853,
+     "decodeErrors": 0
+    },
+    "strokes": {
+     "chainsAcked": 166,
+     "framesWithStrokes": 166,
+     "lastStrokeTick": 782
+    },
+    "dust": {
+     "cellGrams": 1429
+    },
+    "prediction": {
+     "predicted": 820,
+     "reconciles": 852,
+     "replayed": 791,
+     "replayCapped": 0,
+     "unknownAcks": 15,
+     "lastCorrectionM": 0.00006103515625,
+     "maxCorrectionM": 0.0005913642082237579
+    },
+    "vehiclePrediction": {
+     "predicted": 0,
+     "reconciles": 0,
+     "exactReconciles": 0,
+     "handleSnaps": 0,
+     "replayed": 0,
+     "unknownAcks": 0,
+     "lastCorrectionM": 0,
+     "maxCorrectionM": 0
+    },
+    "host": {
+     "kind": "local",
+     "state": "running"
+    }
+   },
+   "info": {
+    "backend": "webgpu",
+    "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "ft": 20.483750243981678,
+    "p95": 33.400001525878906,
+    "dpr": 1
+   }
+  }
+ ]
+}

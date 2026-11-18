@@ -10,10 +10,13 @@ import type { GameData } from "@moon-cleanup/game-data";
 import {
   createUniformPlotAttributes,
   WorldDustLedger,
+  type DustCoverSpec,
   type IcoPlotGrid,
   type PlotAttributeTables,
 } from "@moon-cleanup/world";
 import { createSimConfig } from "../config/sim-config";
+import { landingApronPlots } from "../room/landing-apron";
+import { BOREAL_STAND_IN_OUTPOSTS } from "../room/moon-room-sim";
 
 export interface RoomDustLedgerOptions {
   /** Tick rate of the room (default: the contract's). Dust numbers do not depend on it; it only has to be valid. */
@@ -29,6 +32,28 @@ export interface RoomDustLedgerOptions {
   readonly strokeLog?: boolean;
   /** Record ledger-zero events (rendering clients only; default false). */
   readonly zeroEvents?: boolean;
+  /**
+   * Outposts of the Contract, index 0 = home (as MoonRoomSim option `outposts`; default `BOREAL_STAND_IN_OUTPOSTS`).
+   * The Landing Apron cover sits around the home outpost; hosts that pass `outposts` to the sim pass the same here.
+   */
+  readonly outposts?: readonly { readonly x: number; readonly y: number; readonly z: number }[];
+}
+
+/**
+ * Landing Apron initial cover (packages/world DUST_INIT_REVISION 1): the sim's Apron plots (`landingApronPlots`
+ * around the home outpost, `world.landingApron.plotsPerOutpost`) start at `dustLevel` on `coverageFrac` of their area.
+ */
+export function landingApronCover(
+  grid: IcoPlotGrid,
+  data: GameData,
+  outposts: readonly { readonly x: number; readonly y: number; readonly z: number }[] = BOREAL_STAND_IN_OUTPOSTS,
+): DustCoverSpec[] {
+  const apron = data.world.landingApron;
+  const home = outposts[0];
+  if (home === undefined || apron.plotsPerOutpost <= 0) return [];
+  const l = Math.sqrt(home.x * home.x + home.y * home.y + home.z * home.z) || 1;
+  const plots = landingApronPlots(grid, { x: home.x / l, y: home.y / l, z: home.z / l }, apron.plotsPerOutpost);
+  return [{ plots, level: apron.dustLevel, permille: Math.round(apron.coverageFrac * 1000) }];
 }
 
 let defaultGrid: IcoPlotGrid | undefined;
@@ -67,6 +92,7 @@ export function createRoomDustLedger(
     grid,
     attributes: options.attributes ?? defaultPlotAttributes(grid),
     dustLevelByClass: dustLevelsByClass(data, options.tickHz),
+    initialCover: landingApronCover(grid, data, options.outposts),
     kgPerM2PerLevel: createSimConfig(data, { tickHz: options.tickHz }).dustKgPerM2PerLevel,
     ...(options.initialLedgerSlots !== undefined ? { initialLedgerSlots: options.initialLedgerSlots } : {}),
     ...(options.strokeLog !== undefined ? { strokeLog: options.strokeLog } : {}),

@@ -146,6 +146,28 @@ describe("online read-outs", () => {
     expect(fresh.stats.skipped).toBe(1);
   });
 
+  it("Landing Apron plots equal the server MoonRoomSim's (same grid and game data)", () => {
+    const sim = new MoonRoomSim({
+      data,
+      world: { grid, ground: FLAT_GROUND },
+      ledger: createRoomDustLedger(grid, data, { tickHz: 20 }),
+      contractId: CONTRACT.toLowerCase() as ContractId,
+      shiftType: "private",
+      tickHz: 20,
+      snapshotHz: 10,
+    });
+    expect(sim.apronPlotCount).toBeGreaterThan(0);
+    expect(ro.apronPlotCount).toBe(sim.apronPlotCount);
+    const a = { x: 0, y: 0, z: 0 };
+    const b = { x: 0, y: 0, z: 0 };
+    for (let k = 0; k < sim.apronPlotCount; k++) {
+      expect(ro.apronPlot(k, a)).toBe(true);
+      expect(sim.apronPlot(k, b)).toBe(true);
+      expect(a).toEqual(b);
+    }
+    expect(ro.apronPlot(ro.apronPlotCount, a)).toBe(false);
+  });
+
   it("a host exposing readouts + setReadoutRequest passes the ReadoutLink guard", () => {
     const host = { kind: "remote", readouts: ro, setReadoutRequest: () => undefined } as never;
     expect(hasReadouts(host)).toBe(true);

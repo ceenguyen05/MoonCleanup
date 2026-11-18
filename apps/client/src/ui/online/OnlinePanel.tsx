@@ -33,6 +33,7 @@ import {
 } from "./online-model";
 import styles from "./OnlinePanel.module.css";
 import { initialPanelState, panelReducer } from "./panel-model";
+import { RosterList } from "./RosterList";
 
 const T = STRINGS.online;
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
@@ -464,6 +465,7 @@ export default function OnlinePanel({ port, onClose, initialInvite }: OnlinePane
                     ) : (
                       <p className={styles["lead"]}>{T.onShift.none}</p>
                     )}
+                    {port.roster !== undefined && <RosterList roster={port.roster} />}
                     {state.error !== null && <ErrorLine failure={state.error} />}
                     <div className={styles["footer"]}>
                       <button type="button" className={styles["ghost"]} onClick={leave} data-testid="leave-shift">

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  GAME_WORKSITE_SCENE_ID,
+  wantsTerrainGame,
+  gameModuleSearch,
+  wantsGameWorksite,
   integratedGpuPreset,
   launchSearch,
   planScene,
@@ -53,6 +57,22 @@ describe("planScene", () => {
   });
 });
 
+describe("default game launch (M1-W3-T05)", () => {
+  it("the page with no scene and no ?play=1 is the game worksite; dev scenes and harness lanes are not", () => {
+    for (const search of ["", "?perf=1", "?lm=500&perf=1", "?preset=low"]) expect(wantsGameWorksite(search)).toBe(true);
+    for (const search of ["?play=1", "?scene=dust", "?scene=moon", "?scene=smoke", "?solo=0", "?capture=1"]) {
+      expect(wantsGameWorksite(search)).toBe(false);
+    }
+  });
+  it("hands the modules the worksite scene, keeping every other param", () => {
+    const out = new URLSearchParams(gameModuleSearch("?perf=1&preset=low"));
+    expect(out.get("scene")).toBe(GAME_WORKSITE_SCENE_ID);
+    expect(out.get("perf")).toBe("1");
+    expect(out.get("preset")).toBe("low");
+    expect(planScene(gameModuleSearch("")).smokeScene).toBe(false);
+  });
+});
+
 describe("wantsTimestampQueries", () => {
   const base = { perfEnabled: true, search: "", hasNavigatorGpu: true };
   it("asks only for the WebGPU path", () => {
@@ -89,4 +109,19 @@ describe("launchSearch (security review N8)", () => {
     expect(launchSearch("?scene=s01&preset=low", true)).toBe("?scene=s01&preset=low");
     expect(launchSearch("", true)).toBe("");
   });
+});
+
+it("terrain requires an explicit game opt-in; lookdev moon owns its scene without a solo host", () => {
+  for (const search of [
+    "",
+    "?ground=flat",
+    "?ground=terrain&capture=1",
+    "?ground=terrain&solo=0",
+    "?ground=terrain&scene=dust",
+    "?ground=terrain&play=1",
+  ])
+    expect(wantsTerrainGame(search)).toBe(false);
+  expect(wantsTerrainGame("?ground=terrain")).toBe(true);
+  expect(planScene(gameModuleSearch("?ground=terrain", true)).smokeScene).toBe(false);
+  expect(wantsSoloHost("?scene=moon")).toBe(false);
 });

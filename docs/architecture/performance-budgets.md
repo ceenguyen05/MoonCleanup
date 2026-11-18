@@ -10,7 +10,7 @@ A budget is a **ceiling** at the 95th percentile of frames during the reference 
 | Tier | Reference devices | Backend | Output | Internal render scale (dynamic) | Default preset | Target |
 | --- | --- | --- | --- | --- | --- | --- |
 | **A** | RTX 4060 Laptop (reference), RTX 4050/5050/5060 Laptop | WebGPU | 1920×1080 – 2560×1440 | 0.75–1.0, DPR cap 1.5 | High | **Locked 60 FPS** (16.7 ms) |
-| **B** | Intel Iris Xe 96EU, Intel Arc 140V, AMD Radeon 780M | WebGPU | 1920×1080 | Low 0.50–0.75 / Medium 0.60–0.85, DPR cap 1.0 (canonical: rendering-pipeline §14) | Low/Medium | **30+ FPS** (33.3 ms), stretch 45 |
+| **B** | Intel Iris Xe 96EU, Intel Arc 140V, AMD Radeon 780M | WebGPU | 1920×1080 | Low 0.50–0.75 / Medium 0.75–0.85, DPR cap 1.0 (canonical: rendering-pipeline §14) | Low/Medium | **30+ FPS** (33.3 ms), stretch 45 |
 | **C** | Any device without WebGPU (≈ 11–19 % of visitors, [browser-feasibility.md §1.2](../research/browser-feasibility.md)) | WebGL2 fallback (three auto backend) | 1920×1080 | 0.5–0.75, DPR cap 1.0 | Low | **30 FPS** on Tier-B-class hardware; best effort elsewhere |
 | Ultra (preset, not a tier) | RTX 4070+ desktop | WebGPU | up to 3840×2160 | 0.85–1.00, DPR cap 2.0 (canonical: rendering-pipeline §14) | Ultra | 60 FPS |
 

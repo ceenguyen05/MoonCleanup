@@ -1,6 +1,6 @@
 // Vehicle tuning resolved once from the validated game-data bundle (`vehicles.json`, `vehicle-upgrades.json`,
-// `economy.json`) plus the handling table (./handling). Hot paths read `VehicleKindTuning` / `VehicleStats`, never the raw
-// bundle. Upgrade semantics (config/common.schema `NumericEffectSchema`): owning level N activates level N's effects and
+// `economy.json`) plus the game-data handling-feel table (`VEHICLE_FEEL`, re-exported by ./handling). Hot paths read
+// `VehicleKindTuning` / `VehicleStats`, never the raw bundle. Upgrade semantics (config/common.schema `NumericEffectSchema`): owning level N activates level N's effects and
 // deactivates the levels below it, so each line contributes only its current level.
 
 import type { GameData } from "@moon-cleanup/game-data";
@@ -14,6 +14,7 @@ export const VEHICLE_STAT = {
   payloadMult: "payloadKgMult",
   boostMult: "boostMult",
   tripTimeMult: "vehicleTripTimeMult",
+  unloadTimeMult: "vehicleUnloadTimeMult",
   cruiseControl: "cruiseControl",
   lampRangeM: "vehicleLampRangeM",
   nightPenaltyRelief: "vehicleNightPenaltyRelief",
@@ -51,6 +52,8 @@ export interface VehicleHandling {
   readonly omega: number;
   /** Weight of the drum probe in the plane height at the chassis point (symmetric wheel layout: wheels share the rest). */
   readonly centerWeightDrum: number;
+  /** Hopper tip at a Dump Plate before Fast Tip, ticks (feel `tipS`). */
+  readonly tipTicks: number;
 }
 
 export interface VehicleKindTuning {
@@ -103,9 +106,16 @@ export class VehicleStats {
   boostMult = 1;
   widthM = 0;
   payloadGrams = 0;
+  /** Balance-model round-trip multiplier (Afterburner, Throttle Lock, Fast Tip); the sim gets those effects for real. */
   tripTimeMult = 1;
+  /** Hopper tip time multiplier (Fast Tip). */
+  unloadTimeMult = 1;
+  /** Hopper tip at a Dump Plate, ticks (the kind's tip time x `unloadTimeMult`, at least 1). */
+  tipTicks = 1;
   cruiseControl = false;
+  /** Running Lamps beam range, metres (0 = no Running Lamps: the lights key does nothing). */
   lampRangeM = 0;
+  /** Night penalty points the Running Lamps remove while the lights are on. */
   nightPenaltyRelief = 0;
 }
 
@@ -132,11 +142,19 @@ function resolveHandling(def: VehicleHandlingDef, cfg: SimConfig): VehicleHandli
     omega: 2 * Math.PI * def.springHz,
     // Chassis point (0, 0) as a barycentric mix of drum (df, 0) and wheels (-bf, +-r): weights a, (1-a)/2, (1-a)/2.
     centerWeightDrum: -def.probeForwardM[1] / (def.probeForwardM[0] - def.probeForwardM[1]),
+    tipTicks: Math.max(1, Math.round(def.tipS * cfg.tickHz)),
   });
 }
 
-/** Builds the vehicle tuning from the validated bundle and the sim config (tick rate). */
-export function resolveVehicleTuning(data: GameData, cfg: SimConfig): VehicleTuning {
+/**
+ * Builds the vehicle tuning from the validated bundle and the sim config (tick rate). `feel` = the handling-feel table
+ * (default: game-data `VEHICLE_FEEL`; tests and balance-sim may pass a `parseVehicleFeel` result). Config time only.
+ */
+export function resolveVehicleTuning(
+  data: GameData,
+  cfg: SimConfig,
+  feel: Readonly<Record<string, VehicleHandlingDef>> = VEHICLE_HANDLING,
+): VehicleTuning {
   const table = data.vehicles;
   const lines: VehicleUpgradeLineTuning[] = data["vehicle-upgrades"].lines.map((line, code) => {
     const effects = line.levels.map((level) => {
@@ -154,7 +172,7 @@ export function resolveVehicleTuning(data: GameData, cfg: SimConfig): VehicleTun
   });
   const lineIndex = new Map(lines.map((l) => [l.id, l.code]));
   const kinds: VehicleKindTuning[] = table.vehicles.map((v, code) => {
-    const def = VEHICLE_HANDLING[v.id];
+    const def = feel[v.id];
     return Object.freeze({
       code,
       id: v.id,
@@ -214,6 +232,7 @@ export function resolveVehicleStats(
   let widthMult = 1;
   let payloadMult = 1;
   out.tripTimeMult = 1;
+  out.unloadTimeMult = 1;
   out.cruiseControl = false;
   out.lampRangeM = 0;
   out.nightPenaltyRelief = 0;
@@ -243,6 +262,9 @@ export function resolveVehicleStats(
         case VEHICLE_STAT.tripTimeMult:
           out.tripTimeMult = applyOp(out.tripTimeMult, e.op, v);
           break;
+        case VEHICLE_STAT.unloadTimeMult:
+          out.unloadTimeMult = applyOp(out.unloadTimeMult, e.op, v);
+          break;
         case VEHICLE_STAT.cruiseControl:
           out.cruiseControl = v > 0;
           break;
@@ -259,6 +281,8 @@ export function resolveVehicleStats(
   }
   out.widthM = kind.widthM * widthMult;
   out.payloadGrams = Math.round(kind.payloadGrams * payloadMult);
+  const tip = kind.handling ? Math.round(kind.handling.tipTicks * out.unloadTimeMult) : 1;
+  out.tipTicks = tip < 1 ? 1 : tip;
   return out;
 }
 

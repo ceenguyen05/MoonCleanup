@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "generator": "@moon-cleanup/asset-pipeline assets:build",
+  "assets": {
+    "custodian_suit": {
+      "file": "custodian_suit.d87dd2dcac2b.glb",
+      "class": "custodian",
+      "bytes": 404564,
+      "sha256": "d87dd2dcac2b69bd5005d31df69697a37a222bc98dac546fc8ee556ad90f8568",
+      "source": "assets/models/characters/custodian_suit.py",
+      "textureFormat": "ktx2"
+    }
+  }
+}

@@ -7,7 +7,9 @@ import { createUiStore } from "../../app/ui-store";
 import { UiProvider } from "../ui-context";
 import { createContractsApi } from "./contracts-api";
 import { runOnlineEntry } from "./online-flow";
+import { STRINGS } from "../strings";
 import {
+  canModerate,
   connView,
   failureOfCloseCode,
   failureOfResponse,
@@ -310,6 +312,35 @@ describe("store-driven rendering", () => {
     );
     expect(html).toContain('data-view="onShift"');
     expect(html).toContain("Leave shift");
+  });
+  it("shows kick and ban controls on the on-shift roster only for a Holder, on other non-Holder rows", () => {
+    const rows = (selfRole: string) => [
+      { playerId: "h", displayName: "Hana", role: selfRole, connected: true, self: true },
+      { playerId: "s", displayName: "Sam", role: "staff", connected: true, self: false },
+      { playerId: "o", displayName: "Ola", role: "holder", connected: false, self: false },
+    ];
+    const kick = vi.fn(() => true);
+    const withRoster = (selfRole: string) => ({
+      ...port,
+      roster: { current: () => rows(selfRole), subscribe: () => () => undefined, kick },
+    });
+    const connect = (s: ReturnType<typeof createUiStore>) =>
+      s.dispatch({ type: "session.set", patch: { conn: "connected", rttMs: 30, closeCode: null } });
+    const holder = renderWith(<OnlinePanel port={withRoster("holder")} onClose={() => undefined} />, connect);
+    expect(holder.match(/data-testid="roster-kick"/g)).toHaveLength(1); // Sam only: not self, not the other Holder
+    expect(holder.match(/data-testid="roster-ban"/g)).toHaveLength(1);
+    expect(holder).toContain("Sam");
+    expect(holder).toContain("reconnecting");
+    const staff = renderWith(<OnlinePanel port={withRoster("staff")} onClose={() => undefined} />, connect);
+    expect(staff).toContain('data-testid="roster"');
+    expect(staff).not.toContain("roster-kick");
+    expect(canModerate(rows("holder"), rows("holder")[1]!)).toBe(true);
+    expect(canModerate(rows("holder"), rows("holder")[0]!)).toBe(false);
+    expect(canModerate(rows("staff"), rows("staff")[1]!)).toBe(false);
+  });
+  it("maps 4102 and 4103 to player-facing messages", () => {
+    expect(STRINGS.online.errors[failureOfCloseCode(4102)!]).toContain("clocked you out");
+    expect(STRINGS.online.errors[failureOfCloseCode(4103)!]).toContain("cannot rejoin");
   });
 });
 

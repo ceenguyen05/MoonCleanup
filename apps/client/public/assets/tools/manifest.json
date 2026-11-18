@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "generator": "@moon-cleanup/asset-pipeline assets:build",
+  "assets": {
+    "bristle_broom": {
+      "file": "bristle_broom.fe35cccec0c2.glb",
+      "class": "handTool",
+      "bytes": 40868,
+      "sha256": "fe35cccec0c2765c92a2df593c6c6542869700842c3d72875a1b0e573565f281",
+      "source": "assets/models/tools/bristle_broom.py",
+      "textureFormat": "none"
+    },
+    "crescent_squeegee": {
+      "file": "crescent_squeegee.7aa78837c0c8.glb",
+      "class": "handTool",
+      "bytes": 43956,
+      "sha256": "7aa78837c0c8b7d6dc7bd35e662dc770aae89c74c5eb491cc5492bba54661df0",
+      "source": "assets/models/tools/crescent_squeegee.py",
+      "textureFormat": "none"
+    },
+    "desk_duster": {
+      "file": "desk_duster.3da4d2191776.glb",
+      "class": "handTool",
+      "bytes": 44004,
+      "sha256": "3da4d21917763d8decb837bc231dc25ed08f18174651c100493f54d4135e20b2",
+      "source": "assets/models/tools/desk_duster.py",
+      "textureFormat": "none"
+    },
+    "lane_broom": {
+      "file": "lane_broom.f9000e6a28d3.glb",
+      "class": "handTool",
+      "bytes": 47592,
+      "sha256": "f9000e6a28d316c1e75cdb7338375571e6d106ab8a7607b9e00b994df8f185e7",
+      "source": "assets/models/tools/lane_broom.py",
+      "textureFormat": "none"
+    }
+  }
+}

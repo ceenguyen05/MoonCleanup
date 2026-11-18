@@ -30,6 +30,7 @@ import {
   createRoomSession,
   equippedToolOf,
   retryAfterMs,
+  rosterOf,
   seatHoldReconnectPolicy,
   type AccessTokenSource,
   type ConsumeReservationFn,
@@ -422,6 +423,54 @@ describe("room session: adapter", () => {
     session.dispose();
   });
 
+  it("4102 kicked and 4103 banned are verdicts: not retryable; a ban at join does not re-join", async () => {
+    for (const [code, reason] of [
+      [CloseCode.KICKED, "kicked"],
+      [CloseCode.BANNED, "banned"],
+    ] as const) {
+      const { r, session } = rig();
+      const room = await joinFully(r, session);
+      room.deliver(MESSAGE_CATALOG.KICK_NOTICE.id, { by: "holder", reasonCode: "griefing" });
+      expect(session.kickNotice).toEqual({ by: "holder", reasonCode: "griefing" });
+      room.leaveCb?.(code);
+      expect(session.failure).toMatchObject({ reason, code, retryable: false });
+      session.dispose();
+    }
+    const { r, session } = rig();
+    r.consumeError = { code: CloseCode.BANNED };
+    session.start();
+    await flush();
+    await flush();
+    expect(session.failure).toMatchObject({ reason: "banned", retryable: false });
+    expect(r.consumed).toHaveLength(1);
+    expect(r.joins).toHaveLength(1);
+    session.dispose();
+  });
+
+  it("sendKick sends the KickPayload (ban flag only when set) and the roster follows Schema patches", async () => {
+    const { r, session } = rig();
+    expect(session.sendKick("p", "other")).toBe(false);
+    const room = await joinFully(r, session);
+    const seen: number[] = [];
+    session.onRoster((x) => seen.push(x.length));
+    expect(session.sendKick("00000000-0000-4000-8000-000000000001", "griefing")).toBe(true);
+    expect(session.sendKick("00000000-0000-4000-8000-000000000002", "other", true)).toBe(true);
+    const kicks = room.sent.filter((s) => s.type === MESSAGE_CATALOG.KICK.id).map((s) => s.payload);
+    expect(kicks[0]).toEqual({ playerId: "00000000-0000-4000-8000-000000000001", reasonCode: "griefing" });
+    expect(kicks[1]).toMatchObject({ ban: true });
+    expect(rosterOf(null, "s")).toEqual([]);
+    const players = new Map([
+      ["s", { playerId: "b", displayName: "B", role: "holder", connected: true }],
+      ["t", { playerId: "a", displayName: "A", role: "staff", connected: false }],
+    ]);
+    const roster = rosterOf({ players }, "s");
+    expect(roster.map((e) => e.playerId)).toEqual(["a", "b"]);
+    expect(roster[1]).toMatchObject({ self: true, role: "holder" });
+    expect(roster[0]).toMatchObject({ connected: false });
+    expect(seen).toEqual([]);
+    session.dispose();
+  });
+
   it("a 4101 from onAuth refreshes the token and retries once", async () => {
     const { r, session } = rig();
     r.consumeError = { code: CloseCode.AUTH_INVALID };
@@ -542,6 +591,19 @@ describe("room session: adapter", () => {
     expect(session.stats.controlInvalid).toBe(1);
     room.deliver(MESSAGE_CATALOG.DUST_LOG.id, new Uint8Array([1, 2, 3]));
     expect(seen).toEqual([MESSAGE_CATALOG.DUST_LOG.id, 4]);
+    session.dispose();
+  });
+
+  it("HELLO saveArchived:true fires onSaveArchived once; a plain HELLO does not", async () => {
+    let n = 0;
+    const { r, session } = rig({ handlers: { onSaveArchived: () => void n++ } });
+    session.start();
+    await flush();
+    const room = r.rooms.at(-1)!;
+    room.deliver("hello", HELLO);
+    expect(n).toBe(0);
+    room.deliver("hello", { ...HELLO, saveArchived: true });
+    expect(n).toBe(1);
     session.dispose();
   });
 

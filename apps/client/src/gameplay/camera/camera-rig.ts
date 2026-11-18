@@ -248,17 +248,37 @@ export class TangentPlaneMapper implements RenderMapper {
   }
 }
 
+/** What `PlotFrameMapper.fromGrid` needs of a plot grid (packages/world `IcoPlotGrid`, structural). */
+export interface PlotFrameGrid {
+  fromPlotLocal(
+    id: never,
+    uMm: number,
+    vMm: number,
+    out: { x: number; y: number; z: number },
+  ): { x: number; y: number; z: number };
+}
+
 /**
- * The flat look-scene frame of `?scene=dust` (visuals/dust/flat-lookup.ts): render (x, z) metres = the site plot's
- * gnomonic plot-local (u, v) (packages/world `toPlotLocal`, mm / 1000), y = height above the moon radius. Built from the
- * plot's centre n, east e and north t (unit vectors). Note the frame (e, n, t) is the scene's convention, whatever its
- * handedness, so strokes land under the avatar's feet.
+ * The flat look-scene frame of `?scene=dust` and the game worksite (visuals/dust/flat-lookup.ts): render x = the site
+ * plot's gnomonic plot-local u (east), z = -v (south), in metres (packages/world `toPlotLocal`, mm / 1000), y = height
+ * above the moon radius. Built from the plot's centre n, east e and north t (unit vectors). The frame (e, n, -t) is the
+ * scene's, so strokes land under the avatar's feet; for the standard grid it is right-handed (`mirrored` false).
+ *
+ * The site can move (the game worksite follows the player): `requestSite(plot)` stages a new site and the next
+ * `point()` call (the gameplay present, first in the frame) applies it, so every consumer of that frame (camera,
+ * avatar, dust ground) sees one site; `siteVersion` counts the applied moves.
  */
 export class PlotFrameMapper implements RenderMapper {
   /** n (0..2), e (3..5), t (6..8). */
   readonly axes = new Float64Array(9);
-  /** det(e, n, t) < 0: the scene frame is a mirror image (true for the standard grid's plot frames, measured -1). */
+  /** det(e, n, -t) < 0: the scene frame is a mirror image (input then flips turning and strafing). */
   readonly mirrored: boolean;
+  /** Site plot of the frame (-1 when built from bare axes). */
+  site = -1;
+  /** Applied site moves. */
+  siteVersion = 0;
+  private grid: PlotFrameGrid | null = null;
+  private pendingSite = -1;
 
   constructor(
     n: ArrayLike<number>,
@@ -266,49 +286,56 @@ export class PlotFrameMapper implements RenderMapper {
     t: ArrayLike<number>,
     readonly radiusM: number,
   ) {
+    this.setAxes(n, e, t);
+    const cx = e[1]! * n[2]! - e[2]! * n[1]!;
+    const cy = e[2]! * n[0]! - e[0]! * n[2]!;
+    const cz = e[0]! * n[1]! - e[1]! * n[0]!;
+    this.mirrored = -(cx * t[0]! + cy * t[1]! + cz * t[2]!) < 0;
+  }
+
+  /** From a plot grid's `fromPlotLocal` (axes by 1 m finite differences, exact to about 1e-7). */
+  static fromGrid(grid: PlotFrameGrid, plot: number, radiusM: number): PlotFrameMapper {
+    const ax = plotAxes(grid, plot);
+    const m = new PlotFrameMapper(ax.slice(0, 3), ax.slice(3, 6), ax.slice(6, 9), radiusM);
+    m.grid = grid;
+    m.site = plot;
+    return m;
+  }
+
+  /** Stages a move of the frame to `plot` (applied by the next `point()` or `applyPendingSite()`). Grid-built only. */
+  requestSite(plot: number): void {
+    if (this.grid === null || plot === this.site) return;
+    this.pendingSite = plot;
+  }
+
+  /** A staged site move is waiting. */
+  get sitePending(): boolean {
+    return this.pendingSite >= 0;
+  }
+
+  /** Applies a staged site move now (cold path: a few `fromPlotLocal` calls); false when none is staged. */
+  applyPendingSite(): boolean {
+    const plot = this.pendingSite;
+    const grid = this.grid;
+    if (plot < 0 || grid === null) return false;
+    this.pendingSite = -1;
+    const ax = plotAxes(grid, plot);
+    this.setAxes(ax.slice(0, 3), ax.slice(3, 6), ax.slice(6, 9));
+    this.site = plot;
+    this.siteVersion++;
+    return true;
+  }
+
+  private setAxes(n: ArrayLike<number>, e: ArrayLike<number>, t: ArrayLike<number>): void {
     for (let i = 0; i < 3; i++) {
       this.axes[i] = n[i]!;
       this.axes[3 + i] = e[i]!;
       this.axes[6 + i] = t[i]!;
     }
-    const cx = e[1]! * n[2]! - e[2]! * n[1]!;
-    const cy = e[2]! * n[0]! - e[0]! * n[2]!;
-    const cz = e[0]! * n[1]! - e[1]! * n[0]!;
-    this.mirrored = cx * t[0]! + cy * t[1]! + cz * t[2]! < 0;
-  }
-
-  /** From a plot grid's `fromPlotLocal` (axes by 1 m finite differences, exact to about 1e-7). */
-  static fromGrid(
-    grid: {
-      fromPlotLocal(
-        id: never,
-        uMm: number,
-        vMm: number,
-        out: { x: number; y: number; z: number },
-      ): { x: number; y: number; z: number };
-    },
-    plot: number,
-    radiusM: number,
-  ): PlotFrameMapper {
-    const c = { x: 0, y: 0, z: 0 };
-    const pu = { x: 0, y: 0, z: 0 };
-    const pv = { x: 0, y: 0, z: 0 };
-    grid.fromPlotLocal(plot as never, 0, 0, c);
-    grid.fromPlotLocal(plot as never, 1000, 0, pu);
-    grid.fromPlotLocal(plot as never, 0, 1000, pv);
-    const unit = (x: number, y: number, z: number): number[] => {
-      const l = Math.hypot(x, y, z);
-      return [x / l, y / l, z / l];
-    };
-    return new PlotFrameMapper(
-      [c.x, c.y, c.z],
-      unit(pu.x - c.x, pu.y - c.y, pu.z - c.z),
-      unit(pv.x - c.x, pv.y - c.y, pv.z - c.z),
-      radiusM,
-    );
   }
 
   point(src: Float64Array, so: number, out: Float64Array, o: number): void {
+    if (this.pendingSite >= 0) this.applyPendingSite();
     const a = this.axes;
     const x = src[so]!;
     const y = src[so + 1]!;
@@ -321,7 +348,7 @@ export class PlotFrameMapper implements RenderMapper {
     const r = this.radiusM;
     out[o] = r * (qx * a[3]! + qy * a[4]! + qz * a[5]!);
     out[o + 1] = len - r;
-    out[o + 2] = r * (qx * a[6]! + qy * a[7]! + qz * a[8]!);
+    out[o + 2] = -r * (qx * a[6]! + qy * a[7]! + qz * a[8]!);
   }
 
   direction(src: Float64Array, so: number, out: Float64Array, o: number): void {
@@ -331,6 +358,21 @@ export class PlotFrameMapper implements RenderMapper {
     const z = src[so + 2]!;
     out[o] = x * a[3]! + y * a[4]! + z * a[5]!;
     out[o + 1] = x * a[0]! + y * a[1]! + z * a[2]!;
-    out[o + 2] = x * a[6]! + y * a[7]! + z * a[8]!;
+    out[o + 2] = -(x * a[6]! + y * a[7]! + z * a[8]!);
   }
+}
+
+/** n, e, t of `plot` (9 numbers) from the grid's `fromPlotLocal` by 1 m finite differences. Cold path. */
+function plotAxes(grid: PlotFrameGrid, plot: number): number[] {
+  const c = { x: 0, y: 0, z: 0 };
+  const pu = { x: 0, y: 0, z: 0 };
+  const pv = { x: 0, y: 0, z: 0 };
+  grid.fromPlotLocal(plot as never, 0, 0, c);
+  grid.fromPlotLocal(plot as never, 1000, 0, pu);
+  grid.fromPlotLocal(plot as never, 0, 1000, pv);
+  const unit = (x: number, y: number, z: number): number[] => {
+    const l = Math.hypot(x, y, z);
+    return [x / l, y / l, z / l];
+  };
+  return [c.x, c.y, c.z, ...unit(pu.x - c.x, pu.y - c.y, pu.z - c.z), ...unit(pv.x - c.x, pv.y - c.y, pv.z - c.z)];
 }

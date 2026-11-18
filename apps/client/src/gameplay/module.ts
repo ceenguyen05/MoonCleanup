@@ -27,8 +27,10 @@ import {
   type Unsubscribe,
 } from "@moon-cleanup/shared";
 import { yawFromCode } from "@moon-cleanup/protocol";
-import type { SimConfig, SimGround } from "@moon-cleanup/sim";
+import type { SimConfig, SimGround, VehicleTuning } from "@moon-cleanup/sim";
 import { VehicleDriveView } from "./vehicles/vehicle-drive";
+import { SeatedTrundle } from "./vehicles/seated-trundle";
+import { TrundlePredictor } from "./vehicles/trundle-predictor";
 import type { RenderServices } from "../render";
 import { DEFAULT_BINDINGS, type BindingTable } from "./input/bindings";
 import { DomInput, type DomInputHost, type PointerLockTarget } from "./input/dom-input";
@@ -70,6 +72,11 @@ export interface GameplayModuleOptions {
   readonly ground?: SimGround;
   /** Sim config of the prediction; default built from game data (lazy chunk) for the host's tick rate. */
   readonly simConfig?: SimConfig;
+  /**
+   * Vehicle tuning of the Solo Trundle prediction (with `simConfig`); default built from game data in the same lazy
+   * chunk as the sim config. Without it (but with `simConfig`) the seated view stays the interpolated FRAME.
+   */
+  readonly vehicleTuning?: VehicleTuning;
   /** Solo prediction (default on). Off: the pose is the interpolated worker FRAME (one tick behind). */
   readonly prediction?: boolean;
   /** The app's online room slot (`app/online-launch.ts` OnlineRoomSlot); polled once per frame (one null check). */
@@ -91,6 +98,8 @@ export interface GameplaySnapshot {
   readonly strokes: { chainsAcked: number; framesWithStrokes: number; lastStrokeTick: number };
   readonly dust: { cellGrams: number };
   readonly prediction: Readonly<Record<string, number>> | null;
+  /** Solo Trundle prediction counters (null until the vehicle tuning is loaded). */
+  readonly vehiclePrediction: Readonly<Record<string, number>> | null;
   readonly host: { kind: string; state: string } | null;
 }
 
@@ -110,6 +119,8 @@ export class GameplayModule implements ClientModule<RenderServices> {
   readonly rig = new CameraRig();
   /** Driving: the chase camera (rebuilt from the frame pose) and its blend with the on-foot camera. */
   readonly drive = new VehicleDriveView();
+  /** Solo Trundle prediction while seated (M1-W7-T01): predicted chassis + handle feet, no frame delay. */
+  readonly seated = new SeatedTrundle();
   private offEvents: Unsubscribe | null = null;
   private useMix = false;
   private readonly mixEye = new Float64Array(3);
@@ -143,9 +154,19 @@ export class GameplayModule implements ClientModule<RenderServices> {
   private disposed = false;
   private readonly disposers: (() => void)[] = [];
   readonly stats = { frames: 0, posedFrames: 0, intents: 0 };
-  private readonly predictFn = (cmd: Parameters<SoloPredictor["predict"]>[0]): void => this.predictor?.predict(cmd);
-  private readonly reconcileFn = (self: Parameters<SoloPredictor["reconcile"]>[0], ack: number): void =>
+  /** This frame's pose came from the seated Trundle prediction (drive camera reads `seated.pose`). */
+  private seatedPredicted = false;
+  private readonly predictFn = (cmd: Parameters<SoloPredictor["predict"]>[0]): void => {
+    this.predictor?.predict(cmd);
+    this.seated.predict(cmd);
+  };
+  private readonly reconcileFn = (
+    self: Parameters<NonNullable<FrameAvatarSource["selfListener"]>>[0],
+    ack: number,
+  ): void => {
     this.predictor?.reconcile(self, ack);
+    this.seated.reconcile(self, ack);
+  };
 
   constructor(private readonly options: GameplayModuleOptions = {}) {
     this.now = options.now ?? (() => performance.now());
@@ -161,7 +182,8 @@ export class GameplayModule implements ClientModule<RenderServices> {
       this.mapper = this.ownMapper;
     }
     this.input.mirrored = this.mapper.mirrored === true;
-    if (options.simConfig !== undefined && options.prediction !== false) this.createPredictor(options.simConfig);
+    if (options.simConfig !== undefined && options.prediction !== false)
+      this.createPredictor(options.simConfig, options.vehicleTuning ?? null);
   }
 
   init(ctx: ModuleContext<RenderServices>): void {
@@ -237,6 +259,7 @@ export class GameplayModule implements ClientModule<RenderServices> {
     clock.dt = frame.dt;
     this.stats.frames++;
     this.checkOnline();
+    this.dom?.sync();
     this.dom?.pollGamepads();
     const input = this.input;
     input.advance(clock);
@@ -247,12 +270,25 @@ export class GameplayModule implements ClientModule<RenderServices> {
       this.stats.intents++;
     }
 
-    // Seated: the interpolated worker FRAME carries the avatar on the handle (no walking prediction while driving).
-    const pose = this.drive.isActive ? this.framePose : this.pose;
-    const predictor = this.predictor;
-    if (predictor !== null && pose === predictor) input.peek(predictor.live);
-    input.airborne = pose.airborne;
-    const posed = pose.sample(clock, this.feet);
+    // Seated: the Solo Trundle prediction (handle feet, no frame delay) once it has started; until then (or online) the
+    // interpolated worker FRAME carries the avatar on the handle. No walking prediction while driving.
+    let posed: boolean;
+    const seated = this.seated;
+    this.seatedPredicted = this.drive.isActive && seated.sample(clock);
+    if (this.seatedPredicted) {
+      const f = this.feet;
+      f[0] = seated.feet[0]!;
+      f[1] = seated.feet[1]!;
+      f[2] = seated.feet[2]!;
+      input.airborne = false;
+      posed = true;
+    } else {
+      const pose = this.drive.isActive ? this.framePose : this.pose;
+      const predictor = this.predictor;
+      if (predictor !== null && pose === predictor) input.peek(predictor.live);
+      input.airborne = pose.airborne;
+      posed = pose.sample(clock, this.feet);
+    }
     if (posed) {
       if (this.hasDebugShift) {
         this.feet[0]! += this.debugShift[0]!;
@@ -285,7 +321,8 @@ export class GameplayModule implements ClientModule<RenderServices> {
   private updateDriveCamera(input: InputState, clock: { readonly dt: number }): void {
     const d = this.drive;
     const boostHeld = (input.heldButtons() & INPUT_BUTTON_MASK.lope) !== 0;
-    d.update(this.feet, yawFromCode(this.framePose.yawCode), input.yawRad, input.pitchRad, boostHeld, clock);
+    if (this.seatedPredicted) d.updatePredicted(this.seated.pose, input.yawRad, input.pitchRad, clock);
+    else d.update(this.feet, yawFromCode(this.framePose.yawCode), input.yawRad, input.pitchRad, boostHeld, clock);
     const v = d.camera;
     const b = v.blend01;
     const rig = this.rig;
@@ -363,6 +400,7 @@ export class GameplayModule implements ClientModule<RenderServices> {
       strokes: { chainsAcked: f.strokeChains, framesWithStrokes: f.strokeFrames, lastStrokeTick: f.lastStrokeTick },
       dust: { cellGrams: f.cellGrams },
       prediction: this.predictor === null ? null : { ...this.predictor.stats },
+      vehiclePrediction: this.seated.stats === null ? null : { ...this.seated.stats },
       host: this.host === null ? null : { kind: this.host.kind, state: this.host.state },
     };
   }
@@ -399,9 +437,12 @@ export class GameplayModule implements ClientModule<RenderServices> {
     else this.setOnline(room, new PredictorPoseSource(room.predictor));
   }
 
-  private createPredictor(cfg: SimConfig): void {
+  private createPredictor(cfg: SimConfig, vehicleTuning: VehicleTuning | null): void {
     if (this.disposed || this.predictor !== null) return;
-    this.predictor = new SoloPredictor(cfg, this.options.ground ?? FLAT_GROUND, this.now);
+    const ground = this.options.ground ?? FLAT_GROUND;
+    this.predictor = new SoloPredictor(cfg, ground, this.now);
+    // Same tuning, ground and config as the worker's vehicles; starts at once if already seated.
+    if (vehicleTuning !== null) this.seated.attach(new TrundlePredictor(cfg, vehicleTuning, ground, this.now));
     this.framePose.selfListener = this.reconcileFn;
     if (this.onlineRoom === null) {
       this.pose = this.predictor;
@@ -413,7 +454,11 @@ export class GameplayModule implements ClientModule<RenderServices> {
   private loadPredictor(tickHz: number): void {
     if (this.options.prediction === false || this.predictor !== null) return;
     void Promise.all([import("@moon-cleanup/sim"), import("@moon-cleanup/game-data")])
-      .then(([sim, data]) => this.createPredictor(sim.createSimConfig(data.loadGameData(), { tickHz })))
+      .then(([sim, data]) => {
+        const gameData = data.loadGameData();
+        const cfg = sim.createSimConfig(gameData, { tickHz });
+        this.createPredictor(cfg, sim.resolveVehicleTuning(gameData, cfg));
+      })
       .catch((error: unknown) => console.warn("[gameplay] Solo prediction unavailable:", error));
   }
 
@@ -424,6 +469,7 @@ export class GameplayModule implements ClientModule<RenderServices> {
     this.offEvents?.();
     this.offEvents = null;
     this.setDriving(false, "");
+    this.seated.reset();
     this.framePose.attach(host);
     this.predictor?.reset();
     if (this.onlineRoom === null) this.pump.setSink(host);
@@ -437,12 +483,16 @@ export class GameplayModule implements ClientModule<RenderServices> {
       this.offEvents = host.onEvent((e) => {
         if (e.name === "vehicle.entered" && e.payload.actorSlot === 0) this.setDriving(true, e.payload.kindId);
         else if (e.name === "vehicle.exited" && e.payload.actorSlot === 0) this.setDriving(false, "");
+        this.seated.onEvent(e);
       });
     }
-    // Own equipped tool (Solo: actor slot 0): the predictor's speed multipliers follow it. Rare, may allocate.
+    // Own equipped tool (Solo: actor slot 0): the predictor's speed multipliers follow it; the driven vehicle's upgrade
+    // levels feed the Trundle prediction. Rare, may allocate.
     this.offShift = host.onShiftState((state) => {
-      const me = host.kind === "local" ? state.players.find((p) => p.slot === 0) : undefined;
+      if (host.kind !== "local") return;
+      const me = state.players.find((p) => p.slot === 0);
       if (me !== undefined) this.predictor?.setTool(me.equippedTool);
+      this.seated.onShiftState(state);
     });
   }
 

@@ -22,6 +22,7 @@ export {
   type SimOutpost,
   type SimWorld,
 } from "./room/moon-room-sim";
+export { landingApronPlots } from "./room/landing-apron";
 export {
   SIM_CHECKPOINT_META_MAX_BYTES,
   SIM_CHECKPOINT_META_VERSION,

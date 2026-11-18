@@ -69,10 +69,30 @@ describe("purchases", () => {
     expect(d.buy("vehicle_upgrade.gear_ratio").ok).toBe(true);
     expect(d.buy("vehicle_upgrade.gear_ratio").ok).toBe(true);
     expect(d.buy("vehicle_upgrade.gear_ratio")).toEqual({ ok: false, code: "max_level" });
-    expect(d.buy("vehicle_upgrade.afterburner")).toEqual({ ok: false, code: "unknown_item" }); // not offered in the MVP
     expect(d.buy("vehicle.skiff")).toEqual({ ok: false, code: "unknown_item" }); // M2
     const events = d.named("purchase.completed");
     expect(events).toHaveLength(4);
+  });
+
+  test("all 7 upgrade lines are sold (owner 2026-11-17) at their game-data prices, up to their top level", () => {
+    const d = room();
+    expect(d.buy("vehicle.trundle").ok).toBe(true);
+    const lines = loadGameData()["vehicle-upgrades"].lines;
+    expect(lines).toHaveLength(7);
+    for (const line of lines) {
+      for (let lv = 0; lv < line.levels.length; lv++) {
+        expect(d.sim.quotePriceLm(0, line.id)).toBe(Math.round(2100 * line.levels[lv]!.costMultOfVehiclePrice));
+        expect(d.buy(line.id).ok).toBe(true);
+      }
+      expect(d.buy(line.id)).toEqual({ ok: false, code: "max_level" });
+    }
+    expect(d.sim.wallet).toBeGreaterThanOrEqual(0);
+  });
+
+  test("vehicleUpgradeLineIds: [] sells no lines", () => {
+    const d = room({ vehicleUpgradeLineIds: [] });
+    d.buy("vehicle.trundle");
+    expect(d.buy("vehicle_upgrade.afterburner")).toEqual({ ok: false, code: "unknown_item" });
   });
 
   test("an upgrade before the vehicle, a poor wallet and a temp without the permission are refused; nothing is charged", () => {
@@ -205,7 +225,9 @@ describe("vehicle cleaning and the Dump Plate", () => {
     v.px = 0;
     v.py = cfg.moonRadiusM; // the Gate at the pole
     v.pz = 0;
-    d.run(30); // coasts to a stop within reach of the plate: it unloads once
+    d.run(30); // coasts to a stop within reach of the plate, then tips for 2 s (40 ticks) and unloads once
+    expect(v.hopperGrams).toBeGreaterThan(0);
+    d.run(40);
     expect(v.hopperGrams).toBe(0);
     expect(d.sim.wallet).toBeGreaterThan(w0);
     const sold = d.named("cargo.sold");
@@ -216,6 +238,75 @@ describe("vehicle cleaning and the Dump Plate", () => {
     expect(p.actorSlot).toBe(0);
     d.run(20);
     expect(d.named("cargo.sold")).toHaveLength(1); // nothing left to tip
+  });
+
+  /** Ticks from the stop at the plate to the sale, with `fastTip` levels of Fast Tip. */
+  function tipTicks(fastTip: number): number {
+    const d = seated();
+    for (let k = 0; k < fastTip; k++) expect(d.buy("vehicle_upgrade.fast_tip").ok).toBe(true);
+    const v = d.sim.vehicles.store.vehicles[0]!;
+    v.px = 0;
+    v.py = cfg.moonRadiusM;
+    v.pz = 0;
+    v.speed = 0;
+    v.hopperGrams = 5000;
+    const ro = new VehicleReadout();
+    let ticks = 0;
+    let sawTip = false;
+    while (v.hopperGrams > 0 && ticks < 200) {
+      d.run(1);
+      ticks++;
+      d.sim.vehicleReadout(0, ro);
+      if (ro.tip01 > 0) sawTip = true;
+    }
+    expect(sawTip || ticks === 1).toBe(true);
+    expect(d.named("cargo.sold")).toHaveLength(1);
+    return ticks;
+  }
+
+  test("Fast Tip shortens the hopper tip: 2 s, -40 %, -70 % (feel tipS x vehicleUnloadTimeMult)", () => {
+    expect(tipTicks(0)).toBe(Math.round(2 * cfg.tickHz));
+    expect(tipTicks(1)).toBe(Math.round(2 * cfg.tickHz * 0.6));
+    expect(tipTicks(2)).toBe(Math.round(2 * cfg.tickHz * 0.3));
+  });
+
+  test("driving off the plate mid-tip cancels it and keeps the dust aboard", () => {
+    const d = seated();
+    const v = d.sim.vehicles.store.vehicles[0]!;
+    v.px = 0;
+    v.py = cfg.moonRadiusM;
+    v.pz = 0;
+    v.speed = 0;
+    v.hopperGrams = 5000;
+    d.run(10);
+    expect(v.tipTicksLeft).toBeGreaterThan(0);
+    d.run(1, () => ({ moveY: 127 }));
+    expect(v.tipTicksLeft).toBe(0);
+    expect(v.hopperGrams).toBeGreaterThanOrEqual(5000);
+    expect(d.named("cargo.sold")).toHaveLength(0);
+  });
+
+  test("Running Lamps: lights key needs the upgrade; buying it switches them on; Throttle Lock and Afterburner apply", () => {
+    const d = seated();
+    const v = d.sim.vehicles.store.vehicles[0]!;
+    d.tap(M.lampCycle);
+    expect(v.lights).toBe(false); // no Running Lamps: nothing to switch
+    d.buy("vehicle_upgrade.running_lamps");
+    expect(v.lights).toBe(true);
+    expect(v.stats.lampRangeM).toBe(30);
+    d.tap(M.lampCycle);
+    expect(v.lights).toBe(false);
+    d.buy("vehicle_upgrade.afterburner");
+    expect(v.stats.boostMult).toBe(1.45);
+    d.buy("vehicle_upgrade.throttle_lock");
+    d.run(40, () => ({ moveY: 127 }));
+    d.run(1, () => ({ buttons: M.laneLock })); // throttle input would cancel the lock again
+    d.run(20);
+    expect(v.gear).toBe(3); // locked: holds speed hands-free
+    expect(v.speed).toBeGreaterThan(2.9);
+    const ro = new VehicleReadout();
+    d.sim.vehicleReadout(0, ro);
+    expect([ro.hasLamps, ro.lockAvailable, ro.locked]).toEqual([true, true, true]);
   });
 
   test("returning to the Motor Pool away from a Gate keeps a loaded vehicle out (dust is never destroyed)", () => {

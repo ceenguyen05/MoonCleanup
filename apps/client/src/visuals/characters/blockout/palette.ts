@@ -39,7 +39,15 @@ export const SLOTS: readonly SlotSpec[] = [
   { name: "wood", base: 0x8a5532, roughness: 0.35, metalness: 0, player: 0, emissive: 0, lamp: 0 },
   { name: "brass", base: 0xc9a14a, roughness: 0.3, metalness: 1, player: 0, emissive: 0, lamp: 0 },
   { name: "bristle", base: 0x2b2f34, roughness: 0.9, metalness: 0, player: 0, emissive: 0, lamp: 0 },
+  // Production suit + tools (M1-W4-T07). Glyph: player-colour plate decal; the material inks the numeral from the
+  // glyph atlas (art-direction 4.4). Rubber: squeegee blade. Orange grip: the scuffed Crescent Squeegee grip.
+  { name: "glyph", base: 0xffffff, roughness: 0.5, metalness: 0, player: 1, emissive: 0, lamp: 0 },
+  { name: "rubber", base: 0x16181a, roughness: 0.75, metalness: 0, player: 0, emissive: 0, lamp: 0 },
+  { name: "orangeGrip", base: 0xd9772e, roughness: 0.7, metalness: 0, player: 0, emissive: 0, lamp: 0 },
 ];
+
+/** Numeral ink of the glyph slot (graphite, sRGB hex). */
+export const GLYPH_INK = 0x1f2226;
 
 /** Slot ids by name (the Blender scripts use the same numbers). */
 export const SLOT = Object.freeze(Object.fromEntries(SLOTS.map((s, i) => [s.name, i])) as Record<string, number>);

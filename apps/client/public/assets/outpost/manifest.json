@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "generator": "@moon-cleanup/asset-pipeline assets:build",
+  "assets": {
+    "boreal_hero_kit": {
+      "file": "boreal_hero_kit.ed50b1f0f171.glb",
+      "class": "outpostHeroKit",
+      "bytes": 1244436,
+      "sha256": "ed50b1f0f1714d2acdc8c4740427277716a08b4b08bdba3eb96ac02d99d93472",
+      "source": "assets/models/outpost/boreal_hero_kit.py",
+      "textureFormat": "ktx2"
+    }
+  }
+}

@@ -37,6 +37,8 @@ const RAW_VEHICLE_FEEL = {
       drumForwardM: 0.55,
       handleBackM: 0.9,
       enterReachM: 2.5,
+      // Hopper tip time before Fast Tip (-40 % / -70 %: 1.2 s / 0.6 s). Provisional feel value; game-designer confirms.
+      tipS: 2.0,
     },
   },
 };

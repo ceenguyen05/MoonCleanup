@@ -253,6 +253,8 @@ describe("corrupt saves and the bake hash", () => {
     expect(await other.load(C)).toEqual([]); // fresh room: no chunks
     expect(await other.loadState(C)).toBeNull(); // and no old wallet/parcels/gear
     expect(other.counters.archives).toBe(1);
+    expect(await other.takeArchived(C)).toBe(true); // the room's HELLO flag (saveArchived), one-shot
+    expect(await other.takeArchived(C)).toBe(false);
     expect(warn).toHaveBeenCalledWith(expect.objectContaining({ contractId: C }), expect.stringContaining("archived"));
     // The old world is archived verbatim, never deleted.
     expect(repo.archives).toHaveLength(1);
@@ -311,9 +313,24 @@ describe("corrupt saves and the bake hash", () => {
     expect(repo.archives).toHaveLength(1);
     expect(repo.archives[0]!.bakeHash).toBe(real);
     expect(repo.commits).toBe(1); // nothing was written over the real save: it was moved, not overwritten
+    expect(staleServer.counters.archives).toBe(1);
     a.dispose();
     staleServer.dispose();
     current.dispose();
+  });
+
+  it("does not count the 'nothing to archive' outcome in the archives counter", async () => {
+    const repo = new MemoryRoomSaveRepository();
+    const a = new DurableShiftDustStore({ repo, instance: "a", bakeHash: BAKE_A });
+    await a.load(C);
+    await a.save(C, [{ chunkId: 1, payload: payload(1) }], 10);
+    await a.release(C);
+    const b = new DurableShiftDustStore({ repo, instance: "b", bakeHash: BAKE_B });
+    repo.archiveRoomSave = () => Promise.resolve({ kind: "nothing" } as never);
+    expect(await b.load(C)).toEqual([]);
+    expect(b.counters.archives).toBe(0);
+    a.dispose();
+    b.dispose();
   });
 
   it("loads a legacy save that recorded no bake hash (v0/v1 era) unchanged and archives nothing", async () => {

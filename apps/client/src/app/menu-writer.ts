@@ -50,13 +50,24 @@ export interface MenuCatalog {
   }[];
   readonly hubId: string;
   readonly roostCap: number;
+  /** Vehicles sold in the MVP with their upgrade lines (cost = vehicle price x level multiplier). */
+  readonly vehicles?: readonly {
+    readonly id: string;
+    readonly priceLm: number;
+    readonly lines: readonly { readonly id: string; readonly costMults: readonly number[] }[];
+  }[];
 }
 
 const CELL_NODE_PREFIX = "node.dust_cell_";
 
 /** Every Desk / Board item id the menus quote (tools, suit gear, board nodes). */
 export function catalogItemIds(cat: MenuCatalog): string[] {
-  return [...cat.tools.map((t) => t.id), ...cat.gear.map((g) => g.id), ...cat.nodes.map((n) => n.id)];
+  return [
+    ...cat.tools.map((t) => t.id),
+    ...cat.gear.map((g) => g.id),
+    ...cat.nodes.map((n) => n.id),
+    ...(cat.vehicles ?? []).flatMap((v) => [v.id, ...v.lines.map((l) => l.id)]),
+  ];
 }
 
 export function menuCatalogFromGameData(data: GameData): MenuCatalog {
@@ -86,6 +97,16 @@ export function menuCatalogFromGameData(data: GameData): MenuCatalog {
       })),
     hubId: board.hubId,
     roostCap: MVP_SCOPE.roostCap,
+    vehicles: data.vehicles.vehicles
+      .filter((v) => (MVP_SCOPE.vehicleIds as readonly string[]).includes(v.id))
+      .map((v) => ({
+        id: v.id,
+        priceLm: v.priceLm,
+        lines: v.upgradeLineIds.flatMap((id) => {
+          const line = data["vehicle-upgrades"].lines.find((l) => l.id === id);
+          return line === undefined ? [] : [{ id, costMults: line.levels.map((l) => l.costMultOfVehiclePrice) }];
+        }),
+      })),
   };
 }
 
@@ -176,7 +197,63 @@ export function deskItems(
       requires: [],
     });
   }
+  for (const v of cat.vehicles ?? []) pushVehicleRows(items, v, me?.vehicleIds ?? [], quote);
   return items;
+}
+
+/**
+ * Vehicle rows: the vehicle, then its upgrade lines. The shift state carries owned vehicles but not the pool's line
+ * levels, so a line's level is read off the sim quote (the next level's price; nearest cost multiplier wins, which
+ * holds through any Rebate); no quote on a line of an owned vehicle means every level is bought.
+ */
+function pushVehicleRows(
+  items: UiDeskItem[],
+  v: NonNullable<MenuCatalog["vehicles"]>[number],
+  ownedIds: readonly string[],
+  quote: PriceQuote | null,
+): void {
+  const owned = ownedIds.includes(v.id);
+  const vq = quote === null ? -1 : quote(v.id);
+  items.push({
+    itemId: v.id,
+    category: "vehicle",
+    tier: 1,
+    levelOwned: owned ? 1 : 0,
+    levelMax: 1,
+    listPriceLm: v.priceLm,
+    priceLm: vq >= 0 ? vq : v.priceLm,
+    standardIssue: false,
+    requires: [],
+  });
+  for (const line of v.lines) {
+    const max = line.costMults.length;
+    const q = quote === null ? -1 : quote(line.id);
+    let level = 0;
+    if (!owned) level = 0;
+    else if (q < 0) level = max;
+    else {
+      let best = Number.POSITIVE_INFINITY;
+      for (let k = 0; k < max; k++) {
+        const d = Math.abs(v.priceLm * line.costMults[k]! - q) / Math.max(1, v.priceLm * line.costMults[k]!);
+        if (d < best) {
+          best = d;
+          level = k;
+        }
+      }
+    }
+    const list = Math.round(v.priceLm * (line.costMults[Math.min(level, max - 1)] ?? 0));
+    items.push({
+      itemId: line.id,
+      category: "vehicle",
+      tier: 1,
+      levelOwned: level,
+      levelMax: max,
+      listPriceLm: list,
+      priceLm: q >= 0 ? q : list,
+      standardIssue: false,
+      requires: owned ? [] : [v.id],
+    });
+  }
 }
 
 export function boardNodes(
@@ -331,6 +408,7 @@ export interface UiFrameBridgeOptions {
 
 export class UiFrameBridge {
   private lastHeading = Number.NaN;
+  private headingTick = 0;
   private inspecting = false;
 
   constructor(private readonly o: UiFrameBridgeOptions) {}
@@ -365,7 +443,10 @@ export class UiFrameBridge {
     }
     // Heading: 0 = north, clockwise (yaw + toward east).
     const deg = (input.yawRad * 180) / Math.PI;
-    if (deg !== this.lastHeading) {
+    // Re-sent about twice a second: the strip may mount after the first (unchanged) heading was written, and the writer is
+    // idempotent (a same-pixel shift is skipped).
+    if (deg !== this.lastHeading || ++this.headingTick >= 30) {
+      this.headingTick = 0;
       this.lastHeading = deg;
       ui.setCompassHeading(deg);
     }

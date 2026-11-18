@@ -3,8 +3,8 @@
 // reuses its scratch vectors, and writes only on change; with no active step it clears the marker once.
 //
 // Places come from the Solo read-out cache (outposts, Near Parcels) and the station list (Assay Counter, Desk). The sim has
-// no Landing Apron plot position, so the `landing_apron` marker points at the home outpost the Apron surrounds (Boreal,
-// outpost 0); the label text is the UI catalog's. Steps with no place (fill Cell, open Plot Card) show no marker.
+// `apronPlot` read-out on its source (sim `MoonRoomSim.apronPlot`, nearest plot); a source without it (the host cache has not
+// forwarded it yet) falls back to the home outpost the Apron surrounds (Boreal, outpost 0). Label text is the UI catalog's. Steps with no place (fill Cell, open Plot Card) show no marker.
 
 import type { UiStore } from "@moon-cleanup/shared";
 import { HUD_WRITE_HZ } from "./hud-writer";
@@ -45,14 +45,17 @@ export interface ObjectiveMarkersOptions {
   readonly stations: () => readonly MarkerStation[];
   /** Avatar position (any scale) into `out`; false before the first pose. */
   readonly samplePos: (out: Dir) => boolean;
-  /** `sphereBearingDeg`. */
+  /** `simHeadingBearingDeg` (sim heading frame; `sphereBearingDeg` is wrong near the poles). */
   readonly bearing: (p: Readonly<Dir>, d: Readonly<Dir>) => number | null;
+  /** Moon radius in metres (`gameData.world.moonRadiusM`); without it no distance is written. */
+  readonly moonRadiusM?: number;
 }
 
 export class ObjectiveMarkers {
   private readonly minIntervalMs = 1000 / HUD_WRITE_HZ;
   private lastMs = Number.NEGATIVE_INFINITY;
   private activeId: string | null = null;
+  private lastDistance: number | null = null;
   private readonly pos: Dir = { x: 0, y: 1, z: 0 };
   private readonly target: Dir = { x: 0, y: 1, z: 0 };
   private readonly scratch: Dir & { id: string } = { id: "", x: 0, y: 1, z: 0 };
@@ -82,9 +85,29 @@ export class ObjectiveMarkers {
     p.z /= len;
     if (!this.locate(def.place, p)) {
       this.o.setMarkerBearing(def.markerId, null);
+      this.setDistance(null);
       return;
     }
     this.o.setMarkerBearing(def.markerId, this.o.bearing(p, this.target));
+    this.setDistance(this.distanceM(p));
+  }
+
+  /** Great-circle distance to `target` in whole metres, or null without a moon radius. `from` is a unit vector. */
+  private distanceM(from: Readonly<Dir>): number | null {
+    const r = this.o.moonRadiusM;
+    if (r === undefined || !(r > 0)) return null;
+    const t = this.target;
+    const tl = Math.hypot(t.x, t.y, t.z);
+    if (!(tl > 0)) return null;
+    const dot = (from.x * t.x + from.y * t.y + from.z * t.z) / tl;
+    return Math.round(r * Math.acos(dot > 1 ? 1 : dot < -1 ? -1 : dot));
+  }
+
+  /** Change-only write of `compass.objectiveDistanceM` (no allocation while the value holds). */
+  private setDistance(m: number | null): void {
+    if (m === this.lastDistance) return;
+    this.lastDistance = m;
+    this.o.store.dispatch({ type: "compass.set", patch: { objectiveDistanceM: m } });
   }
 
   private clear(): void {
@@ -92,6 +115,7 @@ export class ObjectiveMarkers {
     this.o.setMarkerBearing(this.activeId, null);
     this.activeId = null;
     this.o.store.dispatch({ type: "compass.set", patch: { objectiveMarkerId: null } });
+    this.setDistance(null);
   }
 
   /** Writes the unit direction of `place` into `target`; false when it is unknown. */
@@ -108,6 +132,21 @@ export class ObjectiveMarkers {
     const src = this.o.source();
     if (src === null) return false;
     if (place === "home_outpost") {
+      // The nearest Landing Apron plot when the source reports them (sim `apronPlot`); else the home pad they surround.
+      if (src.apronPlot !== undefined && src.apronPlotCount !== undefined) {
+        let best = -2;
+        for (let k = 0, n = src.apronPlotCount; k < n; k++) {
+          if (!src.apronPlot(k, this.scratch)) continue;
+          const d = this.scratch.x * from.x + this.scratch.y * from.y + this.scratch.z * from.z;
+          if (d > best) {
+            best = d;
+            t.x = this.scratch.x;
+            t.y = this.scratch.y;
+            t.z = this.scratch.z;
+          }
+        }
+        if (best > -2) return true;
+      }
       if (src.outpostCount < 1 || !src.outpost(0, this.scratch)) return false;
       t.x = this.scratch.x;
       t.y = this.scratch.y;

@@ -235,7 +235,7 @@ describe("input -> screen direction under each render mapper (dust scene mirror)
     for (const yaw of [0, 1, 2.5, 4]) check(mapper, feet, yaw);
   });
 
-  it("dust scene plot frame (mirrored): the same holds because input flips on the mirror", () => {
+  it("dust scene plot frame (right-handed since W3-T05): D strafes right and the mouse turns right on screen", () => {
     const grid = createPlotGrid(STANDARD_GRID_PARAMS);
     const R = grid.params.radiusM;
     const mapper = PlotFrameMapper.fromGrid(grid, 1234 as PlotId, R);
@@ -256,12 +256,34 @@ describe("PlotFrameMapper (dust scene axes)", () => {
     m.point(new Float64Array([d.x * (R + 1.5), d.y * (R + 1.5), d.z * (R + 1.5)]), 0, out, 0);
     expect(out[0]).toBeCloseTo(3, 3);
     expect(out[1]).toBeCloseTo(1.5, 3);
-    expect(out[2]).toBeCloseTo(-2, 3);
-    // The dust scene's frame (x = east, y = up, z = north) is a reflection: input turning / strafing flip.
-    expect(m.mirrored).toBe(true);
+    expect(out[2]).toBeCloseTo(2, 3); // z = -v (south)
+    // The dust scene's frame (x = east, y = up, z = south) is right-handed: no input flip (M1-W3-T05 mirror fix).
+    expect(m.mirrored).toBe(false);
     const s = new InputState();
-    s.mirrored = true;
+    s.mirrored = m.mirrored;
     s.keyDown("KeyD");
-    expect(s.sample(createInputCommand()).moveX).toBe(-127);
-  });
+    expect(s.sample(createInputCommand()).moveX).toBe(127);
+  }, 30_000);
+
+  it("a staged site move is applied by the next point() and keeps the moon-centred point continuous", () => {
+    const grid = createPlotGrid(STANDARD_GRID_PARAMS);
+    const R = grid.params.radiusM;
+    const a = 1234 as PlotId;
+    const b = grid.neighborTable[a * 6]! as PlotId;
+    const m = PlotFrameMapper.fromGrid(grid, a, R);
+    const fb = PlotFrameMapper.fromGrid(grid, b, R);
+    const d = { x: 0, y: 0, z: 0 };
+    grid.fromPlotLocal(a, 5000, 3000, d);
+    const src = new Float64Array([d.x * R, d.y * R, d.z * R]);
+    const o1 = new Float64Array(3);
+    const o2 = new Float64Array(3);
+    m.requestSite(b);
+    expect(m.sitePending).toBe(true);
+    expect(m.siteVersion).toBe(0);
+    m.point(src, 0, o1, 0);
+    fb.point(src, 0, o2, 0);
+    expect(m.site).toBe(b);
+    expect(m.siteVersion).toBe(1);
+    for (let i = 0; i < 3; i++) expect(o1[i]).toBeCloseTo(o2[i]!, 9);
+  }, 30_000);
 });

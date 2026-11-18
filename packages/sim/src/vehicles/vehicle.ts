@@ -14,6 +14,7 @@
 // typed-array scratch only (a float64 argument to a non-inlined call is boxed into a HeapNumber), and the ground is
 // called from exactly two sites (probe loop, sub-step loop).
 
+import { INPUT_AXIS_MAX, INPUT_BUTTON_MASK } from "@moon-cleanup/shared";
 import type { SimConfig } from "../config/sim-config";
 import { Fnv1a32, quantize } from "../math/quantize";
 import type { SimGround } from "../movement/avatar";
@@ -102,6 +103,8 @@ export class VehicleState {
   lights = false;
   /** Cleaning intake is down (derived at the end of each tick). */
   intakeDown = false;
+  /** Hopper tip at a Dump Plate: ticks left until the dust leaves (0 = not tipping). Driven by the room (RoomVehicles). */
+  tipTicksLeft = 0;
   /** Dust in the hopper, grams, and the milligram remainder carried between strokes. */
   hopperGrams = 0;
   hopperMg = 0;
@@ -276,8 +279,8 @@ export function spawnVehicle(
   v.boosting = false;
   v.boostMeterMs = kind.handling.boostMeterMs;
   v.boostDelayMs = 0;
-  v.lights = false;
   v.intakeDown = false;
+  v.tipTicksLeft = 0;
   v.hopperGrams = 0;
   v.hopperMg = 0;
   v.boostStarted = v.tookOff = v.landed = false;
@@ -288,6 +291,8 @@ export function spawnVehicle(
   v.comp.fill(0);
   v.compV.fill(0);
   refreshVehicleStats(tuning, v);
+  // A vehicle with Running Lamps leaves the Motor Pool with them on (the night relief needs them lit).
+  v.lights = v.stats.lampRangeM > 0;
   castProbes(v, kind, cfg.moonRadiusM, ground);
   const trav = kind.handling.def.travelM;
   for (let p = 0; p < VEHICLE_PROBES; p++) v.comp[p] = quantize(trav * 0.5);
@@ -330,7 +335,8 @@ export function stepVehicle(
   const throttle = driven ? intent.throttle : 0;
   const steerIn = driven ? intent.steer : 0;
 
-  if (driven && intent.lightsPressed) v.lights = !v.lights;
+  // Running Lamps: without the upgrade the Trundle has no lights to switch.
+  if (driven && intent.lightsPressed && st.lampRangeM > 0) v.lights = !v.lights;
   if (driven && intent.cycleIntakePressed) cycleIntake(tuning, v);
 
   // ---- Gear, Throttle Lock ----
@@ -617,6 +623,112 @@ export function stepVehicle(
     v.hopperGrams < st.payloadGrams;
 }
 
+/**
+ * Night penalty relief of a vehicle's strokes (progression section 7 night factor): the Running Lamps while they are
+ * on, or the driver's own Crown Lamp relief (`driverRelief`), whichever is larger.
+ */
+export function vehicleNightRelief(v: VehicleState, driverRelief: number): number {
+  const lamps = v.lights ? v.stats.nightPenaltyRelief : 0;
+  return lamps > driverRelief ? lamps : driverRelief;
+}
+
+/**
+ * Fills a driver intent from one input command (game-feel section 6.2 driver column, INPUT_BUTTON_MEANING): moveY
+ * throttle, moveX steer, `jump` handbrake, `boost` Afterburner (hold), `laneLock` Throttle Lock, `lampCycle` Running
+ * Lamps and `holsterNext` Wide Mouth cycle (edges against `prevButtons`). The room and client prediction share it.
+ */
+export function fillVehicleIntent(
+  out: VehicleIntent,
+  moveX: number,
+  moveY: number,
+  buttons: number,
+  prevButtons: number,
+): void {
+  const M = INPUT_BUTTON_MASK;
+  const pressed = buttons & ~prevButtons;
+  const ty = moveY / INPUT_AXIS_MAX;
+  const sx = moveX / INPUT_AXIS_MAX;
+  out.throttle = ty > 1 ? 1 : ty < -1 ? -1 : ty;
+  out.steer = sx > 1 ? 1 : sx < -1 ? -1 : sx;
+  out.boost = (buttons & M.boost) !== 0;
+  out.handbrake = (buttons & M.jump) !== 0;
+  out.lockPressed = (pressed & M.laneLock) !== 0;
+  out.lightsPressed = (pressed & M.lampCycle) !== 0;
+  out.cycleIntakePressed = (pressed & M.holsterNext) !== 0;
+}
+
+/** Copies every simulated field of `src` into `dst` (prediction history, replays). Allocation-free. */
+export function copyVehicleState(src: VehicleState, dst: VehicleState): void {
+  dst.active = src.active;
+  dst.kindCode = src.kindCode;
+  dst.ownerSlot = src.ownerSlot;
+  dst.driverSlot = src.driverSlot;
+  dst.px = src.px;
+  dst.py = src.py;
+  dst.pz = src.pz;
+  dst.fx = src.fx;
+  dst.fy = src.fy;
+  dst.fz = src.fz;
+  dst.speed = src.speed;
+  dst.latSpeed = src.latSpeed;
+  dst.vr = src.vr;
+  dst.steer = src.steer;
+  dst.gear = src.gear;
+  dst.lockTarget = src.lockTarget;
+  dst.moveState = src.moveState;
+  dst.heightAboveGround = src.heightAboveGround;
+  dst.groundR = src.groundR;
+  dst.boosting = src.boosting;
+  dst.boostMeterMs = src.boostMeterMs;
+  dst.boostDelayMs = src.boostDelayMs;
+  dst.lights = src.lights;
+  dst.intakeDown = src.intakeDown;
+  dst.tipTicksLeft = src.tipTicksLeft;
+  dst.hopperGrams = src.hopperGrams;
+  dst.hopperMg = src.hopperMg;
+  dst.slopeF = src.slopeF;
+  dst.slopeR = src.slopeR;
+  dst.comp[0] = src.comp[0]!;
+  dst.comp[1] = src.comp[1]!;
+  dst.comp[2] = src.comp[2]!;
+  dst.compV[0] = src.compV[0]!;
+  dst.compV[1] = src.compV[1]!;
+  dst.compV[2] = src.compV[2]!;
+  dst.boostStarted = src.boostStarted;
+  dst.tookOff = src.tookOff;
+  dst.landed = src.landed;
+  dst.lastImpactMps = src.lastImpactMps;
+  dst.airTicks = src.airTicks;
+  dst.lastAirTicks = src.lastAirTicks;
+  dst.plotHint = src.plotHint;
+  dst.anchorValid = src.anchorValid;
+  dst.anchorX = src.anchorX;
+  dst.anchorY = src.anchorY;
+  dst.anchorZ = src.anchorZ;
+  dst.intakeCap = src.intakeCap;
+  const n = src.levels.length < dst.levels.length ? src.levels.length : dst.levels.length;
+  for (let l = 0; l < n; l++) {
+    dst.levels[l] = src.levels[l]!;
+    dst.effLevels[l] = src.effLevels[l]!;
+  }
+  copyStats(src.stats, dst.stats);
+}
+
+function copyStats(src: VehicleStats, dst: VehicleStats): void {
+  dst.cruiseMps = src.cruiseMps;
+  dst.speedMult = src.speedMult;
+  dst.intakeSpeedMult = src.intakeSpeedMult;
+  dst.boostMult = src.boostMult;
+  dst.widthM = src.widthM;
+  dst.payloadGrams = src.payloadGrams;
+  dst.tripTimeMult = src.tripTimeMult;
+  dst.unloadTimeMult = src.unloadTimeMult;
+  dst.tipTicks = src.tipTicks;
+  dst.cruiseControl = src.cruiseControl;
+  dst.lampRangeM = src.lampRangeM;
+  dst.nightPenaltyRelief = src.nightPenaltyRelief;
+}
+
 /** Hashes the authoritative state of a vehicle into `h` (golden replays, desync checks). */
 export function hashVehicle(v: VehicleState, h: Fnv1a32): void {
   h.int(v.active ? 1 : 0);
@@ -640,6 +752,7 @@ export function hashVehicle(v: VehicleState, h: Fnv1a32): void {
   h.int(v.hopperMg);
   h.int((v.boosting ? 1 : 0) | (v.lights ? 2 : 0) | (v.intakeDown ? 4 : 0));
   if (v.intakeCap !== 255) h.int(0x70000 | v.intakeCap); // only once the Wide Mouth cycle was used
+  if (v.tipTicksLeft !== 0) h.int(0x71000 | v.tipTicksLeft); // only while the hopper tips
   for (let p = 0; p < VEHICLE_PROBES; p++) {
     h.real(v.comp[p]!);
     h.real(v.compV[p]!);

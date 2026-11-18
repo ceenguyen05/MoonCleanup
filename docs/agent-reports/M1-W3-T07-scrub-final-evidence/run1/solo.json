@@ -1,0 +1,392 @@
+{
+ "console": [
+  "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+  "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+  "warning: [render] 6 pipeline(s) created after warm-up (frame 407)",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+ ],
+ "snaps": {
+  "start": {
+   "pose": null,
+   "predicted": true,
+   "input": {
+    "lastSeq": 0,
+    "sent": 0,
+    "toolInputs": 0,
+    "buttons": 0,
+    "toolParam": 0
+   },
+   "worker": {
+    "tick": -1,
+    "ackInputSeq": 0,
+    "framesDecoded": 0,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 0,
+    "framesWithStrokes": 0,
+    "lastStrokeTick": -1
+   },
+   "dust": {
+    "cellGrams": 0
+   },
+   "prediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "replayed": 0,
+    "replayCapped": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "loading"
+   }
+  },
+  "midScrub": {
+   "pose": {
+    "x": 43.5195312825784,
+    "y": 1999.1940800867465,
+    "z": 36.448242214784884,
+    "yawRad": 0,
+    "pitchRad": -0.7020000000000001,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 424,
+    "sent": 424,
+    "toolInputs": 392,
+    "buttons": 8,
+    "toolParam": 212
+   },
+   "worker": {
+    "tick": 442,
+    "ackInputSeq": 424,
+    "framesDecoded": 435,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 153,
+    "framesWithStrokes": 153,
+    "lastStrokeTick": 442
+   },
+   "dust": {
+    "cellGrams": 197
+   },
+   "prediction": {
+    "predicted": 422,
+    "reconciles": 434,
+    "replayed": 321,
+    "replayCapped": 0,
+    "unknownAcks": 2,
+    "lastCorrectionM": 0.0001068115234375,
+    "maxCorrectionM": 0.0001068115234375
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  },
+  "end": {
+   "pose": {
+    "x": 77.89847314901473,
+    "y": 1997.128426980759,
+    "z": 73.5596059705455,
+    "yawRad": 0,
+    "pitchRad": -0.7020000000000001,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 1341,
+    "sent": 1341,
+    "toolInputs": 1051,
+    "buttons": 0,
+    "toolParam": 212
+   },
+   "worker": {
+    "tick": 1344,
+    "ackInputSeq": 1340,
+    "framesDecoded": 1323,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 405,
+    "framesWithStrokes": 405,
+    "lastStrokeTick": 1262
+   },
+   "dust": {
+    "cellGrams": 3392
+   },
+   "prediction": {
+    "predicted": 1339,
+    "reconciles": 1322,
+    "replayed": 1281,
+    "replayCapped": 0,
+    "unknownAcks": 2,
+    "lastCorrectionM": 0.00021471019408371412,
+    "maxCorrectionM": 0.11034663577601966
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  }
+ },
+ "info": {
+  "backend": "webgpu",
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "ft": 45.50547991713432,
+  "p95": 33.5,
+  "dpr": 1
+ },
+ "pointerLocked": true,
+ "info2": {
+  "backend": "webgpu",
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "ft": 22.35958361228307,
+  "p95": 33.599998474121094,
+  "dpr": 1
+ },
+ "series": [
+  {
+   "name": "idle-000.png",
+   "t": 1795021589846
+  },
+  {
+   "name": "idle-001.png",
+   "t": 1795021592207
+  },
+  {
+   "name": "scrub-002.png",
+   "t": 1795021594911
+  },
+  {
+   "name": "scrub-003.png",
+   "t": 1795021596057
+  },
+  {
+   "name": "scrub-004.png",
+   "t": 1795021597171
+  },
+  {
+   "name": "scrub-005.png",
+   "t": 1795021598315
+  },
+  {
+   "name": "scrub-006.png",
+   "t": 1795021599446
+  },
+  {
+   "name": "scrub-007.png",
+   "t": 1795021600609
+  },
+  {
+   "name": "scrub-008.png",
+   "t": 1795021601788
+  },
+  {
+   "name": "scrub-009.png",
+   "t": 1795021603045
+  },
+  {
+   "name": "scrub-010.png",
+   "t": 1795021604181
+  },
+  {
+   "name": "scrub-011.png",
+   "t": 1795021605299
+  },
+  {
+   "name": "scrub-012.png",
+   "t": 1795021606423
+  },
+  {
+   "name": "scrub-013.png",
+   "t": 1795021607518
+  },
+  {
+   "name": "scrub-014.png",
+   "t": 1795021608643
+  },
+  {
+   "name": "scrub-015.png",
+   "t": 1795021609844
+  },
+  {
+   "name": "scrub-016.png",
+   "t": 1795021610934
+  },
+  {
+   "name": "scrub-017.png",
+   "t": 1795021612029
+  },
+  {
+   "name": "scrub-end-018.png",
+   "t": 1795021613208
+  },
+  {
+   "name": "scrub-end-019.png",
+   "t": 1795021614426
+  },
+  {
+   "name": "scrub-end-020.png",
+   "t": 1795021615728
+  },
+  {
+   "name": "scrub-end-021.png",
+   "t": 1795021617197
+  },
+  {
+   "name": "scrub-end-022.png",
+   "t": 1795021618635
+  },
+  {
+   "name": "scrub-end-023.png",
+   "t": 1795021619960
+  },
+  {
+   "name": "walkscrub-024.png",
+   "t": 1795021621915
+  },
+  {
+   "name": "walkscrub-025.png",
+   "t": 1795021623068
+  },
+  {
+   "name": "walkscrub-026.png",
+   "t": 1795021624270
+  },
+  {
+   "name": "walkscrub-027.png",
+   "t": 1795021625514
+  },
+  {
+   "name": "walkscrub-028.png",
+   "t": 1795021626719
+  },
+  {
+   "name": "walkscrub-029.png",
+   "t": 1795021627965
+  },
+  {
+   "name": "walkscrub-030.png",
+   "t": 1795021629255
+  },
+  {
+   "name": "walkscrub-031.png",
+   "t": 1795021630584
+  },
+  {
+   "name": "walkscrub-032.png",
+   "t": 1795021631880
+  },
+  {
+   "name": "walkscrub-033.png",
+   "t": 1795021633108
+  },
+  {
+   "name": "walkscrub-034.png",
+   "t": 1795021634319
+  },
+  {
+   "name": "walkscrub-035.png",
+   "t": 1795021635572
+  },
+  {
+   "name": "strafescrub-036.png",
+   "t": 1795021638557
+  },
+  {
+   "name": "strafescrub-037.png",
+   "t": 1795021639947
+  },
+  {
+   "name": "strafescrub-038.png",
+   "t": 1795021641490
+  },
+  {
+   "name": "strafescrub-039.png",
+   "t": 1795021643143
+  },
+  {
+   "name": "strafescrub-040.png",
+   "t": 1795021645001
+  },
+  {
+   "name": "strafescrub-041.png",
+   "t": 1795021646735
+  },
+  {
+   "name": "strafescrub-042.png",
+   "t": 1795021647950
+  },
+  {
+   "name": "strafescrub-043.png",
+   "t": 1795021649224
+  },
+  {
+   "name": "strafescrub-044.png",
+   "t": 1795021650355
+  },
+  {
+   "name": "strafescrub-045.png",
+   "t": 1795021651510
+  },
+  {
+   "name": "strafescrub-046.png",
+   "t": 1795021652671
+  },
+  {
+   "name": "strafescrub-047.png",
+   "t": 1795021653737
+  },
+  {
+   "name": "end-048.png",
+   "t": 1795021654921
+  },
+  {
+   "name": "end-049.png",
+   "t": 1795021656273
+  },
+  {
+   "name": "end-050.png",
+   "t": 1795021657680
+  }
+ ]
+}

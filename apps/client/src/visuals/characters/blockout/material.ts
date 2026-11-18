@@ -22,14 +22,17 @@ import {
   positionLocal,
   select,
   sin,
+  smoothstep,
+  texture,
   uniform,
   uniformArray,
+  uv,
   varying,
   vec3,
   vec4,
 } from "three/tsl";
-import { Color, MeshStandardNodeMaterial, Vector3, Vector4, type Object3D } from "three/webgpu";
-import { ID_SCALE, PLAYER_COLORS, SLOTS, srgbHexToLinear } from "./palette";
+import { Color, MeshStandardNodeMaterial, Vector2, Vector3, Vector4, type Object3D, type Texture } from "three/webgpu";
+import { GLYPH_INK, ID_SCALE, PLAYER_COLORS, SLOT, SLOTS, srgbHexToLinear } from "./palette";
 
 /** Per-object state the material reads (`object.userData.custodian`); written by `BlockoutCustodian`. */
 export interface CustodianShading {
@@ -41,11 +44,13 @@ export interface CustodianShading {
   readonly arms: Vector4;
   /** Crown Lamp lens emission 0..1. */
   lamp: number;
+  /** Numeral glyph cell 0..15 (player slot P01..P16 shows numeral 1..16; production suit only). */
+  glyph: number;
 }
 
 export function createShading(playerIndex = 0): CustodianShading {
   const [r, g, b] = srgbHexToLinear(PLAYER_COLORS[playerIndex % PLAYER_COLORS.length]!);
-  return { color: new Color(r, g, b), legs: new Vector4(), arms: new Vector4(), lamp: 1 };
+  return { color: new Color(r, g, b), legs: new Vector4(), arms: new Vector4(), lamp: 1, glyph: playerIndex & 15 };
 }
 
 /** Joint pivots in asset space (metres, Y up, facing +Z): read from the GLB `pivot_*` nodes. */
@@ -87,7 +92,16 @@ const rotX = (p: TslNode, a: TslNode): TslNode => {
   return vec3(p.x, p.y.mul(c).sub(p.z.mul(s)), p.y.mul(s).add(p.z.mul(c)));
 };
 
-export function createCustodianMaterial(): CustodianMaterial {
+export interface CustodianMaterialOptions {
+  /**
+   * Numeral glyph atlas (production suit): 4 x 4 cells of numerals 1..16, signed-distance mask in R (0.5 = edge),
+   * sampled with TEXCOORD_0 on the `glyph` slot. Null (blockout): no numeral, no UV read.
+   */
+  readonly glyphs?: Texture | null;
+}
+
+export function createCustodianMaterial(options: CustodianMaterialOptions = {}): CustodianMaterial {
+  const glyphs = options.glyphs ?? null;
   // Per-slot constants: A = linear base RGB + roughness, B = metalness, player, emissive, lamp.
   const lin: [number, number, number] = [0, 0, 0];
   const slotA = SLOTS.map((s) => {
@@ -162,7 +176,20 @@ export function createCustodianMaterial(): CustodianMaterial {
 
   const a: TslNode = varying(tableA.element(slot), "v_mcSlotA");
   const b: TslNode = varying(tableB.element(slot), "v_mcSlotB");
-  const base = mix(a.xyz, playerColor, b.y);
+  let base: TslNode = mix(a.xyz, playerColor, b.y);
+  if (glyphs !== null) {
+    const ink = srgbHexToLinear(GLYPH_INK);
+    const cell = uniform(new Vector2()).onObjectUpdate(({ object }: { object: Object3D | null }, self: any) => {
+      const g = shadingOf(object).glyph & 15;
+      self.value.set(g & 3, g >> 2);
+    });
+    const isGlyph: TslNode = varying(select(slot.equal(SLOT["glyph"]!), float(1), float(0)), "v_mcGlyph");
+    const atlasUv = cell.add(uv().clamp(0.02, 0.98)).mul(0.25);
+    const sdf = texture(glyphs, atlasUv).r;
+    // Edge at 0.5; the fwidth-free band holds from 1 m to the 50 m readability distance (atlas mips soften it).
+    const m = smoothstep(0.4, 0.6, sdf).mul(isGlyph);
+    base = mix(base, vec3(ink[0], ink[1], ink[2]), m);
+  }
   material.colorNode = vec4(base, 1);
   material.roughnessNode = a.w;
   material.metalnessNode = b.x;
@@ -172,6 +199,9 @@ export function createCustodianMaterial(): CustodianMaterial {
   return {
     material,
     pivots,
-    dispose: () => material.dispose(),
+    dispose: () => {
+      material.dispose();
+      glyphs?.dispose();
+    },
   };
 }

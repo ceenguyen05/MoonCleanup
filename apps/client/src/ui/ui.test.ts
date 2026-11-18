@@ -115,8 +115,13 @@ describe("misc", () => {
       motion: "reduced",
       hudScale: 1.5,
       hudForce: false,
+      guidance: true,
     });
     expect(parseUiUrlOptions("?uihud=1").hudForce).toBe(true);
+    // Capture lanes: no first-run guidance over the avatar (?onboarding=0, or implied by ?capture=1; ?onboarding=1 wins).
+    expect(parseUiUrlOptions("?onboarding=0").guidance).toBe(false);
+    expect(parseUiUrlOptions("?capture=1").guidance).toBe(false);
+    expect(parseUiUrlOptions("?capture=1&onboarding=1").guidance).toBe(true);
     expect(parseUiUrlOptions("").hudTest).toBe(false);
   });
 });

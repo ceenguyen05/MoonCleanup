@@ -22,11 +22,12 @@
 //
 // Reads write into caller out-buffers and allocate nothing. `noteCollectible` runs on a rare control message only.
 
-import { MVP_SCOPE, PlotState, type PlotId } from "@moon-cleanup/shared";
+import { MVP_SCOPE, PlotState, type PlotGrid, type PlotId } from "@moon-cleanup/shared";
 import type { GameData } from "@moon-cleanup/game-data";
 import {
   BOREAL_STAND_IN_OUTPOSTS,
   NEAR_PARCEL_SIZE,
+  landingApronPlots,
   placeNearParcels,
   seedOfString,
   type SimConfig,
@@ -59,7 +60,7 @@ export interface OnlineReadoutDeps {
   readonly contractId: string;
   readonly data: GameData;
   readonly config: SimConfig;
-  readonly grid: { readonly count: number; plotAt(dir: { x: number; y: number; z: number }, hint?: PlotId): PlotId };
+  readonly grid: PlotGrid;
   readonly ledger: OnlinePlotQuery;
   /** Own predicted avatar, or null before the first authoritative Self. */
   readonly pose: () => OnlinePose | null;
@@ -91,6 +92,8 @@ export class OnlineReadouts implements HostReadoutSource {
     readonly y: number;
     readonly z: number;
   }[];
+  /** Landing Apron plot ids of the home outpost (constructor only). */
+  private readonly apron: readonly number[];
   private readonly terrainByLevel: (string | null)[] = [];
   private readonly dir = { x: 0, y: 1, z: 0 };
   private pickHint = 0 as PlotId;
@@ -111,6 +114,10 @@ export class OnlineReadouts implements HostReadoutSource {
       const l = Math.sqrt(o.x * o.x + o.y * o.y + o.z * o.z) || 1;
       return { id: o.id, x: o.x / l, y: o.y / l, z: o.z / l };
     });
+    // Landing Apron: the same pure selection the server's MoonRoomSim runs (home outpost, same grid and game data).
+    const home = this.outposts[0];
+    this.apron =
+      home === undefined ? [] : landingApronPlots(deps.grid, home, deps.data.world.landingApron.plotsPerOutpost);
     // MoonRoomSim.plotCard takes the first terrain id (object key order) with the plot's dust level.
     for (const id in cfg.terrainDustLevel) {
       const level = cfg.terrainDustLevel[id]!;
@@ -222,6 +229,21 @@ export class OnlineReadouts implements HostReadoutSource {
     out.x = o.x;
     out.y = o.y;
     out.z = o.z;
+    return true;
+  }
+
+  get apronPlotCount(): number {
+    return this.apron.length;
+  }
+
+  /** Unit direction of Landing Apron plot k (the grid's cached centre direction: no allocation). */
+  apronPlot(k: number, out: { x: number; y: number; z: number }): boolean {
+    const p = this.apron[k];
+    if (p === undefined) return false;
+    const d = this.deps.grid.centerDirection(p as PlotId);
+    out.x = d.x;
+    out.y = d.y;
+    out.z = d.z;
     return true;
   }
 

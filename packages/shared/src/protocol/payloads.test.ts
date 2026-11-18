@@ -123,6 +123,17 @@ describe("HELLO payload", () => {
     }
   });
 
+  it("saveArchived is optional and additive: absent parses, true round-trips, an old schema ignores it", () => {
+    const base: HelloPayload = { serverProtocol: 0, serverBuild: "dev", simTickHz: 20, snapshotHz: 10 };
+    expect(HelloPayloadSchema.parse(base).saveArchived).toBeUndefined();
+    const flagged = { ...base, saveArchived: true as const };
+    expect(roundTrip(HelloPayloadSchema, flagged)).toEqual(flagged);
+    expect(HelloPayloadSchema.safeParse({ ...base, saveArchived: false }).success).toBe(false);
+    // An old client's schema (no such key) strips the unknown key instead of failing.
+    const oldSchema = HelloPayloadSchema.omit({ saveArchived: true });
+    expect(oldSchema.parse(flagged)).toEqual(base);
+  });
+
   it("rejects rates outside 1-255 and non-integers", () => {
     const base = { serverProtocol: 0, serverBuild: "dev", simTickHz: 20, snapshotHz: 10 };
     for (const bad of [
@@ -144,6 +155,7 @@ describe("HELLO payload", () => {
       serverBuild: string;
       simTickHz: number;
       snapshotHz: number;
+      saveArchived?: true | undefined;
     }>();
   });
 });

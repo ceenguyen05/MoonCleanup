@@ -1,0 +1,132 @@
+{
+  "errors": [],
+  "shots": {},
+  "lockTries": 1,
+  "noLock": false,
+  "lockLog": [
+    [
+      "mousedown",
+      71893,
+      true,
+      "CANVAS",
+      "CANVAS"
+    ],
+    [
+      "lockchange",
+      71908,
+      true
+    ]
+  ],
+  "mode0": "first",
+  "mode1": "third",
+  "afterScrub": {
+    "pose": {
+      "x": 60.109375,
+      "y": 1993.303970336914,
+      "z": 30.71240234375,
+      "yawRad": 0,
+      "pitchRad": -0.35,
+      "mode": "third"
+    },
+    "strokes": {
+      "chainsAcked": 116,
+      "framesWithStrokes": 116,
+      "lastStrokeTick": 598
+    },
+    "dust": {
+      "cellGrams": 1296
+    },
+    "feed": {
+      "synced": true,
+      "restoring": false,
+      "selfTick": 609,
+      "framesDecoded": 598,
+      "decodeErrors": 0,
+      "strokesApplied": 116,
+      "strokesForwarded": 116,
+      "dustStates": 1,
+      "restores": 1,
+      "restoreMs": 0.30000001192092896,
+      "restoreSlices": 0,
+      "restoreSliceMaxMs": 0,
+      "strokesQueued": 0,
+      "liveOverflows": 0,
+      "ledgerPoolGrowths": 0,
+      "viewConstructMs": 484.90000000596046,
+      "siteMoves": 1,
+      "site": 81666
+    },
+    "atlas": {
+      "preset": "medium",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "slotPx": 64,
+      "slots": 1024,
+      "texelCm": 40,
+      "tilesResident": 2,
+      "rebuildBacklog": 0,
+      "rebuilds": 2,
+      "evictions": 0,
+      "strokesReplayed": 116,
+      "tileStrokeDraws": 212,
+      "liveOverflows": 0,
+      "cpuMsLast": 0,
+      "cpuMsMax": 7.5
+    }
+  },
+  "end": {
+    "pose": {
+      "x": 60.109375,
+      "y": 1993.303970336914,
+      "z": 30.71240234375,
+      "yawRad": 3.739999999999997,
+      "pitchRad": -0.4819999999999999,
+      "mode": "third"
+    },
+    "strokes": {
+      "chainsAcked": 116,
+      "framesWithStrokes": 116,
+      "lastStrokeTick": 598
+    },
+    "dust": {
+      "cellGrams": 1296
+    },
+    "feed": {
+      "synced": true,
+      "restoring": false,
+      "selfTick": 819,
+      "framesDecoded": 808,
+      "decodeErrors": 0,
+      "strokesApplied": 116,
+      "strokesForwarded": 116,
+      "dustStates": 1,
+      "restores": 1,
+      "restoreMs": 0.30000001192092896,
+      "restoreSlices": 0,
+      "restoreSliceMaxMs": 0,
+      "strokesQueued": 0,
+      "liveOverflows": 0,
+      "ledgerPoolGrowths": 0,
+      "viewConstructMs": 484.90000000596046,
+      "siteMoves": 1,
+      "site": 81666
+    },
+    "atlas": {
+      "preset": "medium",
+      "widthPx": 2048,
+      "heightPx": 2048,
+      "slotPx": 64,
+      "slots": 1024,
+      "texelCm": 40,
+      "tilesResident": 2,
+      "rebuildBacklog": 0,
+      "rebuilds": 2,
+      "evictions": 0,
+      "strokesReplayed": 116,
+      "tileStrokeDraws": 212,
+      "liveOverflows": 0,
+      "cpuMsLast": 0,
+      "cpuMsMax": 7.5
+    }
+  }
+}

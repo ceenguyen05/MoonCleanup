@@ -205,6 +205,11 @@ export const CompassStrip = memo(function CompassStrip(): ReactElement {
           <span className={`${styles["chip"]} ${styles["chipObjective"]}`} data-testid="hud-objective">
             <Icon icon={MapPin} size={16} />
             <span>{objective}</span>
+            {typeof compass.objectiveDistanceM === "number" && (
+              <span data-testid="hud-objective-distance">
+                {formatString(C.objectiveDistance, { m: compass.objectiveDistanceM })}
+              </span>
+            )}
           </span>
         )}
         <ParcelChip />

@@ -1,4 +1,4 @@
-import { AUDIO_EVENT_CUES, type AudioCueId, type EventMap } from "@moon-cleanup/shared";
+import { AUDIO_EVENT_CUES, AUDIO_EVENT_CUES_V1_1, type AudioCueId, type EventMap } from "@moon-cleanup/shared";
 import { describe, expect, it } from "vitest";
 import { createEventBus } from "../app/event-bus";
 import { BIG_SALE_LM, EventRouter, SWEEP_IDLE_S, type AudioActions } from "./event-router";
@@ -21,16 +21,16 @@ function harness(mySlot = 0) {
   let nowS = 10;
   const actions: AudioActions = {
     play: (id, params, opts) => {
-      plays.push({ id, params: { ...params }, opts });
+      plays.push({ id, params: { ...params }, opts: opts && { ...opts } });
       return true;
     },
     startLoop: (id, params, opts) => {
-      loops.push({ id, params: { ...params }, opts });
+      loops.push({ id, params: { ...params }, opts: opts && { ...opts } });
       const h = { index: n++, gen: 1 };
       alive.add(h.index);
       return h;
     },
-    updateLoop: (_h, id, params, opts) => void updates.push({ id, params: { ...params }, opts }),
+    updateLoop: (_h, id, params, opts) => void updates.push({ id, params: { ...params }, opts: opts && { ...opts } }),
     stopLoop: (h) => {
       stops.push(h);
       alive.delete(h.index);
@@ -44,6 +44,8 @@ function harness(mySlot = 0) {
     setDuckFlag: (r, on) => void log.push(`flag:${r}:${String(on)}`),
     mySlot: () => mySlot,
     nowS: () => nowS,
+    setMono: (m) => void log.push(`mono:${String(m)}`),
+    setCaptions: (c) => void log.push(`captions:${String(c)}`),
   };
   const router = new EventRouter(actions);
   const bus = createEventBus({
@@ -61,7 +63,93 @@ const ids = (c: Call[]): string[] => c.map((x) => x.id);
 describe("event router", () => {
   it("handles exactly the events of AUDIO_EVENT_CUES", () => {
     const { router } = harness();
-    expect([...router.handledEvents()].sort()).toEqual(Object.keys(AUDIO_EVENT_CUES).sort());
+    expect([...router.handledEvents()].sort()).toEqual(
+      [...Object.keys(AUDIO_EVENT_CUES), ...Object.keys(AUDIO_EVENT_CUES_V1_1), "audio.cue", "audio.settings"].sort(),
+    );
+  });
+
+  it("footsteps: own centred, others spatialised only with a placement", () => {
+    const h = harness(0);
+    h.bus.emit("avatar.stepped", { ...base, actorSlot: 0, surface: "clean", speed01: 0.8 });
+    h.bus.emit("avatar.stepped", { ...base, actorSlot: 1, surface: "grime", speed01: 0.3 });
+    expect(h.plays).toHaveLength(1);
+    h.bus.emit("avatar.stepped", {
+      ...base,
+      actorSlot: 1,
+      surface: "grime",
+      speed01: 0.3,
+      placement: { distanceM: 12, pan: -0.5 },
+    });
+    expect(ids(h.plays)).toEqual(["avatar.footstep", "avatar.footstep"]);
+    expect(h.plays[0]?.opts).toBeUndefined();
+    expect(h.plays[1]?.opts).toMatchObject({ other: true, pan: -0.5, distanceM: 12 });
+    expect(h.plays[1]?.params).toMatchObject({ surface: "grime", speed01: 0.3 });
+  });
+
+  it("vehicle.motion drives the own drive and work loops and stops work at rest", () => {
+    const h = harness(0);
+    const vehicleId = "v1" as never;
+    h.bus.emit("vehicle.entered", { ...base, actorSlot: 0, vehicleId, kindId: "vehicle.trundle", seat: 0 });
+    const motion = (speed01: number, work: number): void =>
+      h.bus.emit("vehicle.motion", {
+        ...base,
+        vehicleId,
+        kindId: "vehicle.trundle",
+        actorSlot: 0,
+        speed01,
+        load01: 0.5,
+        workIntensity01: work,
+      });
+    motion(0.9, 0.8);
+    expect(h.updates.find((u) => u.id === "vehicle.drive_loop")?.params).toMatchObject({ speed01: 0.9, load01: 0.5 });
+    expect(h.loops.map((l) => l.id)).toContain("vehicle.work_loop");
+    motion(0.9, 0.9);
+    expect(h.updates.some((u) => u.id === "vehicle.work_loop")).toBe(true);
+    const stopsBefore = h.stops.length;
+    motion(0, 0);
+    expect(h.stops.length).toBe(stopsBefore + 1);
+  });
+
+  it("other vehicles loop only when placed and moving, capped at four, and end when idle", () => {
+    const h = harness(0);
+    const m = (id: string, speed01: number, placed = true): void =>
+      h.bus.emit("vehicle.motion", {
+        ...base,
+        vehicleId: id as never,
+        kindId: "vehicle.trundle",
+        actorSlot: 2,
+        speed01,
+        load01: 0,
+        workIntensity01: 0,
+        ...(placed ? { placement: { distanceM: 20, pan: 0.3 } } : {}),
+      });
+    m("a", 0.5, false);
+    expect(h.loops).toHaveLength(0);
+    for (const id of ["a", "b", "c", "d", "e"]) m(id, 0.5);
+    expect(h.loops).toHaveLength(4);
+    expect(h.loops[0]?.opts).toMatchObject({ other: true, distanceM: 20, pan: 0.3 });
+    m("a", 0);
+    expect(h.stops).toHaveLength(1);
+    h.setNow(20);
+    h.router.tick(20, 0.03);
+    expect(h.stops).toHaveLength(4);
+  });
+
+  it("audio.cue plays the id directly and audio.settings forwards mono and captions", () => {
+    const h = harness();
+    h.bus.emit("audio.cue", { id: "ui.click", params: {} });
+    h.bus.emit("audio.settings", { monoAudio: true, captions: true });
+    expect(ids(h.plays)).toEqual(["ui.click"]);
+    expect(h.log).toEqual(["mono:true", "captions:true"]);
+  });
+
+  it("dot.message uses the event syllables when given and clamps them", () => {
+    const h = harness();
+    h.bus.emit("dot.message", { ...base, textId: "t", priority: "action", keep: false, syllables: 7 } as never);
+    h.bus.emit("dot.message", { ...base, textId: "t", priority: "action", keep: false, syllables: 99 } as never);
+    const chirps = h.plays.filter((p) => p.id === "dot.chirp");
+    expect(chirps[0]?.params).toMatchObject({ syllables: 7 });
+    expect(chirps[1]?.params).toMatchObject({ syllables: 32 });
   });
 
   it("every cue the table lists for an event is reachable from that event's handler", () => {

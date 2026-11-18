@@ -1,0 +1,108 @@
+{
+  "errors": [
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The resource http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+  ],
+  "requests": [
+    {
+      "url": "http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/node_modules/.pnpm/three@0.187.0/node_modules/three/examples/jsm/libs/basis/basis_transcoder.wasm?import&url",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/node_modules/.pnpm/three@0.187.0/node_modules/three/examples/jsm/libs/basis/basis_transcoder.js?url",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5294/assets/outpost/boreal_hero_kit.ed50b1f0f171.glb",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/node_modules/.pnpm/three@0.187.0/node_modules/three/examples/jsm/libs/basis/basis_transcoder.wasm",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:5294/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/node_modules/.pnpm/three@0.187.0/node_modules/three/examples/jsm/libs/basis/basis_transcoder.js",
+      "status": 200
+    }
+  ],
+  "info": {
+    "gpu": {},
+    "pieces": 13,
+    "textures": [
+      {
+        "uuid": "3964365c-b314-4a91-85f7-285261b61e1b",
+        "compressed": true,
+        "format": 36492,
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "game": {
+      "pose": null,
+      "predicted": true,
+      "input": {
+        "lastSeq": 0,
+        "sent": 0,
+        "toolInputs": 0,
+        "buttons": 0,
+        "toolParam": 0
+      },
+      "worker": {
+        "tick": -1,
+        "ackInputSeq": 0,
+        "framesDecoded": 0,
+        "decodeErrors": 0
+      },
+      "strokes": {
+        "chainsAcked": 0,
+        "framesWithStrokes": 0,
+        "lastStrokeTick": -1
+      },
+      "dust": {
+        "cellGrams": 0
+      },
+      "prediction": {
+        "predicted": 0,
+        "reconciles": 0,
+        "replayed": 0,
+        "replayCapped": 0,
+        "unknownAcks": 0,
+        "lastCorrectionM": 0,
+        "maxCorrectionM": 0
+      },
+      "vehiclePrediction": {
+        "predicted": 0,
+        "reconciles": 0,
+        "exactReconciles": 0,
+        "handleSnaps": 0,
+        "replayed": 0,
+        "unknownAcks": 0,
+        "lastCorrectionM": 0,
+        "maxCorrectionM": 0
+      },
+      "host": {
+        "kind": "local",
+        "state": "loading"
+      }
+    },
+    "info": {
+      "backend": "webgpu",
+      "tier": "B",
+      "preset": "medium",
+      "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "dpr": 1,
+      "renderScale": 0.85,
+      "frameTimeAvgMs": 76.3376362195579,
+      "frameTimeP95Ms": 83.30000305175781,
+      "drawCalls": 74,
+      "triangles": 441171,
+      "texPoolMB": 0,
+      "placeholderAssets": [],
+      "lossCount": 0
+    }
+  }
+}

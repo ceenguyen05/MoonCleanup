@@ -48,6 +48,10 @@ export const MOON_SCENE_ID = "moon";
 /** Hook H1 (W2-T04): the visuals module may supply the terrain surface material; absent, the plain material is used. */
 export interface TerrainSceneOptions {
   readonly terrainMaterial?: TerrainMaterialFactory;
+  /** The baked asset, already loading (the game launch shares one load with the Solo host); default: loaded here. */
+  readonly asset?: Promise<TerrainAsset>;
+  /** False: the camera belongs to someone else (the game's camera rig); views and `&fly=` paths never move it. */
+  readonly poseCamera?: boolean;
 }
 
 /** The supplied factory wins; else `&spec=1` picks the specular A/B material; else the plain diffuse default. */
@@ -167,6 +171,8 @@ export class TerrainScene implements LookScene {
   private readonly _target = new Vector3();
 
   private readonly terrainMaterial: TerrainMaterialFactory | undefined;
+  /** The scene poses the camera (look-dev views, fly paths); false in the game (the camera rig owns it). */
+  private readonly poseCamera: boolean;
 
   constructor(ctx: SceneContext & TerrainSceneOptions & { readonly render?: TerrainRenderHooks }) {
     const { roots, params, state } = ctx;
@@ -207,7 +213,8 @@ export class TerrainScene implements LookScene {
 
     const baseUrl = params.get("terrainUrl") ?? "/assets/terrain/";
     this.baseUrl = baseUrl;
-    loadTerrainAsset({ baseUrl }).then(
+    this.poseCamera = ctx.poseCamera !== false;
+    (ctx.asset ?? loadTerrainAsset({ baseUrl })).then(
       (asset) => {
         if (this.disposed) return;
         try {
@@ -375,6 +382,11 @@ export class TerrainScene implements LookScene {
     const camera = this.roots.camera;
     const ground = this.ground;
     if (ground === null) return;
+    if (!this.poseCamera) {
+      // The game: the camera rig owns the camera; the sun / Earth angles are read in Boreal's frame.
+      this.siteAt(0, 0);
+      return;
+    }
     if (name === ORBIT_VIEW) {
       const r = ground.radiusM * numberParam(this.params, "orbit", 3.2);
       camera.up.set(0, 1, 0);
@@ -438,7 +450,7 @@ export class TerrainScene implements LookScene {
     if (terrain === null || ground === null) return;
     const camera = this.roots.camera;
 
-    if (this.fly === "p2" || this.fly === "p4") {
+    if (this.poseCamera && (this.fly === "p2" || this.fly === "p4")) {
       if (this.flyStartS < 0) {
         this.flyStartS = timeS;
         // The whole path is lit in the frame of its start point.

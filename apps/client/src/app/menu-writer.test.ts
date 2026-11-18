@@ -203,3 +203,45 @@ describe("menu pricing", () => {
     expect(plain.nextCostLm).toBe(listed.nextCostLm);
   });
 });
+
+describe("desk vehicle rows (Trundle + 7 upgrade lines)", () => {
+  const data = loadGameData();
+  const cat = menuCatalogFromGameData(data);
+  const shiftOf = (vehicleIds: string[], vehicles: unknown[] = []) =>
+    ({
+      sharedUpgrades: {},
+      suitGear: {},
+      players: [{ slot: 0, toolsOwned: 1, vehicleIds }],
+      vehicles,
+    }) as unknown as Parameters<typeof deskItems>[1];
+  const quoteOf = (m: Record<string, number>) => (id: string) => m[id] ?? -1;
+
+  test("Trundle and all 7 lines are sold as vehicle rows, upgrades locked behind the Trundle", () => {
+    const rows = deskItems(cat, shiftOf([]), 0, null, quoteOf({ "vehicle.trundle": 2100 }));
+    const veh = rows.filter((r) => r.category === "vehicle");
+    expect(veh.map((r) => r.itemId)).toEqual(["vehicle.trundle", ...data["vehicle-upgrades"].lines.map((l) => l.id)]);
+    expect(veh).toHaveLength(8);
+    const trundle = veh[0]!;
+    expect(trundle.priceLm).toBe(2100);
+    expect(trundle.levelOwned).toBe(0);
+    for (const r of veh.slice(1)) expect(r.requires).toEqual(["vehicle.trundle"]);
+  });
+
+  test("after buying: Trundle owned, line levels follow the sim quote, maxed lines fill the pips", () => {
+    const rows = deskItems(
+      cat,
+      shiftOf(["vehicle.trundle"]),
+      0,
+      null,
+      quoteOf({ "vehicle_upgrade.gear_ratio": 1050, "vehicle_upgrade.cargo_expander": -1 }),
+    );
+    const byId = new Map(rows.map((r) => [r.itemId, r]));
+    expect(byId.get("vehicle.trundle")!.levelOwned).toBe(1);
+    const gear = byId.get("vehicle_upgrade.gear_ratio")!;
+    expect(gear.levelMax).toBe(3);
+    expect(gear.levelOwned).toBe(1); // 2100 * 0.5 = 1050 is level 2's price, so level 1 is owned
+    expect(gear.requires).toEqual([]);
+    const cargo = byId.get("vehicle_upgrade.cargo_expander")!;
+    expect(cargo.levelOwned).toBe(cargo.levelMax);
+  });
+});

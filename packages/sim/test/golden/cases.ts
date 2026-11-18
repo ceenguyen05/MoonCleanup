@@ -36,6 +36,12 @@ export const GOLDEN_REPLAY = { stateHash: 1076468633, strokeHash: 4164540033, st
  * Re-recorded for Holster gating (M1-W6-T02, 2026-11-15; see GOLDEN_REPLAY above). Values before: stateHash
  * 3774476554, strokeHash 786224438, strokes 3959, gramsCollected 66779, dustHash 2946260242, ledgers 25.
  *
+ * Re-baselined once for the Landing Apron cover (M1 apron cover, 2026-11-18, owner-approved; packages/world
+ * DUST_INIT_REVISION 1): createRoomDustLedger now starts the 6 Apron plots at level 2 on 20 % of their owned texels.
+ * The script anchors 40 accepted strokes in Apron plots, which now remove less dust. Values before: stateHash
+ * 1838396500, gramsCollected 66455, dustHash 2469925789. strokeHash 4164540033, strokes 4023, ledgers 24 and
+ * polished 0 did not change (strokes do not depend on the ledger). GOLDEN_REPLAY above did not change.
+ *
  * What changed against GOLDEN_REPLAY (same inputs, same sim code) and why:
  * - gramsCollected 55661 -> 66779 and stateHash: the two ledgers remove different amounts for the same stroke. The
  *   stand-in charged swept length x width x depth against one milligram budget of the anchor plot; the real ledger
@@ -47,11 +53,11 @@ export const GOLDEN_REPLAY = { stateHash: 1076468633, strokeHash: 4164540033, st
  *   for 500 s finish no plot, so this replay does not cover the Inspector's Stamp (packages/world's ledger vectors do).
  */
 export const GOLDEN_REPLAY_WORLD_LEDGER = {
-  stateHash: 1838396500,
+  stateHash: 1159199513,
   strokeHash: 4164540033,
   strokes: 4023,
-  gramsCollected: 66455,
-  dustHash: 2469925789,
+  gramsCollected: 65689,
+  dustHash: 3306081474,
   ledgers: 24,
   polished: 0,
 };

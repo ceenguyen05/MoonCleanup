@@ -406,6 +406,35 @@
   color: var(--mc-text-2);
 }
 
+.roster {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-2);
+}
+
+.rosterList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mc-sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rosterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mc-sp-3);
+}
+
+.rosterActions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--mc-sp-2);
+}
+
 .inviteRow {
   display: flex;
   flex-wrap: wrap;

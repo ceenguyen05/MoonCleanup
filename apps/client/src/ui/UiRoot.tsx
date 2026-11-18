@@ -41,7 +41,7 @@ export function UiRoot({
   const body = (
     <UiIntentsContext.Provider value={intents}>
       <UiControlsContext.Provider value={controls}>
-        {!options.hudTest && (shiftReady || options.hudForce) && <Hud />}
+        {!options.hudTest && (shiftReady || options.hudForce) && <Hud guidance={options.guidance} />}
         {options.hudTest && <HudTestPage />}
         {!options.hudTest && <MenuHost />}
         {!options.hudTest && <SaveConflictPrompt />}

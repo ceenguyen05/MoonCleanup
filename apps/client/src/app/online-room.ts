@@ -21,6 +21,7 @@ import {
   STANDARD_GRID_PARAMS,
   type EventBus,
   type SimInputCommand,
+  type UiStore,
   type WireSimEvent,
 } from "@moon-cleanup/shared";
 import {
@@ -245,6 +246,8 @@ export interface OnlineRoomOptions {
   readonly sessionConfig?: RoomSessionOptions["sessionConfig"];
   /** Called for problems the room cannot recover from itself (the app routes them to the error boundary). */
   readonly onProblem?: (source: string, error: unknown) => void;
+  /** UI store for room notices (the server archived an older-moon save on join: `notice.save_archived`). */
+  readonly store?: Pick<UiStore, "dispatch">;
 }
 
 export interface OnlineRoomStats {
@@ -391,6 +394,18 @@ export class OnlineRoom {
         onFrame: (view, keyframe) => this.onFrame(view, keyframe),
         onBytes: (message) => this.onBytes(message),
         onEquippedTool: (tool) => this.setEquippedTool(tool),
+        // Once per HELLO with `saveArchived` (re-baked moon: the old save was archived, the shift starts fresh).
+        onSaveArchived: () =>
+          options.store?.dispatch({
+            type: "notices.push",
+            notice: {
+              priority: "progress",
+              textId: "notice.save_archived",
+              params: {},
+              mergeKey: "save_archived",
+              actionId: null,
+            },
+          }),
         onControl: (type, payload) => {
           if (type === SIM_EVENTS_ID) this.onSimEvents(payload);
         },

@@ -421,7 +421,7 @@ On an out-of-memory error or device loss: recreate the device and drop one prese
 | --- | --- | --- | --- | --- |
 | **Intended for** | Tier C (`webgl2`) and Tier B on `webgpu-compat`; fallback for Tier B | Tier B on `webgpu` | Tier A | Ultra-capable desktop |
 | Target FPS / GPU ms | 30 / 28 | 30 / 28 | 60 / 14 | 60 / 14 |
-| **Render scale range** (× output) | 0.50–0.75 | 0.60–0.85 | 0.75–1.00 | 0.85–1.00 |
+| **Render scale range** (× output) | 0.50–0.75 | 0.75–0.85 (floor raised from 0.60, owner 2026-11-16) | 0.75–1.00 | 0.85–1.00 |
 | DPR cap | 1.0 | 1.0 | 1.5 | 2.0 |
 | **AA / upscale** | FXAA (client default; table value `smaa`) / bilinear | SMAA / FSR1-style (`webgpu_upscaling_fsr1`) | TRAA / TAAU | TRAA / TAAU |
 | Sharpen (CAS-style) | 0.30 | 0.25 | 0.20 | 0.15 |
@@ -479,7 +479,7 @@ Every knob is a field in `shared/render/quality.ts` (contract proposal; contract
 | 2 | Lane stripes off on Medium (skip the atlas direction tap) | ≈ 0.3 ms |
 | 3 | Sparkle and mask-gradient berm term skipped beyond 15 m | ≈ 0.3 ms |
 | 4 | CSM 3 → 2 cascades (Low layout) | ≈ 0.8 ms shadows |
-| 5 | Render-scale floor 0.60 → 0.50 | proportional |
+| 5 | Render-scale floor 0.75 → 0.50 (needs an owner decision: the 0.75 Medium floor is an owner choice, 2026-11-16) | proportional |
 
 Each step is a `quality.ts` value change, not new code. The savings are estimates to be replaced by the M0 bench numbers. The ladder result is recorded in ADR-0003's follow-up note; steps 1–3 must not move any VT-M1 V1 item below its Medium bar.
 

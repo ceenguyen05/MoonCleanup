@@ -40,7 +40,7 @@ export class TerrainRegolithProvider {
   /** Quality preset at build time (`low` builds one tap per close scale); default: none (two taps). */
   private readonly preset: () => string;
 
-  constructor(params: URLSearchParams, preset: () => string = () => "") {
+  constructor(params: URLSearchParams, preset: () => string = () => "", layers: TerrainRegolithOptions["layers"] = []) {
     this.preset = preset;
     this.enabled = params.get("regolith") !== "0";
     this.aniso = Number(params.get("rganiso") ?? 0);
@@ -49,6 +49,7 @@ export class TerrainRegolithProvider {
     const graze = (params.get("rggraze") ?? "").split(",").map(Number);
     const far = Number(params.get("rgfar") ?? NaN);
     this.options = {
+      layers,
       ...(debug > 0 ? { debugView: debug } : {}),
       ...(params.get("rgsingle") === "1" ? { singleTap: true } : {}),
       ...(splits.length > 0 ? { costSplits: splits } : {}),

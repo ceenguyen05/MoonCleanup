@@ -1,22 +1,41 @@
 // MoonRoomSim -> FRAME bytes (packages/protocol FrameWriter: one decode path for local and remote hosts, ADR-0031).
-// Per frame: header (tick, ackInputSeq), Self = the local avatar, SlotChanges + avatar entity records for the other
+// Per frame: header (tick, ackInputSeq), Self = the local avatar (plus the vehicle block while it drives, W7-T01), SlotChanges + avatar entity records for the other
 // active slots, and every stroke accepted since the last SENT frame. Strokes of ticks whose frame was skipped (no
 // free pool buffer) stay pending, so dust results are never lost; chains that do not fit roll over to the next frame.
 // This is the interim frame source (the sim's hot-path `readSelf` proposal is still open, M1-W0-T02 open item 1); it
 // reads the sim's live state objects, so it allocates nothing per frame.
 
-import { AVATAR_ACTION_STATES, AVATAR_FLAG_BIT, MAX_PLAYERS_PER_ROOM, type ActorSlot } from "@moon-cleanup/shared";
+import {
+  AVATAR_ACTION_STATES,
+  AVATAR_FLAG_BIT,
+  FRAME_SELF_DRIVER_MOVE_STATE,
+  MAX_PLAYERS_PER_ROOM,
+  QUANT,
+  type ActorSlot,
+} from "@moon-cleanup/shared";
 import {
   FrameWriter,
   SlotTable,
   StrokeChainBuffer,
   createEntityState,
   createSelfState,
+  packQuat,
   pitchToCode,
+  steerToCode8,
   yawToCode,
   inputPitchToRadians,
+  type PackedQuat,
+  type SelfState,
 } from "@moon-cleanup/protocol";
-import { MOVE_GROUNDED, atan2Det, headingBasis, type AvatarState, type MoonRoomSim } from "@moon-cleanup/sim";
+import {
+  MOVE_GROUNDED,
+  atan2Det,
+  headingBasis,
+  vehicleBasis,
+  type AvatarState,
+  type MoonRoomSim,
+  type VehicleState,
+} from "@moon-cleanup/sim";
 
 const ENTITY_KIND_AVATAR = 0;
 const REC_DELTA = 1;
@@ -36,6 +55,9 @@ export class SimFrameEncoder {
   private readonly self = createSelfState();
   private readonly ent = createEntityState();
   private readonly basis = new Float64Array(9);
+  private readonly vbasis = new Float64Array(9);
+  private readonly quat = new Float64Array(4);
+  private readonly packed: PackedQuat = { index: 3, a: 0, b: 0, c: 0 };
   private readonly pending = new StrokeChainBuffer(PENDING_STROKE_CHAINS, 1);
   private keyframe = true;
   /** Strokes that did not fit the pending buffer (dust visuals would miss them; counted, never thrown). */
@@ -135,6 +157,38 @@ export class SimFrameEncoder {
     s.vz = a.vz;
     s.yawCode = a.active ? this.bodyYawCode(a) : 0;
     s.cellGrams = t.cellGrams[t.toolCode] ?? 0;
+    // Seated driver: the Self vehicle block (protocol frame-state) feeds the Solo Trundle prediction's exact reconcile.
+    const vi = a.active ? (sim.vehicles.driving[slot] ?? -1) : -1;
+    const v = vi >= 0 ? sim.vehicles.store.vehicles[vi] : undefined;
+    if (v !== undefined && v.active) this.fillVehicleBlock(v, s);
+  }
+
+  /** Vehicle block of the Self (same chassis frame and velocity as RoomVehicles.components). Allocation-free. */
+  private fillVehicleBlock(v: Readonly<VehicleState>, s: SelfState): void {
+    const b = this.vbasis;
+    vehicleBasis(v, b);
+    s.moveState = FRAME_SELF_DRIVER_MOVE_STATE;
+    s.vpx = v.px;
+    s.vpy = v.py;
+    s.vpz = v.pz;
+    // Body axes: x = right, y = up, z = backward (three.js convention: forward is -z).
+    const q = this.quat;
+    quatFromAxes(b[6]!, b[7]!, b[8]!, b[0]!, b[1]!, b[2]!, -b[3]!, -b[4]!, -b[5]!, q);
+    const pk = packQuat(q[0]!, q[1]!, q[2]!, q[3]!, QUANT.vehicleOrientationOwn.componentBits, this.packed);
+    s.orientIndex = pk.index;
+    s.orientA = pk.a;
+    s.orientB = pk.b;
+    s.orientC = pk.c;
+    s.lvx = b[3]! * v.speed + b[6]! * v.latSpeed + b[0]! * v.vr;
+    s.lvy = b[4]! * v.speed + b[7]! * v.latSpeed + b[1]! * v.vr;
+    s.lvz = b[5]! * v.speed + b[8]! * v.latSpeed + b[2]! * v.vr;
+    s.avx = 0;
+    s.avy = 0;
+    s.avz = 0;
+    s.steer = steerToCode8(v.steer);
+    s.gear = v.gear;
+    s.boost = v.boosting;
+    s.lights = v.lights;
   }
 
   private fillEntity(sim: MoonRoomSim, slot: ActorSlot): void {
@@ -184,4 +238,49 @@ export class SimFrameEncoder {
     p.chainCount = rest > 0 ? rest : 0;
     p.continuationCount = 0;
   }
+}
+
+/**
+ * Unit quaternion (x, y, z, w into `out`) of the rotation whose columns are the body axes x, y, z; the same math as the
+ * sim's snapshot `quatFromAxes` (room-vehicles.ts), written into a reused array (no per-frame object, no double phis).
+ */
+function quatFromAxes(
+  xx: number,
+  xy: number,
+  xz: number,
+  yx: number,
+  yy: number,
+  yz: number,
+  zx: number,
+  zy: number,
+  zz: number,
+  out: Float64Array,
+): void {
+  const tr = xx + yy + zz;
+  if (tr > 0) {
+    const s = Math.sqrt(tr + 1) * 2;
+    out[3] = 0.25 * s;
+    out[0] = (yz - zy) / s;
+    out[1] = (zx - xz) / s;
+    out[2] = (xy - yx) / s;
+  } else if (xx > yy && xx > zz) {
+    const s = Math.sqrt(1 + xx - yy - zz) * 2;
+    out[3] = (yz - zy) / s;
+    out[0] = 0.25 * s;
+    out[1] = (yx + xy) / s;
+    out[2] = (zx + xz) / s;
+  } else if (yy > zz) {
+    const s = Math.sqrt(1 + yy - xx - zz) * 2;
+    out[3] = (zx - xz) / s;
+    out[0] = (yx + xy) / s;
+    out[1] = 0.25 * s;
+    out[2] = (zy + yz) / s;
+  } else {
+    const s = Math.sqrt(1 + zz - xx - yy) * 2;
+    out[3] = (xy - yx) / s;
+    out[0] = (zx + xz) / s;
+    out[1] = (zy + yz) / s;
+    out[2] = 0.25 * s;
+  }
+  // packQuat normalises; no second pass needed here.
 }

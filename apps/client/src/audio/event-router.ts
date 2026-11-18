@@ -8,6 +8,8 @@ import {
   AUDIO_OTHERS_TOOLS_INDIVIDUAL_MAX,
   AUDIO_STAMP_STREAK_WINDOW_S,
   type AudioCueId,
+  type AudioPlacement,
+  type AudioSurface,
   type DayPhase,
   type DotContour,
   type EventBus,
@@ -33,6 +35,22 @@ export interface AudioActions {
   /** Slot of the local player (the audio listener). */
   mySlot(): number;
   nowS(): number;
+  /** Accessibility: sum the master bus to mono (`audio.settings`). */
+  setMono(mono: boolean): void;
+  /** Accessibility: sound captions on or off (`audio.settings`). */
+  setCaptions(on: boolean): void;
+}
+
+/** Events the router handles beyond AUDIO_EVENT_CUES (events/gameplay v1.1; the shared table gets them next wave). */
+export const AUDIO_EXTRA_EVENTS = ["avatar.stepped", "vehicle.motion", "audio.cue", "audio.settings"] as const;
+
+const MAX_OTHER_VEHICLES = 4;
+const VEHICLE_IDLE_S = 0.6;
+
+interface OtherVehicle {
+  id: string | null;
+  handle: LoopHandle | null;
+  lastS: number;
 }
 
 /** A sale at or above this many Lumens plays the big ka-ching (tunable; the economy lives in game-data). */
@@ -44,6 +62,8 @@ export const SWEEP_IDLE_S = 0.2;
 export const HISS_IDLE_S = 0.45;
 export const POUR_MAX_S = 6;
 const OTHERS_GAIN = 0.5;
+/** Shared options for another player's sound without a position (no per-event allocation). */
+const OTHERS_OPTS: PlayOptions = { gain: OTHERS_GAIN, other: true };
 const MAX_SLOTS = 8;
 const STAMP_RING = 16;
 
@@ -71,6 +91,13 @@ export class EventRouter {
   private nightness = 0;
   private suitBed: LoopHandle | null = null;
   private unsubs: Unsubscribe[] = [];
+  private readonly otherVehicles: OtherVehicle[] = [];
+  private ownWork: LoopHandle | null = null;
+  /** Reused for placed (other-player) sounds; consumed synchronously by the player, never kept. */
+  private readonly placed = { gain: OTHERS_GAIN, pan: 0, distanceM: 0, other: true };
+  private readonly stepParams = { surface: "grime" as AudioSurface, speed01: 0 };
+  private readonly driveParams = { kindId: "", speed01: 0, load01: 0 };
+  private readonly workParams = { kindId: "", intensity01: 0 };
   private readonly sweepParams = { toolId: "", speed01: 0, grime01: 0, fill01: 0, dry: false };
   private readonly loopParams = {
     fill01: 0,
@@ -84,10 +111,42 @@ export class EventRouter {
 
   constructor(private readonly a: AudioActions) {
     for (let i = 0; i < MAX_SLOTS; i++) this.sweep.push({ handle: null, lastS: 0, value: 0 });
+    for (let i = 0; i < MAX_OTHER_VEHICLES; i++) this.otherVehicles.push({ id: null, handle: null, lastS: 0 });
+  }
+
+  private readonly extra = {
+    "avatar.stepped": (p: EventMap["avatar.stepped"]): void => {
+      const own = this.own(p.actorSlot);
+      const params = this.stepParams;
+      params.surface = p.surface;
+      params.speed01 = p.speed01;
+      if (own) this.a.play("avatar.footstep", params);
+      else if (p.placement !== undefined) this.a.play("avatar.footstep", params, this.place(p.placement, OTHERS_GAIN));
+    },
+    "vehicle.motion": (p: EventMap["vehicle.motion"]): void => this.onMotion(p),
+    "audio.cue": (p: EventMap["audio.cue"]): void => {
+      const params = p.params as CuePlayParams;
+      const pl = (p.params as { placement?: AudioPlacement }).placement;
+      this.a.play(p.id, params, pl === undefined ? undefined : this.place(pl, 1));
+    },
+    "audio.settings": (p: EventMap["audio.settings"]): void => {
+      this.a.setMono(p.monoAudio);
+      this.a.setCaptions(p.captions);
+    },
+  };
+
+  /** Fills the shared placed-options object for another source (distance rolloff and equal-power pan). */
+  private place(pl: AudioPlacement, gain: number): PlayOptions {
+    const o = this.placed;
+    o.gain = gain;
+    o.pan = pl.pan;
+    o.distanceM = pl.distanceM;
+    o.other = true;
+    return o;
   }
 
   private readonly handlers: Handlers = {
-    "tool.stroke_contact": (p) => this.onStroke(p.actorSlot, p.speedMps, p.grime01, p.dry),
+    "tool.stroke_contact": (p) => this.onStroke(p.actorSlot, p.speedMps, p.grime01, p.dry, p.placement),
     "cell.near_full": (p) => {
       if (this.own(p.actorSlot)) this.a.play("cell.near_full", {});
     },
@@ -144,18 +203,25 @@ export class EventRouter {
     "vehicle.entered": (p) => this.onVehicle(p.actorSlot, p.kindId, true),
     "vehicle.exited": (p) => this.onVehicle(p.actorSlot, p.kindId, false),
     "avatar.jumped": (p) => {
-      if (!this.own(p.actorSlot)) return;
+      if (!this.own(p.actorSlot)) {
+        if (p.placement !== undefined) this.a.play("avatar.jump", {}, this.place(p.placement, OTHERS_GAIN));
+        return;
+      }
       this.a.setAirborne(true);
       this.a.play("avatar.jump", {});
       this.effort = Math.min(1, this.effort + 0.5);
     },
     "avatar.landed": (p) => {
-      if (!this.own(p.actorSlot)) return;
-      this.a.setAirborne(false);
-      this.a.play("avatar.land", {
+      const land = {
         impact01: Math.min(1, Math.max(0, p.impactMps / LAND_IMPACT_FULL_MPS)),
-        surface: p.onClean ? "clean" : "grime",
-      });
+        surface: p.onClean ? ("clean" as const) : ("grime" as const),
+      };
+      if (!this.own(p.actorSlot)) {
+        if (p.placement !== undefined) this.a.play("avatar.land", land, this.place(p.placement, OTHERS_GAIN));
+        return;
+      }
+      this.a.setAirborne(false);
+      this.a.play("avatar.land", land);
       this.effort = Math.min(1, this.effort + 0.25);
     },
     "collectible.found": (p) => {
@@ -171,7 +237,7 @@ export class EventRouter {
       this.a.setMusicPhase(p.phase);
       this.nightness = p.phase === "night" ? 1 : p.phase === "dusk" || p.phase === "dawn" ? 0.5 : 0;
     },
-    "dot.message": (p) => this.onDot(p.textId, p.priority),
+    "dot.message": (p) => this.onDot(p.textId, p.priority, p.syllables),
   };
 
   /** Subscribes to every event of AUDIO_EVENT_CUES. */
@@ -180,6 +246,9 @@ export class EventRouter {
     const on = bus.on as unknown as (name: string, listener: (payload: never) => void) => Unsubscribe;
     for (const name of Object.keys(AUDIO_EVENT_CUES) as (keyof Handlers)[]) {
       this.unsubs.push(on.call(bus, name, this.handlers[name] as (payload: never) => void));
+    }
+    for (const name of AUDIO_EXTRA_EVENTS) {
+      this.unsubs.push(on.call(bus, name, this.extra[name] as (payload: never) => void));
     }
   }
 
@@ -190,7 +259,7 @@ export class EventRouter {
 
   /** Event names this router handles (tests compare it to AUDIO_EVENT_CUES). */
   handledEvents(): readonly string[] {
-    return Object.keys(this.handlers);
+    return [...Object.keys(this.handlers), ...AUDIO_EXTRA_EVENTS];
   }
 
   /** Starts the always-on beds (suit bed, breathing). Called once the context runs. */
@@ -219,6 +288,10 @@ export class EventRouter {
     if (this.pour.handle !== null && nowS - this.pour.lastS > POUR_MAX_S) {
       this.a.stopLoop(this.pour.handle, 0.2);
       this.pour.handle = null;
+    }
+    for (let i = 0; i < this.otherVehicles.length; i++) {
+      const v = this.otherVehicles[i];
+      if (v?.handle != null && nowS - v.lastS > VEHICLE_IDLE_S) this.endOtherVehicle(v);
     }
     // Breathing settles over about 5 s (audio-direction §3).
     this.effort = Math.max(0, this.effort - dtS / 5);
@@ -254,7 +327,13 @@ export class EventRouter {
     return n;
   }
 
-  private onStroke(slot: number, speedMps: number, grime01: number, dry: boolean): void {
+  private onStroke(
+    slot: number,
+    speedMps: number,
+    grime01: number,
+    dry: boolean,
+    placement: AudioPlacement | undefined,
+  ): void {
     const state = this.sweep[slot];
     if (state === undefined) return;
     const now = this.a.nowS();
@@ -266,7 +345,11 @@ export class EventRouter {
     params.grime01 = grime01;
     params.fill01 = this.lastFill[slot] ?? 0;
     params.dry = dry;
-    const opts: PlayOptions | undefined = own ? undefined : { gain: OTHERS_GAIN, other: true };
+    const opts: PlayOptions | undefined = own
+      ? undefined
+      : placement !== undefined
+        ? this.place(placement, OTHERS_GAIN)
+        : OTHERS_OPTS;
     if (state.handle !== null && this.a.isAlive(state.handle)) {
       this.a.updateLoop(state.handle, "tool.sweep", params, opts);
       return;
@@ -340,21 +423,93 @@ export class EventRouter {
     this.a.setDuckFlag("vehicle", entered);
     if (entered) {
       this.a.play("vehicle.enter", { kindId });
-      this.loopParams.speed01 = 0.4;
-      this.drive.handle = this.a.startLoop("vehicle.drive_loop", {
-        kindId,
-        speed01: 0.4,
-        load01: 0,
-      });
+      // Idle motor until the first vehicle.motion event reports speed.
+      const dp = this.driveParams;
+      dp.kindId = kindId;
+      dp.speed01 = 0.15;
+      dp.load01 = 0;
+      this.drive.handle = this.a.startLoop("vehicle.drive_loop", dp);
     } else {
       this.a.play("vehicle.exit", { kindId });
       if (this.drive.handle !== null) this.a.stopLoop(this.drive.handle, 0.3);
       this.drive.handle = null;
+      this.stopOwnWork();
     }
   }
 
-  private onDot(textId: string, priority: "action" | "progress" | "ambient"): void {
-    const syllables = 3 + (hashString(textId) % 6);
+  private stopOwnWork(): void {
+    if (this.ownWork !== null) this.a.stopLoop(this.ownWork, 0.2);
+    this.ownWork = null;
+  }
+
+  private endOtherVehicle(v: OtherVehicle): void {
+    if (v.handle !== null) this.a.stopLoop(v.handle, 0.25);
+    v.handle = null;
+    v.id = null;
+  }
+
+  /** `vehicle.motion` (<= 10 Hz): own vehicle updates the drive and work loops; others' play spatialised if placed. */
+  private onMotion(p: EventMap["vehicle.motion"]): void {
+    if (p.actorSlot !== null && this.own(p.actorSlot)) {
+      const dp = this.driveParams;
+      dp.kindId = p.kindId;
+      dp.speed01 = p.speed01;
+      dp.load01 = p.load01;
+      if (this.drive.handle !== null && this.a.isAlive(this.drive.handle)) {
+        this.a.updateLoop(this.drive.handle, "vehicle.drive_loop", dp);
+      }
+      const wp = this.workParams;
+      wp.kindId = p.kindId;
+      wp.intensity01 = p.workIntensity01;
+      const alive = this.ownWork !== null && this.a.isAlive(this.ownWork);
+      if (p.workIntensity01 > 0.02) {
+        if (alive && this.ownWork !== null) this.a.updateLoop(this.ownWork, "vehicle.work_loop", wp);
+        else this.ownWork = this.a.startLoop("vehicle.work_loop", wp);
+      } else if (this.ownWork !== null) {
+        this.stopOwnWork();
+      }
+      return;
+    }
+    // Another player's or an unoccupied vehicle: only when it has a position and is actually moving.
+    const key = String(p.vehicleId);
+    let slot: OtherVehicle | null = null;
+    for (let i = 0; i < this.otherVehicles.length; i++) {
+      const v = this.otherVehicles[i];
+      if (v !== undefined && v.id === key) {
+        slot = v;
+        break;
+      }
+    }
+    const moving = p.speed01 > 0.02 || p.workIntensity01 > 0.02;
+    if (!moving || p.placement === undefined) {
+      if (slot !== null) this.endOtherVehicle(slot);
+      return;
+    }
+    if (slot === null) {
+      for (let i = 0; i < this.otherVehicles.length; i++) {
+        const v = this.otherVehicles[i];
+        if (v !== undefined && v.id === null) {
+          slot = v;
+          break;
+        }
+      }
+      if (slot === null) return; // budget: at most MAX_OTHER_VEHICLES individual machines
+      slot.id = key;
+    }
+    slot.lastS = this.a.nowS();
+    const dp = this.driveParams;
+    dp.kindId = p.kindId;
+    dp.speed01 = p.speed01;
+    dp.load01 = p.load01;
+    const opts = this.place(p.placement, OTHERS_GAIN);
+    if (slot.handle !== null && this.a.isAlive(slot.handle))
+      this.a.updateLoop(slot.handle, "vehicle.drive_loop", dp, opts);
+    else slot.handle = this.a.startLoop("vehicle.drive_loop", dp, opts);
+  }
+
+  private onDot(textId: string, priority: "action" | "progress" | "ambient", given: number | undefined): void {
+    const syllables =
+      given !== undefined && given >= 1 ? Math.min(32, Math.round(given)) : 3 + (hashString(textId) % 6);
     const contour: DotContour = priority === "action" ? "rise" : priority === "ambient" ? "fall" : "flat";
     this.a.play("dot.bloop", {});
     this.a.play("dot.chirp", { syllables, contour }, { delayS: 0.32 });

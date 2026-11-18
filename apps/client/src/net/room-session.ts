@@ -32,6 +32,8 @@ import {
   PROTOCOL_VERSION,
   SeatReservationSchema,
   type EventBus,
+  type KickNoticePayload,
+  type ModerationReasonCode,
   type NetConnectionState,
   type NetStatusEvent,
 } from "@moon-cleanup/shared";
@@ -105,6 +107,42 @@ export function equippedToolOf(state: unknown, sessionId: string): number {
   const tool = (info as { equippedTool?: unknown }).equippedTool;
   return typeof tool === "number" && Number.isInteger(tool) && tool >= 0 && tool <= 255 ? tool : -1;
 }
+
+/** One row of the room roster (Schema `players`). */
+export interface RosterEntry {
+  readonly playerId: string;
+  readonly displayName: string;
+  readonly role: string;
+  readonly connected: boolean;
+  /** True for this client's own row. */
+  readonly self: boolean;
+}
+
+/** Reads the roster from a decoded `ShiftState`; tolerant (never throws), sorted by playerId for a stable order. */
+export function rosterOf(state: unknown, sessionId: string | undefined): RosterEntry[] {
+  if (typeof state !== "object" || state === null) return [];
+  const players = (state as { players?: unknown }).players;
+  if (typeof players !== "object" || players === null) return [];
+  const forEach = (players as { forEach?: unknown }).forEach;
+  if (typeof forEach !== "function") return [];
+  const out: RosterEntry[] = [];
+  (forEach as (cb: (v: unknown, k: string) => void) => void).call(players, (v, k) => {
+    if (typeof v !== "object" || v === null || out.length >= 16) return;
+    const i = v as { playerId?: unknown; displayName?: unknown; role?: unknown; connected?: unknown };
+    if (typeof i.playerId !== "string") return;
+    out.push({
+      playerId: i.playerId,
+      displayName: typeof i.displayName === "string" ? i.displayName : "",
+      role: typeof i.role === "string" ? i.role : "staff",
+      connected: i.connected !== false,
+      self: k === sessionId,
+    });
+  });
+  return out.sort((a, b) => (a.playerId < b.playerId ? -1 : 1));
+}
+
+const rosterKey = (r: readonly RosterEntry[]): string =>
+  r.map((e) => `${e.playerId}|${e.displayName}|${e.role}|${e.connected ? 1 : 0}|${e.self ? 1 : 0}`).join(";");
 
 /** SDK reconnection settings (Colyseus `room.reconnection`): delay = clamp(2^attempt * delayMs, min, max). */
 export interface ReconnectPolicy {
@@ -227,6 +265,8 @@ export interface RoomSessionHandlers {
   onBytes?(message: Uint8Array): void;
   /** A validated server control message other than `hello` (error, shutdown_notice, sim_events, ...). */
   onControl?(type: string, payload: unknown): void;
+  /** HELLO carried `saveArchived: true`: the room's old save was archived and the shift starts fresh. Show a one-time notice. */
+  onSaveArchived?(): void;
   /** Own Schema `equippedTool` changed (also once after each (re)join when known). Feeds prediction's tool. */
   onEquippedTool?(toolCode: number): void;
 }
@@ -304,6 +344,14 @@ export interface RoomSession {
   sendDustRequest(body: Uint8Array): boolean;
   /** Last own Schema `equippedTool` seen, or -1 before the first state patch. */
   readonly equippedTool: number;
+  /** Holder only (the server refuses others with `error FORBIDDEN`): kick, or kick and ban for this shift. False when not joined. */
+  sendKick(playerId: string, reasonCode: ModerationReasonCode, ban?: boolean): boolean;
+  /** The last `kick_notice` received before a close (null otherwise). */
+  readonly kickNotice: KickNoticePayload | null;
+  /** Current roster, from the latest Schema patch (empty before the first). */
+  roster(): readonly RosterEntry[];
+  /** Notified when the roster changes (join, leave, drop, role). Computed only while a listener exists. Returns unsubscribe. */
+  onRoster(listener: (roster: readonly RosterEntry[]) => void): () => void;
   dispose(): void;
 }
 
@@ -374,6 +422,17 @@ export function createRoomSession(options: RoomSessionOptions): RoomSession {
 
   let room: RoomConnection | null = null;
   let equippedTool = -1;
+  let kickNotice: KickNoticePayload | null = null;
+  let lastState: unknown = null;
+  let rosterSig = "";
+  const rosterListeners = new Set<(roster: readonly RosterEntry[]) => void>();
+  const notifyRoster = (sid: string | undefined): void => {
+    const roster = rosterOf(lastState, sid);
+    const sig = rosterKey(roster);
+    if (sig === rosterSig) return;
+    rosterSig = sig;
+    for (const l of rosterListeners) l(roster);
+  };
   let attempt = 0;
   let disposed = false;
   let ticker: ReturnType<typeof setInterval> | undefined;
@@ -534,6 +593,8 @@ export function createRoomSession(options: RoomSessionOptions): RoomSession {
         return;
       }
       core.onHello(now(), hello.data);
+      // One-shot server flag (first joiner after a bake-hash mismatch archived the old save); once per HELLO, no per-frame cost.
+      if (hello.data.saveArchived === true) handlers.onSaveArchived?.();
     });
     for (const id of s2cBytesIdsTable()) {
       r.onMessage(id, (body: unknown) => {
@@ -548,6 +609,7 @@ export function createRoomSession(options: RoomSessionOptions): RoomSession {
           stats.controlInvalid++;
           return;
         }
+        if (type === MESSAGE_CATALOG.KICK_NOTICE.id) kickNotice = parsed.data as KickNoticePayload;
         handlers.onControl?.(type, parsed.data);
       });
     }
@@ -560,6 +622,8 @@ export function createRoomSession(options: RoomSessionOptions): RoomSession {
       // One map lookup per Schema patch (frame ticks only, 10 Hz); the handler fires on change only.
       r.onStateChange((state: unknown) => {
         if (room !== r) return;
+        lastState = state;
+        if (rosterListeners.size > 0) notifyRoster(sid);
         const tool = equippedToolOf(state, sid);
         if (tool < 0 || tool === equippedTool) return;
         equippedTool = tool;
@@ -749,6 +813,8 @@ export function createRoomSession(options: RoomSessionOptions): RoomSession {
     if (disposed) return;
     ensureWorker();
     authRefreshUsed = false;
+    kickNotice = null;
+    lastState = null;
     startTicker();
     core.start(now());
   };
@@ -795,6 +861,21 @@ export function createRoomSession(options: RoomSessionOptions): RoomSession {
     },
     get equippedTool() {
       return equippedTool;
+    },
+    sendKick(playerId, reasonCode, ban) {
+      if (room === null || core.phase !== "joined") return false;
+      room.send(MESSAGE_CATALOG.KICK.id, ban === true ? { playerId, reasonCode, ban: true } : { playerId, reasonCode });
+      return true;
+    },
+    get kickNotice() {
+      return kickNotice;
+    },
+    roster: () => rosterOf(lastState, room?.sessionId),
+    onRoster(listener) {
+      rosterListeners.add(listener);
+      return () => {
+        rosterListeners.delete(listener);
+      };
     },
     dispose() {
       if (disposed) return;

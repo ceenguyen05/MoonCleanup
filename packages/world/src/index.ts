@@ -48,6 +48,7 @@ export {
   STROKE_LOG_WORDS,
   StrokeLogStore,
 } from "./dust/stroke-log";
+export { DUST_INIT_REVISION, coverKey, coverTexelTarget, type DustCoverSpec } from "./dust/initial-cover";
 export { PlotAttributeTables, computePlotAreasM2, createUniformPlotAttributes } from "./dust/plot-attributes";
 export {
   DUST_CHUNK_LAYOUT_MAX_BYTES,

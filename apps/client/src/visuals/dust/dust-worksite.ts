@@ -42,13 +42,44 @@ export interface DustFeedPort {
   pump(): void;
   /** Numbers for `__mcLook.info().dustFeed` (strokes, restores, ...). */
   info(): Readonly<Record<string, number | boolean>>;
+  /** The patch follows the player (game worksite); absent: the patch stays on `sitePlot` (dev scene). */
+  readonly follow?: DustSiteFollow | null;
 }
 
+/**
+ * How the dust ground follows the player (M1-W3-T05): the avatar position, and on the flat worksite the render frame's
+ * site, which the gameplay camera mapper (`PlotFrameMapper`) owns. The worksite builds the tables of a new site in slices,
+ * asks the frame to move (`requestSite`); the frame applies the move at its next mapping (first in the next frame, the
+ * gameplay present), and the worksite swaps its tables in that same frame, so the camera, the avatar and the ground move
+ * together. On the terrain (moon-centred render space) there is no frame: the tables swap as soon as they are built.
+ */
+export interface DustSiteFollow {
+  /** Avatar position (moon-centred, any scale) into `out`; false before the first pose. Must not allocate. */
+  avatar(out: { x: number; y: number; z: number }): boolean;
+  /** The flat worksite's render frame (required there; ignored on the terrain). */
+  readonly frame?: DustSiteFrame | null;
+}
+
+/** The render frame of the flat worksite (`PlotFrameMapper` satisfies it). */
+export interface DustSiteFrame {
+  readonly site: number;
+  readonly siteVersion: number;
+  readonly sitePending: boolean;
+  requestSite(plot: number): void;
+  applyPendingSite(): boolean;
+}
+
+/** The patch re-centres once the avatar is this far (m along the ground) from its site; the lookup covers +-112 m. */
+export const FOLLOW_RECENTRE_M = 40;
+/** Main-thread budget per frame of a re-centre build (ms). */
+const FOLLOW_BUILD_BUDGET_MS = 1;
+
 const GROUND_RADIUS_M = 150;
+// World z = -v since the W3-T05 mirror fix: the poses are the earlier ones with z negated (same ground in view).
 const VIEWS: Readonly<Record<string, Pose>> = {
-  play: { position: [-4, 5, -16], target: [-2, 0, 2] },
-  top: { position: [0, 75, 14.01], target: [0, 0, 14] },
-  wide: { position: [34, 26, -44], target: [-8, 0, 10] },
+  play: { position: [-4, 5, 16], target: [-2, 0, -2] },
+  top: { position: [0, 75, -14.01], target: [0, 0, -14] },
+  wide: { position: [34, 26, 44], target: [-8, 0, -10] },
 };
 /** Scenario frames run per rendered frame during the warm-up. */
 const WARM_STEPS_PER_FRAME = 8;
@@ -150,6 +181,10 @@ export class DustWorksite implements LookScene {
     if (feed !== null) {
       // Restore slices of the ledger view, then this frame's atlas work (the strokes arrived with the host's frames).
       feed.pump();
+      const follow = feed.follow;
+      const frame = follow?.frame;
+      if (follow !== undefined && follow !== null && frame !== undefined && frame !== null)
+        this.follow(feed.grid, follow, frame);
       this.layer.update(this.cam.x, this.cam.y, this.cam.z, renderer);
       this.lookup.sync();
       return;
@@ -164,6 +199,47 @@ export class DustWorksite implements LookScene {
       this.layer.pass.flush(renderer);
     }
     this.lookup.sync();
+  }
+
+  /** Patch moves (re-centres committed) and the frame version they follow (`follow`). */
+  recentres = 0;
+  private followVersion = -1;
+  private readonly avatarPos = { x: 0, y: 0, z: 1 };
+
+  /**
+   * Follows the player (cold except on a move): the atlas residency centres on the avatar every frame; past
+   * FOLLOW_RECENTRE_M from the site the tables of the avatar's plot are built in 1 ms slices, then the move is staged on
+   * the frame and committed here in the frame the frame applied it. No allocation.
+   */
+  private follow(grid: IcoPlotGrid, follow: DustSiteFollow, f: DustSiteFrame): void {
+    const lookup = this.lookup;
+    if (this.followVersion < 0) this.followVersion = f.siteVersion;
+    // The camera mapper did not run this frame (no pose): apply a staged move here so it never waits.
+    if (f.sitePending) f.applyPendingSite();
+    if (f.siteVersion !== this.followVersion) {
+      this.followVersion = f.siteVersion;
+      if (lookup.recentreReady && lookup.recentreSite === f.site) {
+        lookup.commitRecentre();
+        this.recentres++;
+      }
+    }
+    const p = this.avatarPos;
+    if (!follow.avatar(p)) return;
+    const len = Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+    if (!(len > 0)) return;
+    const cam = this.cam;
+    cam.x = p.x / len;
+    cam.y = p.y / len;
+    cam.z = p.z / len;
+    if (lookup.recentring) {
+      if (lookup.stepRecentre(FOLLOW_BUILD_BUDGET_MS) && !f.sitePending) f.requestSite(lookup.recentreSite);
+      return;
+    }
+    const c = grid.centers;
+    const o = lookup.sitePlot * 3;
+    const dot = cam.x * c[o]! + cam.y * c[o + 1]! + cam.z * c[o + 2]!;
+    const distM = Math.acos(dot > 1 ? 1 : dot) * grid.params.radiusM;
+    if (distM > FOLLOW_RECENTRE_M) lookup.beginRecentre(grid.plotAt(cam, lookup.sitePlot as PlotId));
   }
 
   setView(name: string): void {

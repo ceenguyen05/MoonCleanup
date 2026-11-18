@@ -1,0 +1,4162 @@
+{
+  "browser": "157.0.8103.79",
+  "preset": "medium",
+  "scale": "0.75",
+  "viewport": [
+    1920,
+    1080
+  ],
+  "runs": [
+    {
+      "lane": "flat",
+      "i": 0,
+      "errors": [],
+      "warnings": [
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr"
+      ],
+      "url": "http://127.0.0.1:5493/?perf=1&audio=0&preset=medium&scale=0.75&ground=flat",
+      "readyS": 24.165,
+      "before": {
+        "game": {
+          "pose": {
+            "x": 43.51953125,
+            "y": 1999.1942291259766,
+            "z": 36.4482421875,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 204,
+            "sent": 204,
+            "toolInputs": 0,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 253,
+            "ackInputSeq": 202,
+            "framesDecoded": 204,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 0,
+            "framesWithStrokes": 0,
+            "lastStrokeTick": -1
+          },
+          "dust": {
+            "cellGrams": 0
+          },
+          "prediction": {
+            "predicted": 202,
+            "reconciles": 203,
+            "replayed": 418,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.0001068115234375,
+            "maxCorrectionM": 0.0001068115234375
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 253,
+          "framesDecoded": 204,
+          "decodeErrors": 0,
+          "strokesApplied": 0,
+          "strokesForwarded": 0,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.6000000089406967,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 458.90000000596046,
+          "siteMoves": 1,
+          "site": 81666
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 0,
+          "rebuildBacklog": 0,
+          "rebuilds": 0,
+          "evictions": 0,
+          "strokesReplayed": 0,
+          "tileStrokeDraws": 0,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 0
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 37.45666664242744,
+          "frameTimeP95Ms": 52.599998474121094,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "idle": {
+        "frame": {
+          "n": 309,
+          "p50": 30.80000000000291,
+          "p95": 70.30000000000291,
+          "p99": 216.6999999999971,
+          "max": 335,
+          "fps": 28.111865208610066,
+          "over33": 120
+        },
+        "gpuRenderP50Median": 27.686650999999998,
+        "gpuRenderP95Median": 29.431789000000002,
+        "gpuWindows": 10,
+        "drawsMax": 26,
+        "drawsMedian": 26,
+        "cpuP50Median": 23.200000002980232,
+        "cpuP95Median": 41.80000001192093,
+        "heapStartMB": 159.5897388458252,
+        "heapEndMB": 149.9768886566162,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.004583333494762579,
+            "min": 0,
+            "max": 0.4000000059604645,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.33416666618237895,
+            "min": 0,
+            "max": 34.79999999701977,
+            "p50": 0.10000000894069672,
+            "p95": 0.5,
+            "p99": 3
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.11708333330849806,
+            "min": 0,
+            "max": 1.2000000029802322,
+            "p50": 0.09999999403953552,
+            "p95": 0.29999999701976776,
+            "p99": 0.7000000029802322
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.4033333331346512,
+            "min": 0,
+            "max": 15.799999997019768,
+            "p50": 0.19999998807907104,
+            "p95": 0.7000000029802322,
+            "p99": 7.9000000059604645
+          },
+          "render": {
+            "samples": 240,
+            "avg": 22.980000000881653,
+            "min": 3.8999999910593033,
+            "max": 213.90000000596046,
+            "p50": 20.5,
+            "p95": 42.400000005960464,
+            "p99": 156.29999999701977
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.03833333334575097,
+            "min": 0,
+            "max": 0.6000000089406967,
+            "p50": 0,
+            "p95": 0.10000000894069672,
+            "p99": 0.3999999910593033
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "scrubWalk": {
+        "frame": {
+          "n": 381,
+          "p50": 27.400000000001455,
+          "p95": 89.19999999999709,
+          "p99": 139.40000000000146,
+          "max": 165,
+          "fps": 29.538547416733838,
+          "over33": 154
+        },
+        "gpuRenderP50Median": 30.627686,
+        "gpuRenderP95Median": 31.312761999999992,
+        "gpuWindows": 11,
+        "drawsMax": 27,
+        "drawsMedian": 26,
+        "cpuP50Median": 10.800000011920929,
+        "cpuP95Median": 35.70000000298023,
+        "heapStartMB": 157.90650749206543,
+        "heapEndMB": 162.06323051452637,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.004583333308498065,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.30666666633139056,
+            "min": 0,
+            "max": 7.9000000059604645,
+            "p50": 0.19999998807907104,
+            "p95": 0.6000000089406967,
+            "p99": 3.4000000059604645
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.2116666672130426,
+            "min": 0,
+            "max": 5.700000002980232,
+            "p50": 0.10000000894069672,
+            "p95": 0.4000000059604645,
+            "p99": 2.6000000089406967
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 1.0670833326255282,
+            "min": 0,
+            "max": 24.399999991059303,
+            "p50": 0.20000000298023224,
+            "p95": 4.5,
+            "p99": 14.700000002980232
+          },
+          "render": {
+            "samples": 240,
+            "avg": 17.703749999652306,
+            "min": 3.5,
+            "max": 66.09999999403954,
+            "p50": 17,
+            "p95": 34.8999999910593,
+            "p99": 56.5
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.10583333354443311,
+            "min": 0,
+            "max": 1.0999999940395355,
+            "p50": 0,
+            "p95": 0.30000001192092896,
+            "p99": 0.7999999970197678
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "afterScrub": {
+        "game": {
+          "pose": {
+            "x": 90.94627380371095,
+            "y": 1997.4910278320315,
+            "z": 41.93310546875001,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1187,
+            "sent": 1187,
+            "toolInputs": 498,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1286,
+            "ackInputSeq": 1186,
+            "framesDecoded": 1195,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 200,
+            "framesWithStrokes": 196,
+            "lastStrokeTick": 1256
+          },
+          "dust": {
+            "cellGrams": 2738
+          },
+          "prediction": {
+            "predicted": 1185,
+            "reconciles": 1194,
+            "replayed": 1984,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.00018374015165393518,
+            "maxCorrectionM": 0.5647871953535163
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1286,
+          "framesDecoded": 1195,
+          "decodeErrors": 0,
+          "strokesApplied": 200,
+          "strokesForwarded": 200,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.6000000089406967,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 458.90000000596046,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 5,
+          "rebuildBacklog": 0,
+          "rebuilds": 5,
+          "evictions": 0,
+          "strokesReplayed": 200,
+          "tileStrokeDraws": 410,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 7.5
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 32.84999990438421,
+          "frameTimeP95Ms": 65.30000305175781,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "afterTurn": {
+        "game": {
+          "pose": {
+            "x": 90.94627380371094,
+            "y": 1997.4910278320312,
+            "z": 41.93310546875,
+            "yawRad": 4.400000000000001,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1454,
+            "sent": 1454,
+            "toolInputs": 498,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1552,
+            "ackInputSeq": 1451,
+            "framesDecoded": 1461,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 200,
+            "framesWithStrokes": 196,
+            "lastStrokeTick": 1256
+          },
+          "dust": {
+            "cellGrams": 2738
+          },
+          "prediction": {
+            "predicted": 1452,
+            "reconciles": 1460,
+            "replayed": 2431,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.00018374015165393518,
+            "maxCorrectionM": 0.5647871953535163
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1552,
+          "framesDecoded": 1461,
+          "decodeErrors": 0,
+          "strokesApplied": 200,
+          "strokesForwarded": 200,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.6000000089406967,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 458.90000000596046,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 5,
+          "rebuildBacklog": 0,
+          "rebuilds": 5,
+          "evictions": 0,
+          "strokesReplayed": 200,
+          "tileStrokeDraws": 410,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 7.5
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 29.09291659196218,
+          "frameTimeP95Ms": 48.599998474121094,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "yawAfterTurn": 4.400000000000001,
+      "longWalk": {
+        "frame": {
+          "n": 673,
+          "p50": 21.80000000000291,
+          "p95": 97.80000000000291,
+          "p99": 158.1999999999971,
+          "max": 295.1999999999971,
+          "fps": 30.783163942074584,
+          "over33": 193
+        },
+        "gpuRenderP50Median": 24.601283000000002,
+        "gpuRenderP95Median": 31.439092000000002,
+        "gpuWindows": 19,
+        "drawsMax": 27,
+        "drawsMedian": 26,
+        "cpuP50Median": 10.499999985098839,
+        "cpuP95Median": 27.799999997019768,
+        "heapStartMB": 160.42936420440674,
+        "heapEndMB": 149.16130256652832,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.0033333333830038708,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.26708333287388086,
+            "min": 0,
+            "max": 14.100000008940697,
+            "p50": 0.19999998807907104,
+            "p95": 0.6000000089406967,
+            "p99": 1.7999999970197678
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.10500000019868215,
+            "min": 0,
+            "max": 0.30000001192092896,
+            "p50": 0.09999999403953552,
+            "p95": 0.29999999701976776,
+            "p99": 0.30000001192092896
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.18666666646798452,
+            "min": 0,
+            "max": 3.1000000089406967,
+            "p50": 0.10000000894069672,
+            "p95": 0.4000000059604645,
+            "p99": 0.8999999910593033
+          },
+          "render": {
+            "samples": 240,
+            "avg": 12.432916667001942,
+            "min": 3.5,
+            "max": 97,
+            "p50": 8.900000005960464,
+            "p95": 27.900000005960464,
+            "p99": 38.5
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.0812500004346172,
+            "min": 0,
+            "max": 5.200000002980232,
+            "p50": 0,
+            "p95": 0.29999999701976776,
+            "p99": 0.8999999910593033
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "end": {
+        "game": {
+          "pose": {
+            "x": 75.43212891051017,
+            "y": 1998.5675507722126,
+            "z": -6.142578125346913,
+            "yawRad": 2.5168146928204167,
+            "pitchRad": -0.7899999999999999,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 2408,
+            "sent": 2408,
+            "toolInputs": 935,
+            "buttons": 0,
+            "toolParam": 178
+          },
+          "worker": {
+            "tick": 2538,
+            "ackInputSeq": 2406,
+            "framesDecoded": 2436,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 285,
+            "framesWithStrokes": 280,
+            "lastStrokeTick": 1966
+          },
+          "dust": {
+            "cellGrams": 4000
+          },
+          "prediction": {
+            "predicted": 2406,
+            "reconciles": 2435,
+            "replayed": 4002,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.0001678466796875,
+            "maxCorrectionM": 0.5647871953535163
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 2538,
+          "framesDecoded": 2436,
+          "decodeErrors": 0,
+          "strokesApplied": 285,
+          "strokesForwarded": 285,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.6000000089406967,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 458.90000000596046,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 6,
+          "rebuildBacklog": 0,
+          "rebuilds": 6,
+          "evictions": 0,
+          "strokesReplayed": 285,
+          "tileStrokeDraws": 608,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 7.5
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 31.80291669269403,
+          "frameTimeP95Ms": 67.5,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      }
+    },
+    {
+      "lane": "terrain",
+      "i": 1,
+      "errors": [],
+      "warnings": [
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "[render] 4 pipeline(s) created after warm-up (frame 1915)",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr"
+      ],
+      "url": "http://127.0.0.1:5493/?perf=1&audio=0&preset=medium&scale=0.75&ground=terrain",
+      "readyS": 142.459,
+      "before": {
+        "game": {
+          "pose": {
+            "x": 43.39697265625,
+            "y": 1993.5675964355469,
+            "z": 36.345703125,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 210,
+            "sent": 210,
+            "toolInputs": 0,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 241,
+            "ackInputSeq": 208,
+            "framesDecoded": 207,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 0,
+            "framesWithStrokes": 0,
+            "lastStrokeTick": -1
+          },
+          "dust": {
+            "cellGrams": 0
+          },
+          "prediction": {
+            "predicted": 208,
+            "reconciles": 206,
+            "replayed": 214,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.000213623046875,
+            "maxCorrectionM": 0.000213623046875
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 241,
+          "framesDecoded": 207,
+          "decodeErrors": 0,
+          "strokesApplied": 0,
+          "strokesForwarded": 0,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.3999999910593033,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 583.2999999970198,
+          "siteMoves": 1,
+          "site": 81666
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 0,
+          "rebuildBacklog": 0,
+          "rebuilds": 0,
+          "evictions": 0,
+          "strokesReplayed": 0,
+          "tileStrokeDraws": 0,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 0
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 40,
+          "perLevel": [
+            0,
+            0,
+            4,
+            5,
+            3,
+            7,
+            5,
+            4,
+            12
+          ],
+          "triangles": 25920,
+          "visited": 118,
+          "culledHorizon": 8,
+          "culledFrustum": 42,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9662.79999999702,
+            "decodeMs": 1149.4000000059605
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 140,
+          "shadowPerCascade": [
+            23,
+            59,
+            58,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.30000001192092896,
+            "p95": 0.5,
+            "max": 0.800000011920929,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.20000000298023224,
+            "p95": 0.30000001192092896,
+            "max": 1.7000000476837158,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 1511.7999999970198,
+            "decodeMs": 219.5
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 843.2260073048745,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.550005552114591
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 30.083750055233637,
+          "frameTimeP95Ms": 48,
+          "drawCalls": 30,
+          "triangles": 101579,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "noLock": true,
+      "idle": {
+        "frame": {
+          "n": 357,
+          "p50": 28.5,
+          "p95": 46.10000000000582,
+          "p99": 59.40000000002328,
+          "max": 74.70000000001164,
+          "fps": 33.94245944969484,
+          "over33": 81
+        },
+        "gpuRenderP50Median": 23.391135000000002,
+        "gpuRenderP95Median": 24.587029999999995,
+        "gpuWindows": 8,
+        "drawsMax": 30,
+        "drawsMedian": 30,
+        "cpuP50Median": 23.399999991059303,
+        "cpuP95Median": 28.899999991059303,
+        "heapStartMB": 183.8433780670166,
+        "heapEndMB": 180.1924648284912,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.00458333312223355,
+            "min": 0,
+            "max": 0.20000000298023224,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999403953552
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.20624999981373549,
+            "min": 0,
+            "max": 7,
+            "p50": 0.10000000894069672,
+            "p95": 0.3999999910593033,
+            "p99": 1.800000011920929
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.09666666698952515,
+            "min": 0,
+            "max": 0.9000000059604645,
+            "p50": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "p99": 0.3999999910593033
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.8412499997764826,
+            "min": 0.4000000059604645,
+            "max": 6.5,
+            "p50": 0.7000000029802322,
+            "p95": 1.4000000059604645,
+            "p99": 3.0999999940395355
+          },
+          "render": {
+            "samples": 240,
+            "avg": 21.45541666671634,
+            "min": 6.5,
+            "max": 60,
+            "p50": 22.400000005960464,
+            "p95": 27.5,
+            "p99": 51.3999999910593
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.026250000484287737,
+            "min": 0,
+            "max": 0.29999999701976776,
+            "p50": 0,
+            "p95": 0.10000000894069672,
+            "p99": 0.20000000298023224
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "scrubWalk": {
+        "frame": {
+          "n": 421,
+          "p50": 29.5,
+          "p95": 46.79999999998836,
+          "p99": 61.69999999998254,
+          "max": 69.39999999999418,
+          "fps": 33.37058790890862,
+          "over33": 96
+        },
+        "gpuRenderP50Median": 24.054291999999997,
+        "gpuRenderP95Median": 28.708799,
+        "gpuWindows": 12,
+        "drawsMax": 30,
+        "drawsMedian": 30,
+        "cpuP50Median": 18.399999991059303,
+        "cpuP95Median": 28.299999997019768,
+        "heapStartMB": 189.7017526626587,
+        "heapEndMB": 196.42900466918945,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.004583333246409893,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.21833333385487397,
+            "min": 0,
+            "max": 2.4000000059604645,
+            "p50": 0.19999998807907104,
+            "p95": 0.5999999940395355,
+            "p99": 1.9000000059604645
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.11666666666666667,
+            "min": 0,
+            "max": 1.9000000059604645,
+            "p50": 0.09999999403953552,
+            "p95": 0.29999999701976776,
+            "p99": 0.7999999970197678
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.8745833341032266,
+            "min": 0.3999999910593033,
+            "max": 8,
+            "p50": 0.7000000029802322,
+            "p95": 1.7000000029802322,
+            "p99": 3.7999999970197678
+          },
+          "render": {
+            "samples": 240,
+            "avg": 20.71708333219091,
+            "min": 5.299999997019768,
+            "max": 60.20000000298023,
+            "p50": 22.30000001192093,
+            "p95": 28.099999994039536,
+            "p99": 41.8999999910593
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.025000000186264516,
+            "min": 0,
+            "max": 0.20000000298023224,
+            "p50": 0,
+            "p95": 0.10000000894069672,
+            "p99": 0.20000000298023224
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "afterScrub": {
+        "game": {
+          "pose": {
+            "x": 43.59179687498199,
+            "y": 1993.3878784171452,
+            "z": 44.71386718735409,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1394,
+            "sent": 1394,
+            "toolInputs": 0,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1415,
+            "ackInputSeq": 1391,
+            "framesDecoded": 1356,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 0,
+            "framesWithStrokes": 0,
+            "lastStrokeTick": -1
+          },
+          "dust": {
+            "cellGrams": 0
+          },
+          "prediction": {
+            "predicted": 1392,
+            "reconciles": 1355,
+            "replayed": 1552,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.00018310546875,
+            "maxCorrectionM": 0.17039508875934078
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1415,
+          "framesDecoded": 1356,
+          "decodeErrors": 0,
+          "strokesApplied": 0,
+          "strokesForwarded": 0,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.3999999910593033,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 583.2999999970198,
+          "siteMoves": 1,
+          "site": 81666
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 0,
+          "rebuildBacklog": 0,
+          "rebuilds": 0,
+          "evictions": 0,
+          "strokesReplayed": 0,
+          "tileStrokeDraws": 0,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 0
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 43,
+          "perLevel": [
+            0,
+            0,
+            5,
+            5,
+            3,
+            8,
+            6,
+            6,
+            10
+          ],
+          "triangles": 27864,
+          "visited": 122,
+          "culledHorizon": 7,
+          "culledFrustum": 43,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9662.79999999702,
+            "decodeMs": 1149.4000000059605
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 136,
+          "shadowPerCascade": [
+            25,
+            54,
+            57,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.3999999761581421,
+            "p95": 0.6000000238418579,
+            "max": 2.9000000953674316,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.20000000298023224,
+            "p95": 0.4000000059604645,
+            "max": 3.700000047683716,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 1511.7999999970198,
+            "decodeMs": 219.5
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 837.3667719366749,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.5499967918341406
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 29.78833335141341,
+          "frameTimeP95Ms": 77.69999694824219,
+          "drawCalls": 30,
+          "triangles": 102723,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "afterTurn": {
+        "game": {
+          "pose": {
+            "x": 43.59179687500001,
+            "y": 1993.3878784179694,
+            "z": 44.71386718750001,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1648,
+            "sent": 1648,
+            "toolInputs": 0,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1658,
+            "ackInputSeq": 1640,
+            "framesDecoded": 1590,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 0,
+            "framesWithStrokes": 0,
+            "lastStrokeTick": -1
+          },
+          "dust": {
+            "cellGrams": 0
+          },
+          "prediction": {
+            "predicted": 1646,
+            "reconciles": 1589,
+            "replayed": 1815,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.00018310546875,
+            "maxCorrectionM": 0.17039508875934078
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1658,
+          "framesDecoded": 1590,
+          "decodeErrors": 0,
+          "strokesApplied": 0,
+          "strokesForwarded": 0,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.3999999910593033,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 583.2999999970198,
+          "siteMoves": 1,
+          "site": 81666
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 0,
+          "rebuildBacklog": 0,
+          "rebuilds": 0,
+          "evictions": 0,
+          "strokesReplayed": 0,
+          "tileStrokeDraws": 0,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 0
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 43,
+          "perLevel": [
+            0,
+            0,
+            5,
+            5,
+            3,
+            8,
+            6,
+            6,
+            10
+          ],
+          "triangles": 27864,
+          "visited": 122,
+          "culledHorizon": 7,
+          "culledFrustum": 43,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9662.79999999702,
+            "decodeMs": 1149.4000000059605
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 136,
+          "shadowPerCascade": [
+            25,
+            54,
+            57,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.3999999761581421,
+            "p95": 0.800000011920929,
+            "max": 3.5999999046325684,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.20000000298023224,
+            "p95": 0.4000000059604645,
+            "max": 3.799999952316284,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 1511.7999999970198,
+            "decodeMs": 219.5
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 837.3667719365757,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.549996792668587
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 30.303749945759773,
+          "frameTimeP95Ms": 54.5,
+          "drawCalls": 30,
+          "triangles": 102723,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "yawAfterTurn": 0,
+      "longWalk": {
+        "frame": {
+          "n": 676,
+          "p50": 24.39999999999418,
+          "p95": 92.20000000001164,
+          "p99": 127,
+          "max": 232.20000000001164,
+          "fps": 31.33285128946736,
+          "over33": 193
+        },
+        "gpuRenderP50Median": 24.283454000000006,
+        "gpuRenderP95Median": 25.678513999999996,
+        "gpuWindows": 18,
+        "drawsMax": 30,
+        "drawsMedian": 30,
+        "cpuP50Median": 11.599999994039536,
+        "cpuP95Median": 27,
+        "heapStartMB": 200.4062032699585,
+        "heapEndMB": 184.13479900360107,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.004166666542490324,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999403953552
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.21166666715095442,
+            "min": 0,
+            "max": 1.2999999970197678,
+            "p50": 0.20000000298023224,
+            "p95": 0.5,
+            "p99": 0.7000000029802322
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.1537499995281299,
+            "min": 0,
+            "max": 4.799999997019768,
+            "p50": 0.10000000894069672,
+            "p95": 0.29999999701976776,
+            "p99": 0.6000000089406967
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.9166666661699613,
+            "min": 0.5,
+            "max": 15.5,
+            "p50": 0.7000000029802322,
+            "p95": 1.3999999910593033,
+            "p99": 4.4000000059604645
+          },
+          "render": {
+            "samples": 240,
+            "avg": 13.140000000844399,
+            "min": 4.5999999940395355,
+            "max": 82.79999999701977,
+            "p50": 10.299999997019768,
+            "p95": 26.399999991059303,
+            "p99": 62.30000001192093
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.05166666687776645,
+            "min": 0,
+            "max": 0.7999999970197678,
+            "p50": 0,
+            "p95": 0.29999999701976776,
+            "p99": 0.5
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "end": {
+        "game": {
+          "pose": {
+            "x": 118.67431640625144,
+            "y": 1989.3344879150632,
+            "z": 44.62304687500054,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 2615,
+            "sent": 2615,
+            "toolInputs": 0,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 2594,
+            "ackInputSeq": 2613,
+            "framesDecoded": 2489,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 0,
+            "framesWithStrokes": 0,
+            "lastStrokeTick": -1
+          },
+          "dust": {
+            "cellGrams": 0
+          },
+          "prediction": {
+            "predicted": 2613,
+            "reconciles": 2488,
+            "replayed": 3194,
+            "replayCapped": 0,
+            "unknownAcks": 2,
+            "lastCorrectionM": 0.0000152587890625,
+            "maxCorrectionM": 0.17608520732173788
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 2594,
+          "framesDecoded": 2489,
+          "decodeErrors": 0,
+          "strokesApplied": 0,
+          "strokesForwarded": 0,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.3999999910593033,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 583.2999999970198,
+          "siteMoves": 2,
+          "site": 81540
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 0,
+          "rebuildBacklog": 0,
+          "rebuilds": 0,
+          "evictions": 0,
+          "strokesReplayed": 0,
+          "tileStrokeDraws": 0,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 0
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 50,
+          "perLevel": [
+            0,
+            0,
+            5,
+            2,
+            10,
+            7,
+            6,
+            10,
+            10
+          ],
+          "triangles": 32400,
+          "visited": 122,
+          "culledHorizon": 8,
+          "culledFrustum": 35,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9662.79999999702,
+            "decodeMs": 1149.4000000059605
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 143,
+          "shadowPerCascade": [
+            23,
+            54,
+            66,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.3999999761581421,
+            "p95": 0.800000011920929,
+            "max": 4.599999904632568,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.20000000298023224,
+            "p95": 0.3999999761581421,
+            "max": 3,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 1511.7999999970198,
+            "decodeMs": 219.5
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 772.705946948401,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.5499923561823312
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 31.524583280831575,
+          "frameTimeP95Ms": 52.29999923706055,
+          "drawCalls": 30,
+          "triangles": 108659,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      }
+    },
+    {
+      "lane": "flat",
+      "i": 2,
+      "errors": [],
+      "warnings": [
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr"
+      ],
+      "url": "http://127.0.0.1:5493/?perf=1&audio=0&preset=medium&scale=0.75&ground=flat",
+      "readyS": 98.324,
+      "before": {
+        "game": {
+          "pose": {
+            "x": 43.51953125,
+            "y": 1999.1942291259766,
+            "z": 36.4482421875,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 209,
+            "sent": 209,
+            "toolInputs": 0,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 239,
+            "ackInputSeq": 206,
+            "framesDecoded": 208,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 0,
+            "framesWithStrokes": 0,
+            "lastStrokeTick": -1
+          },
+          "dust": {
+            "cellGrams": 0
+          },
+          "prediction": {
+            "predicted": 207,
+            "reconciles": 207,
+            "replayed": 476,
+            "replayCapped": 0,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.0001068115234375,
+            "maxCorrectionM": 0.0001068115234375
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 239,
+          "framesDecoded": 208,
+          "decodeErrors": 0,
+          "strokesApplied": 0,
+          "strokesForwarded": 0,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5999999940395355,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 482.29999999701977,
+          "siteMoves": 1,
+          "site": 81666
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 0,
+          "rebuildBacklog": 0,
+          "rebuilds": 0,
+          "evictions": 0,
+          "strokesReplayed": 0,
+          "tileStrokeDraws": 0,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 0
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 29.90374998052915,
+          "frameTimeP95Ms": 46.29999923706055,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "idle": {
+        "frame": {
+          "n": 356,
+          "p50": 29.09999999999127,
+          "p95": 47.90000000000873,
+          "p99": 62.89999999999418,
+          "max": 79.90000000000873,
+          "fps": 33.67831532741758,
+          "over33": 80
+        },
+        "gpuRenderP50Median": 24.80969499999999,
+        "gpuRenderP95Median": 25.266189,
+        "gpuWindows": 10,
+        "drawsMax": 26,
+        "drawsMedian": 26,
+        "cpuP50Median": 23.299999997019768,
+        "cpuP95Median": 30.799999982118607,
+        "heapStartMB": 134.13252449035645,
+        "heapEndMB": 142.23821449279785,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.007916666629413763,
+            "min": 0,
+            "max": 1.2000000029802322,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.23416666723787785,
+            "min": 0,
+            "max": 17.600000008940697,
+            "p50": 0.10000000894069672,
+            "p95": 0.5,
+            "p99": 1.2000000029802322
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.0812499995653828,
+            "min": 0,
+            "max": 0.5999999940395355,
+            "p50": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "p99": 0.4000000059604645
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.20208333333333334,
+            "min": 0,
+            "max": 10.599999994039536,
+            "p50": 0.10000000894069672,
+            "p95": 0.30000001192092896,
+            "p99": 1
+          },
+          "render": {
+            "samples": 240,
+            "avg": 22.085000000397365,
+            "min": 4.700000002980232,
+            "max": 62.400000005960464,
+            "p50": 23.399999991059303,
+            "p95": 28.299999997019768,
+            "p99": 54.5
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.02916666641831398,
+            "min": 0,
+            "max": 0.7999999970197678,
+            "p50": 0,
+            "p95": 0.10000000894069672,
+            "p99": 0.29999999701976776
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "scrubWalk": {
+        "frame": {
+          "n": 369,
+          "p50": 22.89999999999418,
+          "p95": 107.60000000000582,
+          "p99": 200.79999999998836,
+          "max": 8453.899999999994,
+          "fps": 17.809567936985975,
+          "over33": 113
+        },
+        "gpuRenderP50Median": 24.623451999999997,
+        "gpuRenderP95Median": 24.881527999999996,
+        "gpuWindows": 11,
+        "drawsMax": 27,
+        "drawsMedian": 27,
+        "cpuP50Median": 8.300000011920929,
+        "cpuP95Median": 40.29999999701977,
+        "heapStartMB": 137.07406044006348,
+        "heapEndMB": 143.15932178497314,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.002916666616996129,
+            "min": 0,
+            "max": 0.20000000298023224,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999403953552
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.342916666654249,
+            "min": 0,
+            "max": 37.599999994039536,
+            "p50": 0.10000000894069672,
+            "p95": 0.5,
+            "p99": 1.5
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.1566666668280959,
+            "min": 0,
+            "max": 1.7000000029802322,
+            "p50": 0.10000000894069672,
+            "p95": 0.3999999910593033,
+            "p99": 0.7000000029802322
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.6704166661947966,
+            "min": 0,
+            "max": 19.400000005960464,
+            "p50": 0.20000000298023224,
+            "p95": 2.0999999940395355,
+            "p99": 10.799999997019768
+          },
+          "render": {
+            "samples": 240,
+            "avg": 49.99541666675359,
+            "min": 3.2999999970197678,
+            "max": 8441,
+            "p50": 8.299999997019768,
+            "p95": 38.099999994039536,
+            "p99": 146.69999998807907
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.12958333330849806,
+            "min": 0,
+            "max": 5,
+            "p50": 0,
+            "p95": 0.4000000059604645,
+            "p99": 1.2999999970197678
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "afterScrub": {
+        "game": {
+          "pose": {
+            "x": 93.3789062499597,
+            "y": 1997.3765106192552,
+            "z": 42.04101562496179,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1156,
+            "sent": 1156,
+            "toolInputs": 487,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1399,
+            "ackInputSeq": 1153,
+            "framesDecoded": 1187,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 208,
+            "framesWithStrokes": 206,
+            "lastStrokeTick": 1370
+          },
+          "dust": {
+            "cellGrams": 2787
+          },
+          "prediction": {
+            "predicted": 1154,
+            "reconciles": 1186,
+            "replayed": 2125,
+            "replayCapped": 0,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.0000457763671875,
+            "maxCorrectionM": 0.40003165517009004
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1399,
+          "framesDecoded": 1187,
+          "decodeErrors": 0,
+          "strokesApplied": 208,
+          "strokesForwarded": 208,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5999999940395355,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 482.29999999701977,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 4,
+          "rebuildBacklog": 0,
+          "rebuilds": 4,
+          "evictions": 0,
+          "strokesReplayed": 208,
+          "tileStrokeDraws": 343,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 15.700000002980232
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 36.7720834441483,
+          "frameTimeP95Ms": 90.4000015258789,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "afterTurn": {
+        "game": {
+          "pose": {
+            "x": 93.37890625,
+            "y": 1997.3765106201172,
+            "z": 42.041015625,
+            "yawRad": 4.400000000000001,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1442,
+            "sent": 1442,
+            "toolInputs": 487,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1686,
+            "ackInputSeq": 1440,
+            "framesDecoded": 1474,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 208,
+            "framesWithStrokes": 206,
+            "lastStrokeTick": 1370
+          },
+          "dust": {
+            "cellGrams": 2787
+          },
+          "prediction": {
+            "predicted": 1440,
+            "reconciles": 1473,
+            "replayed": 2617,
+            "replayCapped": 0,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.0000457763671875,
+            "maxCorrectionM": 0.40003165517009004
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1686,
+          "framesDecoded": 1474,
+          "decodeErrors": 0,
+          "strokesApplied": 208,
+          "strokesForwarded": 208,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5999999940395355,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 482.29999999701977,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 4,
+          "rebuildBacklog": 0,
+          "rebuilds": 4,
+          "evictions": 0,
+          "strokesReplayed": 208,
+          "tileStrokeDraws": 343,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 15.700000002980232
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 35.327083300550775,
+          "frameTimeP95Ms": 52.79999923706055,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "yawAfterTurn": 4.400000000000001,
+      "longWalk": {
+        "frame": {
+          "n": 605,
+          "p50": 29,
+          "p95": 88.19999999998254,
+          "p99": 109.5,
+          "max": 193.70000000001164,
+          "fps": 27.74058654145959,
+          "over33": 253
+        },
+        "gpuRenderP50Median": 31.928417999999994,
+        "gpuRenderP95Median": 32.643907,
+        "gpuWindows": 19,
+        "drawsMax": 27,
+        "drawsMedian": 26,
+        "cpuP50Median": 18.19999998807907,
+        "cpuP95Median": 38.599999994039536,
+        "heapStartMB": 153.65509128570557,
+        "heapEndMB": 165.7652063369751,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.004166666604578495,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.23208333346992732,
+            "min": 0,
+            "max": 6.5999999940395355,
+            "p50": 0.10000000894069672,
+            "p95": 0.5,
+            "p99": 1.8999999910593033
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.0920833332464099,
+            "min": 0,
+            "max": 0.5999999940395355,
+            "p50": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "p99": 0.5
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.14874999988824128,
+            "min": 0,
+            "max": 3,
+            "p50": 0.10000000894069672,
+            "p95": 0.29999999701976776,
+            "p99": 0.5
+          },
+          "render": {
+            "samples": 240,
+            "avg": 15.596249999850988,
+            "min": 3.699999988079071,
+            "max": 46.70000000298023,
+            "p50": 13.300000011920929,
+            "p95": 29.600000008940697,
+            "p99": 33.599999994039536
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.05791666669150194,
+            "min": 0,
+            "max": 0.5999999940395355,
+            "p50": 0,
+            "p95": 0.20000000298023224,
+            "p99": 0.5
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "end": {
+        "game": {
+          "pose": {
+            "x": 77.43408203125,
+            "y": 1998.486831665039,
+            "z": -7.37109375,
+            "yawRad": 2.5168146928204167,
+            "pitchRad": -0.7899999999999999,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 2391,
+            "sent": 2391,
+            "toolInputs": 953,
+            "buttons": 0,
+            "toolParam": 178
+          },
+          "worker": {
+            "tick": 2653,
+            "ackInputSeq": 2389,
+            "framesDecoded": 2430,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 288,
+            "framesWithStrokes": 286,
+            "lastStrokeTick": 2134
+          },
+          "dust": {
+            "cellGrams": 4000
+          },
+          "prediction": {
+            "predicted": 2389,
+            "reconciles": 2429,
+            "replayed": 3964,
+            "replayCapped": 0,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.0000152587890625,
+            "maxCorrectionM": 0.40003165517009004
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 2653,
+          "framesDecoded": 2430,
+          "decodeErrors": 0,
+          "strokesApplied": 288,
+          "strokesForwarded": 288,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5999999940395355,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 482.29999999701977,
+          "siteMoves": 3,
+          "site": 15873
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 5,
+          "rebuildBacklog": 0,
+          "rebuilds": 5,
+          "evictions": 0,
+          "strokesReplayed": 288,
+          "tileStrokeDraws": 517,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 15.700000002980232
+        },
+        "terrain": null,
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 29.944999937713145,
+          "frameTimeP95Ms": 49.599998474121094,
+          "drawCalls": 26,
+          "triangles": 142827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      }
+    },
+    {
+      "lane": "terrain",
+      "i": 3,
+      "errors": [],
+      "warnings": [
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "[render] 4 pipeline(s) created after warm-up (frame 2437)",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the w",
+        "The resource http://127.0.0.1:5493/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds fr"
+      ],
+      "url": "http://127.0.0.1:5493/?perf=1&audio=0&preset=medium&scale=0.75&ground=terrain",
+      "readyS": 123.24,
+      "before": {
+        "game": {
+          "pose": {
+            "x": 43.39697265625,
+            "y": 1993.5675964355469,
+            "z": 36.345703125,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 203,
+            "sent": 203,
+            "toolInputs": 0,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 191,
+            "ackInputSeq": 194,
+            "framesDecoded": 153,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 0,
+            "framesWithStrokes": 0,
+            "lastStrokeTick": -1
+          },
+          "dust": {
+            "cellGrams": 0
+          },
+          "prediction": {
+            "predicted": 201,
+            "reconciles": 152,
+            "replayed": 442,
+            "replayCapped": 0,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.000213623046875,
+            "maxCorrectionM": 0.000213623046875
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 191,
+          "framesDecoded": 153,
+          "decodeErrors": 0,
+          "strokesApplied": 0,
+          "strokesForwarded": 0,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 594.1000000089407,
+          "siteMoves": 1,
+          "site": 81666
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 0,
+          "rebuildBacklog": 0,
+          "rebuilds": 0,
+          "evictions": 0,
+          "strokesReplayed": 0,
+          "tileStrokeDraws": 0,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 0
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 40,
+          "perLevel": [
+            0,
+            0,
+            4,
+            5,
+            3,
+            7,
+            5,
+            4,
+            12
+          ],
+          "triangles": 25920,
+          "visited": 118,
+          "culledHorizon": 8,
+          "culledFrustum": 42,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9810.10000000894,
+            "decodeMs": 1640.699999988079
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 140,
+          "shadowPerCascade": [
+            23,
+            59,
+            58,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.30000001192092896,
+            "p95": 0.5,
+            "max": 27.200000762939453,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.10000000894069672,
+            "p95": 0.30000001192092896,
+            "max": 1.600000023841858,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 2417.2000000029802,
+            "decodeMs": 279
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 843.2260073048745,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.550005552114591
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 32.18666656340162,
+          "frameTimeP95Ms": 63.099998474121094,
+          "drawCalls": 30,
+          "triangles": 101579,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "idle": {
+        "frame": {
+          "n": 299,
+          "p50": 35.10000000000582,
+          "p95": 52.89999999999418,
+          "p99": 67.10000000000582,
+          "max": 105.5,
+          "fps": 28.090151536503058,
+          "over33": 168
+        },
+        "gpuRenderP50Median": 27.596069999999994,
+        "gpuRenderP95Median": 27.596069999999994,
+        "gpuWindows": 10,
+        "drawsMax": 30,
+        "drawsMedian": 30,
+        "cpuP50Median": 30.5,
+        "cpuP95Median": 38.099999994039536,
+        "heapStartMB": 192.2323408126831,
+        "heapEndMB": 188.18157482147217,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.0033333332588275275,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.09999999403953552
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.15875000053395827,
+            "min": 0,
+            "max": 3.5999999940395355,
+            "p50": 0.10000000894069672,
+            "p95": 0.29999999701976776,
+            "p99": 0.5999999940395355
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.1316666666418314,
+            "min": 0,
+            "max": 9.5,
+            "p50": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "p99": 1.5
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.8491666665300727,
+            "min": 0.29999999701976776,
+            "max": 23.700000002980232,
+            "p50": 0.5,
+            "p95": 1.5999999940395355,
+            "p99": 7.200000002980232
+          },
+          "render": {
+            "samples": 240,
+            "avg": 28.593333333916963,
+            "min": 4.899999991059303,
+            "max": 60.099999994039536,
+            "p50": 29.200000002980232,
+            "p95": 36.5,
+            "p99": 57.5
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.04583333320915699,
+            "min": 0,
+            "max": 3.2999999970197678,
+            "p50": 0,
+            "p95": 0.10000000894069672,
+            "p99": 0.20000000298023224
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "scrubWalk": {
+        "frame": {
+          "n": 337,
+          "p50": 30,
+          "p95": 94.80000000001746,
+          "p99": 135.29999999998836,
+          "max": 168.5,
+          "fps": 26.45066597596682,
+          "over33": 151
+        },
+        "gpuRenderP50Median": 29.828534000000005,
+        "gpuRenderP95Median": 32.523073,
+        "gpuWindows": 12,
+        "drawsMax": 32,
+        "drawsMedian": 31,
+        "cpuP50Median": 14.000000014901161,
+        "cpuP95Median": 36.89999997615814,
+        "heapStartMB": 184.89952945709229,
+        "heapEndMB": 179.11700916290283,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.007500000049670537,
+            "min": 0,
+            "max": 0.30000001192092896,
+            "p50": 0,
+            "p95": 0.09999999403953552,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.34916666684051356,
+            "min": 0,
+            "max": 17,
+            "p50": 0.20000000298023224,
+            "p95": 0.5999999940395355,
+            "p99": 1.6000000089406967
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.25333333301047484,
+            "min": 0,
+            "max": 23.900000005960464,
+            "p50": 0.10000000894069672,
+            "p95": 0.3999999910593033,
+            "p99": 1.2000000029802322
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 1.1699999991804362,
+            "min": 0.3999999910593033,
+            "max": 17.599999994039536,
+            "p50": 0.5999999940395355,
+            "p95": 3.5999999940395355,
+            "p99": 14.399999991059303
+          },
+          "render": {
+            "samples": 240,
+            "avg": 18.3941666673248,
+            "min": 3.5,
+            "max": 87.70000000298023,
+            "p50": 16.099999994039536,
+            "p95": 38,
+            "p99": 65.29999999701977
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.11208333366860947,
+            "min": 0,
+            "max": 3.5,
+            "p50": 0,
+            "p95": 0.30000001192092896,
+            "p99": 1.2000000029802322
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "afterScrub": {
+        "game": {
+          "pose": {
+            "x": 90.64257812415308,
+            "y": 1990.5556182675286,
+            "z": 41.69677734336041,
+            "yawRad": 0,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1240,
+            "sent": 1240,
+            "toolInputs": 538,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1104,
+            "ackInputSeq": 1236,
+            "framesDecoded": 989,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 189,
+            "framesWithStrokes": 185,
+            "lastStrokeTick": 1079
+          },
+          "dust": {
+            "cellGrams": 2607
+          },
+          "prediction": {
+            "predicted": 1238,
+            "reconciles": 988,
+            "replayed": 2403,
+            "replayCapped": 22,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.0000457763671875,
+            "maxCorrectionM": 0.22053626386295158
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1104,
+          "framesDecoded": 989,
+          "decodeErrors": 0,
+          "strokesApplied": 189,
+          "strokesForwarded": 189,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 594.1000000089407,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 5,
+          "rebuildBacklog": 0,
+          "rebuilds": 5,
+          "evictions": 0,
+          "strokesReplayed": 189,
+          "tileStrokeDraws": 382,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 12.600000008940697
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 49,
+          "perLevel": [
+            0,
+            0,
+            5,
+            4,
+            6,
+            8,
+            8,
+            6,
+            12
+          ],
+          "triangles": 31752,
+          "visited": 114,
+          "culledHorizon": 7,
+          "culledFrustum": 31,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9810.10000000894,
+            "decodeMs": 1640.699999988079
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 135,
+          "shadowPerCascade": [
+            25,
+            53,
+            57,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.30000001192092896,
+            "p95": 0.6000000238418579,
+            "max": 5.900000095367432,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.10000000894069672,
+            "p95": 0.30000001192092896,
+            "max": 15,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 2417.2000000029802,
+            "decodeMs": 279
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 799.837207479933,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.5500007111624186
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 40.24416674474875,
+          "frameTimeP95Ms": 98.30000305175781,
+          "drawCalls": 30,
+          "triangles": 106411,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "afterTurn": {
+        "game": {
+          "pose": {
+            "x": 90.642578125,
+            "y": 1990.5556182861328,
+            "z": 41.69677734375,
+            "yawRad": 4.400000000000001,
+            "pitchRad": -0.35,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 1550,
+            "sent": 1550,
+            "toolInputs": 538,
+            "buttons": 0,
+            "toolParam": 255
+          },
+          "worker": {
+            "tick": 1382,
+            "ackInputSeq": 1547,
+            "framesDecoded": 1249,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 189,
+            "framesWithStrokes": 185,
+            "lastStrokeTick": 1079
+          },
+          "dust": {
+            "cellGrams": 2607
+          },
+          "prediction": {
+            "predicted": 1548,
+            "reconciles": 1248,
+            "replayed": 2900,
+            "replayCapped": 23,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.0000457763671875,
+            "maxCorrectionM": 0.22053626386295158
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 1382,
+          "framesDecoded": 1249,
+          "decodeErrors": 0,
+          "strokesApplied": 189,
+          "strokesForwarded": 189,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 594.1000000089407,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 5,
+          "rebuildBacklog": 0,
+          "rebuilds": 5,
+          "evictions": 0,
+          "strokesReplayed": 189,
+          "tileStrokeDraws": 382,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 12.600000008940697
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 41,
+          "perLevel": [
+            0,
+            0,
+            3,
+            5,
+            5,
+            7,
+            8,
+            2,
+            11
+          ],
+          "triangles": 26568,
+          "visited": 126,
+          "culledHorizon": 7,
+          "culledFrustum": 48,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9810.10000000894,
+            "decodeMs": 1640.699999988079
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 138,
+          "shadowPerCascade": [
+            24,
+            54,
+            60,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.30000001192092896,
+            "p95": 0.699999988079071,
+            "max": 22.899999618530273,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.19999998807907104,
+            "p95": 0.4000000059604645,
+            "max": 3.5,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 2417.2000000029802,
+            "decodeMs": 279
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 799.837207479933,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.550000729790006
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 34.23250004947185,
+          "frameTimeP95Ms": 59.400001525878906,
+          "drawCalls": 30,
+          "triangles": 101827,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      },
+      "yawAfterTurn": 4.400000000000001,
+      "longWalk": {
+        "frame": {
+          "n": 612,
+          "p50": 28.79999999998836,
+          "p95": 95,
+          "p99": 138.20000000001164,
+          "max": 431.1000000000058,
+          "fps": 27.984178879261073,
+          "over33": 230
+        },
+        "gpuRenderP50Median": 26.958496999999998,
+        "gpuRenderP95Median": 28.179227999999995,
+        "gpuWindows": 18,
+        "drawsMax": 32,
+        "drawsMedian": 30,
+        "cpuP50Median": 13.100000008940697,
+        "cpuP95Median": 33.70000000298023,
+        "heapStartMB": 191.70817375183105,
+        "heapEndMB": 195.4621000289917,
+        "cpuSplitLast": {
+          "input": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "net": {
+            "samples": 240,
+            "avg": 0.005000000012417635,
+            "min": 0,
+            "max": 0.10000000894069672,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0.10000000894069672
+          },
+          "sim": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "gameplay": {
+            "samples": 240,
+            "avg": 0.24250000001241764,
+            "min": 0,
+            "max": 2.9000000059604645,
+            "p50": 0.20000000298023224,
+            "p95": 0.5,
+            "p99": 1.4000000059604645
+          },
+          "animation": {
+            "samples": 240,
+            "avg": 0.12166666674117248,
+            "min": 0,
+            "max": 0.7000000029802322,
+            "p50": 0.09999999403953552,
+            "p95": 0.30000001192092896,
+            "p99": 0.5999999940395355
+          },
+          "terrain": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "visuals": {
+            "samples": 240,
+            "avg": 0.8025000001614292,
+            "min": 0.29999999701976776,
+            "max": 22.19999998807907,
+            "p50": 0.5999999940395355,
+            "p95": 1.2999999970197678,
+            "p99": 5.100000008940697
+          },
+          "render": {
+            "samples": 240,
+            "avg": 15.828333332700034,
+            "min": 3.8999999910593033,
+            "max": 163.3999999910593,
+            "p50": 11.700000002980232,
+            "p95": 36.900000005960464,
+            "p99": 56.79999999701977
+          },
+          "audio": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          },
+          "ui": {
+            "samples": 240,
+            "avg": 0.07375000013659398,
+            "min": 0,
+            "max": 4.9000000059604645,
+            "p50": 0,
+            "p95": 0.20000000298023224,
+            "p99": 0.6000000089406967
+          },
+          "debug": {
+            "samples": 240,
+            "avg": 0,
+            "min": 0,
+            "max": 0,
+            "p50": 0,
+            "p95": 0,
+            "p99": 0
+          }
+        },
+        "env": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "canvasCssPx": [
+            1920,
+            1080
+          ]
+        }
+      },
+      "end": {
+        "game": {
+          "pose": {
+            "x": 76.46337912272477,
+            "y": 1991.1417300543517,
+            "z": -2.1870117249416285,
+            "yawRad": 2.5168146928204167,
+            "pitchRad": -0.7899999999999999,
+            "mode": "first"
+          },
+          "predicted": true,
+          "input": {
+            "lastSeq": 2592,
+            "sent": 2592,
+            "toolInputs": 980,
+            "buttons": 0,
+            "toolParam": 178
+          },
+          "worker": {
+            "tick": 2390,
+            "ackInputSeq": 2589,
+            "framesDecoded": 2201,
+            "decodeErrors": 0
+          },
+          "strokes": {
+            "chainsAcked": 282,
+            "framesWithStrokes": 276,
+            "lastStrokeTick": 1912
+          },
+          "dust": {
+            "cellGrams": 4000
+          },
+          "prediction": {
+            "predicted": 2590,
+            "reconciles": 2200,
+            "replayed": 4361,
+            "replayCapped": 23,
+            "unknownAcks": 3,
+            "lastCorrectionM": 0.0001068115234375,
+            "maxCorrectionM": 0.3656462658348445
+          },
+          "host": {
+            "kind": "local",
+            "state": "running"
+          }
+        },
+        "dustFeed": {
+          "synced": true,
+          "restoring": false,
+          "selfTick": 2390,
+          "framesDecoded": 2201,
+          "decodeErrors": 0,
+          "strokesApplied": 282,
+          "strokesForwarded": 282,
+          "dustStates": 1,
+          "restores": 1,
+          "restoreMs": 0.5,
+          "restoreSlices": 0,
+          "restoreSliceMaxMs": 0,
+          "strokesQueued": 0,
+          "liveOverflows": 0,
+          "ledgerPoolGrowths": 0,
+          "viewConstructMs": 594.1000000089407,
+          "siteMoves": 2,
+          "site": 81668
+        },
+        "dustAtlas": {
+          "preset": "medium",
+          "widthPx": 2048,
+          "heightPx": 2048,
+          "slotPx": 64,
+          "slots": 1024,
+          "texelCm": 40,
+          "tilesResident": 7,
+          "rebuildBacklog": 0,
+          "rebuilds": 7,
+          "evictions": 0,
+          "strokesReplayed": 282,
+          "tileStrokeDraws": 629,
+          "liveOverflows": 0,
+          "cpuMsLast": 0,
+          "cpuMsMax": 12.600000008940697
+        },
+        "terrain": {
+          "ready": true,
+          "error": null,
+          "nodes": 24,
+          "perLevel": [
+            0,
+            0,
+            4,
+            5,
+            2,
+            3,
+            1,
+            1,
+            8
+          ],
+          "triangles": 15552,
+          "visited": 110,
+          "culledHorizon": 9,
+          "culledFrustum": 51,
+          "overflow": 0,
+          "horizon": {
+            "wanted": true,
+            "on": true,
+            "bytes": 12582912,
+            "fetchMs": 9810.10000000894,
+            "decodeMs": 1640.699999988079
+          },
+          "siteUp": [
+            0,
+            1,
+            0
+          ],
+          "shadowInstances": 133,
+          "shadowPerCascade": [
+            25,
+            50,
+            58,
+            0
+          ],
+          "casterOverflow": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "cuts": 1,
+          "warmupHeld": false,
+          "casterSelectMs": {
+            "p50": 0.20000000298023224,
+            "p95": 0.8999999761581421,
+            "max": 6.599999904632568,
+            "n": 240
+          },
+          "selectMs": {
+            "p50": 0.10000000894069672,
+            "p95": 0.20000000298023224,
+            "max": 0.6000000238418579,
+            "n": 240
+          },
+          "heightTextureBytes": 12632112,
+          "minMaxBytes": 2097144,
+          "asset": {
+            "file": "height-cube-1024.0d70550a0d75.bin",
+            "fetchMs": 2417.2000000029802,
+            "decodeMs": 279
+          },
+          "fence": {
+            "zone": "inside",
+            "distanceToFenceM": 823.202805186748,
+            "posts": 564
+          },
+          "cameraAltitudeM": 1.5500143805780366
+        },
+        "harness": {
+          "backend": "webgpu",
+          "tier": "B",
+          "preset": "medium",
+          "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "dpr": 1,
+          "renderScale": 0.75,
+          "frameTimeAvgMs": 37.891666663686436,
+          "frameTimeP95Ms": 54.79999923706055,
+          "drawCalls": 30,
+          "triangles": 89811,
+          "texPoolMB": 0,
+          "placeholderAssets": [],
+          "lossCount": 0
+        },
+        "dynres": {
+          "enabled": false,
+          "pinned": true,
+          "scale": 0.75,
+          "scaleMin": 0.75,
+          "scaleMax": 0.85,
+          "signal": "interval",
+          "p90Ms": 0,
+          "targetMs": 0,
+          "steps": 0,
+          "floorHint": false,
+          "targetFps": 60,
+          "paceP90Ms": 0,
+          "paceTargetMs": 0,
+          "paceLimited": false
+        },
+        "fatal": null
+      }
+    }
+  ]
+}

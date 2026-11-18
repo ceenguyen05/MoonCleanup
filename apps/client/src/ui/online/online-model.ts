@@ -27,6 +27,32 @@ export interface OnlineEntryPort {
   open(contractId: string, accessToken: string): Promise<void>;
   close(): void;
   readonly fetch?: typeof fetch;
+  /** Roster and Holder moderation of the open room (backed by RoomSession.roster / onRoster / sendKick). Absent in solo. */
+  readonly roster?: OnlineRosterPort;
+}
+
+/** One roster row as the UI sees it (structurally the net layer's RosterEntry). */
+export interface RosterRow {
+  readonly playerId: string;
+  readonly displayName: string;
+  readonly role: string;
+  readonly connected: boolean;
+  readonly self: boolean;
+}
+
+export type KickReason = "griefing" | "harassment" | "cheating" | "other";
+
+export interface OnlineRosterPort {
+  current(): readonly RosterRow[];
+  subscribe(listener: (rows: readonly RosterRow[]) => void): () => void;
+  /** False when not joined. The server enforces Holder-only. */
+  kick(playerId: string, reason: KickReason, ban: boolean): boolean;
+}
+
+/** The kick and ban controls show for a Holder, on rows that are neither the Holder nor yourself. */
+export function canModerate(rows: readonly RosterRow[], row: RosterRow): boolean {
+  const me = rows.find((r) => r.self);
+  return me !== undefined && me.role === "holder" && !row.self && row.role !== "holder";
 }
 
 // ---- codes --------------------------------------------------------------------------------------------------------

@@ -10,13 +10,23 @@
 //   Reading costs a few field copies and no allocation. Samples of an older request (`seq`) are ignored.
 
 import type { PlotId, PlotState } from "@moon-cleanup/shared";
-import { HopReadout, LampReadout, OutpostReadout, PlotCardData, type MoonRoomSim } from "@moon-cleanup/sim";
+import {
+  HopReadout,
+  LampReadout,
+  OutpostReadout,
+  PlotCardData,
+  VehicleReadout,
+  VEHICLE_ENTITY_ID_BASE,
+  type MoonRoomSim,
+} from "@moon-cleanup/sim";
 import { READOUT_INTERVAL_MS, type SimReadoutMessage } from "./messages";
 
 function blank(): SimReadoutMessage {
   return {
     t: "ro",
     reqSeq: 0,
+    vehicleMotion: null,
+    parkedVehicle: null,
     hopBursts: 0,
     hopMax: 0,
     hopRecharge01: 0,
@@ -37,10 +47,30 @@ function blank(): SimReadoutMessage {
     parcelDirs: [],
     outpostIds: [],
     outpostDirs: [],
+    apronDirs: [],
   };
 }
 
 function same(a: SimReadoutMessage, b: SimReadoutMessage): boolean {
+  const av = a.vehicleMotion;
+  const bv = b.vehicleMotion;
+  if (av == null || bv == null) {
+    if (av !== bv) return false;
+  } else if (
+    av.vehicleId !== bv.vehicleId ||
+    av.kindId !== bv.kindId ||
+    av.speed01 !== bv.speed01 ||
+    av.load01 !== bv.load01 ||
+    av.workIntensity01 !== bv.workIntensity01 ||
+    av.lights !== bv.lights
+  )
+    return false;
+  const ap = a.parkedVehicle;
+  const bp = b.parkedVehicle;
+  if (ap == null || bp == null) {
+    if (ap !== bp) return false;
+  } else if (ap.x !== bp.x || ap.y !== bp.y || ap.z !== bp.z || ap.fx !== bp.fx || ap.fy !== bp.fy || ap.fz !== bp.fz)
+    return false;
   if (
     a.reqSeq !== b.reqSeq ||
     a.hopBursts !== b.hopBursts ||
@@ -60,7 +90,8 @@ function same(a: SimReadoutMessage, b: SimReadoutMessage): boolean {
     a.quotes.length !== b.quotes.length ||
     a.parcelCount !== b.parcelCount ||
     a.parcelMask !== b.parcelMask ||
-    a.outpostIds.length !== b.outpostIds.length
+    a.outpostIds.length !== b.outpostIds.length ||
+    a.apronDirs.length !== b.apronDirs.length
   ) {
     return false;
   }
@@ -68,6 +99,7 @@ function same(a: SimReadoutMessage, b: SimReadoutMessage): boolean {
   for (let i = 0; i < a.parcelDirs.length; i++) if (a.parcelDirs[i] !== b.parcelDirs[i]) return false;
   for (let i = 0; i < a.outpostIds.length; i++) if (a.outpostIds[i] !== b.outpostIds[i]) return false;
   for (let i = 0; i < a.outpostDirs.length; i++) if (a.outpostDirs[i] !== b.outpostDirs[i]) return false;
+  for (let i = 0; i < a.apronDirs.length; i++) if (a.apronDirs[i] !== b.apronDirs[i]) return false;
   return true;
 }
 
@@ -82,6 +114,7 @@ export class ReadoutSampler {
   private cand = blank();
   private readonly hop = new HopReadout();
   private readonly lamp = new LampReadout();
+  private readonly vehicle = new VehicleReadout();
   private readonly card = new PlotCardData();
   private readonly dir = { x: 0, y: 0, z: 0 };
   private readonly outpost = new OutpostReadout();
@@ -106,6 +139,49 @@ export class ReadoutSampler {
     const m = this.cand;
     if (!sim.hopReadout(slot, this.hop) || !sim.lampReadout(slot, this.lamp)) return null;
     m.reqSeq = this.seq;
+    const vi = sim.vehicles.driving[slot] ?? -1;
+    const vehicle = vi < 0 ? undefined : sim.vehicles.store.vehicles[vi];
+    if (vehicle !== undefined && sim.vehicles.readout(slot, this.vehicle)) {
+      const v =
+        m.vehicleMotion ??
+        (m.vehicleMotion = { tick: 0, vehicleId: 0, kindId: "", speed01: 0, load01: 0, workIntensity01: 0 });
+      v.tick = Math.max(0, sim.tick - 1); // the completed tick, matching RoomSim event timestamps
+      v.vehicleId = VEHICLE_ENTITY_ID_BASE + vi;
+      v.kindId = this.vehicle.kindId;
+      v.speed01 = this.vehicle.speed01;
+      v.load01 = this.vehicle.hopper01;
+      v.lights = this.vehicle.lights;
+      v.workIntensity01 =
+        this.vehicle.intakeDown &&
+        !this.vehicle.airborne &&
+        !this.vehicle.boosting &&
+        vehicle.speed > 0.05 &&
+        vehicle.stats.widthM > 0 &&
+        this.vehicle.hopper01 < 1
+          ? this.vehicle.speed01
+          : 0;
+    } else m.vehicleMotion = null;
+    let parked: (typeof sim.vehicles.store.vehicles)[number] | undefined;
+    if (vi < 0) {
+      const vs = sim.vehicles.store.vehicles;
+      for (let k = 0; k < vs.length; k++) {
+        const c = vs[k]!;
+        if (c.active && c.ownerSlot === slot && c.driverSlot < 0) {
+          parked = c;
+          break;
+        }
+      }
+    }
+    if (parked === undefined) m.parkedVehicle = null;
+    else {
+      const p = m.parkedVehicle ?? (m.parkedVehicle = { x: 0, y: 0, z: 0, fx: 0, fy: 0, fz: 0 });
+      p.x = parked.px;
+      p.y = parked.py;
+      p.z = parked.pz;
+      p.fx = parked.fx;
+      p.fy = parked.fy;
+      p.fz = parked.fz;
+    }
     m.hopBursts = this.hop.bursts;
     m.hopMax = this.hop.max;
     m.hopRecharge01 = this.hop.recharge01;
@@ -146,6 +222,14 @@ export class ReadoutSampler {
       m.outpostDirs[3 * k + 1] = this.outpost.y;
       m.outpostDirs[3 * k + 2] = this.outpost.z;
     }
+    const ac = sim.apronPlotCount;
+    m.apronDirs.length = ac * 3;
+    for (let k = 0; k < ac; k++) {
+      if (!sim.apronPlot(k, this.dir)) continue;
+      m.apronDirs[3 * k] = this.dir.x;
+      m.apronDirs[3 * k + 1] = this.dir.y;
+      m.apronDirs[3 * k + 2] = this.dir.z;
+    }
     if (this.hasPosted && same(m, this.posted)) return null;
     this.cand = this.posted;
     this.posted = m;
@@ -170,6 +254,16 @@ export class HostReadouts {
   private seq = 0;
   private ids = new Map<string, number>();
   private msg: SimReadoutMessage | null = null;
+
+  /** The structured-clone cache is readonly to consumers; no copy or allocation per frame. */
+  get vehicleMotion(): SimReadoutMessage["vehicleMotion"] {
+    return this.msg?.vehicleMotion;
+  }
+
+  /** Own parked (called, not driven) vehicle pose, or null / undefined (no first sample yet). */
+  get parkedVehicle(): SimReadoutMessage["parkedVehicle"] {
+    return this.msg?.parkedVehicle;
+  }
 
   /** A new request: clears the cache until the worker answers it. Returns the `seq` to send. */
   nextRequest(itemIds: readonly string[]): number {
@@ -252,6 +346,20 @@ export class HostReadouts {
     out.x = m.outpostDirs[3 * k] ?? 0;
     out.y = m.outpostDirs[3 * k + 1] ?? 0;
     out.z = m.outpostDirs[3 * k + 2] ?? 0;
+    return true;
+  }
+
+  /** Landing Apron plots of the home outpost (shape of `MoonRoomSim.apronPlotCount` / `apronPlot`). */
+  get apronPlotCount(): number {
+    return (this.msg?.apronDirs.length ?? 0) / 3;
+  }
+
+  apronPlot(k: number, out: { x: number; y: number; z: number }): boolean {
+    const m = this.msg;
+    if (m === null || !(k >= 0) || 3 * k + 2 >= m.apronDirs.length) return false;
+    out.x = m.apronDirs[3 * k] ?? 0;
+    out.y = m.apronDirs[3 * k + 1] ?? 0;
+    out.z = m.apronDirs[3 * k + 2] ?? 0;
     return true;
   }
 

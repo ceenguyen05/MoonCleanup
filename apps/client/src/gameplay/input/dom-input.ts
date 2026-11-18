@@ -15,6 +15,7 @@ export interface DomInputHost {
   readonly document: {
     readonly pointerLockElement: unknown;
     readonly hidden?: boolean;
+    exitPointerLock?(): unknown;
     addEventListener(type: string, listener: (event: Event) => void): void;
     removeEventListener(type: string, listener: (event: Event) => void): void;
   };
@@ -54,6 +55,8 @@ interface WheelLike {
   preventDefault(): void;
 }
 
+function noop(): void {}
+
 function isTextTarget(target: unknown): boolean {
   if (target === null || typeof target !== "object") return false;
   const t = target as { tagName?: unknown; isContentEditable?: unknown };
@@ -80,8 +83,12 @@ export class DomInput {
   private readonly onMouseDown = (ev: Event): void => {
     const e = ev as unknown as MouseLike;
     if (!this.locked) {
-      // First click captures the mouse; it does not also swing the tool.
-      this.target.requestPointerLock?.();
+      // First click captures the mouse; it does not also swing the tool. Never capture while a menu is open (the
+      // player needs a visible cursor) or the tab is hidden; a rejected request (e.g. re-lock right after Esc) is
+      // swallowed so it cannot surface as an unhandled rejection.
+      if (this.state.isSuspended || this.host.document.hidden === true) return;
+      const r = this.target.requestPointerLock?.() as { catch?: (f: () => void) => unknown } | undefined;
+      if (r !== undefined && r !== null && typeof r.catch === "function") r.catch(noop);
       return;
     }
     if (this.state.mouseButton(e.button, true)) e.preventDefault();
@@ -111,9 +118,22 @@ export class DomInput {
   };
   private readonly onBlur = (): void => {
     this.state.clear();
+    this.releaseLock();
   };
   private readonly onVisibility = (): void => {
-    if (this.host.document.hidden === true) this.state.clear();
+    if (this.host.document.hidden === true) {
+      this.state.clear();
+      this.releaseLock();
+    }
+  };
+  /** Page leaving / freezing: hand the OS cursor back so it can never stay confined to a stale lock rectangle. */
+  private readonly onPageHide = (): void => {
+    this.state.clear();
+    this.releaseLock();
+  };
+  private readonly onLockError = (): void => {
+    this.state.clear();
+    this.locked = this.host.document.pointerLockElement === this.target;
   };
   private readonly onPadConnected = (): void => {
     this.pads++;
@@ -138,9 +158,13 @@ export class DomInput {
     w.addEventListener("mouseup", this.onMouseUp);
     w.addEventListener("mousemove", this.onMouseMove);
     w.addEventListener("blur", this.onBlur);
+    w.addEventListener("pagehide", this.onPageHide);
+    w.addEventListener("beforeunload", this.onPageHide);
     w.addEventListener("gamepadconnected", this.onPadConnected);
     w.addEventListener("gamepaddisconnected", this.onPadDisconnected);
     w.document.addEventListener("pointerlockchange", this.onLockChange);
+    w.document.addEventListener("pointerlockerror", this.onLockError);
+    w.document.addEventListener("freeze", this.onPageHide);
     w.document.addEventListener("visibilitychange", this.onVisibility);
     this.target.addEventListener("mousedown", this.onMouseDown);
     this.target.addEventListener("wheel", this.onWheel);
@@ -156,14 +180,30 @@ export class DomInput {
     w.removeEventListener("mouseup", this.onMouseUp);
     w.removeEventListener("mousemove", this.onMouseMove);
     w.removeEventListener("blur", this.onBlur);
+    w.removeEventListener("pagehide", this.onPageHide);
+    w.removeEventListener("beforeunload", this.onPageHide);
     w.removeEventListener("gamepadconnected", this.onPadConnected);
     w.removeEventListener("gamepaddisconnected", this.onPadDisconnected);
     w.document.removeEventListener("pointerlockchange", this.onLockChange);
+    w.document.removeEventListener("pointerlockerror", this.onLockError);
+    w.document.removeEventListener("freeze", this.onPageHide);
     w.document.removeEventListener("visibilitychange", this.onVisibility);
     this.target.removeEventListener("mousedown", this.onMouseDown);
     this.target.removeEventListener("wheel", this.onWheel);
     this.target.removeEventListener("contextmenu", this.onContextMenu);
     this.state.clear();
+    this.releaseLock();
+    this.locked = false;
+  }
+
+  /** Give the cursor back to the OS (no-op when not locked). Safe to call any time. */
+  releaseLock(): void {
+    if (this.host.document.pointerLockElement === this.target) this.host.document.exitPointerLock?.();
+  }
+
+  /** Per frame (two boolean reads): a menu opened while the mouse was captured, so free the cursor for clicking. */
+  sync(): void {
+    if (this.locked && this.state.isSuspended) this.releaseLock();
   }
 
   /** Per frame: the first standard-mapping gamepad, only while one is connected. */

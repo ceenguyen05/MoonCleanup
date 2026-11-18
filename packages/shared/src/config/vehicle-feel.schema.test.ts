@@ -29,6 +29,7 @@ const TRUNDLE: VehicleFeelDef = {
   drumForwardM: 0.55,
   handleBackM: 0.9,
   enterReachM: 2.5,
+  tipS: 2,
 };
 const table = (v: unknown = TRUNDLE) => ({ schemaVersion: 1, vehicles: { "vehicle.trundle": v } });
 

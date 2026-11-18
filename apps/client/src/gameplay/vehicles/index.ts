@@ -2,3 +2,5 @@
 export * from "./vehicle-camera";
 export * from "./vehicle-intent";
 export * from "./vehicle-drive";
+export * from "./trundle-predictor";
+export * from "./seated-trundle";

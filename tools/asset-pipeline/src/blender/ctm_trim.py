@@ -27,7 +27,29 @@ STRIPS = [
     ("emit_amber", 16, "emissive"),
 ]
 
+# Brightside trim sheet v1 (M1-W5-T03 hero hardware): v0 plus a grating strip (weighing decks, Dump Plate) and a
+# warm-white emissive strip (flood lenses). The deck strip gives up 64 px and glass 16 px so the sheet stays 1024 px.
+# v0 (STRIPS) is unchanged, so the M0 proof module rebuilds byte-identically.
+STRIPS_V1 = [
+    ("panel", 256, "ivory"),
+    ("ivory", 128, "ivory"),
+    ("teal", 128, "teal"),
+    ("deck", 64, "deck-gray"),
+    ("grate", 64, "steel"),
+    ("teal_deep", 64, "teal"),
+    ("yellow", 64, "yellow"),
+    ("hazard", 64, "yellow"),
+    ("graphite", 64, "graphite"),
+    ("steel", 64, "steel"),
+    ("glass", 16, "glass"),
+    ("emit_teal", 16, "emissive"),
+    ("emit_amber", 16, "emissive"),
+    ("emit_warm", 16, "emissive"),
+]
+
 PALETTE = {
+    "grate": "#C9CCCF",
+    "emit_warm": "#FFE2B0",
     "ivory": "#E4DCCB",
     "teal": "#1C8C84",
     "teal_deep": "#0E5E5C",
@@ -46,12 +68,12 @@ def srgb(hex_color):
 
 
 class TrimSheet:
-    def __init__(self):
+    def __init__(self, strips=None):
         self.rows = {}
         self.groups = {}
         self.order = []
         y = 0
-        for name, height, group in STRIPS:
+        for name, height, group in strips or STRIPS:
             self.rows[name] = (y, y + height)
             self.groups[name] = group
             self.order.append(name)
@@ -161,9 +183,20 @@ class TrimSheet:
                 rough = np.clip(0.35 + 0.05 * streak, 0.2, 0.55)
                 metal[:] = 1.0
                 color *= (1.0 + 0.02 * streak)[..., None]
+            elif name == "grate":
+                # Bar grating across U: 8 px bright brushed bars, 4 px dark open slots (period 12 px = 3.75 cm at 320 px/m).
+                phase = (x % 12.0) + 0.0 * yl
+                bar = np.clip(1.0 - np.abs(phase - 4.0) / 4.5, 0.0, 1.0)
+                slot = (phase >= 9.0).astype(np.float32)
+                body = rounded(edge, 3.0)
+                height = 1.4 * bar * body - 1.2 * slot
+                color *= ((0.82 + 0.18 * bar) * (1.0 - 0.8 * slot))[..., None]
+                occlusion = 1.0 - 0.65 * slot
+                rough = 0.38 + 0.25 * slot
+                metal = (1.0 - slot).astype(np.float32)
             elif name == "glass":
                 rough = np.full((rows, width), 0.05, np.float32)
-            elif name in ("emit_teal", "emit_amber"):
+            elif name in ("emit_teal", "emit_amber", "emit_warm"):
                 glow = np.broadcast_to(srgb(PALETTE[name]), (rows, width, 3)).copy()
                 color *= 0.35
                 rough = np.full((rows, width), 0.3, np.float32)

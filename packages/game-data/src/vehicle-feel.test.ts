@@ -22,6 +22,16 @@ describe("vehicle-feel table", () => {
     expect([t.boostMeterS, t.boostRegenDelayS, t.boostRegenPerS]).toEqual([4, 1, 0.5]);
     expect([t.tractionFadeStartDeg, t.slideStartDeg, t.slideFriction]).toEqual([20, 25, 0.2]);
     expect([t.drumForwardM, t.handleBackM, t.enterReachM]).toEqual([0.55, 0.9, 2.5]);
+    expect(t.tipS).toBe(2);
+  });
+
+  it("Fast Tip reduces unload time without a vehicle trip-time effect at either level", () => {
+    const line = loadGameData()["vehicle-upgrades"].lines.find((l) => l.id === "vehicle_upgrade.fast_tip")!;
+    const unload = line.levels.map((lv) => lv.effects.find((e) => "stat" in e && e.stat === "vehicleUnloadTimeMult"));
+    expect(unload.map((e) => (e && "value" in e ? e.value : null))).toEqual([0.6, 0.3]);
+    for (const level of line.levels) {
+      expect(level.effects.some((e) => "stat" in e && e.stat === "vehicleTripTimeMult")).toBe(false);
+    }
   });
 
   it("is deeply frozen and rejects a malformed table", () => {
@@ -31,5 +41,14 @@ describe("vehicle-feel table", () => {
     expect(() => parseVehicleFeel({ schemaVersion: 1, vehicles: { "vehicle.trundle": { accelS: 0 } } })).toThrow(
       /vehicle-feel failed validation/,
     );
+  });
+
+  it("rejects equal front-drum and wheel probe offsets (would divide by zero in the sim)", () => {
+    const base = VEHICLE_FEEL["vehicle.trundle"]!;
+    const bad = { ...base, probeForwardM: [0.1, 0.1, 0.1] };
+    expect(() => parseVehicleFeel({ schemaVersion: 1, vehicles: { "vehicle.trundle": bad } })).toThrow(
+      /vehicle-feel failed validation/,
+    );
+    expect(() => parseVehicleFeel({ schemaVersion: 1, vehicles: { "vehicle.trundle": { ...base } } })).not.toThrow();
   });
 });

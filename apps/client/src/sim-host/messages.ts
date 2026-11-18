@@ -36,8 +36,19 @@ export const FRAME_POOL_SIZE = 3;
 
 /** Trailer after the FRAME bytes: u16 frame length, u8 tag, u8 reserved, u32 sim tick (LE). */
 export const FRAME_TRAILER_OFFSET = FRAME_MAX_BYTES;
-export const FRAME_TRAILER_BYTES = 8;
+export const FRAME_TRAILER_BYTES = 40;
 export const FRAME_TRAILER_TAG = 0xf1;
+/**
+ * Private tool-telemetry block after the 8-byte trailer head (Solo only; never part of the FRAME protocol), offsets from
+ * FRAME_TRAILER_OFFSET: +8 flags u8, +9 tool code u8, +10 phase u16 (phase01 * 65535), +12 period ms u16, +14 processed
+ * input seq u16, +16 head x/y/z f64 (moon-centred metres; f32 would be 0.1 m coarse).
+ */
+export const TOOL_TELEMETRY_OFFSET = FRAME_TRAILER_OFFSET + 8;
+export const TOOL_TELE_PRESENT = 1;
+export const TOOL_TELE_SWEEPING = 2;
+export const TOOL_TELE_IN_CONTACT = 4;
+export const TOOL_TELE_HEAD_VALID = 8;
+export const TOOL_TELE_DETAILING = 16;
 export const FRAME_BUF_BYTES = FRAME_MAX_BYTES + FRAME_TRAILER_BYTES;
 
 /** Terrain the worker builds its `SimWorld` from. `flat` is a test/debug world (H = 0). */
@@ -197,6 +208,19 @@ export interface SimReadoutMessage {
   t: "ro";
   /** `ro_req.seq` this sample answers (a sample of an older request is dropped by the host). */
   reqSeq: number;
+  /** Own driven vehicle presentation, sampled with the HUD at 10 Hz. */
+  vehicleMotion?: {
+    tick: number;
+    vehicleId: number;
+    kindId: string;
+    speed01: number;
+    load01: number;
+    workIntensity01: number;
+    /** Running lamps lit. */
+    lights?: boolean;
+  } | null;
+  /** Own vehicle out of the Motor Pool and not being driven (called, parked): chassis point and heading, 10 Hz. */
+  parkedVehicle?: { x: number; y: number; z: number; fx: number; fy: number; fz: number } | null;
   hopBursts: number;
   hopMax: number;
   hopRecharge01: number;
@@ -220,6 +244,8 @@ export interface SimReadoutMessage {
   /** Outposts: ids and unit directions (x, y, z triples), home first. */
   outpostIds: string[];
   outpostDirs: number[];
+  /** Landing Apron plots of the home outpost: unit directions (x, y, z triples); fixed after construction. */
+  apronDirs: number[];
 }
 
 /** Worker sampling period of the read-outs (ms): 10 Hz. */

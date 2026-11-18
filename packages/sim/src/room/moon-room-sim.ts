@@ -81,6 +81,7 @@ import {
 import { dayPhaseAt, isDaylightAt, secondsToTerminator, sunElevationAt } from "../clock/sun-clock";
 import { Fnv1a32 } from "../math/quantize";
 import { atan2Det, radiansToTurn, turnToRadians } from "../math/trig";
+import { landingApronPlots } from "./landing-apron";
 import {
   AvatarState,
   headingBasis,
@@ -216,8 +217,8 @@ export interface MoonRoomSimOptions {
   /** Vehicles sold (default `MVP_SCOPE.vehicleIds`: the Trundle). */
   readonly vehicleIds?: readonly string[];
   /**
-   * Vehicle upgrade lines sold. Default: Gear Ratio and Cargo Expander (the M1-W7-T01 card). NOTE: mvp-scope says "the
-   * Trundle only, with no upgrade lines"; pass `[]` to follow mvp-scope (open scope decision, see the W7-T01 report).
+   * Vehicle upgrade lines sold. Default: every line of `vehicle-upgrades.json` (owner decision 2026-11-17: all 7 lines
+   * are in scope, superseding the mvp-scope cut); `[]` sells none.
    */
   readonly vehicleUpgradeLineIds?: readonly string[];
   /** Motor Pools the shift starts with (default 1: the MVP slice has the Motor Pool pre-built). */
@@ -226,10 +227,15 @@ export interface MoonRoomSimOptions {
   readonly motorPoolPoints?: readonly { readonly x: number; readonly y: number; readonly z: number }[];
 }
 
-/** Upgrade lines the M1-W7-T01 card puts in the MVP. */
+/** The 7 vehicle upgrade lines (naming bible). The room's default is every line of the game-data table. */
 export const DEFAULT_VEHICLE_UPGRADE_LINE_IDS: readonly string[] = [
   "vehicle_upgrade.gear_ratio",
   "vehicle_upgrade.cargo_expander",
+  "vehicle_upgrade.afterburner",
+  "vehicle_upgrade.throttle_lock",
+  "vehicle_upgrade.wide_mouth",
+  "vehicle_upgrade.fast_tip",
+  "vehicle_upgrade.running_lamps",
 ];
 
 /** Plot Card (C) data of one plot (GDD section 10; ui-screens `plotCard`). Mutable, reused by the caller. */
@@ -461,6 +467,17 @@ export class MoonRoomSim implements RoomSim {
   private readonly copiesBought: Int32Array;
   /** Outposts of the Contract (compass read-out; index 0 = home). Not simulated state. */
   private readonly outposts: readonly SimOutpost[];
+  /**
+   * Landing Apron of the home outpost (`world.landingApron.plotsPerOutpost` plots of ring 2 around the home pad plot,
+   * ascending ids) Derived from the grid and game-data at construction; never hashed.
+   */
+  private apronPlots: readonly number[] = [];
+  /** Induction step (index into onboarding.json `induction`) completed by a first hand stroke / a Polish; -1 = none. */
+  private readonly stepFirstStroke: number;
+  private readonly stepPolish: number;
+  private readonly stepIds: readonly string[];
+  /** Per slot: bit 0 first-stroke step, bit 1 polish step already announced (observational; never hashed). */
+  private readonly onboardingSent = new Uint8Array(MAX_PLAYERS_PER_ROOM);
   /** Plot pick scratch (unit direction) and grid search hint: a cache, never part of the state. */
   private readonly pickDir = { x: 0, y: 1, z: 0 };
   private pickHint = 0;
@@ -611,6 +628,11 @@ export class MoonRoomSim implements RoomSim {
         return Object.freeze({ id: o.id, x: o.x / l, y: o.y / l, z: o.z / l });
       }),
     );
+    this.computeApron(grid, options.data.world.landingApron.plotsPerOutpost);
+    const induction = options.data.onboarding.induction;
+    this.stepIds = induction.map((x) => x.id);
+    this.stepFirstStroke = induction.findIndex((x) => x.trigger === "firstStroke");
+    this.stepPolish = induction.findIndex((x) => x.trigger === "plotPolished");
     this.buildShineMilestones(grid.count);
     this.shineNext = this.shineMilestoneIndexFor(this.shinePolished);
     const sd = options.spawnDirection ?? { x: 0.02, y: 1, z: 0.02 };
@@ -618,7 +640,7 @@ export class MoonRoomSim implements RoomSim {
     this.spawnDir = { x: sd.x / sl, y: sd.y / sl, z: sd.z / sl };
     this.vehicles = new RoomVehicles(options.data, cfg, {
       offeredKindIds: options.vehicleIds ?? MVP_SCOPE.vehicleIds,
-      offeredLineIds: options.vehicleUpgradeLineIds ?? DEFAULT_VEHICLE_UPGRADE_LINE_IDS,
+      ...(options.vehicleUpgradeLineIds !== undefined ? { offeredLineIds: options.vehicleUpgradeLineIds } : {}),
       motorPoolsBuilt: options.motorPoolsBuilt ?? 1,
       motorPoolPoints: options.motorPoolPoints ?? [this.spawnDir],
     });
@@ -1320,6 +1342,9 @@ export class MoonRoomSim implements RoomSim {
       return;
     }
     this.vehicles.driverIntent(vehicleIndex, inp.moveX, inp.moveY, inp.buttons, inp.prevButtons);
+    // The driver's own Crown Lamp still relieves the night penalty of the vehicle's strokes (progression night factor).
+    const lamp = this.infos[s]!.lampOn ? (this.suitGear["gear.crown_lamp"] ?? 0) : 0;
+    this.vehicles.driverRelief[s] = lamp * this.config.lampPenaltyReliefFrac;
   }
 
   private acceptStroke(s: number, t: ToolState, st: MutableStroke, tick: number): void {
@@ -1368,6 +1393,14 @@ export class MoonRoomSim implements RoomSim {
         cellGrams: after,
         cellCapGrams: cap,
       });
+    }
+    if (this.stepFirstStroke >= 0 && (this.onboardingSent[s]! & 1) === 0) {
+      for (let k = 0, n = res.plotCount; k < n; k++) {
+        if (this.isApronPlot(res.plotIds[k]!)) {
+          this.completeStep(s, this.stepFirstStroke, 1, tick);
+          break;
+        }
+      }
     }
     if (!t.nearFullLatched && after >= cap * this.config.toolFeel.cellNearFullFrac) {
       t.nearFullLatched = true;
@@ -1446,7 +1479,8 @@ export class MoonRoomSim implements RoomSim {
         charged: stampIsCharged(input),
         polishedCount: polishedBefore + k + 1,
       });
-      const shine = shineBefore + k + 1;
+      if (byPlayer && this.stepPolish >= 0 && this.isApronPlot(plot)) this.completeStep(credit, this.stepPolish, 2, tick);
+      const shine =shineBefore + k + 1;
       while (this.shineNext < this.shineThresholds.length && shine >= this.shineThresholds[this.shineNext]!) {
         this.emit("shine.milestone", {
           tick: tick as Tick,
@@ -1784,6 +1818,50 @@ export class MoonRoomSim implements RoomSim {
     out.home = k === 0;
     out.visited = k === 0;
     return true;
+  }
+
+  /** Ring 2 around the home pad plot, lowest ids first, `count` of them (fewer on a tiny grid). Constructor only. */
+  private computeApron(grid: PlotGrid, count: number): void {
+    const home = this.outposts[0];
+    if (home === undefined || count <= 0) return;
+    this.apronPlots = landingApronPlots(grid, home, count);
+  }
+
+  /** Landing Apron plots of the home outpost (compass objective: first stroke, first Polish). */
+  get apronPlotCount(): number {
+    return this.apronPlots.length;
+  }
+
+  /** Unit direction of Landing Apron plot `k` (0 .. apronPlotCount-1) into `out`; false when out of range. */
+  apronPlot(k: number, out: { x: number; y: number; z: number }): boolean {
+    const p = this.apronPlots[k];
+    if (p === undefined) return false;
+    const d = this.world.grid.centerDirection(p as PlotId);
+    out.x = d.x;
+    out.y = d.y;
+    out.z = d.z;
+    return true;
+  }
+
+  /** True when `plotId` is one of the Landing Apron plots (at most `plotsPerOutpost` entries: a linear scan). */
+  isApronPlot(plotId: number): boolean {
+    for (let k = 0; k < this.apronPlots.length; k++) if (this.apronPlots[k] === plotId) return true;
+    return false;
+  }
+
+  /** Announces Induction step `index` once per slot (bit), as `onboarding.step_completed`. */
+  private completeStep(slot: number, index: number, bit: number, tick: number): void {
+    if (index < 0 || slot < 0 || slot >= MAX_PLAYERS_PER_ROOM) return;
+    const sent = this.onboardingSent[slot]!;
+    if ((sent & bit) !== 0) return;
+    this.onboardingSent[slot] = sent | bit;
+    this.emit("onboarding.step_completed", {
+      tick: tick as Tick,
+      stepId: this.stepIds[index]!,
+      actorSlot: slot,
+      index,
+      total: this.stepIds.length,
+    });
   }
 
   // ---- Dust Cell levels ----------------------------------------------------------------------------------------------

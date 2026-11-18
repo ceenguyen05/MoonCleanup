@@ -86,73 +86,75 @@ Unavailable testers/cloud checks remain pending; continue independent work and r
 
 ## 6. Status table
 
+Refreshed 2026-11-17 from STATUS.md and agent reports (no row is PASS without its report). Rows not touched keep their prior in-review status. Done = implemented and verified at the report's level; real-GPU, quiet-machine and `pnpm verify` evidence still outstanding.
+
 | ID | Stage | Role | Goal | Depends on | Port | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| M1-W0-T01 | M1-S1 | contracts-architect | World/dust/stroke/save contracts v1 | M1-W0-T04 | 0 | in-review |
-| M1-W0-T02 | M1-S2 | contracts-architect | Protocol/input/sim/REST contracts v1 | M1-W0-T01 | 0 | in-review |
+| M1-W0-T01 | M1-S1 | contracts-architect | World/dust/stroke/save contracts v1 | M1-W0-T04 | 0 | done (M1-W0-T01-contracts-architect.md; STATUS: W0 all done) |
+| M1-W0-T02 | M1-S2 | contracts-architect | Protocol/input/sim/REST contracts v1 | M1-W0-T01 | 0 | done (M1-W0-T02-contracts-architect.md) |
 | M1-W0-T03 | M1-S1 | contracts-architect | Events/UI/audio/render/config contracts v1 + root barrel | M1-W0-T04 | 0 | done (room-host/save-sync in W0-T06) |
 | M1-W0-T04 | M1-S1 | devops-engineer | Installs from actual dependency needs (sequential install), CI determinism + size lanes | required M0 tooling and actual dependency needs | 1 | done |
-| M1-W0-T05 | M1-S2 | integrator | M1-W0 integration: compile fixes in app roots, consumer list | M1-W0-T01, M1-W0-T02, M1-W0-T03, M1-W0-T04 | 9 | in-review (card scope done; gate failed on two unrelated items) |
-| M1-W0-T06 | M1-S2 | contracts-architect | Local-first Solo contracts (ADR-0031): `RoomHost` local/remote, save generation header, `MCCK` package, SoloCheckpoint DTOs, sync UI slice/events | M1-W0-T01, M1-W0-T02, M1-W0-T03 | 0 | in-review |
+| M1-W0-T05 | M1-S2 | integrator | M1-W0 integration: compile fixes in app roots, consumer list | M1-W0-T01, M1-W0-T02, M1-W0-T03, M1-W0-T04 | 9 | done (M1-W0-integration.md) |
+| M1-W0-T06 | M1-S2 | contracts-architect | Local-first Solo contracts (ADR-0031): `RoomHost` local/remote, save generation header, `MCCK` package, SoloCheckpoint DTOs, sync UI slice/events | M1-W0-T01, M1-W0-T02, M1-W0-T03 | 0 | done (M1-W0-T06-contracts-architect.md) |
 | M1-W1-T01 | M1-S3 | terrain-dust-engineer | packages/world plot grid GP(128,0) + height function | M1-W0-T05 | 1 | done |
-| M1-W1-T02 | M1-S3 | qa-test-engineer | Dust contest harness (scenes, seeds, paths, bot scenarios) | M1-W0-T05 | 2 | in-review |
-| M1-W1-T03 | M1-S4 | terrain-dust-engineer | Dust prototype P1 scalar + procedural | M1-W1-T01, M1-W1-T02 | 3 | in-review |
-| M1-W1-T04 | M1-S4 | terrain-dust-engineer | Dust prototype P2 strokes + atlas + ledger | M1-W1-T01, M1-W1-T02 | 4 | in-review (GPU half not run) |
-| M1-W1-T05 | M1-S4 | terrain-dust-engineer | Dust prototype P3 client-painted min-merge | M1-W1-T01, M1-W1-T02 | 5 | in-review (GPU half not run) |
-| M1-W1-T06 | M1-S5 | integrator | M1-W1 integration: run contest benchmark S1-S8, verify world | M1-W1-T03, M1-W1-T04, M1-W1-T05 | 9 | in-review |
-| M1-W2-T01 | M1-S6 | terrain-dust-engineer | CDLOD sphere terrain on baked height cube + Pilot Fence | M1-W1-T06 | 1 | todo |
-| M1-W2-T02 | M1-S6 | technical-artist | Production light + sky: day/night, horizon shadows, exposure, Earth phase | M1-W1-T06 | 2 | todo |
-| M1-W2-T03 | M1-S6 | rendering-engineer | Render infra: dynamic res, presets, culling/LOD, warm-up, memory ledger | M1-W1-T06 | 3 | todo |
-| M1-W2-T04 | M1-S7 | technical-artist | Production regolith, rocks/craters scatter, asset pipeline | M1-W2-T01 | 4 | todo |
+| M1-W1-T02 | M1-S3 | qa-test-engineer | Dust contest harness (scenes, seeds, paths, bot scenarios) | M1-W0-T05 | 2 | done (M1-W1-T02-qa-test-engineer.md) |
+| M1-W1-T03 | M1-S4 | terrain-dust-engineer | Dust prototype P1 scalar + procedural | M1-W1-T01, M1-W1-T02 | 3 | done (M1-W1-T03-terrain-dust-engineer.md) |
+| M1-W1-T04 | M1-S4 | terrain-dust-engineer | Dust prototype P2 strokes + atlas + ledger | M1-W1-T01, M1-W1-T02 | 4 | done (M1-W1-T04-terrain-dust-engineer.md; P2 chosen) |
+| M1-W1-T05 | M1-S4 | terrain-dust-engineer | Dust prototype P3 client-painted min-merge | M1-W1-T01, M1-W1-T02 | 5 | done (M1-W1-T05-terrain-dust-engineer.md) |
+| M1-W1-T06 | M1-S5 | integrator | M1-W1 integration: run contest benchmark S1-S8, verify world | M1-W1-T03, M1-W1-T04, M1-W1-T05 | 9 | done (M1-W1-T06-terrain-dust-engineer.md) |
+| M1-W2-T01 | M1-S6 | terrain-dust-engineer | CDLOD sphere terrain on baked height cube + Pilot Fence | M1-W1-T06 | 1 | partial (CDLOD ready for review, GPU budget unmet; M1-W2-T01-terrain-dust-engineer.md) |
+| M1-W2-T02 | M1-S6 | technical-artist | Production light + sky: day/night, horizon shadows, exposure, Earth phase | M1-W1-T06 | 2 | partial (acceptance not met: far shadow teeth, S06 night; M1-W2-T02-technical-artist.md) |
+| M1-W2-T03 | M1-S6 | rendering-engineer | Render infra: dynamic res, presets, culling/LOD, warm-up, memory ledger | M1-W1-T06 | 3 | done (re-review APPROVED; M1-W2-T03-rereview-code-reviewer.md) |
+| M1-W2-T04 | M1-S7 | technical-artist | Production regolith, rocks/craters scatter, asset pipeline | M1-W2-T01 | 4 | partial (regolith ~2 ms accepted provisionally; M1-W2-T04-technical-artist.md) |
 | M1-W2-T05 | M1-S7 | game-designer | MVP game-data tables + balance-sim v0 | M1-W1-T06 | 5 | done (balance review PASS with conditions; V3 retune rule recorded in STATUS) |
-| M1-W2-T06 | M1-S7 | integrator | M1-W2 integration: hero scene at Boreal, visual gate V-M1a | M1-W2-T01, M1-W2-T02, M1-W2-T03, M1-W2-T04, M1-W2-T05 | 9 | todo |
+| M1-W2-T06 | M1-S7 | integrator | M1-W2 integration: hero scene at Boreal, visual gate V-M1a | M1-W2-T01, M1-W2-T02, M1-W2-T03, M1-W2-T04, M1-W2-T05 | 9 | open (not started) |
 | M1-W3-T01 | M1-S8 | terrain-dust-engineer | World dust ledger, rasterisation, thresholds, stamp rule | M1-W2-T06 | 1 | in-review (ledger, not wired into a host; W3-T01d plot events/Stamp/Shine done, board purchases are W6-T02) |
 | M1-W3-T02 | M1-S8 | terrain-dust-engineer | Client GPU stroke replay, tile atlas, detail ring | M1-W2-T06 | 2 | in-review (tail latency above 1.0 ms; game strokes feed in progress) |
 | M1-W3-T03 | M1-S8 | gameplay-systems-engineer | packages/sim RoomSim core: low-g movement, tool strokes, Dust Cells | M1-W2-T06 | 3 | in-review |
-| M1-W3-T04 | M1-S9 | terrain-dust-engineer | Server authoritative dust state, interest sets, checkpoint serialisation | M1-W3-T01 | 4 | todo |
-| M1-W3-T05 | M1-S9 | integrator | M1-W3 integration: local sandbox (client-side RoomSim), visual gate V-M1b | M1-W3-T01, M1-W3-T02, M1-W3-T03, M1-W3-T04, M1-W3-T07 | 9 | todo |
-| M1-W3-T07 | M1-S9 | technical-artist | First-playable art: blockout custodian (art-direction §13.4 bar) + Desk Duster v0 + grime-tinted grains v0 (D5 pipeline) | M1-W2-T06, D5 ADR | 6 | todo |
+| M1-W3-T04 | M1-S9 | terrain-dust-engineer | Server authoritative dust state, interest sets, checkpoint serialisation | M1-W3-T01 | 4 | done (re-approved; M1-W3-T04-terrain-dust-engineer.md) |
+| M1-W3-T05 | M1-S9 | integrator | M1-W3 integration: local sandbox (client-side RoomSim), visual gate V-M1b | M1-W3-T01, M1-W3-T02, M1-W3-T03, M1-W3-T04, M1-W3-T07 | 9 | partial (flat worksite default, solo playable; CDLOD terrain opt-in via ?ground=terrain; M1-W3-T05-integrator-default-boot.md) |
+| M1-W3-T07 | M1-S9 | technical-artist | First-playable art: blockout custodian (art-direction §13.4 bar) + Desk Duster v0 + grime-tinted grains v0 (D5 pipeline) | M1-W2-T06, D5 ADR | 6 | partial (custodian + Desk Duster v0 wired in Solo, review pending; CODEX-W3-T07-solo-integration.md) |
 | M1-W3-T08 | M1-S9 | gameplay-systems-engineer | LocalRoom sim host in Web Worker (`apps/client/src/sim-host`): fixed step, pooled transferable messaging, local checkpoints (IndexedDB), worker golden-hash lane | M1-W3-T03, M1-W3-T01, M1-W0-T06 | 7 | in-review (review blockers fixed: pause/resume race, restore slices p50 1.67 ms, under 2 ms to ~40% load; atlas cold rebuild 3-4 ms first frames, dust-view reserve copy open) |
 | M1-W4-T01 | M1-S10 | netcode-engineer | packages/protocol codecs, vectors, session + interpolation buffer | M1-W3-T05 | 1 | in-review (packages/protocol; adapters + netsim numbers are W4-T02/T04) |
 | M1-W4-T02 | M1-S11 | netcode-engineer | Server ShiftRoom over RoomSim, Schema encode-once, bytes channel | M1-W4-T01 | 2 | done (security re-review PASS, all findings closed; two low residuals logged) |
 | M1-W4-T03 | M1-S10 | gameplay-systems-engineer | Server sim driver + validation; client input, camera rig, tool aiming | M1-W3-T05 | 3 | in-review (server ledger, dust streaming to late joiners, in-memory persistence, plot.polished wire test done; durable storage is W5-T01) |
 | M1-W4-T04 | M1-S11 | netcode-engineer | Client net: prediction/reconciliation, interpolation, dust ingest, wake-up | M1-W4-T01 | 4 | in-review (client prediction p95 0.06 cm, dust mirror, sync inflate, 32/32 tests; app wiring + worker inflate open) |
 | M1-W4-T05 | M1-S10 | backend-data-engineer | DB schema v1 + guest auth + contracts/profile REST | M1-W3-T05 | 5 | done (review blockers VERSION_CONFLICT and Holder inviteCode fixed in code; non-blocking notes logged) |
-| M1-W4-T06 | M1-S11 | integrator | M1-W4 integration: 2-client online loop with auth | M1-W4-T01, M1-W4-T02, M1-W4-T03, M1-W4-T04, M1-W4-T05, M1-W4-T07 | 9 | todo |
-| M1-W4-T07 | M1-S11 | technical-artist | Custodian suit production model + hand tools T1–T4 (Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom) | M1-W3-T05 | 6 | todo |
-| M1-W5-T01 | M1-S12 | backend-data-engineer | Persistence: checkpoints, lease, restore, SIGTERM drain, DB power-off | M1-W4-T06 | 1 | todo |
-| M1-W5-T02 | M1-S12 | qa-test-engineer | Real-protocol bots, /bot-test scenarios, restart + e2e cold start | M1-W4-T06 | 2 | todo |
-| M1-W5-T03 | M1-S12 | technical-artist | Outpost Boreal hero hardware v1 (Assay Counter, Receiving Gate, Dump Plate, floods) + custodian polish from animation/visual feedback | M1-W4-T06 | 3 | todo |
-| M1-W5-T04 | M1-S13 | animation-engineer | Skeleton pipeline, locomotion blend, low-g bounce, foot IK, tool layer | M1-W4-T07 | 4 | todo |
-| M1-W5-T05 | M1-S13 | terrain-dust-engineer | Footprints and tracks ring | M1-W4-T06 | 5 | todo |
-| M1-W5-T06 | M1-S13 | integrator | M1-W5 integration: persistence + characters, first 16-bot run | M1-W5-T01, M1-W5-T02, M1-W5-T03, M1-W5-T04, M1-W5-T05 | 9 | todo |
-| M1-W5-T07 | M1-S13 | backend-data-engineer | Solo checkpoint upload/verify/head/download REST + save generation columns (data-model §3.7c) | M1-W5-T01 | 7 | in-review (partial) |
+| M1-W4-T06 | M1-S11 | integrator | M1-W4 integration: 2-client online loop with auth | M1-W4-T01, M1-W4-T02, M1-W4-T03, M1-W4-T04, M1-W4-T05, M1-W4-T07 | 9 | partial (two-client reconnect e2e PASS; M1-W4-T06-integrator.md) |
+| M1-W4-T07 | M1-S11 | technical-artist | Custodian suit production model + hand tools T1–T4 (Desk Duster, Crescent Squeegee, Bristle Broom, Lane Broom) | M1-W3-T05 | 6 | open (queued premium) |
+| M1-W5-T01 | M1-S12 | backend-data-engineer | Persistence: checkpoints, lease, restore, SIGTERM drain, DB power-off | M1-W4-T06 | 1 | done (APPROVED; M1-W5-T01-backend-data-engineer.md) |
+| M1-W5-T02 | M1-S12 | qa-test-engineer | Real-protocol bots, /bot-test scenarios, restart + e2e cold start | M1-W4-T06 | 2 | open (not started; 16-bot run provisional only) |
+| M1-W5-T03 | M1-S12 | technical-artist | Outpost Boreal hero hardware v1 (Assay Counter, Receiving Gate, Dump Plate, floods) + custodian polish from animation/visual feedback | M1-W4-T06 | 3 | open (queued premium) |
+| M1-W5-T04 | M1-S13 | animation-engineer | Skeleton pipeline, locomotion blend, low-g bounce, foot IK, tool layer | M1-W4-T07 | 4 | partial (logic done, model hookup via W3-T07; M1-W5-T04-animation-engineer.md) |
+| M1-W5-T05 | M1-S13 | terrain-dust-engineer | Footprints and tracks ring | M1-W4-T06 | 5 | open (queued) |
+| M1-W5-T06 | M1-S13 | integrator | M1-W5 integration: persistence + characters, first 16-bot run | M1-W5-T01, M1-W5-T02, M1-W5-T03, M1-W5-T04, M1-W5-T05 | 9 | open (not run) |
+| M1-W5-T07 | M1-S13 | backend-data-engineer | Solo checkpoint upload/verify/head/download REST + save generation columns (data-model §3.7c) | M1-W5-T01 | 7 | done (APPROVED per STATUS; M1-W5-T07-backend-data-engineer.md) |
 | M1-W5-T08 | M1-S13 | netcode-engineer | Client checkpoint sync: upload queue (newest only), head check, restore on another device, conflict detection | M1-W5-T07, M1-W3-T08 | 8 | in-review (Node tests 32/32; browser, real-server, e2e not run; app must wire install port and summary provider) |
-| M1-W6-T01 | M1-S14 | gameplay-systems-engineer | Tools T1-T4 + traits, Dust Cells I-III, Dust Pucks, Plot Card | M1-W5-T06 | 1 | todo |
-| M1-W6-T02 | M1-S14 | gameplay-systems-engineer | Economy: selling, wallet, Promotions subset, suit gear, Stamp, Roost purchase, cargo, achievements | M1-W5-T06 | 2 | todo |
-| M1-W6-T03 | M1-S14 | technical-artist | VFX: ballistic dust, Inspector's Stamp, Assay pour, Railshot, lamp pools | M1-W5-T06 | 3 | todo |
-| M1-W6-T04 | M1-S15 | ui-ux-motion-designer | HUD, toasts, Requisitions Desk, Ops Console, settings | M1-W6-T01, M1-W6-T02 | 4 | todo |
-| M1-W6-T05 | M1-S15 | technical-artist | Outpost Boreal hardware kit part 2 (Motor Pool, Requisitions Desk, Ops Console) | M1-W5-T06 | 5 | todo |
-| M1-W6-T06 | M1-S15 | integrator | M1-W6 integration: core loop playable, visual gate V-M1c | M1-W6-T01, M1-W6-T02, M1-W6-T03, M1-W6-T04, M1-W6-T05 | 9 | todo |
-| M1-W6-T07 | M1-S15 | ui-ux-motion-designer | "Which copy?" save-conflict prompt, sync/offline status indicator, backup restore in Settings | M1-W5-T08 | 7 | todo |
-| M1-W7-T01 | M1-S16 | gameplay-systems-engineer | Trundle kinematics, Motor Pool, upgrade lines, vehicle cleaning | M1-W6-T06 | 1 | todo |
-| M1-W7-T02 | M1-S16 | technical-artist | Trundle model, brush-drum VFX | M1-W6-T06 | 2 | todo |
-| M1-W7-T03 | M1-S16 | ui-ux-motion-designer | Compass, onboarding, invite UI | M1-W6-T06 | 3 | todo |
+| M1-W6-T01 | M1-S14 | gameplay-systems-engineer | Tools T1-T4 + traits, Dust Cells I-III, Dust Pucks, Plot Card | M1-W5-T06 | 1 | in-review (M1-W6-T01-gameplay-systems-engineer.md) |
+| M1-W6-T02 | M1-S14 | gameplay-systems-engineer | Economy: selling, wallet, Promotions subset, suit gear, Stamp, Roost purchase, cargo, achievements | M1-W5-T06 | 2 | in-review (M1-W6-T02-gameplay-systems-engineer.md) |
+| M1-W6-T03 | M1-S14 | technical-artist | VFX: ballistic dust, Inspector's Stamp, Assay pour, Railshot, lamp pools | M1-W5-T06 | 3 | partial (CPU half only; M1-W6-T03-T05-T06.md) |
+| M1-W6-T04 | M1-S15 | ui-ux-motion-designer | HUD, toasts, Requisitions Desk, Ops Console, settings | M1-W6-T01, M1-W6-T02 | 4 | in-review (M1-W6-T04-ui-ux-motion-designer.md) |
+| M1-W6-T05 | M1-S15 | technical-artist | Outpost Boreal hardware kit part 2 (Motor Pool, Requisitions Desk, Ops Console) | M1-W5-T06 | 5 | open (blocked, not started; M1-W6-T03-T05-T06.md) |
+| M1-W6-T06 | M1-S15 | integrator | M1-W6 integration: core loop playable, visual gate V-M1c | M1-W6-T01, M1-W6-T02, M1-W6-T03, M1-W6-T04, M1-W6-T05 | 9 | open (not run; M1-W6-T03-T05-T06.md) |
+| M1-W6-T07 | M1-S15 | ui-ux-motion-designer | "Which copy?" save-conflict prompt, sync/offline status indicator, backup restore in Settings | M1-W5-T08 | 7 | done (visual re-review; M1-W6-T07-polish-review-visual-qa-reviewer.md) |
+| M1-W7-T01 | M1-S16 | gameplay-systems-engineer | Trundle kinematics, Motor Pool, upgrade lines, vehicle cleaning | M1-W6-T06 | 1 | partial (sim + prediction done, not reviewed; M1-W7-T01-trundle-upgrades.md) |
+| M1-W7-T02 | M1-S16 | technical-artist | Trundle model, brush-drum VFX | M1-W6-T06 | 2 | open (queued premium) |
+| M1-W7-T03 | M1-S16 | ui-ux-motion-designer | Compass, onboarding, invite UI | M1-W6-T06 | 3 | partial (done at unit level, no browser; M1-W7-T03-T06.md) |
 | M1-W7-T05 | M1-S17 | audio-engineer | Audio graph, helmet muffle, MVP SFX, ambient beds, DOT chime | M1-W6-T06 | 5 | in-review (listening quality not run) |
-| M1-W7-T06 | M1-S17 | integrator | M1-W7 integration: vehicle, onboarding, audio | M1-W7-T01, M1-W7-T02, M1-W7-T03, M1-W7-T05 | 9 | todo |
-| M1-W8-T01 | M1-S18 | netcode-engineer | Co-op: Solo/Private Shift, invite join, join-in-progress, reconnect grace, kick/ban, vehicle sync | M1-W7-T06 | 1 | todo |
-| M1-W8-T02 | M1-S18 | animation-engineer | Vehicle suspension/enter-exit, machine motion (Assay, Railshot, Gate) | M1-W7-T06 | 2 | todo |
-| M1-W8-T03 | M1-S18 | game-designer | MVP pacing pass, DOT copy, Induction/Handbook text, achievements wording | M1-W7-T06 | 3 | todo |
-| M1-W8-T04 | M1-S19 | qa-test-engineer | MVP e2e flows, 16-bot drive scenario, 8x30 min soak | M1-W8-T01 | 4 | todo |
+| M1-W7-T06 | M1-S17 | integrator | M1-W7 integration: vehicle, onboarding, audio | M1-W7-T01, M1-W7-T02, M1-W7-T03, M1-W7-T05 | 9 | open (not run; M1-W7-T03-T06.md) |
+| M1-W8-T01 | M1-S18 | netcode-engineer | Co-op: Solo/Private Shift, invite join, join-in-progress, reconnect grace, kick/ban, vehicle sync | M1-W7-T06 | 1 | partial (kick/ban, reconnect grace, roster UI; join-in-progress open; M1-W8-T01-coop.md) |
+| M1-W8-T02 | M1-S18 | animation-engineer | Vehicle suspension/enter-exit, machine motion (Assay, Railshot, Gate) | M1-W7-T06 | 2 | open (queued premium) |
+| M1-W8-T03 | M1-S18 | game-designer | MVP pacing pass, DOT copy, Induction/Handbook text, achievements wording | M1-W7-T06 | 3 | open (not started) |
+| M1-W8-T04 | M1-S19 | qa-test-engineer | MVP e2e flows, 16-bot drive scenario, 8x30 min soak | M1-W8-T01 | 4 | open (not started) |
 | M1-W8-T05 | M1-S19 | performance-profiler | MVP capture suite (S10 6 bots, P1/P2/P4), budget tracker | M1-W7-T06 | 5 | in-progress (heap10 only) |
-| M1-W8-T06 | M1-S19 | integrator | M1-W8 integration: full MVP feature set integrated and playable | M1-W8-T01, M1-W8-T02, M1-W8-T03, M1-W8-T04, M1-W8-T05 | 9 | todo |
-| M1-W8-T07 | M1-S19 | netcode-engineer | Open Solo to friends (checkpoint handoff → authoritative server room) and Return to solo | M1-W8-T01, M1-W5-T08 | 7 | todo |
-| M1-W9-T01 | M1-S20 | technical-artist | Visual V1 fixes + comparator CMP-02/05/07/15 | M1-W8-T06 | 1 | todo |
-| M1-W9-T02 | M1-S20 | rendering-engineer | Perf fixes, Low preset dignity, WebGL2 MVP parity | M1-W8-T06 | 2 | todo |
-| M1-W9-T03 | M1-S20 | devops-engineer | Sentry + source maps, release config, usage logging, size gate | M1-W8-T06 | 3 | todo |
-| M1-W9-T04 | M1-S21 | ui-ux-motion-designer | UI polish from reviews; KBM + gamepad completeness | M1-W8-T06 | 4 | todo |
-| M1-W9-T05 | M1-S21 | qa-test-engineer | MVP exit-criteria test pass (E1-E11 evidence) | M1-W9-T01, M1-W9-T02, M1-W9-T03 | 5 | todo |
-| M1-W9-T06 | M1-S21 | integrator | M1 closing integration, all gates, release checklist v0.2.0 | M1-W9-T01, M1-W9-T02, M1-W9-T03, M1-W9-T04, M1-W9-T05 | 9 | todo |
+| M1-W8-T06 | M1-S19 | integrator | M1-W8 integration: full MVP feature set integrated and playable | M1-W8-T01, M1-W8-T02, M1-W8-T03, M1-W8-T04, M1-W8-T05 | 9 | open (not started) |
+| M1-W8-T07 | M1-S19 | netcode-engineer | Open Solo to friends (checkpoint handoff → authoritative server room) and Return to solo | M1-W8-T01, M1-W5-T08 | 7 | open (not started) |
+| M1-W9-T01 | M1-S20 | technical-artist | Visual V1 fixes + comparator CMP-02/05/07/15 | M1-W8-T06 | 1 | open |
+| M1-W9-T02 | M1-S20 | rendering-engineer | Perf fixes, Low preset dignity, WebGL2 MVP parity | M1-W8-T06 | 2 | open |
+| M1-W9-T03 | M1-S20 | devops-engineer | Sentry + source maps, release config, usage logging, size gate | M1-W8-T06 | 3 | open |
+| M1-W9-T04 | M1-S21 | ui-ux-motion-designer | UI polish from reviews; KBM + gamepad completeness | M1-W8-T06 | 4 | open |
+| M1-W9-T05 | M1-S21 | qa-test-engineer | MVP exit-criteria test pass (E1-E11 evidence) | M1-W9-T01, M1-W9-T02, M1-W9-T03 | 5 | open |
+| M1-W9-T06 | M1-S21 | integrator | M1 closing integration, all gates, release checklist v0.2.0 | M1-W9-T01, M1-W9-T02, M1-W9-T03, M1-W9-T04, M1-W9-T05 | 9 | open |
 
 ## 7. Task DAG
 

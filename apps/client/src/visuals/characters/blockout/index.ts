@@ -6,18 +6,36 @@
 //   me.input.vx = ...; me.input.vz = ...; me.update(dt); // per frame, no allocation
 //   me.nameTagAnchor / me.handAnchor / me.lampAnchor    // UI name tag, tool contact, Crown Lamp light
 //
+// Driven by the animation pool (M1-W5-T04) instead of the procedural motion: `CustodianAvatarView` (avatar-view.ts).
+//
 // Placeholder (art-direction 13.4): replaced by the production suit and tools in M1-W4-T07.
 
 import { BlockoutCustodian } from "./custodian";
 import { createCustodianMaterial, type CustodianMaterial } from "./material";
-import { loadBlockoutAssets, type LoadedAsset } from "./assets";
+import { loadBlockoutAssets, loadProductionAssets, type Ktx2Renderer, type LoadedAsset } from "./assets";
 
 export { BlockoutCustodian, CUSTODIAN_LOD_DISTANCES, DUSTER_LOD_DISTANCES, type CustodianInput } from "./custodian";
 export { createCustodianMaterial, createShading, type CustodianMaterial, type CustodianShading } from "./material";
+export { CustodianAvatarView, type AnimatorSource, type PoseMapper } from "./avatar-view";
+export {
+  BlockoutPoser,
+  DEFAULT_POSER_TUNING,
+  STANCE_DROP_M,
+  blockoutRigGeometry,
+  blockoutRigProfile,
+  planarTwoBoneIO,
+  type BlockoutRigGeometry,
+  type PoserTuning,
+} from "./rig-adapter";
 export { CustodianMotion, DEFAULT_MOTION_TUNING, MOON_G, type MotionTuning } from "./motion";
 export { PART, PLAYER_COLORS, SLOT, SLOTS, playerSlot, srgbHexToLinear } from "./palette";
 export {
   BLOCKOUT_BASE_URL,
+  CHARACTERS_BASE_URL,
+  SUIT_ASSET_ID,
+  TOOLS_BASE_URL,
+  TOOL_ASSET_IDS,
+  loadProductionAssets,
   CUSTODIAN_ASSET_ID,
   DUSTER_ASSET_ID,
   extractAsset,
@@ -40,11 +58,16 @@ const PIVOTS = [
 export class BlockoutCast {
   readonly material: CustodianMaterial;
 
+  /** True when the production suit and tools (M1-W4-T07) loaded; false on the blockout fallback. */
+  readonly production: boolean;
+
   constructor(
     readonly custodian: LoadedAsset,
     readonly duster: LoadedAsset | null,
+    readonly tools: ReadonlyMap<number, LoadedAsset> = new Map(),
   ) {
-    this.material = createCustodianMaterial();
+    this.production = tools.size > 0;
+    this.material = createCustodianMaterial({ glyphs: custodian.glyphs ?? null });
     for (const [key, name] of PIVOTS) {
       const s = custodian.sockets.get(name);
       if (s === undefined) throw new Error(`${custodian.id}: ${name} missing`);
@@ -52,7 +75,24 @@ export class BlockoutCast {
     }
   }
 
-  static async load(base?: string): Promise<BlockoutCast> {
+  /**
+   * Loads the production custodian + T1-T4 tools (M1-W4-T07); on any failure (missing manifest, decode error) falls
+   * back to the W3-T07 blockout. `base` (a blockout folder) or `production: false` loads the blockout only.
+   */
+  static async load(
+    base?: string,
+    options: { production?: boolean; renderer?: Ktx2Renderer | null; onFallback?: (error: unknown) => void } = {},
+  ): Promise<BlockoutCast> {
+    if (base === undefined && options.production !== false) {
+      try {
+        const { custodian, tools } = await loadProductionAssets(options.renderer ?? null);
+        return new BlockoutCast(custodian, tools.get(1) ?? null, tools);
+      } catch (error) {
+        (options.onFallback ?? ((e: unknown) => console.warn("custodian: production assets failed, blockout", e)))(
+          error,
+        );
+      }
+    }
     const { custodian, duster } = await loadBlockoutAssets(base);
     return new BlockoutCast(custodian, duster);
   }
@@ -61,6 +101,7 @@ export class BlockoutCast {
     return new BlockoutCustodian({
       custodian: this.custodian,
       duster: this.duster,
+      tools: this.tools,
       material: this.material,
       player,
     });
@@ -68,7 +109,9 @@ export class BlockoutCast {
 
   /** Placeholder assets in use (capture sidecars list them as `placeholderAssets`). */
   placeholderAssets(): string[] {
-    const list = [this.custodian, this.duster].filter((a): a is LoadedAsset => a !== null && a.placeholder);
+    const list = [this.custodian, this.duster, ...this.tools.values()].filter(
+      (a): a is LoadedAsset => a !== null && a.placeholder,
+    );
     return list.map((a) => a.file);
   }
 
@@ -76,5 +119,6 @@ export class BlockoutCast {
     this.material.dispose();
     for (const g of this.custodian.levels) g.dispose();
     for (const g of this.duster?.levels ?? []) g.dispose();
+    for (const t of this.tools.values()) if (t !== this.duster) for (const g of t.levels) g.dispose();
   }
 }

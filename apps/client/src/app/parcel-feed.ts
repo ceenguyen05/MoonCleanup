@@ -19,6 +19,9 @@ export interface ParcelReadoutSource {
   nearParcel(k: number, out: Dir): boolean;
   readonly outpostCount: number;
   outpost(k: number, out: Dir & { id: string }): boolean;
+  /** Landing Apron plots of the home outpost (sim `MoonRoomSim.apronPlotCount` / `apronPlot`); absent on sources that lack them. */
+  readonly apronPlotCount?: number;
+  apronPlot?(k: number, out: Dir): boolean;
 }
 
 /** The UI module's feed methods (`UiModule` satisfies this). */

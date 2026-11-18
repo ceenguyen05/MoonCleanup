@@ -51,6 +51,20 @@ function setup() {
 }
 
 describe("OnboardingWriter", () => {
+  test("guidance off (capture lanes): checklist hidden, no DOT lines, steps still track", () => {
+    const store = createUiStore(1000, () => 5_000);
+    const writer = new OnboardingWriter({ store, guidance: false });
+    const f = fakeHost();
+    writer.bind(f.host);
+    writer.setCatalog(catalog());
+    store.flush(0);
+    const ui = store.getState();
+    expect(ui.checklist.hidden).toBe(true);
+    expect(ui.dot.line).toBeNull();
+    expect(ui.dot.queued).toEqual([]);
+    expect(ui.checklist.items.length).toBe(loadGameData().onboarding.induction.length);
+  });
+
   test("seeds the 8 Induction steps from game-data and says the welcome line once", () => {
     const { store } = setup();
     const ui = store.getState();
@@ -66,10 +80,12 @@ describe("OnboardingWriter", () => {
 
   test("real events complete steps in order, each once, and only for the own actor", () => {
     const { store, writer, f } = setup();
-    f.emit(ev("dust.collected", { actorSlot: 1, grams: 5, plotIds: [], cellGrams: 5, cellCapGrams: 4000 }));
+    // Raw strokes no longer complete first_stroke (Apron-only: the sim sends step_completed); other slots' steps are ignored.
+    f.emit(ev("dust.collected", { actorSlot: 0, grams: 5, plotIds: [], cellGrams: 5, cellCapGrams: 4000 }));
+    f.emit(ev("onboarding.step_completed", { actorSlot: 1, stepId: "onboarding.first_stroke", index: 0, total: 8 }));
     store.flush(100);
     expect(store.getState().checklist.items.some((i) => i.done)).toBe(false);
-    f.emit(ev("dust.collected", { actorSlot: 0, grams: 5, plotIds: [], cellGrams: 5, cellCapGrams: 4000 }));
+    f.emit(ev("onboarding.step_completed", { actorSlot: 0, stepId: "onboarding.first_stroke", index: 0, total: 8 }));
     f.emit(
       ev("cell.full", { actorSlot: 0, toolId: "tool.desk_duster", cellCapGrams: 4000, pourPointBearingDeg: null }),
     );
@@ -91,6 +107,7 @@ describe("OnboardingWriter", () => {
         polishedCount: 1,
       }),
     );
+    f.emit(ev("onboarding.step_completed", { actorSlot: 0, stepId: "onboarding.polish_apron_plot", index: 4, total: 8 }));
     f.emit(
       ev("purchase.completed", { actorSlot: 0, itemId: "tool.crescent_squeegee", level: 1, priceLm: 1, walletLm: 0 }),
     );
@@ -158,7 +175,7 @@ describe("OnboardingWriter", () => {
     const f1 = fakeHost();
     w1.bind(f1.host);
     w1.setCatalog(catalog());
-    f1.emit(ev("dust.collected", { actorSlot: 0, grams: 1, plotIds: [], cellGrams: 1, cellCapGrams: 4000 }));
+    f1.emit(ev("onboarding.step_completed", { actorSlot: 0, stepId: "onboarding.first_stroke", index: 0, total: 8 }));
     expect(saved).toEqual(["onboarding.first_stroke"]);
 
     const second = createUiStore(1000);

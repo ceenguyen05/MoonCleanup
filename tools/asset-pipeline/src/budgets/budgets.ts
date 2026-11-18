@@ -17,6 +17,11 @@ export interface ClassBudget {
   readonly maxMaterials: number;
   /** Provisional cap for the whole compressed file. */
   readonly maxAssetBytes: number;
+  /**
+   * Kits only: required pieces (node-name prefix `<piece>_LOD<n>`) and each piece's own per-LOD triangle caps.
+   * `lodMaxTriangles` then caps the kit total.
+   */
+  readonly pieces?: Readonly<Record<string, readonly number[]>>;
 }
 
 export const CLASS_BUDGETS: Readonly<Record<string, ClassBudget>> = {
@@ -41,6 +46,25 @@ export const CLASS_BUDGETS: Readonly<Record<string, ClassBudget>> = {
     maxMaterials: 3,
     maxAssetBytes: 4 * 1024 * 1024,
   },
+  // Outpost Boreal hero hardware kit (M1-W5-T03): Assay Counter, Receiving Gate, Dump Plate, Flood Mast in one GLB
+  // sharing one trim-sheet material and texture set. Counter / Gate use the section 9 machine row (6-15k -> 1/2 -> 1/4);
+  // the plate and the mast are props (<= 6k). The total stays well inside the 250k-per-outpost budget even with
+  // four Gates, four Plates and four masts instanced (15k + 4 x 27k = 123k at LOD0).
+  outpostHeroKit: {
+    label: "Outpost hero hardware kit",
+    lodMaxTriangles: [42000, 21000, 10500],
+    lod0MinTriangles: 8000,
+    maxTextureSize: 2048,
+    maxTextures: 4,
+    maxMaterials: 1,
+    maxAssetBytes: 2 * 1024 * 1024,
+    pieces: {
+      assay_counter: [15000, 7500, 3750],
+      receiving_gate: [15000, 7500, 3750],
+      dump_plate: [6000, 3000, 1500],
+      flood_mast: [6000, 3000, 1500],
+    },
+  },
   // Blockout custodian (M1-W3-T07, art-direction 13.4): <= 6k triangles at LOD0 (task card), then down to the
   // section 9 far LOD (600). No textures: material slots ride in COLOR_0 (one material, one draw per LOD).
   custodianBlockout: {
@@ -52,6 +76,18 @@ export const CLASS_BUDGETS: Readonly<Record<string, ClassBudget>> = {
     maxMaterials: 1,
     maxAssetBytes: 512 * 1024,
   },
+  // Production custodian (M1-W4-T07, section 9): 18k -> 8k -> 3k -> 600 triangles, <= 3 materials (one used), the
+  // 512 px numeral glyph atlas (KTX2 UASTC) as its only texture; slot colours ride in COLOR_0. Skin <= 64 bones
+  // (checked by the client asset test, the GLB stats here do not count joints).
+  custodian: {
+    label: "Custodian suit (production)",
+    lodMaxTriangles: [18000, 8000, 3000, 600],
+    lod0MinTriangles: 8000,
+    maxTextureSize: 2048,
+    maxTextures: 3,
+    maxMaterials: 3,
+    maxAssetBytes: 1536 * 1024,
+  },
   // Hand tool (section 9): 1.5-4k -> 800 -> 200 triangles, shared 2048 px tool atlas, one material.
   handTool: {
     label: "Hand tool",
@@ -61,5 +97,22 @@ export const CLASS_BUDGETS: Readonly<Record<string, ClassBudget>> = {
     maxTextures: 3,
     maxMaterials: 1,
     maxAssetBytes: 1024 * 1024,
+  },
+  // Trundle (M1-W7-T02, section 9 vehicle row 8k -> 1/2 -> 1/4): four meshes (chassis, lamps, drum, wheels) sharing one
+  // vertex-colour material (linear albedo x AO in COLOR_0), no textures; the on-vehicle draw count is 4.
+  vehicle: {
+    label: "Vehicle (Trundle)",
+    lodMaxTriangles: [8000, 4000, 2000],
+    lod0MinTriangles: 2000,
+    maxTextureSize: 2048,
+    maxTextures: 0,
+    maxMaterials: 1,
+    maxAssetBytes: 512 * 1024,
+    pieces: {
+      chassis: [5000, 2500, 1250],
+      lamps: [600, 300, 150],
+      drum: [2500, 1250, 625],
+      wheels: [1500, 750, 375],
+    },
   },
 };

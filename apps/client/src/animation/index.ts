@@ -72,5 +72,5 @@ export {
 } from "./rig-profile";
 export { SphereFrame } from "./sphere-frame";
 export { BASE, BASE_COUNT, BASE_NAMES, StateMachine, UPPER, crossfadeTo, type StateInput } from "./state-machine";
-export { ToolLayer, crossed, strokeCurve } from "./tool-layer";
-export { TOOL_CLASS, TOOL_CLASSES, toolClassOf, type ToolClass } from "./tuning";
+export { ToolLayer, crossed, strokeCurve, strokeCurveIO } from "./tool-layer";
+export { TOOL, TOOL_CLASS, TOOL_CLASSES, toolClassOf, type ToolClass } from "./tuning";

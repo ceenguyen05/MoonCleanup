@@ -5,7 +5,8 @@
 //   ?glass=blur|solid         glass panel mode; default `auto` (blur, unless OS reduce-transparency)
 //   ?uimotion=full|reduced    overrides prefers-reduced-motion; default follows the OS
 //   ?hudscale=0.8..1.5        player HUD size setting (default 1)
-//   ?uihud=1                  shows the in-game HUD even before a shift is ready (sandbox and screenshot lanes)
+//   ?onboarding=0|1           first-run guidance (Induction Checklist, DOT subtitle); off by default under ?capture=1
+//   ?uihud=1                shows the in-game HUD even before a shift is ready (sandbox and screenshot lanes)
 
 import { NET_CONNECTION_STATES, type NetConnectionState } from "@moon-cleanup/shared";
 import { USER_SCALE_MAX, USER_SCALE_MIN } from "./tokens/display-metrics";
@@ -23,6 +24,11 @@ export interface UiUrlOptions {
   readonly hudScale: number;
   /** `?uihud=1`: draw the in-game HUD without waiting for `shift.ready`. */
   readonly hudForce: boolean;
+  /**
+   * `?onboarding=0` (implied by `?capture=1`, `?onboarding=1` wins): no first-run guidance (Induction Checklist, DOT
+   * subtitle) is drawn, so nothing sits over the avatar in captures. Default true.
+   */
+  readonly guidance: boolean;
 }
 
 export function parseUiUrlOptions(search: string): UiUrlOptions {
@@ -32,6 +38,7 @@ export function parseUiUrlOptions(search: string): UiUrlOptions {
   const glass = params.get("glass");
   const motion = params.get("uimotion");
   const scale = Number(params.get("hudscale"));
+  const onboarding = params.get("onboarding");
   return {
     hudTest: params.get("scene") === HUD_TEST_SCENE_ID,
     wakePreview,
@@ -42,5 +49,6 @@ export function parseUiUrlOptions(search: string): UiUrlOptions {
         ? Math.min(USER_SCALE_MAX, Math.max(USER_SCALE_MIN, scale))
         : 1,
     hudForce: params.get("uihud") === "1",
+    guidance: onboarding === "1" || (onboarding !== "0" && params.get("capture") !== "1"),
   };
 }

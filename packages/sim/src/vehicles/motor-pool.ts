@@ -128,9 +128,11 @@ export function buyUpgrade(
   pool.levels[kindCode * tuning.lines.length + lineCode]!++;
   for (const v of store.vehicles) {
     if (v.active && v.kindCode === kindCode) {
+      const hadLamps = v.stats.lampRangeM > 0;
       v.levels[lineCode] = pool.levelOf(kindCode, lineCode);
       v.intakeCap = 255; // a new level selects itself
       refreshVehicleStats(tuning, v);
+      if (!hadLamps && v.stats.lampRangeM > 0) v.lights = true; // first Running Lamps: switch them on
     }
   }
   return true;

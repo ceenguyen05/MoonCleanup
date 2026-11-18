@@ -1,65 +1,128 @@
-# M1-W3-T07 First-playable art: blockout custodian, Desk Duster v0, grains v0
+# M1-W3-T07 First-playable art: blockout custodian, Desk Duster v0, grains v0, animator hookup
 
-Task / status: **in-review** (deliverables built and captured on WebGPU; WebGL2 and review not run) / 2026-11-16 / technical-artist / Opus 5.5 High
-Machine: i7-8650U + UHD 620, Windows 11, headed Chrome off-screen, 1280 x 720, DPR 1, Medium, Node 26.13.1. No git.
+Task / status: **paused by owner, in-review** / 2026-11-17 (round 2; round 1 was 2026-11-16) / technical-artist / Opus 5.5 High
+Pause state:
+- Paths compile: client `tsc` exit 0, eslint and prettier clean on `visuals/characters`.
+- Every process I started is stopped (Vite on port 5291, the lab runner, headless Chrome).
+- Capture coverage is listed under Evidence.
+Machine: i7-8650U + UHD 620, Windows 11, Node 26.13.1 (fnm). Round 2 captures: **headless** Chrome (real GPU, WebGPU backend), 1280 x 720, DPR 1, Medium. No git.
 
-## Done
-- **Blender kit** `tools/asset-pipeline/src/blender/ctm_blockout.py`: parametric shells (superellipsoid, loft, torus, patch). Each face carries a material slot and a rigid part id in glTF COLOR_0 (R = slot/15, G = baked AO, B = part/15). Both ids decode exactly after 8-bit quantisation. The material uses no textures.
-- **Custodian** `assets/models/characters/blockout/custodian_blockout.py`:
-  - Size: 1.857 m tall; helmet 0.40 x 0.36 m, so **4.64 helmet-heights** (art-direction 4.1). Shoulders 0.61 m with pauldrons.
-  - LOD triangles: **5504 / 3072 / 1876 / 560**.
-  - Material slots: suit ivory, teal bellows, graphite, steel, hazard yellow (0.26 % of area), smoked visor (no LED eyes) and Clip Light lens.
-  - Player colour (16 slots): crown ring, shoulder plates, pack strip, Dust Cell window.
-  - Sockets: hand R/L, name tag, lamp, plus 8 limb pivots.
-- **Desk Duster v0** `assets/models/tools/blockout/desk_duster_v0.py`:
-  - Comically tiny handled brush (17.8 cm): wood, brass ferrule, graphite tufts. Origin is the grip; `socket_contact` sits at the bristle tips.
-  - LOD triangles: 1056 / 300 / 144.
-- **Pipeline:**
-  - Assets added in `assets.ts`, budget classes `custodianBlockout` and `handTool` in `budgets.ts`.
-  - `io.ts` now uses `prune({ keepLeaves: true })` so socket empties survive. Rock and module outputs have no leaves, so they are unchanged.
-  - Built to `apps/client/public/assets/blockout/`: custodian 135 KB, duster 20 KB, plus `manifest.json` with `placeholder: true` and `replaceBy: M1-W4-T07`.
-  - `assets:check` **PASS**, with 1 warning: the duster LOD0 is under the 1.5k advisory minimum.
-- **Runtime** `apps/client/src/visuals/characters/blockout/`:
-  - `BlockoutCast.load()` reads the manifest and lazy-imports GLTFLoader + meshopt. It dequantises the geometry and creates one shared TSL `MeshStandardNodeMaterial`.
-  - The material has per-object uniforms (player colour, lamp, limb angles). The vertex stage rotates the limbs (normals too; shadows follow). AO applies to indirect light only. There is no compute, so the material runs on both backends.
-  - `spawn(i)` returns a `BlockoutCustodian` with a three-level hierarchy (`object` > yaw > body), `handAnchor` (follows the forearm; holds the duster LOD), `nameTagAnchor` and `lampAnchor`.
-  - `CustodianMotion` is allocation-free. It handles turn-to-velocity, low-g lope bob (g·T²/8), lean/roll and counter-swinging limbs, plus a Desk Duster scrub when `toolActive`.
-- **Grains v0** `apps/client/src/visuals/vfx/grains/`:
-  - `GrainPool` is a CPU ring buffer with a seeded `emitStroke` (0.5–1.5 m/s, 20–60°, 1–3 cm, 15 % glints) and tangent-plane landing. `sample()` exposes the telemetry for VT-M1-16.
-  - `GrainLayer` draws one instanced call with a closed-form parabola on the GPU, velocity-stretched round quads and a 2 px minimum. Grains are lit as spheres by the scene lights, have coverage alpha and vanish 0.1 s after landing.
-- **Lab:** `verify/index.html`, `page.ts` and `run-lab.mjs` run the real Render + Visuals modules on `?scene=typical`.
-- **Licence rows:** 2 rows added to `ASSET_LICENSES.md`.
+## Round 2 (2026-11-17): the W5-T04 animator now drives the blockout
 
-## Evidence (`docs/agent-reports/M1-W3-T07-evidence/`; WebGPU, Medium)
-| Item | Result |
-| --- | --- |
-| VT-M1-35 turntable (placeholder bar) | `webgpu/tt-{noon,night}-{0..315}.png`: 8 views x noon (sun 38) + night-near (sun -6). Real shader, sun rig and post |
-| VT-M1-18 32 px silhouette | `webgpu-b/px32-crop-{200,290,20}.png`: 32.3–32.4 px tall at 44.6 m; reads as a person with a helmet. 4.64 helmet-heights |
-| VT-M1-19 player colours | `webgpu-b/lineup-{day,night}.png` at 12 m. Colours read on the crown and plates; faint at night. The 50 m check was not run |
-| VT-M1-16b grain read | `webgpu-b/stroke-grains*.png` vs `stroke-nograins*.png`: 28 grains tracked, 27 visible, 27 at ≥ 15 luma (share 1.0) at 0.4 s. Noon, clean ground. Grime ground not measured |
-| VT-M1-16 ballistics | `grains.test.ts`: apex and range exact to x(t); gone ≤ 0.15 s after landing. 12-frame sequence `stroke-seq-*.png` |
-| Motion | `webgpu-b/walk-0..7.png` (lope). Bob, swing and turn covered by unit tests. No clip review (RF-03 needs W5-T04) |
-| Tests / static | vitest `visuals/characters` + `visuals/vfx` **14/14** (the GLB is loaded in node). Pipeline vitest 11/11. `tsc` clean (client, asset-pipeline). eslint clean. Prettier clean |
+### Done
+- **`rig-adapter.ts`** is the blockout's "mixer adapter".
+  - `blockoutRigGeometry(custodian, duster)` reads the joints from the GLB pivots and sockets.
+  - `blockoutRigProfile()` turns them into a `RigProfile` for the animator: hip 0.905 m (2.5 cm stance drop keeps the knees soft), thigh 0.425 m, calf 0.41 m.
+  - `BlockoutPoser.apply(animator, custodian)` reads `AvatarPose`, the foot-IK sole targets (or the placeholder gait in far LOD buckets), and the tool layer. It writes:
+    - Body: pelvis offset (gait bounce + landing compression + IK pelvis), lean and slope stance, and the tool twist, all pivoting about the hips.
+    - Legs: each ankle target is moved into body space and solved with a planar two-bone, knee forward.
+    - Arms: counter-swing from the legs, and a hold pose for the held tool.
+    - **Desk Duster work pose.** When the custodian stands still with the tool down, it drops to hands and knees. The bristle tips are IK-pinned to a stroke point that follows the sim push/lift phase (`clipPhase`, `inContactFrac`), and the left palm is planted. When walking with the tool down, it bends over and reaches instead (a standing v0 arm cannot reach the ground).
+    - Air: legs tuck and split, arms rise.
+  - Optional `headLocal` / `headValid` let the sim's head point move the stroke centre.
+  - The math is plain arithmetic: no three objects and no doubles passed through calls.
+- **`avatar-view.ts`: `CustodianAvatarView`** replaces the gameplay capsule.
+  - Per pool slot: it reads `AnimationModule.animatorFor(slot)` and lazily spawns a custodian (cold, once per slot).
+  - It places the custodian at `pose.root` with the pose's tangent frame through a `RenderMapper`-shaped mapper. The basis is `up x fwd`, so it stays right-handed when the mapper is mirrored.
+  - It sets `animator.rig` to the blockout profile, shows the Desk Duster for the palm class, and hides the local slot in first person (`hideLocal`).
+  - It feeds `setProjectedHeight` back for the LOD buckets.
+- **`custodian.ts`**:
+  - `applyPose()` is public and rewritten allocation-free.
+  - New `toolContact` anchor (the Desk Duster `socket_contact` under the hand) and `setToolVisible()`.
+- **`motion.ts`**: new `bodyX`, `bodyZ` and `twist` joint fields. The procedural motion leaves them at 0.
+- **Lab** (`verify/page.ts`, `run-lab.mjs`):
+  - `lab=anim&act=idle|walk|lope|sweep|sweepwalk|jump|cycle` runs the real `AvatarAnimator` through `CustodianAvatarView`, with foot IK on the raycast lab ground. Grains come off the bristle tips at each push.
+  - Deterministic frozen stepping (`state.pending`) gives 1/60 s sequences.
+  - The runner is now **headless by default**: `--headless 0` gives the old off-screen headed mode, for GPU timing only.
+- Removed the scratch test that broke client tsc (`blockout/__scratch/`).
 
-## Deviations / decisions
-- **Desk Duster shape.** It is a handled brush, following the naming bible ("Tiny handled starter brush", "wood and brass") and REFERENCE_TARGET (toothbrush allowed). This conflicts with art-direction 5.3 and VT-M1-20, which ask for a palm puck. Lead/docs-keeper: please align those two rows.
-- **No compositing after AA.** Grains render in the scene pass under `roots.vfx`. `GrainLayer.layerScene` exists, but the look-stages hook is not mine.
-- **Ground hit.** It uses the tangent plane on both backends (CPU path), not the height-texture compute.
+### Evidence
+- **vitest** `src/visuals/characters` + `src/animation`: **70/70**. New `rig-adapter.test.ts` has 10 tests, all checked by forward kinematics that mirror the material's vertex transform:
+  - two-bone exactness and bend side;
+  - idle: ankles on the IK targets with soft knees;
+  - walking 3 s: worst ankle error < 3 cm, during the low-g hop stretch only, and the arms counter-swing;
+  - Desk Duster scrub: kneel 1.0, knees < 12 cm off the ground, bristle tips < 4.5 cm through the push and lifted on the return, stroke > 12 cm, reach error < 3 cm, scene-graph contact matches the shader FK within 2 cm;
+  - walking with the tool down: bends instead of kneeling; standing back up when the tool lifts;
+  - air tuck;
+  - the view's placement, hiding and LOD feedback.
+- **Allocation.** 96,000 poses (16 custodians x 6,000 frames) after warm-up grow the heap by **4.5 KB**; the positive control grows 2.6 MB. A 600-frame window carries a constant 0.2–0.3 MB of JIT tier-up that does not scale with the window.
+- **CPU.** Poser for 16 custodians, Node: p50 0.03–0.06 ms, p95 0.07–0.2 ms per frame.
+- **Static checks.** `tsc -p apps/client` clean. eslint and prettier clean on `visuals/characters`.
+- **Headless captures (real GPU, 1280 x 720 native, Medium, noon sun 38).** Strips are deterministic, one frame per 4 fixed 1/60 s steps:
+  - **WebGPU**, `M1-W3-T07-evidence/anim-webgpu/`:
+    - `anim-idle-az{120,200}-00..11.png`
+    - `anim-walk-az{120,200}-00..11.png`: walk with counter-swing; the Desk Duster is held up in the hold pose.
+    - `anim-lope-az120-00..04.png`: partial, cut by the pause.
+  - **Desk Duster scrub.** Captured in earlier WebGPU runs today. Those files were overwritten by the re-run and not recaptured before the pause, so the only proof today is the readout below plus the unit tests.
+    - Earlier frames I viewed: the hands-and-knees scrub with grains coming off the bristles reads clearly from the side and from front-left.
+    - Bristle-tip height above the lab ground (from `__mcLab.anim()`): 0–9 mm in the push, about 35 mm in the lift. Reach error ≤ 1 cm.
+  - **WebGL2**: walk captured in a killed run and not kept. The backend renders the custodian correctly (frame viewed: `anim-walk-az120-05`), but **no WebGL2 strip is on disk**.
+- **Lab fix, important for any re-run.** Captures stalled for 20–30 s per frame, so Playwright timed out. The cause was the lab's per-probe whole-scene raycast: foot IK takes 6 probes per step, times 90 settle steps. The lab ground is now memoised on a 4 cm bilinear grid; a screenshot takes about 0.17 s.
+- **Retries.** The runner retries a strip up to 4 times. Other writers' edits under `apps/client/src` make Vite full-reload open pages.
 
-## Not run / open
-- WebGL2 captures.
-- Night stroke and the grime-ground grain contrast.
-- Perf numbers: frame and GPU ms with 16 custodians, grains upload cost.
-- Visual-QA and code review.
-- The `pnpm verify` run.
+### Next steps (resume here)
+1. Start Vite: `apps/client`, `../../node_modules/.bin/vite --port 5291 --strictPort` on Node 26.
+2. Recapture the remaining strips headless:
+   - `node apps/client/src/visuals/characters/blockout/verify/run-lab.mjs --out docs/agent-reports/M1-W3-T07-evidence/anim-webgpu --backend webgpu --parts anim --acts lope,sweep,sweepwalk,jump`
+   - The same with `--az 270 --acts sweep` (front-left scrub view).
+   - `--backend webgl2 --acts walk,sweep,jump` into `anim-webgl2`.
+   - Run it while nobody edits `apps/client/src`, or accept the retries.
+3. View the sweep and jump strips, tune `DEFAULT_POSER_TUNING` if needed, update this report. Stop Vite and Chrome.
+4. Integrator hookup (below), then visual-QA and code review.
 
-## For integrator (W3-T05)
-- Replace the gameplay capsule with `cast.spawn(slot)`. Set `object` to the feet position and tangent frame, feed `input.vx/vz/toolActive/airborne` each frame, and call `update(dt)`.
-- Call `grains.pool.emitStroke` on stroke events and `grains.update(dt, renderer)` each frame.
-- Known gap: the v0 arm does not reach the ground. The lab emits grains 0.55 m ahead of the feet.
+### Not run / open
+- Strips not on disk: lope (partial), sweep, sweepwalk, jump on WebGPU; every **WebGL2** strip.
+- In-game hookup: I don't own those files. **Integrator:**
+  1. In `app/boot.ts`, bind a **Solo** `AnimInputProvider`. Today Solo leaves the pool unbound. Feed it from `SoloPredictor` state the way `RemoteAvatarFeed.fillOwn` does: pos, vel, facing, grounded, heightAboveGround, jumped, lastImpactMps. Add the tool class, active state and phase (`toolClassOf(equippedTool)`, sim stroke phase and period) and the ground (`GroundHeight.heightsAt`).
+  2. Construct `CustodianAvatarView(await BlockoutCast.load(), animation, gameplay mapper)` (lazy chunk) and add `view.root` to `roots.world`.
+  3. Each frame, after `AnimationModule.update`, call `view.update(dt, camera, viewportHeight)` and set `view.hideLocal = rig.mode === "first"`.
+  4. Pass `placeholder: false` to `GameplayModule`, or keep its aim ring only.
+- Not done:
+  - No first-person held-tool viewmodel (RF "readable held tool" in first person).
+  - No local-player shadow in first person.
+  - No seated (vehicle) pose.
+  - No models for tool classes other than palm: the duster is hidden for them.
+  - Remote avatars at U2+ buckets move at the bucket rate (spec design).
+- Clip sidecar foot-plant data does not apply to the blockout (procedural gait plant masks). It is needed with the W4-T07 rig and clips.
+- Visual-QA and code review; `pnpm verify`.
 
-## What M1-W4-T07 must replace
-Production suit mesh, rig and clips (the vertex-shader limbs become skinning). Texture-driven slots (base / ORM / player mask) in place of the per-slot constants. Production T1–T4 tools. Dust patina, the face behind the visor, and the Crown Lamp levels.
+## Round 1 (2026-11-16), unchanged
+- **Assets.**
+  - Blender kit `tools/asset-pipeline/src/blender/ctm_blockout.py`.
+  - Custodian `assets/models/characters/blockout/custodian_blockout.py`: 1.857 m, 4.64 helmet-heights. LOD triangles 5504 / 3072 / 1876 / 560. Ivory suit, teal bellows, smoked visor, backpack, Clip Light, player-colour crown, plates and Dust Cell window. Sockets: hands, name tag, lamp, 8 limb pivots.
+  - Desk Duster v0 `assets/models/tools/blockout/desk_duster_v0.py`: a tiny 17.8 cm wood-and-brass handled brush with graphite tufts. LOD triangles 1056 / 300 / 144.
+  - Built to `apps/client/public/assets/blockout/`: custodian 135 KB, duster 20 KB, `placeholder: true`. `assets:check` PASS.
+  - 2 rows in `ASSET_LICENSES.md`.
+- **Runtime.** One shared TSL `MeshStandardNodeMaterial` with vertex-stage rigid limbs and per-object uniforms. No compute, so the same path runs on both backends.
+- **Grains v0.** `visuals/vfx/grains/`.
+- **Evidence** (WebGPU, headed off-screen) in `M1-W3-T07-evidence/webgpu*`:
+  - VT-M1-35 turntable;
+  - VT-M1-18 32 px silhouette;
+  - VT-M1-19 lineup;
+  - VT-M1-16 / 16b grains: 27/27 visible at ≥ 15 luma.
+- **Deviation (lead/docs).** The Desk Duster is a handled brush, following the naming bible and REFERENCE_TARGET (toothbrush allowed, no palm puck required). Art-direction 5.3 and VT-M1-20 still say "palm puck".
+- **M1-W4-T07 replaces:**
+  - the suit mesh with a skinned rig and clips (the poser becomes a three mixer adapter on the same `AvatarPose`);
+  - the per-slot constants with textures;
+  - the duster with the T1–T4 tools.
 
 ## Files
-`tools/asset-pipeline/src/blender/ctm_blockout.py`, `tools/asset-pipeline/src/{assets.ts,budgets/budgets.ts,gltf/io.ts}`, `assets/models/{characters,tools}/blockout/*.py`, `apps/client/public/assets/blockout/**`, `apps/client/src/visuals/characters/blockout/**`, `apps/client/src/visuals/vfx/grains/**`, `docs/ASSET_LICENSES.md` (2 rows), evidence folder.
+- `apps/client/src/visuals/characters/blockout/{rig-adapter,avatar-view,custodian,motion,index}.ts`
+- `apps/client/src/visuals/characters/blockout/rig-adapter.test.ts`
+- `apps/client/src/visuals/characters/blockout/verify/{page.ts,run-lab.mjs}`
+- Round 1 files as listed above
+- Evidence: `docs/agent-reports/M1-W3-T07-evidence/{webgpu,webgpu-b,anim-webgpu}/`
+
+## Resume checkpoint 2026-11-17
+Review in progress. Existing blockout and animation integration remain as described above; gameplay boot hookup, first-person tool/shadow, seated pose, other tools, visual/code review and missing motion strips remain open. No server or browser started in this checkpoint. Changes are restricted to visuals/characters; boot integration belongs to the integrator.
+
+### Current review checkpoint
+- Reviewed adapter/view and existing task acceptance; no character source changes made so far. Solo binding and the other missing items above remain open.
+- Node 26 focused vitest: 69/70; with the project 30 s test timeout the animator CPU test reported p95 2.649 ms vs 1 ms under concurrent work. An earlier run with Vitest default 5 s timed out in the poser performance test. These are not passes; repeat on a quiet machine. GPU capture deferred pending coordination with profiler.
+- Half-done paths: existing apps/client/src/visuals/characters/blockout/{rig-adapter,avatar-view,custodian,motion}.ts; no boot.ts ownership. Missing evidence and gameplay wiring remain as listed above.
+
+### Resume capture outcome
+- Headless WebGPU runner completed with exit 0, Medium 1280x720: anim-resume-webgpu/ contains 12 frames at each of az120 and az200 for lope, sweep, sweepwalk and jump (96 PNGs total), plus anim.json and lab-webgpu.json. Viewed representative sweep and jump frames: kneeling sweep and airborne pose are readable; this is a partial visual inspection, not full RF-03 approval or integrated gameplay evidence.
+- Browser console recorded a 404 resource error (URL not captured), powerPreference ignored on Windows, and repeated already-non-indexed BufferGeometry warnings. Investigate the 404 before clean-console signoff.
+- NOT RUN: requested az270 sweep and WebGL2 strips, full visual/code review, quiet-machine performance repeat, integrated gameplay and final verify. No source changes in this checkpoint; prior paths remain half-done pending integration and review.
+- Capture runner exited normally and Vite on 5291 was stopped; no browser or server left running by this worker. GPU returned to lead.

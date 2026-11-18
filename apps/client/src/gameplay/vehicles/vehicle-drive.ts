@@ -3,13 +3,19 @@
 // This view rebuilds the vehicle pose from that interpolated avatar pose (handle offset along the heading), estimates
 // the ground speed from the pose motion, runs the chase camera, and mixes it with the on-foot camera over the 0.35 s
 // enter / exit blend. Nothing here runs while the player is on foot and the blend is 0 (`engaged` is false).
+// The handle offset comes from the SAME data-driven table the authoritative sim reads (game-data `VEHICLE_FEEL`,
+// `handleBackM`), so the rebuilt chassis lands where the sim's vehicle is (to the 10-bit yaw quantization).
+// With the Solo Trundle predictor ready, `updatePredicted` takes its pose instead (no rebuild, no frame delay).
 
-import { AvatarState, headingBasis, VEHICLE_HANDLING } from "@moon-cleanup/sim";
+import { VEHICLE_FEEL, type VehicleFeelDef } from "@moon-cleanup/game-data";
+import { AvatarState, headingBasis } from "@moon-cleanup/sim";
 import { VehicleCameraRig, type VehicleCameraPose, type VehicleLookDelta } from "./vehicle-camera";
 
 const TWO_PI = Math.PI * 2;
 /** Speed estimate low-pass (per frame at 60 Hz; scaled by dt). */
 const SPEED_SMOOTH_PER_S = 18;
+/** Fallback feel for an unknown kind id (the MVP vehicle). */
+const DEFAULT_KIND = "vehicle.trundle";
 
 class DrivePose implements VehicleCameraPose {
   px = 0;
@@ -33,7 +39,7 @@ export class VehicleDriveView {
   /** The rig is active (seated) or still blending out: the module should mix `camera` into its output. */
   engaged = false;
   private active = false;
-  private handleBackM = 0.9;
+  private handleBackM: number;
   private readonly pose = new DrivePose();
   private readonly look = new Look();
   private readonly frame = new AvatarState();
@@ -44,8 +50,22 @@ export class VehicleDriveView {
   private lastLookPitch = 0;
   private hasLook = false;
 
+  /** `feel` = handling-feel table by `vehicle.<id>` (default game-data `VEHICLE_FEEL`, the table the sim reads). */
+  constructor(private readonly feel: Readonly<Record<string, VehicleFeelDef>> = VEHICLE_FEEL) {
+    this.handleBackM = this.feelOf(DEFAULT_KIND)?.handleBackM ?? 0;
+  }
+
   get isActive(): boolean {
     return this.active;
+  }
+
+  /** The rebuilt vehicle pose of the last `update` (chassis point, heading, speed estimate). Read-only view. */
+  get vehiclePose(): Readonly<VehicleCameraPose> {
+    return this.pose;
+  }
+
+  private feelOf(kindId: string): VehicleFeelDef | undefined {
+    return this.feel[kindId] ?? this.feel[DEFAULT_KIND];
   }
 
   /** Sits down (`kindId` of the vehicle, for its camera spec and handle offset) or lets go. */
@@ -53,7 +73,7 @@ export class VehicleDriveView {
     this.active = on;
     if (on) {
       this.camera.setVehicle(kindId);
-      this.handleBackM = VEHICLE_HANDLING[kindId]?.handleBackM ?? 0.9;
+      this.handleBackM = this.feelOf(kindId)?.handleBackM ?? this.handleBackM;
       this.hasLast = false;
       this.hasLook = false;
       this.pose.speed = this.pose.latSpeed = 0;
@@ -117,6 +137,35 @@ export class VehicleDriveView {
     last[2] = feet[2]!;
     this.hasLast = true;
     p.boosting = boostHeld && p.speed > 0.5;
+    this.finish(lookYawRad, lookPitchRad, t);
+  }
+
+  /**
+   * One rendered frame from a predicted vehicle pose (TrundlePredictor.sample): chassis point, heading, speeds and
+   * boost are taken as they are. Allocation-free.
+   */
+  updatePredicted(
+    src: Readonly<VehicleCameraPose>,
+    lookYawRad: number,
+    lookPitchRad: number,
+    t: { readonly dt: number },
+  ): void {
+    const p = this.pose;
+    p.px = src.px;
+    p.py = src.py;
+    p.pz = src.pz;
+    p.fx = src.fx;
+    p.fy = src.fy;
+    p.fz = src.fz;
+    p.speed = src.speed;
+    p.latSpeed = src.latSpeed;
+    p.boosting = src.boosting;
+    this.hasLast = false; // a later frame-rebuild restarts its speed estimate from this pose
+    this.finish(lookYawRad, lookPitchRad, t);
+  }
+
+  private finish(lookYawRad: number, lookPitchRad: number, t: { readonly dt: number }): void {
+    const p = this.pose;
     // Look delta since the last frame (yaw wraps).
     const lk = this.look;
     if (this.hasLook) {

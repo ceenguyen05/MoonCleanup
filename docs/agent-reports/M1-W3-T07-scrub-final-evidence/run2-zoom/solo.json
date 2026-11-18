@@ -1,0 +1,399 @@
+{
+ "console": [
+  "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+  "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona",
+  "warning: [render] 6 pipeline(s) created after warm-up (frame 311)",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/space-grotesk-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded in",
+  "warning: The resource http://localhost:5311/@fs/C:/Users/caseyn/Downloads/BroswerMoonSweeper/assets/ui/fonts/inter-latin-wght.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentiona"
+ ],
+ "snaps": {
+  "start": {
+   "pose": {
+    "x": 43.51953124999999,
+    "y": 1999.1942291259763,
+    "z": 36.44824218749999,
+    "yawRad": 3.8389918485186234,
+    "pitchRad": -0.7020000000000001,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 164,
+    "sent": 164,
+    "toolInputs": 0,
+    "buttons": 0,
+    "toolParam": 212
+   },
+   "worker": {
+    "tick": 185,
+    "ackInputSeq": 161,
+    "framesDecoded": 182,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 0,
+    "framesWithStrokes": 0,
+    "lastStrokeTick": -1
+   },
+   "dust": {
+    "cellGrams": 0
+   },
+   "prediction": {
+    "predicted": 164,
+    "reconciles": 181,
+    "replayed": 189,
+    "replayCapped": 0,
+    "unknownAcks": 6,
+    "lastCorrectionM": 0.0001068115234375,
+    "maxCorrectionM": 0.0001068115234375
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  },
+  "midScrub": {
+   "pose": {
+    "x": 43.51953138906915,
+    "y": 1999.1941985350013,
+    "z": 36.44824230397244,
+    "yawRad": 3.8389918485186234,
+    "pitchRad": -0.7020000000000001,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 314,
+    "sent": 314,
+    "toolInputs": 129,
+    "buttons": 8,
+    "toolParam": 212
+   },
+   "worker": {
+    "tick": 338,
+    "ackInputSeq": 312,
+    "framesDecoded": 335,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 48,
+    "framesWithStrokes": 48,
+    "lastStrokeTick": 334
+   },
+   "dust": {
+    "cellGrams": 256
+   },
+   "prediction": {
+    "predicted": 314,
+    "reconciles": 334,
+    "replayed": 430,
+    "replayCapped": 0,
+    "unknownAcks": 6,
+    "lastCorrectionM": 0.0001068115234375,
+    "maxCorrectionM": 0.0001068115234375
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  },
+  "end": {
+   "pose": {
+    "x": 40.65136709127719,
+    "y": 1999.4827827289496,
+    "z": 20.395996045472163,
+    "yawRad": 3.8389918485186234,
+    "pitchRad": -0.7020000000000001,
+    "mode": "third"
+   },
+   "predicted": true,
+   "input": {
+    "lastSeq": 619,
+    "sent": 619,
+    "toolInputs": 325,
+    "buttons": 0,
+    "toolParam": 212
+   },
+   "worker": {
+    "tick": 653,
+    "ackInputSeq": 617,
+    "framesDecoded": 650,
+    "decodeErrors": 0
+   },
+   "strokes": {
+    "chainsAcked": 129,
+    "framesWithStrokes": 129,
+    "lastStrokeTick": 622
+   },
+   "dust": {
+    "cellGrams": 1221
+   },
+   "prediction": {
+    "predicted": 619,
+    "reconciles": 649,
+    "replayed": 807,
+    "replayCapped": 0,
+    "unknownAcks": 6,
+    "lastCorrectionM": 0.0001068115234375,
+    "maxCorrectionM": 0.21977968315571883
+   },
+   "vehiclePrediction": {
+    "predicted": 0,
+    "reconciles": 0,
+    "exactReconciles": 0,
+    "handleSnaps": 0,
+    "replayed": 0,
+    "unknownAcks": 0,
+    "lastCorrectionM": 0,
+    "maxCorrectionM": 0
+   },
+   "host": {
+    "kind": "local",
+    "state": "running"
+   }
+  }
+ },
+ "info": {
+  "backend": "webgpu",
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "ft": 17.637500321865083,
+  "p95": 33.20000076293945,
+  "dpr": 1
+ },
+ "pointerLocked": true,
+ "info2": {
+  "backend": "webgpu",
+  "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "ft": 23.678750280539195,
+  "p95": 99.80000305175781,
+  "dpr": 1
+ },
+ "series": [
+  {
+   "name": "idle-000.png",
+   "t": 1795026678007
+  },
+  {
+   "name": "idle-001.png",
+   "t": 1795026678506
+  },
+  {
+   "name": "scrub-002.png",
+   "t": 1795026680319
+  },
+  {
+   "name": "scrub-003.png",
+   "t": 1795026680644
+  },
+  {
+   "name": "scrub-004.png",
+   "t": 1795026680989
+  },
+  {
+   "name": "scrub-005.png",
+   "t": 1795026681300
+  },
+  {
+   "name": "scrub-006.png",
+   "t": 1795026681576
+  },
+  {
+   "name": "scrub-007.png",
+   "t": 1795026681886
+  },
+  {
+   "name": "scrub-008.png",
+   "t": 1795026682202
+  },
+  {
+   "name": "scrub-009.png",
+   "t": 1795026682530
+  },
+  {
+   "name": "scrub-010.png",
+   "t": 1795026682869
+  },
+  {
+   "name": "scrub-011.png",
+   "t": 1795026683174
+  },
+  {
+   "name": "scrub-012.png",
+   "t": 1795026683506
+  },
+  {
+   "name": "scrub-013.png",
+   "t": 1795026683861
+  },
+  {
+   "name": "scrub-014.png",
+   "t": 1795026684206
+  },
+  {
+   "name": "scrub-015.png",
+   "t": 1795026684557
+  },
+  {
+   "name": "scrub-016.png",
+   "t": 1795026684973
+  },
+  {
+   "name": "scrub-017.png",
+   "t": 1795026685320
+  },
+  {
+   "name": "scrub-end-018.png",
+   "t": 1795026685709
+  },
+  {
+   "name": "scrub-end-019.png",
+   "t": 1795026686220
+  },
+  {
+   "name": "scrub-end-020.png",
+   "t": 1795026686750
+  },
+  {
+   "name": "scrub-end-021.png",
+   "t": 1795026687265
+  },
+  {
+   "name": "scrub-end-022.png",
+   "t": 1795026687770
+  },
+  {
+   "name": "scrub-end-023.png",
+   "t": 1795026688412
+  },
+  {
+   "name": "walkscrub-024.png",
+   "t": 1795026689774
+  },
+  {
+   "name": "walkscrub-025.png",
+   "t": 1795026690209
+  },
+  {
+   "name": "walkscrub-026.png",
+   "t": 1795026690656
+  },
+  {
+   "name": "walkscrub-027.png",
+   "t": 1795026691094
+  },
+  {
+   "name": "walkscrub-028.png",
+   "t": 1795026691461
+  },
+  {
+   "name": "walkscrub-029.png",
+   "t": 1795026691843
+  },
+  {
+   "name": "walkscrub-030.png",
+   "t": 1795026692199
+  },
+  {
+   "name": "walkscrub-031.png",
+   "t": 1795026692547
+  },
+  {
+   "name": "walkscrub-032.png",
+   "t": 1795026692912
+  },
+  {
+   "name": "walkscrub-033.png",
+   "t": 1795026693245
+  },
+  {
+   "name": "walkscrub-034.png",
+   "t": 1795026693690
+  },
+  {
+   "name": "walkscrub-035.png",
+   "t": 1795026694076
+  },
+  {
+   "name": "strafescrub-036.png",
+   "t": 1795026695840
+  },
+  {
+   "name": "strafescrub-037.png",
+   "t": 1795026696225
+  },
+  {
+   "name": "strafescrub-038.png",
+   "t": 1795026696543
+  },
+  {
+   "name": "strafescrub-039.png",
+   "t": 1795026696970
+  },
+  {
+   "name": "strafescrub-040.png",
+   "t": 1795026697363
+  },
+  {
+   "name": "strafescrub-041.png",
+   "t": 1795026697755
+  },
+  {
+   "name": "strafescrub-042.png",
+   "t": 1795026698097
+  },
+  {
+   "name": "strafescrub-043.png",
+   "t": 1795026698404
+  },
+  {
+   "name": "strafescrub-044.png",
+   "t": 1795026698655
+  },
+  {
+   "name": "strafescrub-045.png",
+   "t": 1795026698950
+  },
+  {
+   "name": "strafescrub-046.png",
+   "t": 1795026699249
+  },
+  {
+   "name": "strafescrub-047.png",
+   "t": 1795026699522
+  },
+  {
+   "name": "end-048.png",
+   "t": 1795026699870
+  },
+  {
+   "name": "end-049.png",
+   "t": 1795026700393
+  },
+  {
+   "name": "end-050.png",
+   "t": 1795026700901
+  }
+ ]
+}

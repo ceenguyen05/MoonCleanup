@@ -21,6 +21,7 @@ export type FindingCode =
   | "UNLISTED_FILE"
   | "MESHOPT_MISSING"
   | "LOD_CHAIN_INCOMPLETE"
+  | "PIECE_MISSING"
   | "TRIANGLES_OVER_BUDGET"
   | "TRIANGLES_BELOW_RANGE"
   | "TEXTURE_TOO_LARGE"
@@ -81,6 +82,21 @@ export function checkStats(id: string, bytes: number, stats: GlbStats, budget: C
     const count = stats.lodTriangles[lod] ?? 0;
     if (count > max) add("error", "TRIANGLES_OVER_BUDGET", `LOD${lod} has ${count} triangles; the budget is ${max}`);
   });
+  for (const [piece, caps] of Object.entries(budget.pieces ?? {})) {
+    const counts = stats.pieceLodTriangles[piece];
+    if (counts === undefined || counts.length < caps.length || counts.slice(0, caps.length).some((n) => n === 0)) {
+      add(
+        "error",
+        "PIECE_MISSING",
+        `kit piece "${piece}" needs nodes ${piece}_LOD0..${caps.length - 1}; found [${(counts ?? []).join(", ")}]`,
+      );
+      continue;
+    }
+    caps.forEach((max, lod) => {
+      const count = counts[lod] ?? 0;
+      if (count > max) add("error", "TRIANGLES_OVER_BUDGET", `${piece} LOD${lod} has ${count} triangles; the budget is ${max}`);
+    });
+  }
   if (stats.unassignedTriangles > (budget.lodMaxTriangles[0] ?? 0)) {
     add(
       "error",

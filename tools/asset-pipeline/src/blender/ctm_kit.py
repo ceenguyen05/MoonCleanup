@@ -56,10 +56,14 @@ def rounded_path(points, radius, steps):
 
 
 class Kit:
-    def __init__(self, sheet, lod, density=320.0):
+    def __init__(self, sheet, lod, density=320.0, v_bands=0.0):
         self.sheet = sheet
         self.detail = DETAIL[lod]
         self.density = density  # px per metre along U
+        # v_bands (M1-W5-T03): target V density as a fraction of the U density. A box face wider than its strip can
+        # carry at that density is cut into equal bands, each mapped onto the whole strip (reads as plank / panel
+        # seams). 0 = off (default) so v0 assets (M0 proof) rebuild unchanged; far LODs pass a lower fraction.
+        self.v_bands = v_bands
         self.bm = self._new()
 
     @staticmethod
@@ -188,6 +192,19 @@ class Kit:
             axis_normal = [0.0, 0.0, 0.0]
             axis_normal[long_axis] = 1.0
             bmesh.ops.bisect_plane(part, geom=part.verts[:] + part.edges[:] + part.faces[:], plane_co=position, plane_no=axis_normal)
+        bands = [1, 1, 1]
+        if self.v_bands > 0.0:
+            band_len = self.sheet.strip_px(strip) / (self.v_bands * self.density)
+            for k in range(3):
+                if all(size[k] > size[m] for m in range(3) if m != k):
+                    continue  # the strictly longest axis is U on every face it spans, never V
+                bands[k] = max(1, math.ceil(size[k] / band_len - 0.05))
+                for b in range(1, bands[k]):
+                    position = [0.0, 0.0, 0.0]
+                    position[k] = -size[k] * 0.5 + size[k] * b / bands[k]
+                    axis_normal = [0.0, 0.0, 0.0]
+                    axis_normal[k] = 1.0
+                    bmesh.ops.bisect_plane(part, geom=part.verts[:] + part.edges[:] + part.faces[:], plane_co=position, plane_no=axis_normal)
         part.normal_update()
         uv = part.loops.layers.uv.active
         tag = part.faces.layers.int.active
@@ -199,10 +216,17 @@ class Kit:
             others = [k for k in range(3) if k != axis]
             u_axis, v_axis = (others[0], others[1]) if size[others[0]] >= size[others[1]] else (others[1], others[0])
             face[tag] = index
+            n = bands[v_axis]
+            span = size[v_axis] / n
+            band = 0
+            if n > 1:
+                centre = face.calc_center_median()[v_axis] + size[v_axis] * 0.5
+                band = min(n - 1, max(0, int(centre // span)))
+            start = -size[v_axis] * 0.5 + band * span
             for loop in face.loops:
                 co = loop.vert.co
                 u = (co[u_axis] + size[u_axis] * 0.5) * self.density / trim.SIZE
-                t = min(1.0, max(0.0, co[v_axis] / size[v_axis] + 0.5))
+                t = min(1.0, max(0.0, (co[v_axis] - start) / span))
                 loop[uv].uv = (u, v0 + (v1 - v0) * t)
         self._merge(part, matrix)
 

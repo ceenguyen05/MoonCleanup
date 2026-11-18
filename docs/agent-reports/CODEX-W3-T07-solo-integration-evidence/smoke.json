@@ -1,0 +1,221 @@
+{
+  "console": [],
+  "lanes": [
+    {
+      "ground": "flat",
+      "info": {
+        "backend": "webgpu",
+        "tier": "B",
+        "preset": "medium",
+        "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1,
+        "renderScale": 0.85,
+        "frameTimeAvgMs": 673.7571364811489,
+        "frameTimeP95Ms": 3149.699951171875,
+        "drawCalls": 31,
+        "triangles": 150311,
+        "texPoolMB": 0,
+        "placeholderAssets": [],
+        "lossCount": 0
+      },
+      "before": {
+        "pose": {
+          "x": 43.51953135097846,
+          "y": 1999.1942045913088,
+          "z": 36.448242272070935,
+          "yawRad": 0,
+          "pitchRad": -0.35,
+          "mode": "third"
+        },
+        "predicted": true,
+        "input": {
+          "lastSeq": 9,
+          "sent": 9,
+          "toolInputs": 0,
+          "buttons": 0,
+          "toolParam": 255
+        },
+        "worker": {
+          "tick": 54,
+          "ackInputSeq": 9,
+          "framesDecoded": 49,
+          "decodeErrors": 0
+        },
+        "strokes": {
+          "chainsAcked": 0,
+          "framesWithStrokes": 0,
+          "lastStrokeTick": -1
+        },
+        "dust": {
+          "cellGrams": 0
+        },
+        "prediction": {
+          "predicted": 9,
+          "reconciles": 48,
+          "replayed": 6,
+          "replayCapped": 0,
+          "unknownAcks": 26,
+          "lastCorrectionM": 0.0001068115234375,
+          "maxCorrectionM": 0.0001068115234375
+        },
+        "host": {
+          "kind": "local",
+          "state": "running"
+        }
+      },
+      "after": {
+        "pose": {
+          "x": 57.921879100605075,
+          "y": 1999.0709793711605,
+          "z": 36.44612437931608,
+          "yawRad": 0,
+          "pitchRad": -0.35,
+          "mode": "third"
+        },
+        "predicted": true,
+        "input": {
+          "lastSeq": 121,
+          "sent": 121,
+          "toolInputs": 0,
+          "buttons": 0,
+          "toolParam": 255
+        },
+        "worker": {
+          "tick": 167,
+          "ackInputSeq": 120,
+          "framesDecoded": 162,
+          "decodeErrors": 0
+        },
+        "strokes": {
+          "chainsAcked": 0,
+          "framesWithStrokes": 0,
+          "lastStrokeTick": -1
+        },
+        "dust": {
+          "cellGrams": 0
+        },
+        "prediction": {
+          "predicted": 121,
+          "reconciles": 161,
+          "replayed": 105,
+          "replayCapped": 0,
+          "unknownAcks": 26,
+          "lastCorrectionM": 0.00036811334478194636,
+          "maxCorrectionM": 0.0005270360119375776
+        },
+        "host": {
+          "kind": "local",
+          "state": "running"
+        }
+      }
+    },
+    {
+      "ground": "terrain",
+      "info": {
+        "backend": "webgpu",
+        "tier": "B",
+        "preset": "medium",
+        "gpu": "ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "dpr": 1,
+        "renderScale": 0.85,
+        "frameTimeAvgMs": 726.1357267924717,
+        "frameTimeP95Ms": 4649.60009765625,
+        "drawCalls": 35,
+        "triangles": 112655,
+        "texPoolMB": 0,
+        "placeholderAssets": [],
+        "lossCount": 0
+      },
+      "before": {
+        "pose": {
+          "x": 43.3969726564747,
+          "y": 1993.5675964458712,
+          "z": 36.34570312518819,
+          "yawRad": 0,
+          "pitchRad": -0.35,
+          "mode": "third"
+        },
+        "predicted": true,
+        "input": {
+          "lastSeq": 16,
+          "sent": 16,
+          "toolInputs": 0,
+          "buttons": 0,
+          "toolParam": 255
+        },
+        "worker": {
+          "tick": 68,
+          "ackInputSeq": 13,
+          "framesDecoded": 64,
+          "decodeErrors": 0
+        },
+        "strokes": {
+          "chainsAcked": 0,
+          "framesWithStrokes": 0,
+          "lastStrokeTick": -1
+        },
+        "dust": {
+          "cellGrams": 0
+        },
+        "prediction": {
+          "predicted": 16,
+          "reconciles": 63,
+          "replayed": 24,
+          "replayCapped": 0,
+          "unknownAcks": 39,
+          "lastCorrectionM": 0.000213623046875,
+          "maxCorrectionM": 0.000213623046875
+        },
+        "host": {
+          "kind": "local",
+          "state": "running"
+        }
+      },
+      "after": {
+        "pose": {
+          "x": 57.58846479178473,
+          "y": 1993.567964639539,
+          "z": 36.34575297682395,
+          "yawRad": 0,
+          "pitchRad": -0.35,
+          "mode": "third"
+        },
+        "predicted": true,
+        "input": {
+          "lastSeq": 140,
+          "sent": 140,
+          "toolInputs": 0,
+          "buttons": 0,
+          "toolParam": 255
+        },
+        "worker": {
+          "tick": 193,
+          "ackInputSeq": 138,
+          "framesDecoded": 189,
+          "decodeErrors": 0
+        },
+        "strokes": {
+          "chainsAcked": 0,
+          "framesWithStrokes": 0,
+          "lastStrokeTick": -1
+        },
+        "dust": {
+          "cellGrams": 0
+        },
+        "prediction": {
+          "predicted": 140,
+          "reconciles": 188,
+          "replayed": 269,
+          "replayCapped": 0,
+          "unknownAcks": 39,
+          "lastCorrectionM": 0.00037809789103283284,
+          "maxCorrectionM": 0.0006538172999764572
+        },
+        "host": {
+          "kind": "local",
+          "state": "running"
+        }
+      }
+    }
+  ]
+}

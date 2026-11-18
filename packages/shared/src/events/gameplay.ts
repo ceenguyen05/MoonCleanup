@@ -404,6 +404,8 @@ export interface CollectibleFoundEvent extends SimEventBase {
 export interface OnboardingStepCompletedEvent extends SimEventBase {
   /** `onboarding.<id>` of game-data. */
   readonly stepId: string;
+  /** Slot whose Induction it is; absent on events that predate it (treated as "everyone"). Additive field. */
+  readonly actorSlot?: number;
   /** Zero-based step index. */
   readonly index: number;
   readonly total: number;

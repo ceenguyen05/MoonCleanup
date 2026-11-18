@@ -75,6 +75,14 @@ export class CustodianMotion {
   bob = 0;
   pitch = 0;
   roll = 0;
+  /**
+   * Body offset in the yaw frame (m: x = asset left, z = forward) and torso twist about the spine (rad). The procedural
+   * motion leaves them 0 (it leans about the feet); the animator adapter (rig-adapter.ts) writes them so the body
+   * pivots about the hips.
+   */
+  bodyX = 0;
+  bodyZ = 0;
+  twist = 0;
   /** Joint angles (rad, positive = forward swing about the lateral axis): hips, knees (positive = bend), shoulders, elbows. */
   hipL = 0;
   hipR = 0;

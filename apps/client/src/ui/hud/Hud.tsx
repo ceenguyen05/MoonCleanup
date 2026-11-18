@@ -326,13 +326,13 @@ const Notices = memo(function Notices(): ReactElement {
 });
 
 /** Mounted by UiRoot while a shift is playable. Pointer-transparent; nothing here takes focus. */
-export function Hud(): ReactElement {
+export function Hud({ guidance = true }: { readonly guidance?: boolean } = {}): ReactElement {
   return (
     <div className={styles["hud"]} role="region" aria-label={STRINGS.hud.region} data-testid="hud">
       <div className={styles["topLeft"]}>
         <Wallet />
         <NextRequisition />
-        <InductionChecklist />
+        {guidance && <InductionChecklist />}
       </div>
       <div className={styles["topCenter"]}>
         <CompassStrip />
@@ -349,7 +349,7 @@ export function Hud(): ReactElement {
       </div>
       <div className={styles["bottomCenter"]}>
         <Prompt />
-        <DotSubtitle />
+        {guidance && <DotSubtitle />}
       </div>
       <div className={styles["bottomRight"]}>
         <Holster />

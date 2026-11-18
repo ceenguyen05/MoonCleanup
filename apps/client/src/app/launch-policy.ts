@@ -10,7 +10,7 @@ import type { GpuClass } from "../render";
  * and the `dust` worksite (M1-W3-T02). Mirrors `LOOKDEV_SCENE_IDS` of the visuals barrel (kept as literals so this
  * file stays free of three imports).
  */
-export const VISUALS_SCENE_IDS: readonly string[] = ["s01", "s02", "s03", "s05", "s06", "typical", "dust"];
+export const VISUALS_SCENE_IDS: readonly string[] = ["s01", "s02", "s03", "s05", "s06", "typical", "dust", "moon"];
 /** Visuals scenes that show the game's own Solo host state, so the host starts for them by default (`&solo=0`: off). */
 export const SOLO_FED_SCENE_IDS: readonly string[] = ["dust"];
 /** Scenes owned by the render module (it replaces the smoke mesh). */
@@ -112,6 +112,46 @@ export function wantsSoloHost(search: string): boolean {
 /** `?scene=dust` with the Solo host: the scene shows the host's strokes through the main-thread ledger view. */
 export function wantsHostDustFeed(search: string): boolean {
   return planScene(search).scene === "dust" && wantsSoloHost(search);
+}
+
+/** Visuals scene the default game launch shows: the dust worksite (regolith ground + dust layer), fed by the Solo host. */
+export const GAME_WORKSITE_SCENE_ID = "dust";
+/** Centre of the game worksite: Outpost Boreal (+Y, WDS section 1); the default spawn and the sell points are within 60 m. */
+export const GAME_SITE_DIRECTION: Readonly<{ x: number; y: number; z: number }> = Object.freeze({ x: 0, y: 1, z: 0 });
+
+/**
+ * The default launch (no `?scene=`, no `?play=1`) is the playable Solo game: the player's own Contract on the dust
+ * worksite at Boreal with player input. Off when the Solo host is off (`?solo=0`, `?capture=1`: the hello world stays the
+ * capture lanes' parity scene). `?play=1` keeps the dev hello world with player input; every `?scene=` keeps its dev scene.
+ */
+export function wantsGameWorksite(search: string): boolean {
+  const params = new URLSearchParams(search);
+  if ((params.get("scene") ?? "").trim() !== "") return false;
+  if (params.get("play") === "1") return false;
+  return wantsSoloHost(search);
+}
+
+/** Visuals scene of the terrain game: the CDLOD moon with the dust layer on its regolith. */
+export const GAME_TERRAIN_SCENE_ID = "moon";
+
+/**
+ * Launch-policy switch of the game's ground (M1-W3-T05 round 3): `?ground=terrain` runs the game on the CDLOD terrain
+ * with the dust layer, the Solo host on the baked height cube. The flat dust worksite stays the default until the
+ * terrain path is measured within the UHD 620 Medium budget (then flip `GAME_GROUND_DEFAULT`); `?ground=flat` forces it.
+ */
+export const GAME_GROUND_DEFAULT: "flat" | "terrain" = "flat";
+
+export function wantsTerrainGame(search: string): boolean {
+  if (!wantsGameWorksite(search)) return false;
+  const asked = (new URLSearchParams(search).get("ground") ?? "").trim().toLowerCase();
+  return asked === "terrain" || (asked !== "flat" && GAME_GROUND_DEFAULT === "terrain");
+}
+
+/** The module search of the game launch: the given (already filtered) search with the game's scene. */
+export function gameModuleSearch(search: string, terrain = false): string {
+  const params = new URLSearchParams(search);
+  params.set("scene", terrain ? GAME_TERRAIN_SCENE_ID : GAME_WORKSITE_SCENE_ID);
+  return `?${params.toString()}`;
 }
 
 /** The audio module is registered unless `?audio=0` or capture mode (the capture lanes never take a gesture). */

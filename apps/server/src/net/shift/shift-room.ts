@@ -104,6 +104,8 @@ export interface ShiftRoomDeps {
   readonly logger?: ShiftDustPersistenceLogger;
 }
 
+const BAN_LIST_MAX = 64;
+
 interface PerClient {
   readonly seat: number;
   readonly playerId: string;
@@ -128,6 +130,7 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
   idleWatch = new IdleWatch();
   private stats: SpikeRoomStats | undefined;
   private hello!: HelloPayload;
+  private archivedHelloPending = false;
   private readonly perClient = new Map<string, PerClient>();
   private readonly clientsBySeat: (Client | undefined)[] = [];
   private readonly sessionBySeat: (string | undefined)[] = [];
@@ -137,6 +140,8 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
   private dtMs = 50;
   private nextDueMs = 0;
   private disposed = false;
+  /** Session-scoped bans (the room's life; the api layer owns lasting bans). Capped. */
+  private readonly banned = new Set<string>();
   private lateReported = 0;
   /** Tick durations (ms) ring for p95 reporting. */
   readonly tickMs = new Float64Array(TIMING_RING);
@@ -235,6 +240,7 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
       simTickHz: deps.simTickHz,
       snapshotHz: deps.snapshotHz,
     };
+    this.archivedHelloPending = this.persistence?.archivedOnRestore === true;
     this.state = this.buildState(options.contractId, options.shiftType);
 
     this.onMessageBytes(MESSAGE_CATALOG.INPUT.id, (c: Client, b: Uint8Array) => this.handleInput(c, b));
@@ -278,13 +284,28 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
       this.control(c, (e) => {
         const p = KickPayloadSchema.safeParse(m);
         if (!p.success) return false;
-        const target = this.findByPlayer(p.data.playerId);
-        if (e.role !== "holder" || target === undefined || target.sessionId === c.sessionId) {
+        const targetEntry = this.entryOfPlayer(p.data.playerId);
+        if (
+          e.role !== "holder" ||
+          targetEntry === undefined ||
+          targetEntry[1].playerId === e.playerId ||
+          targetEntry[1].role === "holder"
+        ) {
           c.send(MESSAGE_CATALOG.ERROR.id, { code: "FORBIDDEN", ref: MESSAGE_CATALOG.KICK.id });
           return true;
         }
-        target.send(MESSAGE_CATALOG.KICK_NOTICE.id, { by: "holder", reasonCode: p.data.reasonCode });
-        target.leave(CloseCode.KICKED);
+        const ban = p.data.ban === true;
+        if (ban && this.banned.size < BAN_LIST_MAX) this.banned.add(p.data.playerId);
+        const code = ban ? CloseCode.BANNED : CloseCode.KICKED;
+        const [sid, entry] = targetEntry;
+        const target = this.clientsBySeat[entry.seat];
+        if (target !== undefined && target.sessionId === sid) {
+          target.send(MESSAGE_CATALOG.KICK_NOTICE.id, { by: "holder", reasonCode: p.data.reasonCode });
+          target.leave(code);
+        } else {
+          // Held (dropped) seat: free it now; a reconnect inside the grace is refused in onReconnect.
+          this.releaseSeat(sid, entry);
+        }
         return true;
       }),
     );
@@ -307,6 +328,7 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
       sessionId: client.sessionId,
     });
     if (!ok) throw new ServerError(CloseCode.AUTH_INVALID, "invalid join ticket");
+    if (this.banned.has(parsed.data.playerId)) throw new ServerError(CloseCode.BANNED, "banned from this shift");
     return { playerId: parsed.data.playerId };
   }
 
@@ -366,7 +388,13 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
     this.syncPlayer(seat, info);
     this.idleWatch.add(client, now);
     this.stats?.setClients(this.core.activeSeats);
-    client.send(MESSAGE_CATALOG.HELLO.id, this.hello);
+    if (this.archivedHelloPending) {
+      // One-shot (only the first joiner is told): the saved world was archived and this room started fresh.
+      this.archivedHelloPending = false;
+      client.send(MESSAGE_CATALOG.HELLO.id, { ...this.hello, saveArchived: true });
+    } else {
+      client.send(MESSAGE_CATALOG.HELLO.id, this.hello);
+    }
   }
 
   override onUnhandledMessage(client: Client): void {
@@ -386,7 +414,11 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
 
   override onReconnect(client: Client): void {
     const entry = this.perClient.get(client.sessionId);
-    if (entry === undefined) return;
+    if (entry === undefined) {
+      // The seat was released while held (kick/ban by the Holder): refuse the late reconnect.
+      client.leave(CloseCode.KICKED);
+      return;
+    }
     this.core.resumeSeat(entry.seat, Date.now());
     this.clientsBySeat[entry.seat] = client;
     this.idleWatch.add(client, Date.now());
@@ -682,6 +714,11 @@ export class ShiftRoom extends Room<{ state: ShiftStateSchemaClass }> {
     const owned = t.owned & 0xff;
     if (info.toolsOwned !== owned) info.toolsOwned = owned;
     if (info.equippedTool !== t.toolCode) info.equippedTool = t.toolCode;
+  }
+
+  private entryOfPlayer(playerId: string): [string, PerClient] | undefined {
+    for (const pair of this.perClient) if (pair[1].playerId === playerId) return pair;
+    return undefined;
   }
 
   private findByPlayer(playerId: string): Client | undefined {

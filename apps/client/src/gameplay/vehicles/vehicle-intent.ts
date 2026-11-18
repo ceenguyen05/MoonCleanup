@@ -2,31 +2,19 @@
 //
 // While driving, the wire input keeps its fields: moveY = throttle (forward / reverse), moveX = steer, `jump` = handbrake,
 // `boost` = Afterburner (hold), `laneLock` = Throttle Lock toggle (edge), `lampCycle` = Running Lamps (edge),
-// `interact` = exit. The sim derives the same VehicleIntent from the same command on the server, so this mapping is
-// shared with prediction and tests; it allocates nothing (the caller owns the intent object).
+// `holsterNext` = Wide Mouth cycle (edge), `interact` = exit. The mapping is the sim's own `fillVehicleIntent` (the room
+// and the Trundle predictor call the same function), so prediction can never drift from the server on input meaning.
 
-import { INPUT_AXIS_MAX, INPUT_BUTTON_MASK as M, type SimInputCommand } from "@moon-cleanup/shared";
-import type { VehicleIntent } from "@moon-cleanup/sim";
+import { INPUT_BUTTON_MASK as M, type SimInputCommand } from "@moon-cleanup/shared";
+import { fillVehicleIntent, type VehicleIntent } from "@moon-cleanup/sim";
 
-/**
- * Fills `out` from the command and the previous tick's buttons (edge detection). Axes are -1 .. 1; the throttle keeps
- * its sign (the Trundle reverses at 1.5 m/s).
- */
+/** Fills `out` from the command and the previous tick's buttons (edge detection). Allocation-free. */
 export function vehicleIntentFromInput(
   cmd: Pick<SimInputCommand, "moveX" | "moveY" | "buttons">,
   prevButtons: number,
   out: VehicleIntent,
 ): void {
-  const b = cmd.buttons;
-  const pressed = b & ~prevButtons;
-  const ty = cmd.moveY / INPUT_AXIS_MAX;
-  const sx = cmd.moveX / INPUT_AXIS_MAX;
-  out.throttle = ty > 1 ? 1 : ty < -1 ? -1 : ty;
-  out.steer = sx > 1 ? 1 : sx < -1 ? -1 : sx;
-  out.boost = (b & M.boost) !== 0;
-  out.handbrake = (b & M.jump) !== 0;
-  out.lockPressed = (pressed & M.laneLock) !== 0;
-  out.lightsPressed = (pressed & M.lampCycle) !== 0;
+  fillVehicleIntent(out, cmd.moveX, cmd.moveY, cmd.buttons, prevButtons);
 }
 
 /** True on the tick the exit button goes down (the room then calls `exitVehicle`). */

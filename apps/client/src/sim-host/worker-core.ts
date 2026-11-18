@@ -56,6 +56,7 @@ import {
 } from "./messages";
 import { SampleRing } from "./sample-ring";
 import { ReadoutSampler } from "./readouts";
+import { writeToolTelemetry } from "./tool-telemetry";
 import {
   openCheckpointStore,
   isQuotaError,
@@ -197,6 +198,9 @@ export class SimWorkerCore {
   private dustSyncWanted = false;
   /** HUD read-outs of the own avatar (10 Hz, only on change; see readouts.ts). */
   private readonly readouts = new ReadoutSampler();
+  /** Scratch for the private tool-telemetry trailer block (tool-telemetry.ts). */
+  private readonly teleF64 = new Float64Array(1);
+  private readonly teleU8 = new Uint8Array(this.teleF64.buffer);
   /** `encoder.strokesDropped` when the last dust state was posted (a change means the view missed strokes). */
   private dropsSeen = 0;
   private dustStatesPosted = 0;
@@ -586,6 +590,7 @@ export class SimWorkerCore {
     u8[FRAME_TRAILER_OFFSET + 5] = (tick >>> 8) & 0xff;
     u8[FRAME_TRAILER_OFFSET + 6] = (tick >>> 16) & 0xff;
     u8[FRAME_TRAILER_OFFSET + 7] = (tick >>> 24) & 0xff;
+    writeToolTelemetry(u8, this.teleF64, this.teleU8, sim, SELF, this.input.seq);
     this.frameBytes.push(len);
     this.framesSent++;
     this.xfer.length = 0;

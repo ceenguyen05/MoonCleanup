@@ -19,7 +19,7 @@ import { quantize } from "../math/quantize";
 import type { SimGround } from "../movement/avatar";
 import { StrokeApplyResult, type DustLedgerPort } from "../dust/ledger-port";
 import { MutableStroke } from "../tools/tool";
-import { VEHICLE_GROUNDED, vehicleBasis, type VehicleState } from "./vehicle";
+import { VEHICLE_GROUNDED, vehicleBasis, vehicleNightRelief, type VehicleState } from "./vehicle";
 import type { VehicleTuning } from "./tuning";
 
 /** Output of one intake tick (reused by the host). */
@@ -110,7 +110,8 @@ export function vehicleDepth16(cfg: SimConfig, depthLevels: number, night: boole
  * One intake tick. On stroke ticks (`tick % frameIntervalTicks === 0`) while the intake is down, the segment from the drum
  * contact one interval ago to the drum contact now becomes a stroke; it is checked against the hopper and the Empty plots
  * (like `acceptStroke` of the room), applied to `ledger`, and its dust goes to the hopper. Allocation-free.
- * `vehicleIndex` selects the credited actor slot. Returns `out.applied`.
+ * `vehicleIndex` selects the credited actor slot; `driverRelief` = the driver's Crown Lamp night relief (0 when none or
+ * undriven): the stroke uses the larger of it and the lit Running Lamps. Returns `out.applied`.
  */
 export function stepVehicleIntake(
   v: VehicleState,
@@ -123,6 +124,7 @@ export function stepVehicleIntake(
   vehicleIndex: number,
   night: boolean,
   out: VehicleIntakeOut,
+  driverRelief = 0,
 ): boolean {
   out.applied = false;
   out.addedGrams = 0;
@@ -187,7 +189,7 @@ export function stepVehicleIntake(
   if (ledger.isEmptyPlot(anchor)) return false;
   const widthCm = Math.round(v.stats.widthM * 100);
   st.widthCm = widthCm < 1 ? 1 : widthCm > STROKE_WIDTH_CM_MAX ? STROKE_WIDTH_CM_MAX : widthCm;
-  st.depth16 = vehicleDepth16(cfg, kind.depthLevels, night, v.stats.nightPenaltyRelief);
+  st.depth16 = vehicleDepth16(cfg, kind.depthLevels, night, vehicleNightRelief(v, driverRelief));
   const code = tuning.strokeToolCodeBase + kind.code;
   st.toolCode = code > STROKE_TOOL_CODE_MAX ? STROKE_TOOL_CODE_MAX : code;
   st.tick = tick as Tick;

@@ -74,6 +74,7 @@ export class DurableShiftDustStore implements ShiftDustStore {
   private readonly wakeMs: number;
   private readonly bakeHash: string | undefined;
   private readonly loadedStates = new Map<string, ShiftRoomState>();
+  private readonly archivedOnLoad = new Set<string>();
   private readonly held = new Map<string, Held>();
   private readonly acquiring = new Map<string, Promise<Held>>();
   readonly counters = {
@@ -218,6 +219,7 @@ export class DurableShiftDustStore implements ShiftDustStore {
         }
       }, this.wakeMs);
       this.loadedStates.delete(contractId);
+      this.archivedOnLoad.delete(contractId);
       if (snapshot === null) return [];
       // World identity (data-model 3.7 / format.ts bakeHash): a save written for another terrain bake never loads.
       // Owner decision 2026-11-16: no migration. The old save is ARCHIVED (moved verbatim, never deleted, recoverable)
@@ -231,7 +233,10 @@ export class DurableShiftDustStore implements ShiftDustStore {
           if (held !== undefined) this.markLost(held, "archive found another owner");
           throw new ContractUnavailableError("lease_lost");
         }
-        this.counters.archives++;
+        if (archived.kind === "archived") {
+          this.counters.archives++;
+          this.archivedOnLoad.add(contractId);
+        }
         this.logger?.warn(
           {
             contractId,
@@ -275,6 +280,11 @@ export class DurableShiftDustStore implements ShiftDustStore {
       if (error instanceof ContractUnavailableError) throw error;
       throw new ContractUnavailableError("storage_down");
     }
+  }
+
+  /** True once (one-shot) when the `load` just done archived a save of another terrain bake and started fresh. */
+  takeArchived(contractId: string): Promise<boolean> {
+    return Promise.resolve(this.archivedOnLoad.delete(contractId));
   }
 
   /** Room state of the header `load` just read (one-shot: the entry is consumed). */

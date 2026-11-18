@@ -19,6 +19,8 @@ Every mechanic's tier is also listed in [mechanics-parity-matrix.md](../research
 
 The full Moon (GP(128,0), 163,842 plots) exists and renders from orbit. Play is limited by a soft **Pilot Fence** to the **Boreal Pilot Area**: every plot within 900 m of Outpost Boreal, about 2.5 km² or 8,160 plots, mostly Highland. Numbers are the v1.0 ones; MVP pacing has its own sim policy (`mvp`, [economy §22](progression-and-economy.md#22-balance-sim-specification-toolsbalance-sim)) because MVP has no Puck Former, rails or Assembly Gun.
 
+> **Owner decision 2026-11-17:** all 7 vehicle upgrade lines are IN scope (full scope, no cuts); the "cut ... all vehicle upgrade lines" below is superseded. Build them with the vehicle ladder (M1-W7-T01).
+
 Changes from the v1 MVP plan (review M14): **added** the first local robot (Roost + Sandpiper); **cut** the Survey Globe, Flare Beacons, the Skiff, all vehicle upgrade lines, Holster Rig L2–3, Crown Lamp L2 and 7 of the 10 achievements.
 
 | Area | MVP scope | Exit criteria |

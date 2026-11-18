@@ -4,7 +4,8 @@
 //
 // Wire: no new intent kinds. Purchases ride the existing `purchase` intent (`piece.motor_pool`, `vehicle.trundle`,
 // `vehicle_upgrade.<line>`); driving uses the input command (driver column of INPUT_BUTTON_MEANING: moveY throttle, moveX
-// steer, jump handbrake, boost, laneLock Throttle Lock, lampCycle Running Lamps, interact exit). On foot, `interact` (edge)
+// steer, jump handbrake, boost, laneLock Throttle Lock, lampCycle Running Lamps, holsterNext Wide Mouth cycle, interact
+// exit). On foot, `interact` (edge)
 // within reach of your Trundle's handle sits you down, and `seatSwitch` (edge; unused on foot so far) near the Motor Pool
 // calls your Trundle out or sends it home. A contracts bump should name that meaning of `seatSwitch` on foot.
 //
@@ -20,7 +21,7 @@ import type {
   VehicleComponent,
   VehicleInfo,
 } from "@moon-cleanup/shared";
-import { INPUT_AXIS_MAX, INPUT_BUTTON_MASK as M, MAX_PLAYERS_PER_ROOM } from "@moon-cleanup/shared";
+import { MAX_PLAYERS_PER_ROOM } from "@moon-cleanup/shared";
 import type { GameData } from "@moon-cleanup/game-data";
 import type { SimConfig } from "../config/sim-config";
 import { Fnv1a32, quantize } from "../math/quantize";
@@ -45,6 +46,7 @@ import {
 } from "./motor-pool";
 import { resolveVehicleTuning, vehicleKindOf, type VehicleTuning } from "./tuning";
 import {
+  fillVehicleIntent,
   GEAR_LOCKED,
   hashVehicle,
   stepVehicle,
@@ -110,8 +112,11 @@ export interface VehicleHost {
 export interface RoomVehiclesOptions {
   /** Vehicle ids sold (default: MVP_SCOPE.vehicleIds). Only kinds with a handling table can be driven. */
   readonly offeredKindIds: readonly string[];
-  /** Upgrade lines sold (the card names Gear Ratio and Cargo Expander for the MVP). */
-  readonly offeredLineIds: readonly string[];
+  /**
+   * Upgrade lines sold. Absent = every line of `vehicle-upgrades.json` (owner decision 2026-11-17: all 7 lines are in
+   * scope); `[]` sells none.
+   */
+  readonly offeredLineIds?: readonly string[];
   /** Motor Pools the shift starts with (the MVP slice has one pre-built). */
   readonly motorPoolsBuilt: number;
   /** Motor Pool positions (unit directions); a pool beyond the list sits at the last point. */
@@ -138,6 +143,11 @@ export class RoomVehicles {
   private readonly intents: VehicleIntent[] = [];
   private readonly intakeOut = new VehicleIntakeOut();
   private readonly itemOut = new VehicleItem();
+  /**
+   * Per actor: night relief of the driver's own Crown Lamp (lamp on x level x relief per level), written by the room
+   * every driven tick; the vehicle's strokes use the larger of it and its lit Running Lamps.
+   */
+  readonly driverRelief = new Float64Array(MAX_PLAYERS_PER_ROOM);
   /** Counters (rejected, never thrown). */
   readonly counters = { intakeHopperFull: 0, spawnsRefused: 0, returnsRefused: 0, entersRefused: 0 };
 
@@ -158,7 +168,7 @@ export class RoomVehicles {
       if (k >= 0 && this.tuning.kinds[k]!.handling) this.offeredKind[k] = 1;
     }
     this.offeredLine = new Uint8Array(this.tuning.lines.length);
-    for (const id of options.offeredLineIds) {
+    for (const id of options.offeredLineIds ?? this.tuning.lines.map((l) => l.id)) {
       const l = this.tuning.lines.findIndex((x) => x.id === id);
       if (l >= 0) this.offeredLine[l] = 1;
     }
@@ -415,17 +425,7 @@ export class RoomVehicles {
 
   /** Fills the driver's intent for the vehicle it drives (store index `i`) from its input command. */
   driverIntent(i: number, moveX: number, moveY: number, buttons: number, prevButtons: number): void {
-    const out = this.intents[i]!;
-    const pressed = buttons & ~prevButtons;
-    const ty = moveY / INPUT_AXIS_MAX;
-    const sx = moveX / INPUT_AXIS_MAX;
-    out.throttle = ty > 1 ? 1 : ty < -1 ? -1 : ty;
-    out.steer = sx > 1 ? 1 : sx < -1 ? -1 : sx;
-    out.boost = (buttons & M.boost) !== 0;
-    out.handbrake = (buttons & M.jump) !== 0;
-    out.lockPressed = (pressed & M.laneLock) !== 0;
-    out.lightsPressed = (pressed & M.lampCycle) !== 0;
-    out.cycleIntakePressed = (pressed & M.holsterNext) !== 0;
+    fillVehicleIntent(this.intents[i]!, moveX, moveY, buttons, prevButtons);
   }
 
   /** Steps every vehicle (ascending store index), its intake, and the Dump Plate unload. */
@@ -442,27 +442,43 @@ export class RoomVehicles {
         it.boost = it.handbrake = it.lockPressed = it.lightsPressed = it.cycleIntakePressed = false;
       }
       const out = this.intakeOut;
-      if (stepVehicleIntake(v, this.tuning, this.cfg, host.grid, host.ground, host.ledger, tick, i, night, out)) {
+      const relief = v.driverSlot >= 0 ? this.driverRelief[v.driverSlot]! : 0;
+      if (
+        stepVehicleIntake(v, this.tuning, this.cfg, host.grid, host.ground, host.ledger, tick, i, night, out, relief)
+      ) {
         host.strokeApplied(out.stroke, tick);
       }
       if (out.rejectedFull > 0) {
         this.counters.intakeHopperFull += out.rejectedFull;
         out.rejectedFull = 0;
       }
-      // Dump Plate: slow, grounded, loaded, at a plate against a Gate.
-      if (
-        v.hopperGrams > 0 &&
-        v.moveState === VEHICLE_GROUNDED &&
-        v.speed < VEHICLE_DUMP_MAX_SPEED_MPS &&
-        v.speed > -VEHICLE_DUMP_MAX_SPEED_MPS &&
-        host.gateNear(v.px, v.py, v.pz, VEHICLE_DUMP_REACH_M)
-      ) {
-        const grams = v.hopperGrams;
-        v.hopperGrams = 0;
-        host.sellAtGate(v.ownerSlot, grams, tick);
-      }
+      this.stepTip(v, tick, host);
       if (v.driverSlot >= 0) onDriverMoved(v.driverSlot, v);
     }
+  }
+
+  /**
+   * Dump Plate (Fast Tip): a loaded vehicle that stops, grounded, at a plate against a Gate tips its hopper for
+   * `stats.tipTicks` (the feel table's tip time x Fast Tip); the dust is sold when the tip completes. Moving off (or
+   * lifting off) before then cancels the tip and keeps the dust aboard (mass is never lost).
+   */
+  private stepTip(v: VehicleState, tick: number, host: VehicleHost): void {
+    const atPlate =
+      v.hopperGrams > 0 &&
+      v.moveState === VEHICLE_GROUNDED &&
+      v.speed < VEHICLE_DUMP_MAX_SPEED_MPS &&
+      v.speed > -VEHICLE_DUMP_MAX_SPEED_MPS &&
+      host.gateNear(v.px, v.py, v.pz, VEHICLE_DUMP_REACH_M);
+    if (!atPlate) {
+      v.tipTicksLeft = 0;
+      return;
+    }
+    if (v.tipTicksLeft === 0) v.tipTicksLeft = v.stats.tipTicks;
+    v.tipTicksLeft--;
+    if (v.tipTicksLeft > 0) return;
+    const grams = v.hopperGrams;
+    v.hopperGrams = 0;
+    host.sellAtGate(v.ownerSlot, grams, tick);
   }
 
   /** The driver's standing point (the handle) into `out[0..2]`, on the ground. */
@@ -586,7 +602,21 @@ export class RoomVehicles {
     out.locked = v.gear === GEAR_LOCKED;
     out.airborne = v.moveState === VEHICLE_AIRBORNE;
     out.intakeDown = v.intakeDown;
+    out.lights = v.lights;
+    out.hasLamps = v.stats.lampRangeM > 0;
+    out.lockAvailable = v.stats.cruiseControl;
+    out.tip01 = v.tipTicksLeft > 0 ? 1 - v.tipTicksLeft / v.stats.tipTicks : 0;
+    out.intakeLevel = this.intakeLevel(v);
     return true;
+  }
+
+  /** Selected Wide Mouth level (0 = base width) of a vehicle. */
+  private intakeLevel(v: VehicleState): number {
+    let lv = 0;
+    for (let l = 0; l < this.tuning.lines.length; l++) {
+      if (this.tuning.lines[l]!.intakeBound && v.effLevels[l]! > lv) lv = v.effLevels[l]!;
+    }
+    return lv;
   }
 
   // ---- Checkpoint META keys ----
@@ -671,6 +701,14 @@ export class VehicleReadout {
   locked = false;
   airborne = false;
   intakeDown = false;
+  /** Running Lamps on / owned; Throttle Lock owned (HUD-15 pills). */
+  lights = false;
+  hasLamps = false;
+  lockAvailable = false;
+  /** Hopper tip progress at a Dump Plate, 0 .. 1 (0 = not tipping): drives the hopper tip animation. */
+  tip01 = 0;
+  /** Selected Wide Mouth level (HUD-15 pips; 0 = base width). */
+  intakeLevel = 0;
 }
 
 /** Unit quaternion of the rotation whose columns are the body axes x, y, z (rotation matrix to quaternion). */

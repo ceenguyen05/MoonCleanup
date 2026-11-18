@@ -43,6 +43,7 @@ import {
 } from "./messages";
 import { SampleRing } from "./sample-ring";
 import { HostReadouts } from "./readouts";
+import { ToolAnimSnapshot, readToolTelemetry } from "./tool-telemetry";
 import { FrameTimeline, type FrameTimelineSample } from "./frame-timeline";
 import type { StoredDustChunk } from "./checkpoint-store";
 
@@ -172,6 +173,13 @@ export class LocalRoomHostImpl implements LocalRoomHost {
    * `SimReadoutSource` of the app (readouts.ts). Empty until `setReadoutRequest` was called and the worker answered.
    */
   readonly readouts = new HostReadouts();
+  /**
+   * Authoritative tool phase / contact / head of the own avatar from the newest FRAME trailer (concrete-host only; the
+   * shared RoomHost contract is unchanged). One reused object, mutated in place; `valid` is false until a frame decoded.
+   */
+  readonly toolAnim = new ToolAnimSnapshot();
+  private readonly teleF64 = new Float64Array(1);
+  private readonly teleU8 = new Uint8Array(this.teleF64.buffer);
   private readoutInspecting = false;
   private readoutItemIds: readonly string[] = [];
   private readoutRequested = false;
@@ -557,6 +565,7 @@ export class LocalRoomHostImpl implements LocalRoomHost {
     // FRAME header: type u8, serverTick u32, ackInputSeq u16 (LE) -> ack at bytes 5..6.
     const ack = (u8[5] ?? 0) | ((u8[6] ?? 0) << 8);
     this.framesReceived++;
+    readToolTelemetry(u8, this.toolAnim, this.teleF64, this.teleU8);
     this.timeline.onFrame(tick, t0);
     if (ack !== this.lastAck) {
       this.lastAck = ack;

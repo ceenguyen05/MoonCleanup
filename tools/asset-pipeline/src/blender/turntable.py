@@ -61,6 +61,8 @@ def parse():
     parser.add_argument("--lamp-cd", type=float, default=6000.0)
     parser.add_argument("--palette", default="")
     parser.add_argument("--scratch", default="")
+    # Kits (M1-W5-T03): render one piece (`<piece>_LOD0`) of a multi-piece GLB; empty = every LOD0 mesh.
+    parser.add_argument("--piece", default="")
     args = parser.parse_args(argv)
     for key in ("glb", "outdir", "palette", "scratch"):
         if getattr(args, key):
@@ -149,7 +151,7 @@ def main():
     for obj in list(scene.objects):
         if obj.type != "MESH":
             continue
-        if re.search(r"_LOD[1-9]$", obj.name):
+        if re.search(r"_LOD[1-9]$", obj.name) or (args.piece and not obj.name.startswith(f"{args.piece}_LOD")):
             obj.hide_render = True
         else:
             subject.append(obj)

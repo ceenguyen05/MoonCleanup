@@ -77,8 +77,14 @@
     {
       "id": "vehicle_upgrade.fast_tip",
       "levels": [
-        { "costMultOfVehiclePrice": 0.1, "effects": [{ "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.6 }] },
-        { "costMultOfVehiclePrice": 0.3, "effects": [{ "stat": "vehicleTripTimeMult", "op": "mul", "value": 0.3 }] }
+        {
+          "costMultOfVehiclePrice": 0.1,
+          "effects": [{ "stat": "vehicleUnloadTimeMult", "op": "mul", "value": 0.6 }]
+        },
+        {
+          "costMultOfVehiclePrice": 0.3,
+          "effects": [{ "stat": "vehicleUnloadTimeMult", "op": "mul", "value": 0.3 }]
+        }
       ]
     },
     {

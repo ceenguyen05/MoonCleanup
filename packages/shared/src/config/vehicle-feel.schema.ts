@@ -61,8 +61,17 @@ export const VehicleFeelDefSchema = z
     handleBackM: NonNegativeNumberSchema,
     /** How close an avatar must be to enter, metres. */
     enterReachM: PositiveNumberSchema,
+    /**
+     * Hopper tip at a Dump Plate: seconds from the stop to the dust leaving the hopper, before Fast Tip
+     * (`vehicleUnloadTimeMult`). Added 2026-11-17 (M1-W7-T01, all 7 upgrade lines in scope); additive within v1.
+     */
+    tipS: PositiveNumberSchema,
   })
   .superRefine((v, ctx) => {
+    // Sim divides by the front-drum to wheel distance (centerWeightDrum, wheelBase); equal offsets give Infinity/NaN.
+    if (v.probeForwardM[0] === v.probeForwardM[1]) {
+      ctx.addIssue({ code: "custom", message: "must differ from probeForwardM[1]", path: ["probeForwardM", 0] });
+    }
     if (v.slideStartDeg < v.tractionFadeStartDeg) {
       ctx.addIssue({ code: "custom", message: "must be at least tractionFadeStartDeg", path: ["slideStartDeg"] });
     }

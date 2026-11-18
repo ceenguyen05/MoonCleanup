@@ -102,6 +102,11 @@ export const HelloPayloadSchema = z.object({
   simTickHz: RateHzSchema,
   /** Frame and Schema patch rate of this room in Hz (`SNAPSHOT_HZ`; 10 on the free tier). */
   snapshotHz: RateHzSchema,
+  /**
+   * Additive (PROTOCOL_VERSION stays 1): present and `true` only on the FIRST HELLO of a room whose saved world belonged
+   * to another terrain bake; the server archived it (recoverable) and started a fresh world. Absent otherwise.
+   */
+  saveArchived: z.literal(true).optional(),
 });
 export type HelloPayload = z.infer<typeof HelloPayloadSchema>;
 
@@ -169,6 +174,8 @@ export type ModerationReasonCode = (typeof MODERATION_REASON_CODES)[number];
 export const KickPayloadSchema = z.object({
   playerId: PlayerIdSchema,
   reasonCode: ModerationReasonCodeSchema,
+  /** Additive: also block the player for the rest of this room's life (session-scoped ban, close 4103). */
+  ban: z.boolean().optional(),
 });
 export type KickPayload = z.infer<typeof KickPayloadSchema>;
 

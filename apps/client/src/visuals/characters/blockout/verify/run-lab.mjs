@@ -1,6 +1,7 @@
 // Driver of the custodian / grains lab captures (M1-W3-T07). Not part of the app bundle. Against a running dev server:
 //   node run-lab.mjs --out <dir> [--port 5291] [--backend webgpu|webgl2] [--preset medium] [--parts turntable,px32,stroke,lineup,walk]
-// Headed Chrome off-screen (real GPU), 1280 x 720, DPR 1. Playwright and pngjs come from tools/screenshots.
+// Headless Chrome by default (`--headless 0`: headed off-screen, for GPU timing only), 1280 x 720, DPR 1. Playwright and
+// pngjs come from tools/screenshots.
 //
 // turntable  8 views at 45 deg, noon (sun 38) and night-near (sun -6, Earth key), custodian at 3.5 m -> tt-*.png
 // px32       custodian ~32 px tall under the real light: crop + silhouette (VT-M1-18) -> px32-*.png
@@ -8,6 +9,8 @@
 //            the grains hidden (VT-M1-16b) and the tracked x(t) (VT-M1-16) -> stroke.json, stroke-*.png
 // lineup     16 player colours, day 12 m and night-near -> lineup-*.png
 // walk       lope frames (bob / swing / turn) -> walk-*.png
+// anim       W5-T04 animator -> CustodianAvatarView (the game's hookup): idle / walk / lope / Desk Duster scrub /
+//            walking scrub / jump frame sequences, two azimuths each, plus the pose readout -> anim-*.png, anim.json
 
 /* global window */
 import fs from "node:fs";
@@ -32,15 +35,16 @@ const args = Object.fromEntries(
 const port = args.port ?? "5291";
 const backend = args.backend ?? "webgpu";
 const preset = args.preset ?? "medium";
-const parts = new Set((args.parts ?? "turntable,px32,stroke,lineup,walk").split(","));
+const parts = new Set((args.parts ?? "turntable,px32,stroke,lineup,walk,anim").split(","));
+const headless = (args.headless ?? "1") !== "0";
 const out = path.resolve(args.out ?? "lab-out");
 fs.mkdirSync(out, { recursive: true });
 
 const browser = await chromium.launch({
-  headless: false,
+  headless,
   channel: "chrome",
   args: [
-    ...OFFSCREEN_CHROME_ARGS,
+    ...(headless ? [] : OFFSCREEN_CHROME_ARGS),
     "--enable-unsafe-webgpu",
     "--enable-features=Vulkan,WebGPU",
     "--ignore-gpu-blocklist",
@@ -53,6 +57,10 @@ async function open(query) {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
   page.on("console", (m) => {
     if (m.type() === "error" || m.type() === "warning") report.console.push(`${m.type()}: ${m.text().slice(0, 300)}`);
+  });
+  // Name the URL of any failed request: the generic "404" console line carries none.
+  page.on("response", (r) => {
+    if (r.status() >= 400) report.console.push(`http ${r.status()}: ${r.url().slice(0, 200)}`);
   });
   page.on("pageerror", (e) => report.console.push(`pageerror: ${String(e).slice(0, 300)}`));
   await page.goto(url, { waitUntil: "load", timeout: 120_000 });
@@ -208,6 +216,45 @@ if (parts.has("walk")) {
   }
   report.results.walkInfo = await page.evaluate(() => window.__mcInfo?.() ?? null);
   await page.close();
+}
+
+if (parts.has("anim")) {
+  const res = {};
+  const acts = (args.acts ?? "idle,walk,lope,sweep,sweepwalk,jump").split(",");
+  for (const act of acts) {
+    for (const az of (args.az ?? "120,200").split(",").map(Number)) {
+      // Other writers' edits make the dev server full-reload open pages: retry the strip (up to 4 attempts).
+      let frames = null;
+      for (let attempt = 0; attempt < 4 && frames === null; attempt++) {
+        let page = null;
+        try {
+          page = await open(`sun=38&lab=anim&freeze=1&act=${act}&dist=3.6&camh=1.5&tgth=0.7&camaz=${az}&fov=50&yaw=200`);
+          // Deterministic sequence: freeze, settle 1.5 s of fixed 1/60 steps (kneel-down, gait sync), then one capture per
+          // `stepN` fixed steps (sweep / walk 4 = 67 ms, i.e. a 15 fps strip; jump 10 = 167 ms across the 2.7 s hop).
+          const stepN = act === "jump" ? 10 : 4;
+          await page.evaluate(() => window.__mcLab.set({ frozen: true, actT: 0 }));
+          await page.evaluate((n) => (window.__mcLab.state.pending = n), act === "jump" ? 6 : 90);
+          await page.waitForTimeout(300);
+          const strip = [];
+          for (let k = 0; k < 12; k++) {
+            await shot(page, `anim-${act}-az${az}-${String(k).padStart(2, "0")}`);
+            strip.push(await page.evaluate(() => window.__mcLab.anim()));
+            await page.evaluate((n) => (window.__mcLab.state.pending = n), stepN);
+            await page.waitForTimeout(200);
+          }
+          await page.close();
+          frames = strip;
+        } catch (e) {
+          report.console.push(`anim ${act} az${az} attempt ${attempt}: ${String(e).slice(0, 160)}`);
+          frames = null;
+          await page?.close().catch(() => undefined);
+        }
+      }
+      res[`${act}-az${az}`] = frames;
+    }
+  }
+  report.results.anim = res;
+  fs.writeFileSync(path.join(out, "anim.json"), JSON.stringify(res, null, 1));
 }
 
 fs.writeFileSync(path.join(out, `lab-${backend}.json`), JSON.stringify(report, null, 2));

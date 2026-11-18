@@ -7,7 +7,8 @@
 //   not replay the checklist).
 // - Events are rare and discrete: they dispatch straight away (the store applies them at its <= 15 Hz flush). Nothing
 //   runs per frame, so there is no solo frame cost.
-// - The sim does not emit `onboarding.step_completed` yet; when it does, the writer completes that step too (idempotent).
+// - The sim emits `onboarding.step_completed` (own slot) for the Landing Apron-only steps (first stroke, polish); the
+//   writer completes them from it and no longer reads them from raw dust/plot events (idempotent).
 // - Text ids are the UI catalog's (`dot.*`); the checklist item `id` is `onboarding.<id>` and doubles as the label id.
 
 import type {
@@ -43,6 +44,11 @@ export interface OnboardingWriterOptions {
   readonly store: Pick<UiStore, "dispatch" | "getState">;
   readonly wallMs?: () => number;
   readonly storage?: OnboardingStorage;
+  /**
+   * `false` (capture lanes: `?onboarding=0` / `?capture=1`) keeps step tracking but shows nothing: the checklist is
+   * hidden and no DOT line or Handbook badge is raised, so no first-run guidance can cover the avatar. Default true.
+   */
+  readonly guidance?: boolean;
 }
 
 /** game-data trigger -> the first Induction steps' meaning. The comments say which event satisfies it. */
@@ -114,7 +120,12 @@ export class OnboardingWriter {
     const firstOpen = items.findIndex((item) => !item.done);
     this.options.store.dispatch({
       type: "checklist.set",
-      patch: { mode: "induction", items, stepIndex: firstOpen === -1 ? items.length : firstOpen },
+      patch: {
+        mode: "induction",
+        items,
+        stepIndex: firstOpen === -1 ? items.length : firstOpen,
+        ...(this.options.guidance === false ? { hidden: true } : {}),
+      },
     });
     this.achievements = catalog.achievementIds.map((id) => ({ id, unlockedAtMs: null, progress01: null }));
     this.options.store.dispatch({ type: "achievements.set", patch: { items: this.achievements } });
@@ -154,14 +165,18 @@ export class OnboardingWriter {
   }
 
   private say(textId: string, params: Record<string, string | number>, durationMs: number, keep: boolean): void {
+    if (this.options.guidance === false) return;
     this.options.store.dispatch({ type: "dot.say", line: { textId, params, durationMs }, keep });
   }
 
   /** A tip line, once per session. */
   private tipOnce(textId: string, params: Record<string, string | number> = {}): void {
-    if (this.said.has(textId)) return;
+    if (this.said.has(textId) || this.options.guidance === false) return;
     this.said.add(textId);
     this.say(textId, params, DOT_DURATION_MS, false);
+    // A new tip is a new Handbook entry: raise the unread badge until the Handbook is opened (Handbook clears it).
+    const { store } = this.options;
+    store.dispatch({ type: "dot.set", patch: { handbookUnread: store.getState().dot.handbookUnread + 1 } });
   }
 
   private fire(trigger: string): void {
@@ -194,7 +209,7 @@ export class OnboardingWriter {
     const me = this.mySlot();
     switch (event.name) {
       case "dust.collected":
-        if (event.payload.actorSlot === me && event.payload.grams > 0) this.fire(TRIGGERS.firstStroke);
+        // firstStroke and plotPolished are Landing Apron-only: the sim decides and sends `onboarding.step_completed`.
         return;
       case "cell.full":
         if (event.payload.actorSlot !== me) return;
@@ -206,7 +221,6 @@ export class OnboardingWriter {
         return;
       case "plot.polished": {
         if (event.payload.creditedSlot !== me) return;
-        this.fire(TRIGGERS.plotPolished);
         const total = this.options.store.getState().shine.total;
         const remaining = total - event.payload.polishedCount;
         if (Number.isFinite(remaining) && remaining > 0) this.tipOnce("dot.tip_plot_stamped", { remaining });
@@ -228,6 +242,7 @@ export class OnboardingWriter {
           this.fire(TRIGGERS.nearParcelFound);
         return;
       case "onboarding.step_completed":
+        if (event.payload.actorSlot !== undefined && event.payload.actorSlot !== me) return;
         this.complete(event.payload.stepId);
         return;
       case "achievement.unlocked":

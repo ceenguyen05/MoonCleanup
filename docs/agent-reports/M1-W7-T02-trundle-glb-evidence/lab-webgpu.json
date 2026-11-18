@@ -1,0 +1,45 @@
+{
+  "backend": "webgpu",
+  "preset": "medium",
+  "model": "glb",
+  "results": {
+    "turntable-noon": {
+      "model": "glb",
+      "meshes": 4,
+      "grains": 0
+    },
+    "turntable-night": {
+      "model": "glb",
+      "meshes": 4,
+      "grains": 0
+    },
+    "spray-front": {
+      "model": "glb",
+      "meshes": 4,
+      "grains": 61
+    },
+    "spray-side": {
+      "model": "glb",
+      "meshes": 4,
+      "grains": 67
+    }
+  },
+  "console": [
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: [render] 7 pipeline(s) created after warm-up (frame 308)",
+    "warning: [render] 11 pipeline(s) created after warm-up (frame 342)",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: [render] 7 pipeline(s) created after warm-up (frame 303)",
+    "warning: [render] 11 pipeline(s) created after warm-up (frame 334)",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed.",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
+    "warning: THREE.BufferGeometry.toNonIndexed(): BufferGeometry is already non-indexed."
+  ]
+}

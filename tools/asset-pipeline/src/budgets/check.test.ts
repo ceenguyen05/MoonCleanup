@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { MANIFEST_FILE, readManifest } from "../manifest.js";
-import { PROOF_OUT_DIR } from "../paths.js";
+import { PROOF_OUT_DIR, REPO_ROOT } from "../paths.js";
 import { CLASS_BUDGETS } from "./budgets.js";
 import { checkDirectory, checkStats, type FindingCode } from "./check.js";
 import { OVERSIZE_ROCK, PASSING_ROCK, writeFixtures } from "./fixtures.js";
@@ -121,6 +121,7 @@ describe("asset budget checker", () => {
       1000,
       {
         lodTriangles: [400, 200, 40],
+        pieceLodTriangles: { thin_rock: [400, 200, 40] },
         unassignedTriangles: 0,
         textures: [],
         materials: 1,
@@ -129,6 +130,49 @@ describe("asset budget checker", () => {
       rock,
     );
     expect(findings.map((finding) => `${finding.level}:${finding.code}`)).toEqual(["warning:TRIANGLES_BELOW_RANGE"]);
+  });
+});
+
+// M1-W5-T03: the committed Outpost Boreal hero kit stays inside its kit and per-piece budgets.
+const OUTPOST_DIR = join(REPO_ROOT, "apps", "client", "public", "assets", "outpost");
+describe.skipIf(!existsSync(join(OUTPOST_DIR, MANIFEST_FILE)))("committed outpost hero kit (M1-W5-T03)", () => {
+  it(
+    "boreal_hero_kit passes assets:check with all four pieces, KTX2 textures and one material",
+    async () => {
+      const result = await checkDirectory(OUTPOST_DIR);
+      expect(errorCodes(result.findings)).toEqual([]);
+      const stats = result.assets.find((asset) => asset.id === "boreal_hero_kit")?.stats;
+      expect(Object.keys(stats?.pieceLodTriangles ?? {}).sort()).toEqual([
+        "assay_counter",
+        "dump_plate",
+        "flood_mast",
+        "receiving_gate",
+      ]);
+      expect(stats?.materials).toBe(1);
+      expect(stats?.textures.every((texture) => texture.mimeType === "image/ktx2")).toBe(true);
+    },
+    TIMEOUT_MS,
+  );
+
+  it("rejects a kit with a missing piece", () => {
+    const kit = CLASS_BUDGETS["outpostHeroKit"];
+    if (!kit) throw new Error("outpostHeroKit budget missing");
+    const findings = checkStats(
+      "kit",
+      1000,
+      {
+        lodTriangles: [9000, 4000, 1000],
+        pieceLodTriangles: { assay_counter: [16000, 4000, 1000] },
+        unassignedTriangles: 0,
+        textures: [],
+        materials: 1,
+        extensionsUsed: ["EXT_meshopt_compression"],
+      },
+      kit,
+    );
+    const codes = errorCodes(findings);
+    expect(codes.filter((code) => code === "PIECE_MISSING")).toHaveLength(3);
+    expect(codes).toContain("TRIANGLES_OVER_BUDGET");
   });
 });
 

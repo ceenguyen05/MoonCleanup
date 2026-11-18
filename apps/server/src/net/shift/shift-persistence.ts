@@ -117,6 +117,8 @@ export interface ShiftDustStore {
   save(contractId: string, chunks: readonly StoredDustChunk[], simTick: number, state?: ShiftRoomState): Promise<void>;
   /** Room state of the newest stored header (wallet), or `null`. Called after `load`, so a durable store reads it once. */
   loadState?(contractId: string): Promise<ShiftRoomState | null>;
+  /** One-shot, after `load`: true when that load archived a save of another terrain bake and started fresh. */
+  takeArchived?(contractId: string): Promise<boolean>;
   /**
    * Durable stores set this: a failed `load` then REFUSES the room (restore rethrows) instead of starting from a
    * pristine moon, which the next checkpoint would write over the real save.
@@ -202,6 +204,8 @@ export class ShiftDustPersistence {
   lastRestore: DustRestoreResult | null = null;
   /** Room state read from the store's newest header by `restore` (null: none stored). Read it before building the sim. */
   restoredState: ShiftRoomState | null = null;
+  /** The store archived a save of another terrain bake during `restore` (the room tells the first client in HELLO). */
+  archivedOnRestore = false;
   /** The header state exactly as stored (before `admitState`); the dirty baseline. */
   private storedState: ShiftRoomState | null = null;
   private stateProvider: (() => ShiftRoomState) | undefined;
@@ -310,6 +314,11 @@ export class ShiftDustPersistence {
       }
       this.logger?.warn({ code: codeOf(err) }, "shift dust load failed; starting from a pristine ledger");
       return null;
+    }
+    try {
+      this.archivedOnRestore = (await this.store.takeArchived?.(this.contractId)) === true;
+    } catch {
+      this.archivedOnRestore = false;
     }
     try {
       this.storedState = (await this.store.loadState?.(this.contractId)) ?? null;

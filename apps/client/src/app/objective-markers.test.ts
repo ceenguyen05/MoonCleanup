@@ -46,6 +46,35 @@ function rig(step: { current: string | null }) {
 }
 
 describe("ObjectiveMarkers", () => {
+  test("landing_apron points at the nearest Apron plot when the source has them, else at the home outpost", () => {
+    const aprons = [
+      { x: 0, y: 1, z: 0 },
+      { x: 0, y: 0.6, z: 0.8 },
+    ];
+    const run = (withApron: boolean): number | null => {
+      const calls: [string, number | null][] = [];
+      const base = source();
+      const src: ParcelReadoutSource = withApron
+        ? { ...base, apronPlotCount: aprons.length, apronPlot: (k, out) => (Object.assign(out, aprons[k]), true) }
+        : base;
+      const m = new ObjectiveMarkers({
+        store: createUiStore(1000),
+        setMarkerBearing: (id, deg) => void calls.push([id, deg]),
+        step: () => "onboarding.polish_apron_plot",
+        source: () => src,
+        stations: () => [],
+        samplePos: (out) => (Object.assign(out, { x: 0, y: 0.0001, z: 0.9999 }), true),
+        bearing: sphereBearingDeg,
+      });
+      m.pump(0);
+      return calls[0]?.[1] ?? null;
+    };
+    const withApron = run(true);
+    const fallback = run(false);
+    expect(typeof withApron).toBe("number");
+    expect(withApron).not.toBe(fallback);
+  });
+
   test("active step sets compass.objectiveMarkerId and a bearing, changes clear the old marker, no step clears it", () => {
     const step = { current: "onboarding.first_stroke" as string | null };
     const { store, calls, markers } = rig(step);
@@ -82,6 +111,41 @@ describe("ObjectiveMarkers", () => {
     expect(calls).toEqual([]);
     markers.pump(150);
     expect(calls[0]?.[0]).toBe("assay_counter");
+  });
+
+  test("objectiveDistanceM: great-circle metres, change-only, cleared with the marker", () => {
+    const step = { current: "onboarding.pour_at_counter" as string | null };
+    const store = createUiStore(1000);
+    const pos = { x: 0, y: 1, z: 0 };
+    const markers = new ObjectiveMarkers({
+      store,
+      setMarkerBearing: () => undefined,
+      step: () => step.current,
+      source,
+      stations: () => [{ kind: "assay_counter", x: 1, y: 0, z: 0 }],
+      samplePos: (out) => {
+        Object.assign(out, pos);
+        return true;
+      },
+      bearing: sphereBearingDeg,
+      moonRadiusM: 2000,
+    });
+    let writes = 0;
+    const real = store.dispatch.bind(store);
+    store.dispatch = (a) => {
+      if (a.type === "compass.set" && "objectiveDistanceM" in a.patch) writes++;
+      real(a);
+    };
+    markers.pump(0);
+    store.flush(0);
+    expect(store.getState().compass.objectiveDistanceM).toBe(Math.round((2000 * Math.PI) / 2));
+    markers.pump(200);
+    markers.pump(400);
+    expect(writes).toBe(1);
+    step.current = null;
+    markers.pump(600);
+    store.flush(600);
+    expect(store.getState().compass.objectiveDistanceM).toBeNull();
   });
 
   test("markerSink forwards to a UI module that has setMarkerBearing and warns once when it does not", () => {

@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "generator": "@moon-cleanup/asset-pipeline assets:build",
+  "assets": {
+    "trundle": {
+      "file": "trundle.37d6cdb27fd9.glb",
+      "class": "vehicle",
+      "bytes": 133776,
+      "sha256": "37d6cdb27fd9dbaf45b55083c624022012cda9b906ddd9e4f2fdf1d6b9be770c",
+      "source": "assets/models/vehicles/trundle.py",
+      "textureFormat": "none"
+    }
+  }
+}

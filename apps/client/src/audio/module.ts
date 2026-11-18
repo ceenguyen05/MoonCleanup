@@ -88,6 +88,7 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
   private mySlot = 0;
   private volume: VolumeSettings | null = null;
   private mono = false;
+  private captionsOn = false;
   private pendingPhase: DayPhase | null = null;
   private starting = false;
   private disposed = false;
@@ -178,7 +179,7 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
 
   // ---- Public surface (UI-driven cues, accessibility settings, debug) ----
 
-  /** Plays a cue by id. Used for sounds no event describes (Clock In, UI clicks) until `audio.cue` events exist. */
+  /** Plays a cue by id. Debug/audition entry; in the game, UI and gameplay emit `audio.cue` instead. */
   play(id: AudioCueId, params: CuePlayParams = {}, opts?: PlayOptions): boolean {
     return this.running ? (this.player?.play(id, params, opts) ?? false) : false;
   }
@@ -186,6 +187,11 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
   setMono(mono: boolean): void {
     this.mono = mono;
     this.graph?.setMono(mono);
+  }
+
+  /** Sound captions on or off (`audio.settings`); `onCaption` only fires while on. Default off. */
+  setCaptions(on: boolean): void {
+    this.captionsOn = on;
   }
 
   get running(): boolean {
@@ -271,6 +277,8 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
     setDuckFlag: (reason, on) => this.ducker.setFlag(reason, on),
     mySlot: () => this.mySlot,
     nowS: () => this.timeS,
+    setMono: (mono) => this.setMono(mono),
+    setCaptions: (on) => this.setCaptions(on),
   };
 
   private build(ctx: AContext): void {
@@ -286,7 +294,7 @@ export class AudioModule<S extends ServiceTypes = ServiceTypes> implements Clien
     const onCaption = this.options.onCaption;
     if (onCaption !== undefined) {
       player.onStart = (id) => {
-        if (CAPTION_CUES.has(id)) onCaption(id);
+        if (this.captionsOn && CAPTION_CUES.has(id)) onCaption(id);
       };
     }
     this.player = player;

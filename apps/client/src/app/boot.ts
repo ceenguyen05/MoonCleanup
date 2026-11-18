@@ -15,11 +15,23 @@ import {
 } from "../render";
 import { AnimationModule } from "../animation";
 import { AudioModule, browserEnv } from "../audio";
+import { AudioBridge } from "./audio-bridge";
 import { DebugModule } from "../debug";
 import { GameplayModule, PlotFrameMapper, type GameplayDebugHost, type PlotCardMode } from "../gameplay";
-import { UiModule, sphereBearingDeg, type OnlineEntryPort } from "../ui";
-import { DUST_SCENE_SITE, VisualsModule, type DustFeedPort } from "../visuals";
+import { InitialFacing, simHeadingBearingDeg } from "./initial-facing";
+import { UiModule, type OnlineEntryPort } from "../ui";
+import { DUST_SCENE_SITE, VisualsModule, type DustFeedPort, type VisualsModuleOptions } from "../visuals";
 import type { CreateLocalRoomHostOptions, LocalRoomHostImpl, SoloDustView } from "../sim-host";
+import { GroundHeight } from "@moon-cleanup/world";
+import { loadTerrainAsset } from "../terrain";
+import {
+  MOON_CENTRED_MAPPER,
+  SharedGround,
+  groundOptionsOf,
+  loadTerrainGameAsset,
+  terrainHostOptions,
+  TERRAIN_GAME_STORAGE_PREFIX,
+} from "./terrain-game";
 import { readClientConfig } from "./config";
 import {
   DUST_SCENE_STORAGE_PREFIX,
@@ -31,17 +43,23 @@ import {
 import { createErrorBoundary, describeError, type ErrorBoundary } from "./error-boundary";
 import { createEventBus } from "./event-bus";
 import {
+  GAME_SITE_DIRECTION,
+  gameModuleSearch,
   integratedGpuPreset,
   launchSearch,
   planScene,
+  wantsGameWorksite,
+  wantsTerrainGame,
   wantsAudio,
   wantsHostDustFeed,
   wantsSoloHost,
   wantsTimestampQueries,
 } from "./launch-policy";
+import { wantsCheckpointSync, wantsPlayerInput } from "./boot-policy";
 import { assertInstallableStore } from "./install-guard";
 import { AppNetModule } from "./modules";
-import { createOnlineDevHooks, type OnlineDevHooks, type OnlineRoomSlot } from "./online-launch";
+import { createOnlineDevHooks, type AnimationBinder, type OnlineDevHooks, type OnlineRoomSlot } from "./online-launch";
+import { createRosterPort } from "./online-roster";
 import {
   bindSaveSyncRequests,
   createLocalInstallPort,
@@ -67,7 +85,7 @@ import {
 import { createUiStore } from "./ui-store";
 import { HudWriter, withHudPump } from "./hud-writer";
 import { installHandbookKey } from "./handbook-key";
-import { ObjectiveMarkers, markerSink, type MarkerStation } from "./objective-markers";
+import { ObjectiveMarkers, type MarkerStation } from "./objective-markers";
 import { OnboardingWriter, createOnboardingStorage } from "./onboarding-writer";
 import { createPurchasePort, InteractionWriter, outpostStations } from "./hud-interaction";
 import { MenuWriter, UiFrameBridge, catalogItemIds, createMenuPricing, menuCatalogFromGameData } from "./menu-writer";
@@ -88,7 +106,9 @@ declare global {
     __mcOnline?: OnlineDevHooks;
     __mcGameplay?: GameplayDebugHost["__mcGameplay"];
     __mcGameplayTeleportDir?: GameplayDebugHost["__mcGameplayTeleportDir"];
+    __mcPurchase?: (itemId: string) => string | null;
     __mcStations?: () => readonly { kind: string; x: number; y: number; z: number }[];
+    __mcParcels?: () => readonly { x: number; y: number; z: number; collected: boolean }[];
   }
 }
 
@@ -164,8 +184,12 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     const hudWriter = new HudWriter({ store });
     disposers.push(hudWriter.follow(roomHost), () => hudWriter.dispose());
     // Induction Checklist, DOT lines and achievements from real room events (progress persists in localStorage).
+    const guidanceQuery = new URLSearchParams(win.location.search);
+    const guidanceFlag = guidanceQuery.get("onboarding");
     const onboarding = new OnboardingWriter({
       store,
+      // `?onboarding=0` or `?capture=1` hides first-run guidance so it cannot cover captures; `?onboarding=1` forces it on.
+      guidance: guidanceFlag === "1" || (guidanceFlag !== "0" && guidanceQuery.get("capture") !== "1"),
       storage: createOnboardingStorage(safeLocalStorage(win), (source, error) => boundary.report(source, error)),
     });
     disposers.push(onboarding.follow(roomHost), () => onboarding.dispose());
@@ -208,12 +232,14 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
       attachSimReadouts(source: SimReadoutSource | null): void;
       parcels: ParcelFeed | null;
       markers: ObjectiveMarkers | null;
+      facing: InitialFacing | null;
       pump(nowMs: number): void;
     } = {
       writer: null,
       bridge: null,
       parcels: null,
       markers: null,
+      facing: null,
       attachSimReadouts(source) {
         attachSimReadouts({ readouts: readoutWriter, menus: menuWriter, mySlot: readoutSlot }, source);
       },
@@ -223,6 +249,7 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         readoutWriter.pump(nowMs);
         this.parcels?.pump(nowMs);
         this.markers?.pump(nowMs);
+        this.facing?.pump();
         this.bridge?.pump();
       },
     };
@@ -277,7 +304,20 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     // Scene routing: `?scene=bench|verify` is routed inside the render module, `?scene=s01|s05|s06` inside the visuals
     // module; every other id keeps the M0 hello-world parity mesh until the world module exists. S02/S03 are not in the
     // visuals barrel yet (see the T06 report): they warn and fall back to the hello world.
-    const scenePlan = planScene(win.location.search);
+    // Default launch (M1-W3-T05): the playable Solo game on the dust worksite at Boreal (launch-policy `wantsGameWorksite`).
+    const gameLaunch = wantsGameWorksite(win.location.search);
+    // The terrain game runs only with its asset: a failed load is reported and the game falls back to the flat worksite.
+    const terrainAsset = wantsTerrainGame(win.location.search)
+      ? await loadTerrainGameAsset(
+          () => loadTerrainAsset({ baseUrl: "/assets/terrain/" }),
+          (error) => boundary.report("terrain asset (falling back to the flat worksite)", error),
+        )
+      : null;
+    const terrainGame = terrainAsset !== null;
+    const sharedGround = terrainGame ? new SharedGround() : null;
+    if (sharedGround !== null && terrainAsset !== null)
+      sharedGround.ground = new GroundHeight(terrainAsset.cube, groundOptionsOf(terrainAsset));
+    const scenePlan = planScene(gameLaunch ? gameModuleSearch(win.location.search, terrainGame) : win.location.search);
     if (scenePlan.unrouted) {
       console.warn(
         `[app] ?scene=${scenePlan.scene} is not routed yet (S02/S03 are not exported by the visuals barrel)`,
@@ -295,21 +335,90 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     });
     // Production builds drop the dev-only asset-origin params (`terrainBase`, `terrain`) before any module sees them
     // (security review N8); dev builds pass the URL through unchanged.
-    const moduleSearch = launchSearch(win.location.search, import.meta.env.PROD);
+    // The game launch hands the modules the worksite scene id (visuals routes it like `?scene=dust`).
+    const filteredSearch = launchSearch(win.location.search, import.meta.env.PROD);
+    const moduleSearch = gameLaunch ? gameModuleSearch(filteredSearch, terrainGame) : filteredSearch;
 
-    // `?scene=dust` with the Solo host (M1-W3-T02b): the scene's atlas is fed by the host's main-thread ledger view,
-    // so the sim-host chunk is loaded before the visuals module builds the scene (the dev scene waits for it; the game
-    // launch does not). The view exists before the host; it shows an untouched moon until the host's dust state arrives.
+    // `?scene=dust` and the game launch with the Solo host (M1-W3-T02b): the scene's atlas is fed by the host's
+    // main-thread ledger view, so the sim-host chunk is loaded before the visuals module builds the scene. The view
+    // exists before the host; it shows an untouched moon until the host's dust state arrives. The dev scene sits on its
+    // scenario site; the game worksite is centred on Outpost Boreal (spawn, Assay Counter and Desk are on its patch).
     let dustView: SoloDustView | null = null;
     let dustFeed: DustFeedPort | null = null;
+    let dustSite: number = DUST_SCENE_SITE;
+    let worksiteMapper: PlotFrameMapper | null = null;
+    let momentsPort: VisualsModuleOptions["moments"] = null;
+    // Set once the gameplay module exists (the worksite's follow reads the avatar's feet).
+    const followAvatar: { gameplay: GameplayModule | null } = { gameplay: null };
     let simHostModule: typeof import("../sim-host") | null = null;
-    if (wantsHostDustFeed(win.location.search)) {
+    if (gameLaunch || wantsHostDustFeed(win.location.search)) {
       simHostModule = await import("../sim-host");
       const t0 = performance.now();
       const view = new simHostModule.SoloDustView();
       const constructMs = performance.now() - t0;
       dustView = view;
-      dustFeed = createDustFeedPort(view, DUST_SCENE_SITE, () => ({ viewConstructMs: constructMs }));
+      if (gameLaunch)
+        dustSite = view.grid.plotAtXYZ(GAME_SITE_DIRECTION.x, GAME_SITE_DIRECTION.y, GAME_SITE_DIRECTION.z);
+      // The camera / render frame of the worksite (shared by gameplay and the dust ground).
+      const mapper = PlotFrameMapper.fromGrid(view.grid, dustSite, view.grid.params.radiusM);
+      worksiteMapper = terrainGame ? null : mapper;
+      const port = createDustFeedPort(view, dustSite, () => ({
+        viewConstructMs: constructMs,
+        siteMoves: mapper.siteVersion,
+        site: mapper.site,
+      }));
+      // Game launch: the patch follows the player (the avatar's smoothed feet), so the ground never ends.
+      dustFeed = gameLaunch
+        ? {
+            ...port,
+            follow: {
+              avatar: (out) => {
+                const g = followAvatar.gameplay;
+                if (g === null || g.stats.posedFrames === 0) return false;
+                const f = g.rig.feet;
+                out.x = f[0]!;
+                out.y = f[1]!;
+                out.z = f[2]!;
+                return true;
+              },
+              ...(terrainGame ? {} : { frame: mapper }),
+            },
+          }
+        : port;
+      // Juicy moments (M1-W6-T03): own avatar and plot centres in the worksite's render frame (flat worksite only).
+      if (gameLaunch && !terrainGame) {
+        const src = new Float64Array(3);
+        const out = new Float64Array(3);
+        const dir = { x: 0, y: 0, z: 0 };
+        const radiusM = view.grid.params.radiusM;
+        momentsPort = {
+          ownSlot: () => readoutSlot(),
+          avatar: (o) => {
+            const g = followAvatar.gameplay;
+            if (g === null || g.stats.posedFrames === 0) return false;
+            mapper.point(g.rig.feet, 0, out, 0);
+            o.x = out[0]!;
+            o.y = out[1]!;
+            o.z = out[2]!;
+            mapper.direction(g.rig.heading, 0, out, 0);
+            const len = Math.hypot(out[0]!, out[2]!);
+            o.dirX = len > 1e-6 ? out[0]! / len : 0;
+            o.dirZ = len > 1e-6 ? out[2]! / len : 1;
+            return true;
+          },
+          plotCentre: (plot, o) => {
+            view.grid.fromPlotLocal(plot, 0, 0, dir);
+            src[0] = dir.x * radiusM;
+            src[1] = dir.y * radiusM;
+            src[2] = dir.z * radiusM;
+            mapper.point(src, 0, out, 0);
+            o.x = out[0]!;
+            o.y = out[1]!;
+            o.z = out[2]!;
+            return true;
+          },
+        };
+      }
       disposers.push(() => view.dispose());
     }
 
@@ -330,11 +439,30 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
       ));
     // Online room open/close (M1-W4-T04): created for every build so the online entry UI works in production; the room
     // code loads only on `open` (dynamic import inside online-launch). The `__mcOnline` console hook stays dev/perf-only.
-    // Animation pool (M1-W5-T04): unbound in Solo (update is one null check); an open room binds its avatar entities.
+    // The gameplay avatar chunk is cold: capture/look-dev scenes keep the unbound animation pool.
     const animation = new AnimationModule();
+    let avatarBinder: AnimationBinder = animation;
+    const avatarResources =
+      gameLaunch && wantsPlayerInput(win.location.search)
+        ? await Promise.all([import("./solo-avatar"), import("@moon-cleanup/game-data")])
+            .then(async ([module, data]) => ({
+              module,
+              data: data.loadGameData(),
+              cast: await module.BlockoutCast.load(),
+            }))
+            .catch((error: unknown) => {
+              boundary.report("custodian assets", error);
+              return null; // Keep the playable capsule when loading the actual model fails.
+            })
+        : null;
     // `?scene=dust`: an open room's mirror feed replaces the Solo feed (setDustFeed is a no-op for every other scene;
     // a cold path on room open / close only, so solo frames pay nothing).
-    const visuals = new VisualsModule({ search: moduleSearch, dustFeed });
+    const visuals = new VisualsModule({
+      search: moduleSearch,
+      dustFeed,
+      moments: momentsPort,
+      ...(terrainAsset === null ? {} : { terrainAsset: Promise.resolve(terrainAsset) }),
+    });
     const onlineHooks = createOnlineDevHooks(
       online,
       {
@@ -342,8 +470,9 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         wsUrl: config.wsUrl,
         clientBuild: config.buildVersion,
         events,
+        store,
         onProblem: (source, error) => boundary.report(source, error),
-        ...(dustFeed !== null ? { sitePlot: DUST_SCENE_SITE } : {}),
+        ...(dustFeed !== null ? { sitePlot: dustSite } : {}),
       },
       (source, error) => boundary.report(source, error),
       // While a room is open its RemoteRoomHost is the `roomHost` (gameplay / UI bind unchanged); the Solo host is
@@ -351,10 +480,18 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
       {
         publisher: roomHost,
         auth: () => loadGuestAuth(),
-        animation,
+        animation: {
+          bind: (provider, ground, radius) => avatarBinder.bind(provider, ground, radius),
+          setLocalSlot: (slot) => avatarBinder.setLocalSlot(slot),
+        },
         dustFeed: { bind: (feed) => void visuals.setDustFeed(feed ?? dustFeed) },
       },
     );
+    // The experiment's cube/save format is not served by the flat online host yet.
+    if (terrainGame)
+      onlineHooks.open = async () => {
+        throw new Error("Online play requires the flat worksite. Reload with ?ground=flat.");
+      };
     disposers.push(() => onlineHooks.close());
     const netModule = new AppNetModule({
       httpUrl: config.httpUrl,
@@ -376,6 +513,8 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         return onlineHooks.open(contractId, accessToken);
       },
       close: () => onlineHooks.close(),
+      // Roster list + Holder kick / ban of the open room (M1-W8-T01); solo has no room, so nothing runs.
+      roster: createRosterPort(online),
     };
     const gameplay = wantsPlayerInput(win.location.search)
       ? new GameplayModule({
@@ -383,16 +522,35 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
           lockTarget: stage,
           online: online as { current: OnlineRoomSlot["current"] },
           debugHost: perfEnabled ? win : null,
-          ...(dustView !== null
-            ? { mapper: PlotFrameMapper.fromGrid(dustView.grid, DUST_SCENE_SITE, dustView.grid.params.radiusM) }
-            : {}),
+          ...(avatarResources === null ? {} : { placeholder: false }),
+          ...(worksiteMapper !== null ? { mapper: worksiteMapper } : {}),
+          ...(sharedGround === null ? {} : { mapper: MOON_CENTRED_MAPPER, ground: sharedGround }),
         })
       : null;
+    const avatarModule =
+      avatarResources !== null && gameplay !== null
+        ? new avatarResources.module.SoloAvatarModule(
+            animation,
+            gameplay,
+            avatarResources.cast,
+            terrainGame ? MOON_CENTRED_MAPPER : worksiteMapper!,
+            sharedGround?.ground ?? avatarResources.module.FLAT_AVATAR_GROUND,
+            avatarResources.data.world.moonRadiusM,
+            avatarResources.data.tools.tools.map((tool) => tool.id),
+            () => roomHost.current,
+          )
+        : null;
+    if (avatarModule !== null) avatarBinder = avatarModule.binder;
+    followAvatar.gameplay = gameplay;
+    // Objective marker factory (set below, once the UI module exists); built when the moon radius is loaded, so the
+    // marker's distance chip (`compass.objectiveDistanceM`) is fed from the first pump.
+    let createMarkers: ((moonRadiusM: number) => ObjectiveMarkers) | null = null;
     if (gameplay !== null) {
       void Promise.all([import("@moon-cleanup/sim"), import("@moon-cleanup/game-data")])
         .then(([sim, data]) => {
           const gameData = data.loadGameData();
           const moonRadiusM = gameData.world.moonRadiusM;
+          if (createMarkers !== null) interactionPump.markers = createMarkers(moonRadiusM);
           menuWriter.setPricing(
             createMenuPricing(
               new sim.PromotionsBoard(gameData),
@@ -411,7 +569,20 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
           );
           markerStations = stations;
           if (perfEnabled) {
+            win.__mcPurchase = (itemId) => purchasePort.purchase(itemId); // dev / perf only (look-check buys the Trundle)
             win.__mcStations = () => stations; // dev / perf only (smoke tests teleport next to the Desk)
+            // Dev / perf only: the Solo read-out's Near Parcels (unit dirs, collected flag) for smoke tests that walk there.
+            win.__mcParcels = () => {
+              const src = nearSource;
+              if (src === null) return [];
+              const out: { x: number; y: number; z: number; collected: boolean }[] = [];
+              for (let k = 0; k < src.nearParcelCount; k++) {
+                const d = { x: 0, y: 0, z: 0 };
+                const collected = src.nearParcel(k, d);
+                out.push({ ...d, collected });
+              }
+              return out;
+            };
           }
           interactionPump.writer = new InteractionWriter({
             store,
@@ -470,6 +641,26 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     });
     if (gameplay !== null) {
       const feet = gameplay.rig.feet;
+      // Every render frame in use is right-handed (the worksite's plot frame since the W3-T05 mirror fix), so HUD
+      // bearings and the compass heading are the sim's own.
+      const bearing = simHeadingBearingDeg; // sim heading frame (pole-aware), not the +Y-north HUD helper
+      const bridgeInput = gameplay.input;
+      // Fresh spawn looks north, away from the outpost in flat Solo: turn the live look once toward the Assay Counter.
+      interactionPump.facing = new InitialFacing({
+        stations: () => markerStations,
+        samplePos: (out) => {
+          if (gameplay.stats.posedFrames === 0) return false;
+          out.x = feet[0]!;
+          out.y = feet[1]!;
+          out.z = feet[2]!;
+          return true;
+        },
+        bearing: simHeadingBearingDeg,
+        getYaw: () => bridgeInput.yawRad,
+        setYaw: (y) => {
+          bridgeInput.yawRad = y;
+        },
+      });
       interactionPump.parcels = new ParcelFeed({
         ui: uiModule,
         source: () => nearSource,
@@ -480,29 +671,31 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
           out.z = feet[2]!;
           return true;
         },
-        bearing: sphereBearingDeg,
+        bearing,
       });
-      interactionPump.markers = new ObjectiveMarkers({
-        store,
-        setMarkerBearing: markerSink(uiModule, (message) => console.warn(`[app] ${message}`)),
-        step: () => (onboarding.inductionComplete ? null : onboarding.currentStepId),
-        source: () => nearSource,
-        stations: () => markerStations,
-        samplePos: (out) => {
-          if (gameplay.stats.posedFrames === 0) return false;
-          out.x = feet[0]!;
-          out.y = feet[1]!;
-          out.z = feet[2]!;
-          return true;
-        },
-        bearing: sphereBearingDeg,
-      });
+      createMarkers = (moonRadiusM) =>
+        new ObjectiveMarkers({
+          store,
+          setMarkerBearing: (id, deg) => uiModule.setMarkerBearing(id, deg),
+          step: () => (onboarding.inductionComplete ? null : onboarding.currentStepId),
+          source: () => nearSource,
+          stations: () => markerStations,
+          samplePos: (out) => {
+            if (gameplay.stats.posedFrames === 0) return false;
+            out.x = feet[0]!;
+            out.y = feet[1]!;
+            out.z = feet[2]!;
+            return true;
+          },
+          bearing,
+          moonRadiusM,
+        });
       // H opens / closes the DOT Handbook (keyboard + mouse).
       disposers.push(installHandbookKey({ win, store }));
       interactionPump.bridge = new UiFrameBridge({
         store,
         ui: uiModule,
-        input: gameplay.input,
+        input: bridgeInput,
         station: () => interactionPump.writer?.currentKind ?? null,
         onInspect: (on) => {
           readoutWriter.setInspecting(on);
@@ -511,10 +704,29 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         },
       });
     }
+    // Authored station hardware is a cold gameplay chunk; captures without player input keep their own scenes.
+    const outpostMapper = terrainGame ? MOON_CENTRED_MAPPER : worksiteMapper;
+    const presentedVisuals =
+      gameLaunch && gameplay !== null && outpostMapper !== null
+        ? await Promise.all([import("./outpost"), import("@moon-cleanup/game-data")])
+            .then(([outpost, data]) =>
+              outpost.withOutpost(
+                visuals,
+                outpostMapper,
+                data.loadGameData().world.moonRadiusM,
+                !terrainGame,
+                (source, error) => boundary.report(source, error),
+              ),
+            )
+            .catch((error: unknown) => {
+              boundary.report("Outpost Boreal presentation", error);
+              return visuals;
+            })
+        : visuals;
     const registered = new Map<ClientModuleId, ClientModule<ClientServices>>([
       ["render", render],
-      ["visuals", visuals],
-      ["animation", animation],
+      ["visuals", presentedVisuals],
+      ["animation", avatarModule ?? animation],
       ["net", netModule],
       ["ui", uiModule],
     ]);
@@ -522,8 +734,32 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
     // starts) because its construction blocks the main thread for ~300 ms on some machines; the first gesture then only
     // calls resume() (about 0.4 ms). The module's own idle hook and gesture path stay as fallbacks.
     const audio = wantsAudio(win.location.search) ? new AudioModule<ClientServices>({ env: browserEnv(win) }) : null;
-    if (audio !== null) registered.set("audio", audio);
-    if (gameplay !== null) registered.set("gameplay", gameplay);
+    if (audio !== null) {
+      const audioBridge = new AudioBridge(events, readoutSlot);
+      audioBridge.follow(roomHost);
+      registered.set("audio", {
+        id: "audio",
+        init: (ctx) => audio.init(ctx),
+        update: (frame) => {
+          audioBridge.pump(frame.time * 1000);
+          audio.update(frame);
+        },
+        dispose: () => {
+          audioBridge.dispose();
+          audio.dispose();
+        },
+      });
+    }
+    if (gameplay !== null) {
+      // Own Trundle (M1-W7-T02): cold chunk wrapping gameplay; a failed load keeps plain gameplay.
+      const trundle = outpostMapper !== null && gameLaunch ? await import("./trundle-wiring").catch(() => null) : null;
+      registered.set(
+        "gameplay",
+        trundle !== null && outpostMapper !== null
+          ? trundle.withTrundle(gameplay, outpostMapper, () => roomHost.current)
+          : gameplay,
+      );
+    }
     if (perfEnabled) {
       registered.set("debug", new DebugModule({ getLoop: () => loop, win, doc, startVisible: perfHudVisible }));
     } else if (trackTimestamp) {
@@ -592,7 +828,7 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
       })();
       const random = (bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> => win.crypto.getRandomValues(bytes);
       const onProblem = (source: string, error: unknown): void => boundary.report(source, error);
-      if (dustView !== null && simHostModule !== null) {
+      if (!gameLaunch && dustView !== null && simHostModule !== null) {
         // Dust scene: its own Contract (never the player's), spawn on the scene's site, the ledger view follows the
         // host, and a scripted sweeper holds the tool (`&bot=0`: no sweeper, the moon only shows restored dust).
         const view = dustView;
@@ -618,16 +854,25 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
           void solo.stop();
         });
       } else {
-        const identity = loadSoloIdentity(storage, Date.now(), random);
+        const identity = loadSoloIdentity(
+          terrainGame ? prefixedStore(storage, TERRAIN_GAME_STORAGE_PREFIX) : storage,
+          Date.now(),
+          random,
+        );
         const solo: { handle: SoloHostHandle | null } = { handle: null };
+        // Game launch: the worksite's ledger view follows the player's own host (and a host restarted by save sync).
+        const gameView = gameLaunch ? dustView : null;
+        if (gameView !== null) disposers.push(() => gameView.detach());
         const startHost = (): void => {
           solo.handle = startSoloHost({
             publisher: roomHost,
             identity,
             onProblem,
             load: () => import("../sim-host"),
+            ...(gameView !== null ? { onHost: (host: LocalRoomHostImpl) => gameView.attach(host) } : {}),
             // `save.checkpointed` / `save.restored` / `save.storage_warning` reach the bus (checkpoint sync listens).
             hostOverrides: {
+              ...(terrainAsset === null ? {} : terrainHostOptions(terrainAsset)),
               onSaveEvent: saveEventForwarder(events),
               // Dev / perf only: `?lm=500` starts a fresh Solo game with that wallet (smoke tests buy at the Desk).
               ...devWallet(perfEnabled, win.location.search),
@@ -639,7 +884,10 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
         // Background checkpoint sync (and its guest sign-in POST) only when a game server is configured for this build
         // (VITE_SERVER_HTTP_URL), or forced with `?sync=1`: a local/preview build without a server makes no request.
         // It never blocks boot or solo input: lazy chunks, network failures back off 30 s -> 5 min, nothing is thrown.
-        if (wantsCheckpointSync(win.location.search, import.meta.env["VITE_SERVER_HTTP_URL"] as string | undefined))
+        if (
+          !terrainGame &&
+          wantsCheckpointSync(win.location.search, import.meta.env["VITE_SERVER_HTTP_URL"] as string | undefined)
+        )
           startCheckpointSync({
             win,
             config,
@@ -675,13 +923,7 @@ export async function bootApp(win: Window = window): Promise<AppHandle> {
   }
 }
 
-/** Checkpoint sync runs when the build names a game server (or `?sync=1`); `?sync=0` turns it off. */
-export function wantsCheckpointSync(search: string, serverUrl: string | undefined): boolean {
-  const forced = new URLSearchParams(search).get("sync");
-  if (forced === "0") return false;
-  if (forced === "1") return true;
-  return typeof serverUrl === "string" && serverUrl.trim() !== "";
-}
+export { wantsCheckpointSync, wantsPlayerInput };
 
 /** The tab's guest account (net/guest-auth, lazy chunk). */
 type GuestAuthInstance = ReturnType<typeof import("../net/guest-auth").createGuestAuth>;
@@ -693,14 +935,6 @@ function safeLocalStorage(win: Window): Storage | null {
   } catch {
     return null;
   }
-}
-
-/** Player input runs with the Solo host on `?play=1`, or in the dust scene when its sweeper is off (`&bot=0`). */
-export function wantsPlayerInput(search: string): boolean {
-  if (!wantsSoloHost(search)) return false;
-  const params = new URLSearchParams(search);
-  if (params.get("play") === "1") return true;
-  return planScene(search).scene === "dust" && params.get("bot") === "0";
 }
 
 /** Simulation tick rate of the Solo host (SIM_TICK_HZ); playtime in the save summary is derived from it. */

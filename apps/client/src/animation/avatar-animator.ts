@@ -53,8 +53,13 @@ export class AvatarAnimInput {
   toolPeriodS = 0.9;
   toolContactFrac: number = TOOL.defaultContactFrac;
   toolInContact = false;
-  /** Sim tool-head contact point (world) and validity; tool-head IK pins the head here (spec 4.6). */
+  /**
+   * Sim tool-head contact point (moon-centred metres, the same frame as `pos`) at render time and validity; tool-head
+   * IK pins the head here (spec 4.6). `headCentre` is the middle of the current stroke (stable through the push / lift
+   * cycle), where a rig that cannot reach the whole stroke should centre its work pose. Equal to the head when unknown.
+   */
   readonly headTarget = new Float64Array(3);
+  readonly headCentre = new Float64Array(3);
   headValid = false;
   /** Step length (s) and moon radius (m) for this update. */
   dt = 1 / 60;
@@ -88,6 +93,10 @@ export class AvatarPose {
   toolClipPhase = 0;
   toolTwist = 0;
   readonly toolWobble = new Float64Array(2);
+  /** Sim tool-head point and stroke centre (moon-centred metres) for the rig adapter's tool-head IK; valid flag. */
+  readonly headTarget = new Float64Array(3);
+  readonly headCentre = new Float64Array(3);
+  headValid = false;
   /** Clip pelvis flight-deviation gain G = 1 / r^2 (apply during flight segments of real clips). */
   bounceGain = 1;
   /** Procedural pelvis vertical offset (placeholder bounce + landing compression + IK), metres. */
@@ -419,6 +428,11 @@ export class AvatarAnimator {
     pose.toolTwist = tl.twist;
     pose.toolWobble[0] = tl.wobbleX;
     pose.toolWobble[1] = tl.wobbleZ;
+    pose.headValid = input.headValid;
+    if (input.headValid) {
+      pose.headTarget.set(input.headTarget);
+      pose.headCentre.set(input.headCentre);
+    }
     const h = input.headValid ? input.headTarget : input.pos;
     if (tl.turn !== 0) {
       const e = this.events.claim(ANIM_EVENT.toolTurn, this.slot, input.toolClass);

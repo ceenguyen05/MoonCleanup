@@ -8,7 +8,7 @@ import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 import { type EncodedTexture, encodeTextures, type KtxStatus } from "../textures/ktx.js";
 
 const TRIANGLES_MODE = 4;
-const LOD_SUFFIX = /_LOD(\d+)$/;
+const LOD_SUFFIX = /^(.*)_LOD(\d+)$/;
 
 export interface TextureStats {
   readonly name: string;
@@ -21,6 +21,8 @@ export interface TextureStats {
 export interface GlbStats {
   /** Triangle count per LOD index, read from node names ending in `_LOD<n>`. */
   readonly lodTriangles: readonly number[];
+  /** Triangle count per LOD index for each node-name prefix (`<piece>_LOD<n>`); kits hold several pieces. */
+  readonly pieceLodTriangles: Readonly<Record<string, readonly number[]>>;
   /** Triangles on mesh nodes without a `_LOD<n>` suffix. */
   readonly unassignedTriangles: number;
   readonly textures: readonly TextureStats[];
@@ -63,6 +65,7 @@ export async function optimizeGlb(
 export function documentStats(document: Document): GlbStats {
   const root = document.getRoot();
   const lodTriangles: number[] = [];
+  const pieces: Record<string, number[]> = {};
   let unassignedTriangles = 0;
   for (const node of root.listNodes()) {
     const mesh = node.getMesh();
@@ -75,13 +78,17 @@ export function documentStats(document: Document): GlbStats {
       triangles += Math.floor(count / 3);
     }
     const match = LOD_SUFFIX.exec(node.getName());
-    if (match?.[1] === undefined) {
+    if (match?.[1] === undefined || match[2] === undefined) {
       unassignedTriangles += triangles;
     } else {
-      const lod = Number(match[1]);
+      const lod = Number(match[2]);
       lodTriangles[lod] = (lodTriangles[lod] ?? 0) + triangles;
+      const piece = (pieces[match[1]] ??= []);
+      piece[lod] = (piece[lod] ?? 0) + triangles;
     }
   }
+  const pieceLodTriangles: Record<string, number[]> = {};
+  for (const [name, counts] of Object.entries(pieces)) pieceLodTriangles[name] = Array.from(counts, (v) => v ?? 0);
   const textures = root.listTextures().map((texture): TextureStats => {
     const size = texture.getSize();
     return {
@@ -94,6 +101,7 @@ export function documentStats(document: Document): GlbStats {
   });
   return {
     lodTriangles: Array.from(lodTriangles, (value) => value ?? 0),
+    pieceLodTriangles,
     unassignedTriangles,
     textures,
     materials: root.listMaterials().length,

@@ -285,8 +285,8 @@ describe("dust flat lookup (world point -> tile texel)", () => {
       const z = (next() * 2 - 1) * 110;
       expect(lookup.locate(x, z, out)).toBe(true);
       const plot = out[0]!;
-      // Exact: world point -> sphere direction -> the plot's gnomonic frame -> tile texel.
-      s.grid.fromPlotLocal(SCENARIO_SITE as PlotId, x * 1000, z * 1000, dir);
+      // Exact: world point -> sphere direction -> the plot's gnomonic frame -> tile texel (world z = -v).
+      s.grid.fromPlotLocal(SCENARIO_SITE as PlotId, x * 1000, -z * 1000, dir);
       s.grid.toPlotLocal(plot as PlotId, dir, loc);
       const ex = (loc.u + FRAME_HALF_MM) / ts;
       const ey = (loc.v + FRAME_HALF_MM) / ts;
@@ -309,6 +309,43 @@ describe("dust flat lookup (world point -> tile texel)", () => {
     );
     expect(worst).toBeLessThan(0.05);
     expect(lookup.locate(500, 0, out)).toBe(false);
+    // The patch frame is right-handed: +x (east) x +y (up) = +z must be south, i.e. world z grows toward -v.
+    const d0 = new Float64Array(3);
+    const d1 = new Float64Array(3);
+    lookup.directionAt(0, 0, d0);
+    lookup.directionAt(0, 10, d1);
+    s.grid.toPlotLocal(SCENARIO_SITE as PlotId, { x: d1[0]!, y: d1[1]!, z: d1[2]! }, loc);
+    expect(loc.v).toBeCloseTo(-10_000, -1);
     lookup.dispose();
+  });
+
+  it("recentres in budgeted slices and then serves the new site exactly like a fresh build", () => {
+    const s = new DustScenario({ preset: "medium", frames: 1 });
+    const lookup = new DustFlatLookup(s.grid, s.atlas, new Texture(), SCENARIO_SITE);
+    const target = s.grid.neighborTable[SCENARIO_SITE * 6]!;
+    const fresh = new DustFlatLookup(s.grid, s.atlas, new Texture(), target);
+    lookup.beginRecentre(target);
+    let clock = 0;
+    let slices = 0;
+    // A fake clock that advances 1 ms per call: every slice stops after about one row.
+    while (!lookup.stepRecentre(0.5, () => clock++)) slices++;
+    expect(slices).toBeGreaterThan(10);
+    expect(lookup.sitePlot).toBe(SCENARIO_SITE); // still live until commit
+    expect(lookup.commitRecentre()).toBe(true);
+    expect(lookup.sitePlot).toBe(target);
+    expect(lookup.plotCount).toBe(fresh.plotCount);
+    const a = new Float64Array(3);
+    const b = new Float64Array(3);
+    for (const [x, z] of [
+      [0, 0],
+      [40, -30],
+      [-100, 90],
+    ] as const) {
+      expect(lookup.locate(x, z, a)).toBe(true);
+      fresh.locate(x, z, b);
+      expect(Array.from(a)).toEqual(Array.from(b));
+    }
+    lookup.dispose();
+    fresh.dispose();
   });
 });

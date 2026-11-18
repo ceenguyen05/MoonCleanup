@@ -36,6 +36,9 @@ export interface DustLedgerView {
   readonly levelOf: Uint8Array;
   readonly texels: Uint8Array;
   readonly log: StrokeLogStore | null;
+  /** Partial initial cover (Landing Apron, packages/world DUST_INIT_REVISION 1); absent = every plot fully covered. */
+  hasPartialCover?(plot: number): boolean;
+  isCoverTexel?(plot: number, ix: number): boolean;
 }
 
 export interface DustTileAtlasOptions extends AtlasLayout {
@@ -305,7 +308,8 @@ export class DustTileAtlas {
   private wantsTile(plot: number): boolean {
     const led = this.ledger;
     if (led.slotOf[plot]! >= 0) return true;
-    if (led.state[plot] !== POLISHED) return false;
+    // An untouched Apron plot is not full dust: it needs a tile to show its initial cover.
+    if (led.state[plot] !== POLISHED) return led.state[plot] !== EMPTY && led.hasPartialCover?.(plot) === true;
     const nb = this.grid.neighborTable;
     for (let k = 0; k < NB; k++) {
       const q = nb[plot * NB + k]!;
@@ -605,6 +609,19 @@ export class DustTileAtlas {
               rl = u0 === 0 ? 0 : Math.round((texels[slot * CELLS * CELLS + cb * CELLS + ca]! * 255) / u0);
               if (rl > 255) rl = 255;
             }
+          } else if (led.hasPartialCover?.(owner) === true) {
+            // No ledger yet: the untouched initial cover (dusty texels full, blank texels clean).
+            let ou = u;
+            let ov = v;
+            if (owner !== plot) {
+              this.localOf(owner);
+              ou = this.loc[0]!;
+              ov = this.loc[1]!;
+            }
+            const ca = Math.floor((ou + FRAME_HALF_MM) / TEXEL_MM);
+            const cb = Math.floor((ov + FRAME_HALF_MM) / TEXEL_MM);
+            if (ca < 0 || ca >= CELLS || cb < 0 || cb >= CELLS) valid = 0;
+            else rl = led.isCoverTexel!(owner, cb * CELLS + ca) ? 255 : 0;
           }
         }
         cells[o] = rl;

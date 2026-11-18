@@ -46,6 +46,7 @@ import {
   type StrokeRecord,
 } from "@moon-cleanup/shared";
 import type { IcoPlotGrid } from "../grid/plot-grid";
+import { coverKey, coverTexelTarget, type DustCoverSpec } from "./initial-cover";
 import { StrokeLogStore, STROKE_LOG_DEFAULT_MAX_BYTES } from "./stroke-log";
 
 const EDGE = LEDGER_EDGE_TEXELS;
@@ -210,6 +211,11 @@ export interface WorldDustLedgerOptions {
   readonly dustLevelByClass: readonly number[];
   /** Optional per-plot level (landing aprons and the like); a negative result means "use the class level". */
   readonly dustLevelOf?: (plotId: PlotId) => number;
+  /**
+   * Plots that start with a partial cover (Landing Aprons; recipe and revision in ./initial-cover). A listed plot takes
+   * the spec's level (Empty plots stay Empty; the first spec that lists a plot wins). Read once, at construction.
+   */
+  readonly initialCover?: readonly DustCoverSpec[];
   /** kg per m^2 per dust level (game-data world.dustKgPerM2PerLevel, 0.062). */
   readonly kgPerM2PerLevel: number;
   /** Keep stroke logs (default true). A host without tile consumers (balance-sim) may switch them off. */
@@ -234,6 +240,11 @@ export class WorldDustLedger {
   readonly slotOf: Int32Array;
   /** Dust level per plot (0 = Empty). */
   readonly levelOf: Uint8Array;
+  /** Partial cover per plot: 0 = every owned texel starts dusty, k = cover entry k - 1. Read-only for callers. */
+  readonly coverOf: Uint16Array;
+  /** Dusty-texel masks of the cover entries (one bit per texel, as `ownedMask`), and their dusty texel counts. */
+  private readonly coverMasks: Uint8Array;
+  private readonly coverCounts: Uint16Array;
   /** Stroke logs, or null when switched off. */
   readonly log: StrokeLogStore | null;
 
@@ -350,6 +361,49 @@ export class WorldDustLedger {
       }
     }
     this.emptyTotal = empty;
+    this.coverOf = new Uint16Array(n);
+    const partial: number[] = [];
+    const partialPermille: number[] = [];
+    const listed = new Set<number>();
+    for (const spec of options.initialCover ?? []) {
+      const level = spec.level;
+      const permille = spec.permille;
+      if (!(level >= 1 && level <= LEDGER_MAX_DUST_LEVEL && (level | 0) === level)) {
+        throw new RangeError(`cover level ${level} is not an integer in 1 .. ${LEDGER_MAX_DUST_LEVEL}`);
+      }
+      if (!(permille >= 1 && permille <= 1000 && (permille | 0) === permille)) {
+        throw new RangeError(`cover share ${permille} is not an integer per mille in 1 .. 1000`);
+      }
+      for (const p of spec.plots) {
+        if (!(p >= 0 && p < n && (p | 0) === p)) throw new RangeError(`cover plot ${p} is outside the grid`);
+        if (listed.has(p) || this.levelOf[p] === 0) continue;
+        listed.add(p);
+        this.levelOf[p] = level;
+        if (permille < 1000) {
+          partial.push(p);
+          partialPermille.push(permille);
+        }
+      }
+    }
+    if (partial.length > 0xffff) throw new RangeError("too many partial cover plots");
+    this.coverMasks = new Uint8Array(partial.length * MASK_BYTES);
+    this.coverCounts = new Uint16Array(partial.length);
+    const keys = new Int32Array(BYTES);
+    for (let k = 0; k < partial.length; k++) {
+      const p = partial[k]!;
+      this.prepOwnership(p);
+      let owned = 0;
+      for (let b = 0; b < EDGE; b++) for (let a = 0; a < EDGE; a++) if (this.ownedAt(a, b)) keys[owned++] = coverKey(p, a, b);
+      const sorted = keys.subarray(0, owned).sort();
+      const dusty = coverTexelTarget(owned, partialPermille[k]!);
+      const base = k * MASK_BYTES;
+      for (let j = owned - dusty; j < owned; j++) {
+        const ix = sorted[j]! & (BYTES - 1);
+        this.coverMasks[base + (ix >> 3)] = this.coverMasks[base + (ix >> 3)]! | (1 << (ix & 7));
+      }
+      this.coverCounts[k] = dusty;
+      this.coverOf[p] = k + 1;
+    }
     this.log =
       options.strokeLog === false
         ? null
@@ -361,6 +415,27 @@ export class WorldDustLedger {
   }
 
   // ---- DustLedgerPort (packages/sim) ----------------------------------------------------------------------------
+
+  /** True when the plot starts with dust on only part of its owned texels (a Landing Apron). */
+  hasPartialCover(plot: number): boolean {
+    return (this.coverOf[plot] ?? 0) !== 0;
+  }
+
+  /**
+   * True when texel `ix` (b * 32 + a) of `plot` starts dusty if the plot owns it: always for a fully covered plot. Pure
+   * lookup (no ownership test, no allocation); presentation uses it for plots that have no ledger yet.
+   */
+  isCoverTexel(plot: number, ix: number): boolean {
+    const k = this.coverOf[plot] ?? 0;
+    if (k === 0) return true;
+    return ((this.coverMasks[(k - 1) * MASK_BYTES + (ix >> 3)]! >> (ix & 7)) & 1) === 1;
+  }
+
+  /** Texels a partial-cover plot starts with dust on, or -1 for a fully covered plot (every owned texel). */
+  coverTexelCount(plot: number): number {
+    const k = this.coverOf[plot] ?? 0;
+    return k === 0 ? -1 : this.coverCounts[k - 1]!;
+  }
 
   /** True when the plot has no dust (Empty / outpost pad, or an id outside the grid): the stroke is skipped. */
   isEmptyPlot(plotId: PlotId): boolean {
@@ -602,15 +677,22 @@ export class WorldDustLedger {
     return owned;
   }
 
-  /** floor(plot mass in mg / initialUnits) (WDS section 4.1). */
-  private mgPerUnitOf(plot: number, initialUnits: number): number {
-    if (initialUnits <= 0) return 0;
+  /**
+   * floor(plot mass in mg / fullUnits) (WDS section 4.1), where fullUnits = 16 x level x owned texels: the units of the
+   * plot fully covered. A partial-cover plot keeps that areal density, so its dusty texels are worth what they would be
+   * on a fully covered plot and its total mass is its cover share of the plot mass.
+   */
+  private mgPerUnitOf(plot: number, fullUnits: number): number {
+    if (fullUnits <= 0) return 0;
     const massMg = this.mgPerM2PerLevel * this.levelOf[plot]! * this.attributes.areaM2(plot as PlotId);
-    const v = Math.floor(massMg / initialUnits);
+    const v = Math.floor(massMg / fullUnits);
     return v >= 0 && v <= 0xffff_ffff ? v : 0;
   }
 
-  /** Allocates the ledger of an untouched plot: owned texels start at 16 x level, the rest hold 0. */
+  /**
+   * Allocates the ledger of an untouched plot: owned texels start at 16 x level (on a partial-cover plot only its dusty
+   * texels), the rest hold 0.
+   */
   private allocLedger(plot: number): number {
     const slot = this.takeSlot(plot);
     const owned = this.buildMask(plot, slot);
@@ -619,10 +701,23 @@ export class WorldDustLedger {
     const mbase = slot * MASK_BYTES;
     const tex = this.texels;
     const mask = this.ownedMask;
-    for (let ix = 0; ix < BYTES; ix++) tex[base + ix] = (mask[mbase + (ix >> 3)]! >> (ix & 7)) & 1 ? u0 : 0;
+    const k = this.coverOf[plot]!;
+    let dusty = owned;
+    if (k === 0) {
+      for (let ix = 0; ix < BYTES; ix++) tex[base + ix] = (mask[mbase + (ix >> 3)]! >> (ix & 7)) & 1 ? u0 : 0;
+    } else {
+      const cover = this.coverMasks;
+      const cbase = (k - 1) * MASK_BYTES;
+      dusty = 0;
+      for (let ix = 0; ix < BYTES; ix++) {
+        const on = (mask[mbase + (ix >> 3)]! & cover[cbase + (ix >> 3)]! & (1 << (ix & 7))) !== 0;
+        tex[base + ix] = on ? u0 : 0;
+        if (on) dusty++;
+      }
+    }
     this.owned[slot] = owned;
-    this.initial[slot] = u0 * owned;
-    this.remaining[slot] = u0 * owned;
+    this.initial[slot] = u0 * dusty;
+    this.remaining[slot] = u0 * dusty;
     this.mgPerUnit[slot] = this.mgPerUnitOf(plot, u0 * owned);
     return slot;
   }
@@ -994,25 +1089,34 @@ export class WorldDustLedger {
     const mbase = slot * MASK_BYTES;
     const tex = this.texels;
     const mask = this.ownedMask;
+    const k = this.coverOf[plot]!;
+    const cover = this.coverMasks;
+    const cbase = k === 0 ? 0 : (k - 1) * MASK_BYTES;
     let rem = 0;
     let repaired = 0;
+    let dusty = 0;
     for (let ix = 0; ix < BYTES; ix++) {
       let u = src[srcOffset + ix]!;
-      if (((mask[mbase + (ix >> 3)]! >> (ix & 7)) & 1) === 0) {
+      const bit = 1 << (ix & 7);
+      // A texel that does not start dusty (not owned, or blank under a partial cover) can only hold 0.
+      if ((mask[mbase + (ix >> 3)]! & bit) === 0 || (k !== 0 && (cover[cbase + (ix >> 3)]! & bit) === 0)) {
         if (u !== 0) repaired++;
         u = 0;
-      } else if (u > u0) {
-        u = u0;
-        repaired++;
+      } else {
+        dusty++;
+        if (u > u0) {
+          u = u0;
+          repaired++;
+        }
       }
       tex[base + ix] = u;
       rem += u;
     }
-    const initial = u0 * this.owned[slot]!;
+    const initial = u0 * dusty;
     this.initial[slot] = initial;
     this.remaining[slot] = rem;
     this.version[slot] = version >>> 0;
-    this.mgPerUnit[slot] = this.mgPerUnitOf(plot, initial);
+    this.mgPerUnit[slot] = this.mgPerUnitOf(plot, u0 * this.owned[slot]!);
     this.hashDirty[slot] = 1;
     this.markChunkDirty(plot);
     return repaired;
@@ -1334,13 +1438,18 @@ export class WorldDustLedger {
             // 7. Untouched plot: allocate its ledger only if an owned texel would lose dust.
             if (slot < 0) {
               this.prepOwnership(q);
+              const kc = this.coverOf[q]!;
               let need = false;
               for (let b = b0; b <= b1 && !need; b++) {
                 for (let a = a0; a <= a1; a++) {
                   const cv = cov[b * EDGE + a]!;
                   if (cv === 0) continue;
                   const cc = cv < AREA ? cv : AREA;
-                  if ((cc >= MIN_COVER || depth16 * cc + AREA / 2 >= AREA) && this.ownedAt(a, b)) {
+                  if (
+                    (cc >= MIN_COVER || depth16 * cc + AREA / 2 >= AREA) &&
+                    (kc === 0 || this.isCoverTexel(q, b * EDGE + a)) &&
+                    this.ownedAt(a, b)
+                  ) {
                     need = true;
                     break;
                   }
