@@ -890,7 +890,11 @@ describe("dust ledger across checkpoints and reloads (MessageChannel)", { timeou
         sink,
       );
     });
-    expect(ledger.ledgerCount).toBe(PLOTS);
+    // Apron plots only hold partial cover (initial-cover mask), so a centre stroke on an uncovered texel
+    // removes nothing and allocates no ledger: a handful of the 3,000 stay clean.
+    const ledgers = ledger.ledgerCount;
+    expect(ledgers).toBeLessThanOrEqual(PLOTS);
+    expect(ledgers).toBeGreaterThan(PLOTS - 50);
     const encoded = encodeDustChunks(ledger, 0, false);
     const rows = new Map<number, StoredDustChunk>();
     for (const c of encoded) {
@@ -922,8 +926,8 @@ describe("dust ledger across checkpoints and reloads (MessageChannel)", { timeou
       dustRestoreChunks: rows.size,
       dustRestoreRejected: 0,
       dustRestoreRepairs: 0,
-      dustRestoreLedgers: PLOTS,
-      ledgers: PLOTS,
+      dustRestoreLedgers: ledgers,
+      ledgers,
     });
     // More than one slice: the restore yielded between slices instead of holding the worker for its whole length.
     expect(st.dustRestoreSlices).toBeGreaterThan(3);
