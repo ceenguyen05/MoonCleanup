@@ -1479,8 +1479,9 @@ export class MoonRoomSim implements RoomSim {
         charged: stampIsCharged(input),
         polishedCount: polishedBefore + k + 1,
       });
-      if (byPlayer && this.stepPolish >= 0 && this.isApronPlot(plot)) this.completeStep(credit, this.stepPolish, 2, tick);
-      const shine =shineBefore + k + 1;
+      if (byPlayer && this.stepPolish >= 0 && this.isApronPlot(plot))
+        this.completeStep(credit, this.stepPolish, 2, tick);
+      const shine = shineBefore + k + 1;
       while (this.shineNext < this.shineThresholds.length && shine >= this.shineThresholds[this.shineNext]!) {
         this.emit("shine.milestone", {
           tick: tick as Tick,

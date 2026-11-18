@@ -9,7 +9,12 @@
 // keeps the same avatar slots (no duplicate seat), mirrors converge; (4) the UI store/chip (the same dispatch as
 // AppNetModule and the same connView() the OnlineEntry chip renders) follows lost -> connected.
 import { afterAll, describe, expect, it } from "vitest";
-import { GuestCreateResponseSchema, INPUT_BUTTON_BIT, type NetStatusEvent, type SimInputCommand } from "@moon-cleanup/shared";
+import {
+  GuestCreateResponseSchema,
+  INPUT_BUTTON_BIT,
+  type NetStatusEvent,
+  type SimInputCommand,
+} from "@moon-cleanup/shared";
 import { ENTITY_KIND_AVATAR } from "@moon-cleanup/protocol";
 import { createContractsApi } from "../../../apps/client/src/ui/online/contracts-api";
 import { connView, parseInviteLink, type OnlineAuthPort } from "../../../apps/client/src/ui/online/online-model";
@@ -98,7 +103,9 @@ describe("real-socket reconnect + invite join", () => {
     });
 
     // ---- invite-code end to end -------------------------------------------------------------------------------
-    const created = await createContractsApi({ httpUrl: http, auth: port(tokenA) }).createPrivateShift("Reconnect Shift");
+    const created = await createContractsApi({ httpUrl: http, auth: port(tokenA) }).createPrivateShift(
+      "Reconnect Shift",
+    );
     if (!created.ok) throw new Error(`create failed: ${created.failure.key}`);
     const rawCode = created.value.inviteCode ?? "";
     expect(rawCode).not.toBe("");
@@ -123,11 +130,18 @@ describe("real-socket reconnect + invite join", () => {
     const proxyB = await startProxy({ profile: PROFILES.clean, listenPort: 0, targetPort: serverPort, seed: 7 });
     proxies.push(proxyB);
     const proxyPort = proxyB.port;
-    const bus = createEventBus({ onListenerError: (n, e) => { throw new Error(`listener ${n}: ${String(e)}`); } });
+    const bus = createEventBus({
+      onListenerError: (n, e) => {
+        throw new Error(`listener ${n}: ${String(e)}`);
+      },
+    });
     const store = createUiStore(1000);
     // Same mirror as AppNetModule.init.
     bus.on("net.status", (event) =>
-      store.dispatch({ type: "session.set", patch: { conn: event.state, rttMs: event.rttMs, closeCode: event.closeCode } }),
+      store.dispatch({
+        type: "session.set",
+        patch: { conn: event.state, rttMs: event.rttMs, closeCode: event.closeCode },
+      }),
     );
     const statusLog: NetStatusEvent[] = [];
     const chipLog: string[] = [];
@@ -167,7 +181,13 @@ describe("real-socket reconnect + invite join", () => {
       if (phases[phases.length - 1] !== b.session.phase) phases.push(b.session.phase);
     };
     const diag = (): string =>
-      JSON.stringify({ phases, status: statusLog.map((s) => s.state), a: a.session.phase, b: b.session.phase, f: b.session.failure });
+      JSON.stringify({
+        phases,
+        status: statusLog.map((s) => s.state),
+        a: a.session.phase,
+        b: b.session.phase,
+        f: b.session.failure,
+      });
     const waitFor = async (what: string, cond: () => boolean, ms: number): Promise<void> => {
       const t0 = Date.now();
       while (!cond()) {
@@ -178,7 +198,13 @@ describe("real-socket reconnect + invite join", () => {
     };
     let seq = 0;
     const cmd = (moveY: number, buttons: number): SimInputCommand => ({
-      seq: ++seq, moveX: 0, moveY, yaw: 0, pitch: 0, buttons, toolParam: 0,
+      seq: ++seq,
+      moveX: 0,
+      moveY,
+      yaw: 0,
+      pitch: 0,
+      buttons,
+      toolParam: 0,
     });
     const sweep = async (ticks: number): Promise<void> => {
       for (let i = 0; i < ticks; i++) {
@@ -190,13 +216,17 @@ describe("real-socket reconnect + invite join", () => {
     };
     const converge = async (what: string): Promise<void> => {
       let last = -1;
-      await waitFor(what, () => {
-        const ha = a.feed.ledger.worldHash();
-        const hb = b.feed.ledger.worldHash();
-        const ok = ha === hb && hb === last;
-        last = hb;
-        return ok;
-      }, 45_000);
+      await waitFor(
+        what,
+        () => {
+          const ha = a.feed.ledger.worldHash();
+          const hb = b.feed.ledger.worldHash();
+          const ok = ha === hb && hb === last;
+          last = hb;
+          return ok;
+        },
+        45_000,
+      );
     };
 
     a.start();
@@ -221,7 +251,11 @@ describe("real-socket reconnect + invite join", () => {
       await waitFor(`${name}: lost seen`, () => statusLog.some((s) => s.state === "lost"), 15_000);
       const lostIdx = statusLog.findIndex((s) => s.state === "lost");
       await sweep(40); // A keeps polishing while B is away
-      await waitFor(`${name}: recovered`, () => b.session.phase === "joined" && statusLog.some((s, i) => i > lostIdx && s.state === "connected"), 60_000);
+      await waitFor(
+        `${name}: recovered`,
+        () => b.session.phase === "joined" && statusLog.some((s, i) => i > lostIdx && s.state === "connected"),
+        60_000,
+      );
       await converge(`${name}: convergence`);
       const states = statusLog.map((s) => s.state);
       expect(states.indexOf("lost")).toBeGreaterThanOrEqual(0);
@@ -236,7 +270,13 @@ describe("real-socket reconnect + invite join", () => {
       expect(avatarSlots(a)).toBe(slotsA0);
       expect(avatarSlots(b)).toBe(slotsB0);
       expect(a.feed.ledger.worldHash()).toBe(b.feed.ledger.worldHash());
-      report[name] = { phases: [...phases], status: states, chip: [...chipLog], sessionIdSame: true, avatarSlotsSame: true };
+      report[name] = {
+        phases: [...phases],
+        status: states,
+        chip: [...chipLog],
+        sessionIdSame: true,
+        avatarSlotsSame: true,
+      };
     };
 
     await dropAndRecover("sdkDrop4010", async () => {
@@ -250,7 +290,9 @@ describe("real-socket reconnect + invite join", () => {
       proxies.splice(proxies.indexOf(proxyB), 1);
       await waitFor("B notices kill", () => b.session.phase !== "joined", 15_000);
       await sleep(1500);
-      proxies.push(await startProxy({ profile: PROFILES.clean, listenPort: proxyPort, targetPort: serverPort, seed: 8 }));
+      proxies.push(
+        await startProxy({ profile: PROFILES.clean, listenPort: proxyPort, targetPort: serverPort, seed: 8 }),
+      );
     });
 
     console.info("[reconnect-ui-e2e]", JSON.stringify(report));

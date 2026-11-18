@@ -107,7 +107,9 @@ describe("OnboardingWriter", () => {
         polishedCount: 1,
       }),
     );
-    f.emit(ev("onboarding.step_completed", { actorSlot: 0, stepId: "onboarding.polish_apron_plot", index: 4, total: 8 }));
+    f.emit(
+      ev("onboarding.step_completed", { actorSlot: 0, stepId: "onboarding.polish_apron_plot", index: 4, total: 8 }),
+    );
     f.emit(
       ev("purchase.completed", { actorSlot: 0, itemId: "tool.crescent_squeegee", level: 1, priceLm: 1, walletLm: 0 }),
     );

@@ -393,7 +393,8 @@ export class WorldDustLedger {
       const p = partial[k]!;
       this.prepOwnership(p);
       let owned = 0;
-      for (let b = 0; b < EDGE; b++) for (let a = 0; a < EDGE; a++) if (this.ownedAt(a, b)) keys[owned++] = coverKey(p, a, b);
+      for (let b = 0; b < EDGE; b++)
+        for (let a = 0; a < EDGE; a++) if (this.ownedAt(a, b)) keys[owned++] = coverKey(p, a, b);
       const sorted = keys.subarray(0, owned).sort();
       const dusty = coverTexelTarget(owned, partialPermille[k]!);
       const base = k * MASK_BYTES;

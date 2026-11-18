@@ -228,7 +228,9 @@ if (parts.has("anim")) {
       for (let attempt = 0; attempt < 4 && frames === null; attempt++) {
         let page = null;
         try {
-          page = await open(`sun=38&lab=anim&freeze=1&act=${act}&dist=3.6&camh=1.5&tgth=0.7&camaz=${az}&fov=50&yaw=200`);
+          page = await open(
+            `sun=38&lab=anim&freeze=1&act=${act}&dist=3.6&camh=1.5&tgth=0.7&camaz=${az}&fov=50&yaw=200`,
+          );
           // Deterministic sequence: freeze, settle 1.5 s of fixed 1/60 steps (kneel-down, gait sync), then one capture per
           // `stepN` fixed steps (sweep / walk 4 = 67 ms, i.e. a 15 fps strip; jump 10 = 167 ms across the 2.7 s hop).
           const stepN = act === "jump" ? 10 : 4;

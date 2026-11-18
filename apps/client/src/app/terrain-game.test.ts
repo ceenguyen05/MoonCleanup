@@ -66,7 +66,15 @@ it("isolates experimental terrain saves: own identity keys, Contract and Indexed
     if (!keysAfterFlat.includes(k)) expect(k.startsWith(TERRAIN_GAME_STORAGE_PREFIX)).toBe(true);
   }
   const cube = new HeightCube(new Uint16Array(6 * 4 * 4).buffer, { faceSize: 2, offsetM: 0, scaleM: 1 });
-  const options = terrainHostOptions({ cube, radiusM: 2000, pads: [], bakeHash: "", file: "t", fetchMs: 0, decodeMs: 0 });
+  const options = terrainHostOptions({
+    cube,
+    radiusM: 2000,
+    pads: [],
+    bakeHash: "",
+    file: "t",
+    fetchMs: 0,
+    decodeMs: 0,
+  });
   expect(options.dbName).toBe(TERRAIN_GAME_DB_NAME);
   expect(TERRAIN_GAME_DB_NAME).not.toBe("moon-cleanup-solo");
   expect(options.bakeHash).toBeUndefined();
@@ -75,10 +83,20 @@ it("isolates experimental terrain saves: own identity keys, Contract and Indexed
 it("reports a failed terrain asset load and resolves null (boot falls back to the flat worksite)", async () => {
   const reported: unknown[] = [];
   const failure = new Error("terrain manifest has no height-cube-1024");
-  await expect(loadTerrainGameAsset(() => Promise.reject(failure), (e) => reported.push(e))).resolves.toBeNull();
+  await expect(
+    loadTerrainGameAsset(
+      () => Promise.reject(failure),
+      (e) => reported.push(e),
+    ),
+  ).resolves.toBeNull();
   expect(reported).toEqual([failure]);
   const asset = { file: "ok" } as TerrainAsset;
-  await expect(loadTerrainGameAsset(() => Promise.resolve(asset), (e) => reported.push(e))).resolves.toBe(asset);
+  await expect(
+    loadTerrainGameAsset(
+      () => Promise.resolve(asset),
+      (e) => reported.push(e),
+    ),
+  ).resolves.toBe(asset);
   expect(reported).toHaveLength(1);
 });
 

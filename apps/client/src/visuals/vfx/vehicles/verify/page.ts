@@ -78,7 +78,8 @@ async function main(): Promise<void> {
     if (o.name === "mc:look-custodian") o.visible = false;
   });
   const ray = new Raycaster(new Vector3(SPOT[0], 50, SPOT[1]), new Vector3(0, -1, 0));
-  const gy = ray.intersectObjects(roots.world.children, true).find((h) => h.object.name.includes("ground"))?.point.y ?? 0;
+  const gy =
+    ray.intersectObjects(roots.world.children, true).find((h) => h.object.name.includes("ground"))?.point.y ?? 0;
 
   const s: LabState = {
     camAzDeg: Number(params.get("camaz") ?? 30),

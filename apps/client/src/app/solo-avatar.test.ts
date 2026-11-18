@@ -91,11 +91,10 @@ describe("Solo custodian input", () => {
 
   it("drives scrub/work from authoritative telemetry only, for the equipped tool", () => {
     const { feed, setHost } = setup();
-    const tooled = new SoloAvatarFeed(
-      (feed as unknown as { gameplay: GameplayModule }).gameplay,
-      () => host,
-      ["tool.desk_duster", "tool.lane_broom"],
-    );
+    const tooled = new SoloAvatarFeed((feed as unknown as { gameplay: GameplayModule }).gameplay, () => host, [
+      "tool.desk_duster",
+      "tool.lane_broom",
+    ]);
     const toolAnim = {
       valid: true,
       sweeping: true,
@@ -150,9 +149,11 @@ describe("Solo custodian input", () => {
       serial: 1,
     };
     setHost({ kind: "local", toolAnim } as unknown as RoomHost);
-    const feed = new SoloAvatarFeed(gameplay as unknown as GameplayModule, () => ({ kind: "local", toolAnim }) as never, [
-      "tool.desk_duster",
-    ]);
+    const feed = new SoloAvatarFeed(
+      gameplay as unknown as GameplayModule,
+      () => ({ kind: "local", toolAnim }) as never,
+      ["tool.desk_duster"],
+    );
     feed.setToolStrokes([{ pushM: 0.45, contactMs: 315, periodMs: 450 }]);
     feed.setTool(0);
     const input = new AvatarAnimInput();
@@ -187,7 +188,12 @@ describe("Solo custodian input", () => {
     const input = new AvatarAnimInput();
     feed.resetFrom({
       kind: "local",
-      shiftState: { players: [{ slot: 1, equippedTool: 0 }, { slot: 0, equippedTool: 1 }] },
+      shiftState: {
+        players: [
+          { slot: 1, equippedTool: 0 },
+          { slot: 0, equippedTool: 1 },
+        ],
+      },
     } as unknown as RoomHost);
     feed.provider(SOLO_AVATAR_SLOT, frame, input);
     expect(input.toolClass).toBe(TOOL_CLASS.bar);

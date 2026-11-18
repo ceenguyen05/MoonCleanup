@@ -88,7 +88,12 @@ export class SoloAvatarFeed {
     const tele = (this.host() as unknown as { toolAnim?: ToolAnimSnapshot } | null)?.toolAnim;
     // A host can start emitting frames before a shift-state snapshot reaches this subscriber. Seed only an unknown
     // tool from a valid frame; once shift state selects a tool, mismatching older frames must still be rejected.
-    if (this.toolCode < 0 && tele?.valid && Number.isInteger(tele.toolCode) && this.toolIds[tele.toolCode] !== undefined) {
+    if (
+      this.toolCode < 0 &&
+      tele?.valid &&
+      Number.isInteger(tele.toolCode) &&
+      this.toolIds[tele.toolCode] !== undefined
+    ) {
       this.setTool(tele.toolCode);
     }
     input.toolClass = this.toolClass;

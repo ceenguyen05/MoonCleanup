@@ -10,7 +10,12 @@ interface Dir {
 }
 
 export interface InitialFacingOptions {
-  readonly stations: () => readonly { readonly kind: string; readonly x: number; readonly y: number; readonly z: number }[];
+  readonly stations: () => readonly {
+    readonly kind: string;
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+  }[];
   /** Avatar position (any scale) into `out`; false before the first pose. */
   readonly samplePos: (out: Dir) => boolean;
   /** `sphereBearingDeg`. */

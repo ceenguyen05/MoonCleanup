@@ -37,7 +37,8 @@ describe("Landing Apron", () => {
     const sim = makeSim(world, {});
     expect(sim.apronPlotCount).toBe(plots);
     const home = world.grid.plotAt({ x: 0, y: 1, z: 0 });
-    const nb = (p: number): number[] => Array.from({ length: world.grid.neighbors(p as PlotId).length }, (_, i) => world.grid.neighbors(p as PlotId)[i]!);
+    const nb = (p: number): number[] =>
+      Array.from({ length: world.grid.neighbors(p as PlotId).length }, (_, i) => world.grid.neighbors(p as PlotId)[i]!);
     const ring1 = new Set<number>([home, ...nb(home)]);
     let found = 0;
     for (let p = 0; p < world.grid.count; p++) {

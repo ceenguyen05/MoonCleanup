@@ -42,7 +42,14 @@ describe("tool telemetry trailer", () => {
   it("reports nothing when the tool is idle, and invalidates on a buffer without telemetry", () => {
     const u8 = new Uint8Array(FRAME_BUF_BYTES);
     const out = new ToolAnimSnapshot();
-    writeToolTelemetry(u8, f, b, source({ wasActive: false, sweeping: false, inContact: false, headValid: false }), 0, 9);
+    writeToolTelemetry(
+      u8,
+      f,
+      b,
+      source({ wasActive: false, sweeping: false, inContact: false, headValid: false }),
+      0,
+      9,
+    );
     readToolTelemetry(u8, out, f, b);
     expect(out.valid).toBe(true);
     expect(out.sweeping || out.inContact || out.headValid || out.detailing).toBe(false);

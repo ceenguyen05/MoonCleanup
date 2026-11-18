@@ -94,7 +94,8 @@ export function checkStats(id: string, bytes: number, stats: GlbStats, budget: C
     }
     caps.forEach((max, lod) => {
       const count = counts[lod] ?? 0;
-      if (count > max) add("error", "TRIANGLES_OVER_BUDGET", `${piece} LOD${lod} has ${count} triangles; the budget is ${max}`);
+      if (count > max)
+        add("error", "TRIANGLES_OVER_BUDGET", `${piece} LOD${lod} has ${count} triangles; the budget is ${max}`);
     });
   }
   if (stats.unassignedTriangles > (budget.lodMaxTriangles[0] ?? 0)) {

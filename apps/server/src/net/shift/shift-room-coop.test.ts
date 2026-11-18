@@ -118,7 +118,10 @@ describe("ShiftRoom co-op", () => {
     // Holder kicks (no ban): 4102 + notice, seat freed, the player may rejoin.
     holder.room.send(MESSAGE_CATALOG.KICK.id, { playerId: pid(2), reasonCode: "griefing" });
     await expect.poll(() => late.closed(), { timeout: 3000 }).toBe(CloseCode.KICKED);
-    expect(late.messages.get(MESSAGE_CATALOG.KICK_NOTICE.id)?.[0]).toMatchObject({ by: "holder", reasonCode: "griefing" });
+    expect(late.messages.get(MESSAGE_CATALOG.KICK_NOTICE.id)?.[0]).toMatchObject({
+      by: "holder",
+      reasonCode: "griefing",
+    });
     await expect.poll(() => room.core.activeSeats, { timeout: 3000 }).toBe(2);
     const back = await join(2);
     expect(room.core.activeSeats).toBe(3);
