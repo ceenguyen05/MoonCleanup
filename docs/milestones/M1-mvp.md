@@ -1,5 +1,12 @@
 # M1 — MVP "Boreal Pilot Area" (`v0.2.0`)
 
+> **PLAN REVISION 2026-11-18 (owner): BUILD FIRST, VERIFY AT THE END.**
+> Keep the plan (M0-M4). Solo comes first for graphics, feel and fps; multiplayer, server and database stay in scope and keep being built, but never ahead of or at the cost of solo. Build out the whole game without stopping to verify, review, look-check or perf-test each task. Per task: write the code, make it compile (typecheck the touched package) and move on.
+> Verification, bug fixing, perf, visual review and polish happen in ONE pass at the end, once a complete game is running. After that pass: revise, enhance, improve. The only standing rule is that `pnpm verify` (format check, lint, typecheck, tests with retries, build) should pass before Cee pushes to Render/Vercel.
+> **Not per-task gates (end-of-build pass only):** `pnpm verify` runs, golden-hash/determinism lanes, bot/soak/netsim runs, perf and quiet-machine captures, per-wave visual gates (V-M1a/b/c), comparator/VT scoring, real-GPU look-checks, reviews and `/release-checklist`.
+> **Scope decisions (owner MCQ 2026-11-18):** (1) CDLOD terrain and WebGL2 parity stay in scope, as before. (2) Assets: export plain GLBs and use them; KTX2/meshopt/LOD optimisation and the ASSET_LICENSES gate are an end-of-build pass, not a blocker. (3) One default look; quality presets and dynamic-resolution work wait until the end. (4) Golden-hash tests are not blockers: re-baseline or delete a hash test when it gets in the way (the sim stays deterministic). (5) Agents run lean: 4 total (3 regular + 1 premium), a short report only for big changes, STATUS updated per milestone, no per-task evidence folders, no GPU-lock ceremony.
+> Wherever an older doc says a gate, exit criterion (E3, E5, E9, E14...), golden, soak, review or look-check is "required" before moving on, read it as deferred to the end-of-build pass. Timing and allocation tests stay loose enough not to flake.
+
 Direction: `docs/design/REFERENCE_TARGET.md` overrides retired naming/style/custom-gate rules.
 
 > **Priority note (owner 2026-11-13): solo first.** The vertical slice is judged solo-first: snappy arcade tool feel, input-to-visual latency budget, animation, fps.
@@ -23,7 +30,7 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | --- | --- | --- |
 | E1 | Walk to the Pilot Fence in all directions with no cracks or pops at Tier B quality | VT-M1-26, P2/P4 captures |
 | E2 | Passes visual-target §4.2: all V1 items, ≤ 3 V2 open with tickets; VM-01…VM-07 and VM-09 approved (VM-08 Survey Globe is v1.0, M2-W1); comparator CMP-02/05/07/15 | `/visual-check M1` |
-| E3 | 8 bots × 30 min: zero stuck plots; client and server Shine agree | `/bot-test` soak |
+| E3 | 8 bots × 30 min: zero stuck plots; client and server Shine agree | `/bot-test` soak (**deferred 2026-11-18, optional**) |
 | E4 | Sweeping feels good (internal playtest ≥ 4/5); Lane Lock works | Gate P1 |
 | E5 | Pucks and vehicles sync for 6 players; no rubber-banding at 120 ms ± 30 jitter (best-effort on Render free; solo feel has priority) | `/bot-test` + manual |
 | E6 | Payment server-authoritative; wallet never desyncs; shared purchase races resolved server-side | tests + `/bot-test` |
@@ -34,7 +41,7 @@ A fun, multiplayer vertical slice in the Boreal Pilot Area (≈ 8,160 plots insi
 | E11 | KBM and gamepad complete; frame time VT-M1-27 on Tier A High and Tier B Medium | `/perf-check` |
 | E12 | M1 closing integration PASS; `/release-checklist` go | `M1-W9-integration.md` |
 | E13 | **Solo feel (ADR-0031):** input-to-first-visual latency (camera/avatar/tool head) ≤ 1 frame budget (33.3 ms at the 30 fps floor) on UHD 620 Low, dust result ≤ 1 sim tick + 1 frame; **zero network use during play** (no WebSocket, no request on the play path; play identical with the network offline; only background checkpoint uploads) | `/perf-check` latency capture + request log, netcode.md §19.4 |
-| E14 | Worker and Node `RoomSim` golden hashes identical over ≥ 10,000 ticks (Chromium worker in CI; Firefox/WebKit when available); `LocalRoomHost` vs `RemoteRoomHost` parity run identical | CI `determinism` lane |
+| E14 | Worker and Node `RoomSim` golden hashes identical over ≥ 10,000 ticks (Chromium worker in CI; Firefox/WebKit when available); `LocalRoomHost` vs `RemoteRoomHost` parity run identical | CI `determinism` lane (**non-gating since 2026-11-18**) |
 | E15 | Solo saves: tab kill loses ≤ 10 s; server asleep → play continues and the newest checkpoint syncs later; two diverged copies show the "Which copy?" prompt and are never silently overwritten; restore on a second browser | e2e + manual (data-model §3.7c) |
 
 ## 3. Pre-wave decisions (lead, logged in OPEN_QUESTIONS/ADR before the named stage)

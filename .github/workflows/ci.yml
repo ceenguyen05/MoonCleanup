@@ -272,7 +272,7 @@ jobs:
   ci-gate:
     name: CI gate
     if: always()
-    needs: [detect, install, lint, audit, typecheck, test, determinism, save-fixtures, build, smoke-webgl2]
+    needs: [detect, install, lint, typecheck, test, build]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

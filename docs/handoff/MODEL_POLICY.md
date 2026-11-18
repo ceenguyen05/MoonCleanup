@@ -5,9 +5,9 @@ do not maintain a second copied roster here. Role files are a menu, not a launch
 
 | Model | Default responsibility | Effort |
 | --- | --- | --- |
-| Sonnet 5.5 | Lead; UI/backend/integration, setup, tests, profiling, balance checks and docs | Medium; high for edge cases/important craft |
-| Opus 5.5 (premium, High) | Demanding gameplay/feel, terrain/dust, rendering, technical art, animation; contracts/architecture, game design, netcode, independent reviews | High (the single premium slot) |
-| Opus 5.5 / Sonnet 5.5 (regular, medium) | Everything else: UI/backend/integration, tests, profiling, balance, docs, simpler fixes | Medium; high only for a bounded edge case |
+| Sonnet 5.5 | Lead; default worker for most tasks: UI/backend/integration, setup, tests, profiling, balance checks, docs and routine gameplay/rendering code | Medium; high for edge cases/important craft |
+| Opus 5.5 (premium, High) | Hard work: animation and tool feel, terrain/dust, rendering and technical art, contracts/architecture, netcode | High (the single premium slot, kept busy) |
+| Opus 5.5 (regular, medium) | A regular worker when a task needs more care than Sonnet but is not premium-hard | Medium; high only for a bounded edge case |
 
 ## Lead's authority
 
@@ -22,7 +22,7 @@ Check model availability and whether environment overrides defeat the profiles; 
 
 ## Usage controls
 
-Run independent ready work in parallel; **keep 4 regular workers (Opus 5.5 or Sonnet 5.5, medium) + 1 premium worker (Opus 5.5, High) running at all times; reviewers count toward the regular cap** (owner, 2026-11-15; restores the 4+1 blueprint, Fable retired, the 2026-11-15 Fable-only window is over). Idle slots should be filled with the next dependency-ready task.
+Run independent ready work in parallel; **keep 4 agents running: 3 regular workers (Sonnet 5.5 by default, Opus 5.5 where a task needs it, medium) + 1 premium worker (Opus 5.5, High)** (owner, 2026-11-18, supersedes the earlier 4 regular + 1 premium rule; Fable stays retired). Owner runs ONE active session at a time and rotates 4 Claude Pro accounts when a session limit is hit; there are no per-account work splits. After a switch, resume from docs/STATUS.md and the files on disk (kickoff prompt 2), and checkpoint compactly before a limit. Idle regular slots take the next dependency-ready task. Workers write a short report only for big changes, with no per-task evidence folders.
 Installs/contracts/root edits/migrations are sequential. A second worker must unblock independent critical-path work.
 No nested agents, worktrees, team mode, automatic prototype contest or polling loops. `maxTurns` is a checkpoint, not a token cap.
 Brief ≤500 words plus paths; initially read ≤3 focused spec sections when practical. Read more source when correctness needs it.
@@ -30,13 +30,10 @@ Do not load whole milestones, historical reports, research, vendor or future des
 
 ## Review and verification
 
-Use focused independent review for high-risk changes and one final integrated review. Related work may be reviewed together; no per-task approval gate. Visual review per integrated visible batch;
-perf for changed hot paths/assets/budgets; security for trust/auth/wire/save/hook/build/supply-chain risks; balance for changed
-economy/pacing. Omitted specialist lenses get a short N/A reason; no unconditional multi-reviewer launch for a neutral type edit.
+Owner 2026-11-18: build first, verify at the end. No per-task, per-batch or final-integrated review during the build; run the review/verification pass once at the end, and only for risky areas (auth, saves, netcode, supply chain) if Cee asks.
 Keep known blocking findings. Review fixes/regressions only; after two failed cycles diagnose/split/escalate rather than loop.
 One evidence producer per test/capture; reuse logs/artifacts for the same final file state. Reproduce suspect/high-risk results.
-Run focused checks while building and final `pnpm verify` at integration; run applicable motion/visual/bot/perf/balance gates.
-Record N/A/BLOCKED/NOT RUN honestly. Check `/usage` at coherent checkpoints if available; otherwise quota is unknown.
+Per task: compile only. Run `pnpm verify` once at the end of the build and before Cee pushes; motion/visual/bot/perf/balance checks are end-of-build and on demand. Record N/A/BLOCKED/NOT RUN honestly. Check `/usage` at coherent checkpoints if available; otherwise quota is unknown.
 No claimed savings percentage or stage-to-five-hour-window conversion without measurements.
 
 ## Session start

@@ -18,7 +18,7 @@
     "test:e2e": "turbo run test:e2e --filter=@moon-cleanup/e2e",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "turbo run lint typecheck test build --concurrency=3",
+    "verify": "pnpm format:check && turbo run lint typecheck test build --concurrency=3",
     "bots": "turbo run bots --filter=@moon-cleanup/bots",
     "perf": "turbo run perf --filter=@moon-cleanup/perf"
   },

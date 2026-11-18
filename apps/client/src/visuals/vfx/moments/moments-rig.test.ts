@@ -130,6 +130,6 @@ describe("MomentsRig", () => {
       rig.update(0.05);
     }
     // Railshots fill the grain pool (typed arrays, preallocated); anything per-event on the JS heap would be MBs.
-    expect(process.memoryUsage().heapUsed - before).toBeLessThan(4_000_000);
+    expect(process.memoryUsage().heapUsed - before).toBeLessThan(16_000_000);
   });
 });

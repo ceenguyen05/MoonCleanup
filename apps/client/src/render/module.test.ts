@@ -171,6 +171,7 @@ function setup(scenario: Scenario = {}) {
       observeResize: null,
       runtime,
       hostDelay: () => Promise.resolve(),
+      cheaperDefault: false,
       ...(scenario.now === undefined ? {} : { now: scenario.now }),
     },
   });

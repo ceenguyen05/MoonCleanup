@@ -73,7 +73,7 @@ Engine: **three 0.187.0, `WebGPURenderer` + TSL, automatic WebGL2 backend, vanil
 | --- | --- |
 | Classify | Adapter info (WebGPU) or `WEBGL_debug_renderer_info` (WebGL2) against `render/gpu-classes.json`: integrated patterns (Intel UHD/Iris/Arc integrated, "AMD Radeon(TM) Graphics", Radeon 6x0M/7x0M/8x0M, Vega, base Apple M-series) → **Tier B**; discrete laptop/desktop (RTX/GTX/RX, Apple Pro/Max) → **Tier A**; RTX 4070+/RX 7800+ desktop → **Ultra-capable** |
 | Benchmark | 3-second warm scene in the lobby measuring GPU ms (timestamps, else frame time) at the candidate preset; step down one preset if > 85 % of the target |
-| Defaults | Tier B → Medium (`webgpu`) / Low (`webgpu-compat`); Tier C (`webgl2`) → Low; Tier A → High; Ultra-capable → Ultra |
+| Defaults | Spec table above is the pure `defaultPresetFor`; **the shipped client starts one preset lower (owner, 2026-11-18, "a cheaper game"; `RenderModule` `cheaperDefault`): Tier B → Low, Tier A → Medium, Ultra → High.** Players can raise it in Settings. |
 | Override | Player choice is saved in the profile; a "Restore recommended" button re-runs the benchmark |
 
 Reference GPUs (BF §3.2): Tier A = RTX 4060 Laptop (60 FPS locked); Tier B = Iris Xe 96EU / Arc 140V / Radeon 780M (30+ FPS).

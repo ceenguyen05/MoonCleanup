@@ -21,13 +21,10 @@ needed for the next deliverable. Current repo instructions supersede old workflo
 Preserve completed work, source changes and real bug findings. Do not restart M0, repeat setup or reinstall unnecessarily.
 Check actual worker availability before resuming historical IDs; never duplicate a live writer.
 
-Use the pinned Sonnet 5.5 and Opus 5.5 role defaults (premium = Opus 5.5 High; Fable retired 2026-11-15); choose model/effort per task within MODEL_POLICY's usage
-and concurrency limits. Spend premium effort on hard mechanics, gameplay feel, rendering, art, animation and world detail.
+Use the pinned Sonnet 5.5 and Opus 5.5 role defaults (Sonnet 5.5 medium by default; premium = Opus 5.5 High only for hard animation, rendering, dust and netcode work; Fable retired 2026-11-15); choose model/effort per task within MODEL_POLICY. Keep 4 agents busy: 3 regular workers and 1 premium worker. I run one session at a time and rotate 4 Pro accounts when a session limit hits, so checkpoint to docs/STATUS.md compactly and be ready to resume from it.
 Closely follow Moon Sweepers' experience using our own code/assets/branding. Keep the title Clean The Moon! and item names flexible.
 
-Build, integrate, test and fix continuously. Milestones/stages are dependency checkpoints, not permission or commit gates.
-Use focused checks while iterating and full meaningful validation on integrated candidates. Preserve quality and disclose
-missing scope, unrun checks and deadline risk honestly. No mandatory wave plans, per-task report/reviewer swarm or repeated docs audit.
+BUILD FIRST, VERIFY AT THE END (owner 2026-11-18). Build the whole game with solo first and multiplayer kept in scope but never ahead of solo. Per task: write the code, make it compile and move on. Do not run per-task tests, reviews, look-checks, perf or soak work, and golden-hash tests are not blockers. Run ONE end pass (pnpm verify, bug fixes, perf, visual review, polish) once a complete game runs, then revise/enhance/improve. Preserve quality and disclose missing scope and unrun checks honestly. Lean reports: no per-task report files or evidence folders.
 Never stage, commit, push, tag, create PRs or publish automatically. Keep the git safeguard; I decide when satisfied and ready to commit.
 
 Ask concise questions for actual decisions or missing inputs, with a recommendation; continue independent ready work.
@@ -38,13 +35,13 @@ Do not stop for a guessed usage window or after each milestone. Start the next d
 ## 2. Same conversation after a usage reset — paste each time
 
 ```text
-Usage is available again. Continue Clean The Moon! from the last checkpoint in this conversation and docs/STATUS.md.
+Usage is available again (new session or account switch). Continue Clean The Moon! from the last checkpoint in this conversation and docs/STATUS.md.
 Check actual files and worker/process state; a limit may have interrupted work before notes were saved. Resume useful
 existing context, never duplicate a live writer, restart M0 or repeat completed setup. Reload instructions only if changed
 or no longer in context; read only the task sections/findings needed now. Reuse valid evidence and rerun invalidated checks.
 Resume all interrupted agents and background tasks
 
-Keep the documented Sonnet/Opus routing (4 regular + 1 premium), effort and usage limits. Continue implementation, integration, testing and
+Keep the documented Sonnet/Opus routing (3 regular + 1 premium), effort and usage limits. Continue implementation, integration, testing and
 fixes through M0–M3, protecting mechanics, graphics, animation and world/gameplay fidelity.
 No stage/commit stops or extra planning paperwork. Preserve the git safeguard; I choose when to commit/publish.
 Checkpoint compactly at meaningful progress or interruptions. Ask only for actual decisions/inputs while continuing ready work.

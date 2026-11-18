@@ -113,3 +113,6 @@ docs/visual-reviews/M0/checks/**/*.png
 # Generated bot/perf run output (reports in docs/agent-reports stay tracked)
 tools/bots/results/
 tools/perf/results/
+
+# Agent screenshot/capture evidence (owner 2026-11-18): reports (.md) stay tracked, new evidence folders do not
+docs/agent-reports/*-evidence/

@@ -7,7 +7,7 @@ effort: medium
 
 # /release-checklist
 
-Validate the current working tree. Follow WORKFLOW and MODEL_POLICY; Cee chooses when satisfied and ready to commit/publish.
+Revised 2026-11-18: optional. The push gate is `pnpm verify` only; skip the perf/soak/visual/review items below unless Cee asks. Validate the current working tree. Follow WORKFLOW and MODEL_POLICY; Cee chooses when satisfied and ready to commit/publish.
 Run full meaningful lint/typecheck/tests/build plus applicable browser, motion/visual, multiplayer/reconnect/save, performance
 and balance checks. Reuse evidence for the same file state; rerun invalidated checks. Complete focused/final independent review
 and fix substantive failures. No per-task reviewer chain, signed wave reports, git commit, PR or remote CI prerequisite.

@@ -51,7 +51,7 @@ import {
   type ProbedFeatures,
   type WebGl2Probe,
 } from "./three-renderer";
-import { classifyGpu, defaultPresetFor, tierFor, type GpuClassTable } from "./tier";
+import { classifyGpu, defaultPresetFor, presetBelow, tierFor, type GpuClassTable } from "./tier";
 import { parseRenderUrlOptions, SMOKE_SCENE_ID, type RenderUrlOptions } from "./url-options";
 import { ViewportTracker, type ResizeObserverLike } from "./viewport";
 
@@ -279,6 +279,8 @@ export interface RenderEnvironment {
   readonly blocklist?: readonly BlocklistEntry[];
   readonly gpuClasses?: GpuClassTable;
   readonly hostDelay?: (lossCount: number) => Promise<void>;
+  /** Start one preset below the spec default (owner 2026-11-18, "a cheaper game"). Default true; tests pin the spec table with false. */
+  readonly cheaperDefault?: boolean;
   /** Clock of the dynamic-resolution controller in ms. Default `performance.now()`. */
   readonly now?: () => number;
 }
@@ -429,7 +431,7 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     this.backend = capabilities.backend;
     this.tier = capabilities.tier;
     this.forced = decision.forced;
-    const recommended = defaultPresetFor(capabilities.tier, capabilities.backend, capabilities.gpuClass);
+    const recommended = this.recommendedPreset(capabilities);
     const saved = options.savedPreset ?? null;
     const quality = new QualityController({
       events: ctx.events,
@@ -725,6 +727,12 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
 
   // ---- Internals ----------------------------------------------------------------------------------------------
 
+  /** Spec default (rendering-pipeline 2.3), one preset lower unless `env.cheaperDefault === false`. */
+  private recommendedPreset(capabilities: RenderCapabilities): QualityPresetId {
+    const spec = defaultPresetFor(capabilities.tier, capabilities.backend, capabilities.gpuClass);
+    return this.options.env?.cheaperDefault === false ? spec : (presetBelow(spec) ?? spec);
+  }
+
   private readCapabilities(renderer: WebGPURenderer, backend: RenderBackend): RenderCapabilities {
     const env = this.options.env ?? {};
     const decision = this.decision;
@@ -925,7 +933,7 @@ export class RenderModule implements ClientModule<RenderServices>, RenderRendere
     const changed = capabilities.backend !== this.backend || capabilities.tier !== this.tier;
     this.backend = capabilities.backend;
     this.tier = capabilities.tier;
-    quality.rebind(capabilities, defaultPresetFor(capabilities.tier, capabilities.backend, capabilities.gpuClass));
+    quality.rebind(capabilities, this.recommendedPreset(capabilities));
     if (event.lossCount % LOSSES_PER_PRESET_DROP === 0) quality.stepDown("detect");
 
     // A warm-up running at the loss starts over: the recovery time must not time it out on the first new frame.

@@ -12,7 +12,7 @@
     "seed": "echo \"NOT IMPLEMENTED: server seed (arrives with M1 persistence task)\"",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests --retry=2"
   },
   "dependencies": {
     "@colyseus/core": "0.18.28",

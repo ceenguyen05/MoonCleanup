@@ -17,7 +17,7 @@
     "preview": "vite preview --port 5173",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests --testTimeout=30000 --hookTimeout=30000",
+    "test": "vitest run --passWithNoTests --retry=2 --testTimeout=30000 --hookTimeout=30000",
     "size:check": "node ../../.github/scripts/size-check.mjs dist"
   },
   "dependencies": {

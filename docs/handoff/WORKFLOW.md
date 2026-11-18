@@ -1,5 +1,12 @@
 # Continuous build — Clean The Moon!
 
+> **PLAN REVISION 2026-11-18 (owner): BUILD FIRST, VERIFY AT THE END.**
+> Keep the plan (M0-M4). Solo comes first for graphics, feel and fps; multiplayer, server and database stay in scope and keep being built, but never ahead of or at the cost of solo. Build out the whole game without stopping to verify, review, look-check or perf-test each task. Per task: write the code, make it compile (typecheck the touched package) and move on.
+> Verification, bug fixing, perf, visual review and polish happen in ONE pass at the end, once a complete game is running. After that pass: revise, enhance, improve. The only standing rule is that `pnpm verify` (format check, lint, typecheck, tests with retries, build) should pass before Cee pushes to Render/Vercel.
+> **Not per-task gates (end-of-build pass only):** `pnpm verify` runs, golden-hash/determinism lanes, bot/soak/netsim runs, perf and quiet-machine captures, per-wave visual gates (V-M1a/b/c), comparator/VT scoring, real-GPU look-checks, reviews and `/release-checklist`.
+> **Scope decisions (owner MCQ 2026-11-18):** (1) CDLOD terrain and WebGL2 parity stay in scope, as before. (2) Assets: export plain GLBs and use them; KTX2/meshopt/LOD optimisation and the ASSET_LICENSES gate are an end-of-build pass, not a blocker. (3) One default look; quality presets and dynamic-resolution work wait until the end. (4) Golden-hash tests are not blockers: re-baseline or delete a hash test when it gets in the way (the sim stays deterministic). (5) Agents run lean: 4 total (3 regular + 1 premium), a short report only for big changes, STATUS updated per milestone, no per-task evidence folders, no GPU-lock ceremony.
+> Wherever an older doc says a gate, exit criterion (E3, E5, E9, E14...), golden, soak, review or look-check is "required" before moving on, read it as deferred to the end-of-build pass. Timing and allocation tests stay loose enough not to flake.
+
 Owner direction: build the requested game continuously with no deadline, test it, and let Cee decide
 when satisfied and ready to commit/publish. No intermediate commit plans, stage-ending permission requests or per-wave commit gates.
 M0→M1→M2→M3 are dependency/coverage checkpoints, not separate jobs awaiting owner sign-off. M4 remains optional.
@@ -10,8 +17,7 @@ M0→M1→M2→M3 are dependency/coverage checkpoints, not separate jobs awaitin
 2. Implement a coherent piece, run affected checks and inspect playable results. Integrate mechanics, world/graphics,
    animation/audio and UI as they become available; do not leave presentation until the final night.
 3. Fix real failures, checkpoint briefly, then continue automatically into the next ready task or milestone.
-4. Run the full meaningful test/build/browser/network/visual/motion/perf suite on the final candidate, fix regressions,
-   and present the runnable game plus remaining limitations to Cee. Cee chooses when to commit and release.
+4. Build the whole game first. Only then run the single end pass: `pnpm verify`, bug fixes, perf, visual review, polish, then revise/enhance/improve. Present the runnable game and remaining limitations to Cee. Cee chooses when to commit and release.
 
 ## Minimal coordination
 
@@ -46,11 +52,9 @@ time, and always before reporting status) and does not assume "no news = fine":
 
 ## Tests and review
 
-Keep deterministic sim/world/protocol tests, meaningful unit tests, typecheck/lint/build, browser smoke, console monitoring,
-visual/motion inspection, multiplayer/netsim, persistence/reconnect and measured budgets. No success claims from stub scripts.
-Run focused checks during iteration and full checks at coherent integration/final states; reuse same-state artifacts.
-Lead schedules focused independent review for high-risk algorithms/trust boundaries or unresolved defects, plus one integrated
-code/visual/gameplay/performance review of the candidate. No mandatory independent approval for every small task.
+Revised 2026-11-18: build first, verify at the end. During the build, per task: compile (typecheck the touched package) and move on;
+no per-task tests, look-checks, reviews, perf or soak runs. The end pass runs `pnpm verify`, fixes bugs, then checks perf/visuals and polishes.
+No success claims from stub scripts. Timing and allocation tests must be loose (retries are on) so they never flake.
 Known substantive findings remain until fixed/verified or the affected component is deliberately removed and reported as such.
 - Solo-first: judge visual/motion/perf/input checks in solo first; multiplayer checks are best-effort on Render free and never block a solo-feel deliverable.
 
