@@ -85,7 +85,7 @@ At upgrade (uWS transport hook) the `Origin` header must be in `ALLOWED_ORIGINS`
 
 | Header | Value |
 | --- | --- |
-| `Content-Security-Policy` (header, static in `vercel.json`) | `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' https://*.onrender.com wss://*.onrender.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; img-src 'self' data: blob:; style-src 'self'; font-src 'self'; media-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'none'` |
+| `Content-Security-Policy` (header, static in `vercel.json`) | `default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'; worker-src 'self' blob:; connect-src 'self' https://*.onrender.com wss://*.onrender.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; img-src 'self' data: blob:; style-src 'self'; font-src 'self'; media-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'none'` |
 | CSP (meta, per environment) | The client build injects `<meta http-equiv="Content-Security-Policy" content="connect-src 'self' <VITE_SERVER_HTTP_URL origin> <VITE_SERVER_WS_URL origin> <Sentry ingest origin>">` into `index.html` (Vite HTML transform). Browsers enforce **both** policies, so the effective `connect-src` is the exact per-environment origins while `vercel.json` stays static (one file serves production and previews). `frame-ancestors` can only come from the header, which is why it stays there |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
 | `X-Content-Type-Options` | `nosniff` |
@@ -94,6 +94,8 @@ At upgrade (uWS transport hook) the `Origin` header must be in `ALLOWED_ORIGINS`
 | `/hub/*` | `Access-Control-Allow-Origin: *`, `Cache-Control: public, max-age=3600` (public metadata kit) |
 
 No third-party scripts, no analytics tags; fonts self-hosted. This CSP pair is the main XSS mitigation for the `localStorage` refresh token. CI checks that `vercel.json` carries the headers above (environments.md §4.2).
+
+`script-src` permits `'unsafe-eval'` because the shipped three.js Basis/KTX2 transcoder uses Emscripten Embind's `Function` constructor during initialization. Its blob workers inherit the document CSP; `'wasm-unsafe-eval'` alone permits WASM compilation but blocks that JavaScript glue. This allows string compilation in both the page and its workers, while inline scripts and third-party script sources remain blocked. Removing it requires shipping a decoder built without dynamic execution. `tests/e2e/specs/production-csp.spec.ts` initializes the installed decoder under the actual Vercel headers so CI catches this deployment-only failure.
 
 ## 5. Rate limiting
 
